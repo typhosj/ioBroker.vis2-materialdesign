@@ -382,11 +382,7 @@ vis.binds.materialdesign.calendar =
                     if (val) {
                         jsonData = JSON.parse(val);
                         
-                        if (!Array.isArray(jsonData)) {
-                            jsonData = [];
-                        }
-                        
-                        if (jsonData.length > 0) {
+                        if (jsonData && jsonData.length > 0) {
                             if (!hasJsonMustHaveProperties(jsonData)) {
                                 jsonData = getJsonPropertiesWrongMessage();
                             }
