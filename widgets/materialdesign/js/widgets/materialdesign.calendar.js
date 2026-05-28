@@ -96,6 +96,7 @@ vis.binds.materialdesign.calendar =
 
                     v-model="focus"
                     ref="calendar"
+                    :key="renderKey"
 
                     :events="events"
                     :event-color="getEventColor"
@@ -160,6 +161,7 @@ vis.binds.materialdesign.calendar =
                             intervalCount: intervalCount * 60 / intervalMinutes - firstInterval * 60 / intervalMinutes,
                             intervalMinutes: intervalMinutes,
                             events: jsonData,
+                            renderKey: 0,
                             eventHeight: myMdwHelper.getNumberFromData(data.calendarEventHeight, 20),
                             eventOverlapMode: data.calendarEventOverlapMode,
                             showWeekNumbers: myMdwHelper.getBooleanFromData(data.calendarWeeksNumbersShow, true)
@@ -282,6 +284,9 @@ vis.binds.materialdesign.calendar =
                     vis.states.bind(data.oid + '.val', function (e, newVal, oldVal) {
                         jsonData = parseJson();
                         vueCalendar.events = jsonData;
+                        vueCalendar.events = [...jsonData]; 
+                        // force complete remount for vis2 async init 
+                        vueCalendar.renderKey++;
                     });
 
                     $(document).on("mdwSubscribe", function (e, oids) {
