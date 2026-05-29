@@ -287,7 +287,27 @@ vis.binds.materialdesign.calendar =
 
                     vis.states.bind(data.oid + '.val', function (e, newVal, oldVal) {
                         jsonData = parseJson();
-                        vueCalendar.events = Array.isArray(jsonData) ? [...jsonData] : [];
+                        
+                        function updateCalendar(retries = 20) { 
+                            const jsonData = parseJson(); 
+                            
+                            if (Array.isArray(jsonData) && jsonData.length >= 0) { 
+                                vueCalendar.events = [...jsonData]; 
+                                return; 
+                            } 
+                            
+                            // vis2 reload race condition workaround 
+                            if (retries > 0) { 
+                                setTimeout(() => updateCalendar(retries - 1), 250); 
+                            } 
+                        } 
+                        
+                        vis.states.bind(data.oid + '.val', function () { 
+                            updateCalendar(); 
+                        }); 
+                        
+                        // initial load 
+                        updateCalendar();
                     });
 
                     $(document).on("mdwSubscribe", function (e, oids) {
