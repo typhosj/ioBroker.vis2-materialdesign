@@ -238,7 +238,13 @@ vis.binds.materialdesign.calendar =
                             }
                         },
                         mounted() {
-                            this.$refs.calendar.scrollToTime(moment(this.now).format('HH:mm'));
+                            this.$nextTick(() => { 
+                                if (this.$refs.calendar) { 
+                                    this.$refs.calendar.scrollToTime( 
+                                        moment(this.now).format('HH:mm') 
+                                    ); 
+                                } 
+                            });
                         }
                     })
 
