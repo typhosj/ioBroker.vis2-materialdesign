@@ -289,6 +289,16 @@ vis.binds.materialdesign.calendar =
                         vueCalendar.renderKey++;
                     });
 
+                    // vis2: states may not be ready on initial page load
+                    
+                    setTimeout(function () { 
+                        const initialData = parseJson(); 
+                         
+                        if (initialData && initialData.length) { 
+                            vueCalendar.events = initialData; 
+                        } 
+                    }, 500);
+
                     $(document).on("mdwSubscribe", function (e, oids) {
                         if (myMdwHelper.isLayoutRefreshNeeded(widgetName, data, oids, data.debug)) {
                             setLayout();
