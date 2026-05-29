@@ -13118,6 +13118,9 @@ The adapter uses the following libraries:
 
 
 ## Changelog
+### 0.5.94 (2026-05-29)
+* news
+
 
 <!--
     Placeholder for the next version (at the beginning of the line):	   
