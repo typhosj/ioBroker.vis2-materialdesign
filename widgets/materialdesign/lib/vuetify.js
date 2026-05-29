@@ -4054,7 +4054,7 @@ var MINUTES_IN_DAY = 1440;
   props: _util_props__WEBPACK_IMPORTED_MODULE_4__["default"].events,
   computed: {
     noEvents: function noEvents() {
-      return this.events.length === 0;
+      return !this.events || this.events.length === 0;
     },
     parsedEvents: function parsedEvents() {
       return this.events.map(this.parseEvent);
