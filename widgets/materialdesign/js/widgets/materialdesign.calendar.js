@@ -159,7 +159,7 @@ vis.binds.materialdesign.calendar =
                             firstInterval: firstInterval * 60 / intervalMinutes,
                             intervalCount: intervalCount * 60 / intervalMinutes - firstInterval * 60 / intervalMinutes,
                             intervalMinutes: intervalMinutes,
-                            events: jsonData,
+                            events: Array.isArray(jsonData) ? jsonData : [],
                             eventHeight: myMdwHelper.getNumberFromData(data.calendarEventHeight, 20),
                             eventOverlapMode: data.calendarEventOverlapMode,
                             showWeekNumbers: myMdwHelper.getBooleanFromData(data.calendarWeeksNumbersShow, true)
@@ -234,7 +234,13 @@ vis.binds.materialdesign.calendar =
                             }
                         },
                         mounted() {
-                            this.$refs.calendar.scrollToTime(moment(this.now).format('HH:mm'));
+                            this.$nextTick(() => { 
+                                if (this.$refs.calendar) { 
+                                    this.$refs.calendar.scrollToTime( 
+                                        moment(this.now).format('HH:mm') 
+                                    ); 
+                                } 
+                            });
                         }
                     })
 
@@ -278,11 +284,27 @@ vis.binds.materialdesign.calendar =
                     }).on('tapstart', function (e) {
                         myMdwHelper.hapticFeedback(data);
                     });
-
-                    vis.states.bind(data.oid + '.val', function (e, newVal, oldVal) {
-                        jsonData = parseJson();
-                        vueCalendar.events = jsonData;
-                    });
+                
+                    function updateCalendar(retries = 20) { 
+                        const jsonData = parseJson(); 
+                        
+                        if (Array.isArray(jsonData) && jsonData.length >= 0) { 
+                            vueCalendar.events = [...jsonData]; 
+                            return; 
+                        } 
+                        
+                        // vis2 reload race condition workaround 
+                        if (retries > 0) { 
+                            setTimeout(() => updateCalendar(retries - 1), 250); 
+                        } 
+                    } 
+                    
+                    vis.states.bind(data.oid + '.val', function () { 
+                        updateCalendar(); 
+                    }); 
+                    
+                    // initial load 
+                    updateCalendar();
 
                     $(document).on("mdwSubscribe", function (e, oids) {
                         if (myMdwHelper.isLayoutRefreshNeeded(widgetName, data, oids, data.debug)) {
@@ -381,8 +403,8 @@ vis.binds.materialdesign.calendar =
 
                     if (val) {
                         jsonData = JSON.parse(val);
-
-                        if (jsonData.length > 0) {
+                        
+                        if (jsonData && jsonData.length > 0) {
                             if (!hasJsonMustHaveProperties(jsonData)) {
                                 jsonData = getJsonPropertiesWrongMessage();
                             }
