@@ -94,6 +94,7 @@ vis.binds.materialdesign.calendar =
                         right: () => swipe('Right')
                     }"
 
+                    v-if="renderCalendar"
                     v-model="focus"
                     ref="calendar"
                     :key="renderKey"
@@ -162,6 +163,7 @@ vis.binds.materialdesign.calendar =
                             intervalMinutes: intervalMinutes,
                             events: jsonData,
                             renderKey: 0,
+                            renderCalendar: false,
                             eventHeight: myMdwHelper.getNumberFromData(data.calendarEventHeight, 20),
                             eventOverlapMode: data.calendarEventOverlapMode,
                             showWeekNumbers: myMdwHelper.getBooleanFromData(data.calendarWeeksNumbersShow, true)
@@ -289,15 +291,15 @@ vis.binds.materialdesign.calendar =
                         vueCalendar.renderKey++;
                     });
 
-                    // vis2: states may not be ready on initial page load
-                    
+                    // vis2 workaround: 
+                    // vue-cal sometimes initializes before widget is visible 
                     setTimeout(function () { 
-                        const initialData = parseJson(); 
-                         
-                        if (initialData && initialData.length) { 
-                            vueCalendar.events = initialData; 
-                        } 
-                    }, 500);
+                        vueCalendar.renderCalendar = false; 
+                            
+                        vueCalendar.$nextTick(function () { 
+                            vueCalendar.renderCalendar = true; 
+                        }); 
+                    }, 300);
 
                     $(document).on("mdwSubscribe", function (e, oids) {
                         if (myMdwHelper.isLayoutRefreshNeeded(widgetName, data, oids, data.debug)) {
