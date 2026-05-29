@@ -94,10 +94,8 @@ vis.binds.materialdesign.calendar =
                         right: () => swipe('Right')
                     }"
 
-                    v-if="renderCalendar"
                     v-model="focus"
                     ref="calendar"
-                    :key="renderKey"
 
                     :events="events"
                     :event-color="getEventColor"
@@ -161,9 +159,7 @@ vis.binds.materialdesign.calendar =
                             firstInterval: firstInterval * 60 / intervalMinutes,
                             intervalCount: intervalCount * 60 / intervalMinutes - firstInterval * 60 / intervalMinutes,
                             intervalMinutes: intervalMinutes,
-                            events: jsonData,
-                            renderKey: 0,
-                            renderCalendar: false,
+                            events: Array.isArray(jsonData) ? jsonData : [],
                             eventHeight: myMdwHelper.getNumberFromData(data.calendarEventHeight, 20),
                             eventOverlapMode: data.calendarEventOverlapMode,
                             showWeekNumbers: myMdwHelper.getBooleanFromData(data.calendarWeeksNumbersShow, true)
@@ -247,14 +243,11 @@ vis.binds.materialdesign.calendar =
                             });
                         }
                     })
+
                     let controlButtons = $this.find('.materialdesign-vuetify-calendar-control-button');
                     for (var i = 0; i <= controlButtons.length - 1; i++) {
                         mdc.ripple.MDCRipple.attachTo(controlButtons.get(i));
                     }
-
-                    setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 1000);
-                    // vis2: initial delayed load after calendar is mounted
-                    setTimeout(function () { const jsonData = parseJson(); if (jsonData && vueCalendar.$refs.calendar) { vueCalendar.events = [...jsonData]; } }, 1000);
 
                     $this.find('#control-prev').on('click', function () {
                         vueCalendar.$refs.calendar.prev();
@@ -294,39 +287,8 @@ vis.binds.materialdesign.calendar =
 
                     vis.states.bind(data.oid + '.val', function (e, newVal, oldVal) {
                         jsonData = parseJson();
-                                                
-                        vueCalendar.events = [...jsonData]; 
-                        
-                        // vis2: trigger initial render with current state value 
-                        setTimeout(function () { 
-                            const currentVal = vis.states.attr(data.oid + '.val'); 
-                            
-                            if (currentVal) { 
-                                jsonData = parseJson(); 
-                                vueCalendar.events = [...jsonData]; 
-                            } 
-                        }, 1000);
-
-                        vueCalendar.$nextTick(() => { 
-                            if (vueCalendar.$refs.calendar) { 
-                                // force vue-cal to recalculate layout 
-                                window.dispatchEvent(new Event('resize')); 
-                            } 
-                        });
-
-                        // force complete remount for vis2 async init 
-                        vueCalendar.renderKey++;
+                        vueCalendar.events = Array.isArray(jsonData) ? [...jsonData] : [];
                     });
-
-                    // vis2 workaround: 
-                    // vue-cal sometimes initializes before widget is visible 
-                    setTimeout(function () { 
-                        vueCalendar.renderCalendar = false; 
-                            
-                        vueCalendar.$nextTick(function () { 
-                            vueCalendar.renderCalendar = true; 
-                        }); 
-                    }, 1000);
 
                     $(document).on("mdwSubscribe", function (e, oids) {
                         if (myMdwHelper.isLayoutRefreshNeeded(widgetName, data, oids, data.debug)) {
