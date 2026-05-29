@@ -248,6 +248,9 @@ vis.binds.materialdesign.calendar =
                         }
                     })
 
+                    // vis2: initial delayed load after calendar is mounted
+                    setTimeout(function () { const jsonData = parseJson(); if (jsonData && vueCalendar.$refs.calendar) { vueCalendar.events = [...jsonData]; } }, 1000);
+
                     let controlButtons = $this.find('.materialdesign-vuetify-calendar-control-button');
                     for (var i = 0; i <= controlButtons.length - 1; i++) {
                         mdc.ripple.MDCRipple.attachTo(controlButtons.get(i));
