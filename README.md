@@ -154,15 +154,6 @@ The adapter uses the following libraries:
 ## Changelog
 ### 0.5.10-f1 (2026-07-01)
 * Calendar Widget improved for VIS2: content loads immediately on open and no error is shown on first open
-
-
-<!--
-    Placeholder for the next version (at the beginning of the line):	   
-	### __WORK IN PROGRESS__
--->
-
-<!-- omit in toc -->
-### __WORK IN PROGRESS__
 * (Scrounger) JSON Chart Widget: method to use css color variables added
 * (Scrounger) Pie Chart Widget: method to use css color variables added
 * (Scrounger) Bar Chart Widget: method to use css color variables added
