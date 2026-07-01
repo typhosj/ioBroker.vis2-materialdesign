@@ -152,8 +152,8 @@ The adapter uses the following libraries:
 
 
 ## Changelog
-### 0.5.94 (2026-05-29)
-* news
+### 0.5.10-f1 (2026-07-01)
+* Calendar Widget improved for VIS2: content loads immediately on open and no error is shown on first open
 
 
 <!--

@@ -1,19 +1,19 @@
 {
     "common": {
         "name": "vis-materialdesign",
-        "version": "0.5.94",
+        "version": "0.5.10-f1",
         "news": {
-            "0.5.94": {
-                "en": "news",
-                "de": "neues",
-                "ru": "новое",
-                "pt": "novidades",
-                "nl": "nieuws",
-                "fr": "nouvelles",
-                "it": "notizie",
-                "es": "noticias",
-                "pl": "nowości",
-                "zh-cn": "新"
+            "0.5.10-f1": {
+                "en": "Calendar Widget improved for VIS2: content loads immediately on open and no error is shown on first open",
+                "de": "Calendar Widget fuer VIS2 verbessert: Inhalt wird direkt beim Aufruf geladen und beim ersten Aufruf wird keine Fehlermeldung angezeigt",
+                "ru": "Calendar Widget improved for VIS2: content loads immediately on open and no error is shown on first open",
+                "pt": "Calendar Widget improved for VIS2: content loads immediately on open and no error is shown on first open",
+                "nl": "Calendar Widget improved for VIS2: content loads immediately on open and no error is shown on first open",
+                "fr": "Calendar Widget improved for VIS2: content loads immediately on open and no error is shown on first open",
+                "it": "Calendar Widget improved for VIS2: content loads immediately on open and no error is shown on first open",
+                "es": "Calendar Widget improved for VIS2: content loads immediately on open and no error is shown on first open",
+                "pl": "Calendar Widget improved for VIS2: content loads immediately on open and no error is shown on first open",
+                "zh-cn": "Calendar Widget improved for VIS2: content loads immediately on open and no error is shown on first open"
             },
             "0.5.9": {
                 "en": "* Top App Bar Widget: option added to define navigation items per JSON String [Details see documentation!](https://github.com/Scrounger/ioBroker.vis-materialdesign#top-app-bar)\n* Top App Bar Widget: option added to define an id per item\n* fixed bugs found by sentry\n\n<!-- omit in toc -->",
