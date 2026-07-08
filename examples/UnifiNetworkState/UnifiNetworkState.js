@@ -26,6 +26,8 @@ const imagePath = '/vis.0/myImages/networkDevices/'; // Path for images
 const defaultSortMode = 'name'; // Value for default and reset sort
 const sortResetAfter = 120;     // Reset sort value after X seconds (0=disabled)
 const filterResetAfter = 120;   // Reset filter after X seconds (0=disabled)
+let sortResetTimerHandle;
+let filterResetTimerHandle;
 
 // Optional: display links into a separate view, instead of new navigation window (set false to disable this feature)
 const devicesView = {currentViewState: '0_userdata.0.vis.currentView', devicesViewKey: 1};
@@ -404,7 +406,8 @@ function resetSortTimer() {
     let sortMode = existsState(`${prefix}.sortMode`) ? getState(`${prefix}.sortMode`).val : '';
 
     if (sortResetAfter > 0) {
-        setTimeout(() => {
+        clearTimeout(sortResetTimerHandle);
+        sortResetTimerHandle = setTimeout(() => {
             if (existsState(`${prefix}.sortMode`) && sortMode === getState(`${prefix}.sortMode`).val) {
                 setState(`${prefix}.sortMode`, defaultSortMode);
             }
@@ -416,7 +419,8 @@ function resetFilterTimer() {
     let filterMode = existsState(`${prefix}.filterMode`) ? getState(`${prefix}.filterMode`).val : '';
 
     if (filterResetAfter > 0) {
-        setTimeout(() => {
+        clearTimeout(filterResetTimerHandle);
+        filterResetTimerHandle = setTimeout(() => {
             if (existsState(`${prefix}.filterMode`) && filterMode === getState(`${prefix}.filterMode`).val) {
                 setState(`${prefix}.filterMode`, '');
             }

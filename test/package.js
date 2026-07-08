@@ -27,12 +27,12 @@ const io = readJson("io-package.json");
 
 assert.strictEqual(pkg.name, `iobroker.${io.common.name}`);
 assert.strictEqual(pkg.version, io.common.version);
-assert.strictEqual(pkg.license, io.common.license);
+assert.strictEqual(pkg.license, io.common.licenseInformation.license);
 assert.strictEqual(pkg.repository.type, "git");
 assert.ok(fs.existsSync(path.join(root, pkg.main)), "package.json main must exist");
 assert.ok(fs.existsSync(path.join(root, "README.md")), "README.md must exist");
 assert.ok(fs.existsSync(path.join(root, "LICENSE")), "LICENSE must exist");
-assert.ok(Object.keys(io.common.news).length <= 20, "common.news must contain maximum 20 entries");
+assert.ok(Object.keys(io.common.news).length <= 7, "common.news must contain maximum 7 entries");
 assert.ok(!io.common.main, "WWW-only adapter must not point to missing main.js");
 assert.strictEqual(io.common.onlyWWW, true);
 assert.strictEqual(io.native.sentryReport, false);

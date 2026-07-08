@@ -57,6 +57,8 @@ let sortResetAfter = 120;                                                       
 let sortReset = 'name';                                                         // Sortierung auf die zurückgesetzt werden soll
 
 let filterResetAfter = 120;                                                     // Filter nach X Sekunden zurücksetzen (0=deaktiviert)
+let sortResetTimerHandle;
+let filterResetTimerHandle;
 
 let speedIconSize = 20;
 let speedTextSize = 14;
@@ -501,7 +503,8 @@ function resetSort() {
     let sortMode = existsState(dpSortMode) ? getState(dpSortMode).val : '';
 
     if (sortResetAfter > 0) {
-        setTimeout(function () {
+        clearTimeout(sortResetTimerHandle);
+        sortResetTimerHandle = setTimeout(function () {
             if (existsState(dpSortMode) && sortMode === getState(dpSortMode).val) {
                 setState(dpSortMode, sortReset);
             }
@@ -513,7 +516,8 @@ function resetFilter() {
     let filterMode = existsState(dpFilterMode) ? getState(dpFilterMode).val : '';
 
     if (filterResetAfter > 0) {
-        setTimeout(function () {
+        clearTimeout(filterResetTimerHandle);
+        filterResetTimerHandle = setTimeout(function () {
             if (existsState(dpFilterMode) && filterMode === getState(dpFilterMode).val) {
                 setState(dpFilterMode, '');
             }

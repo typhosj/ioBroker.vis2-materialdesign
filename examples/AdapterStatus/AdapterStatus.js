@@ -225,7 +225,7 @@ let datapointIDs = {                                                            
 
 // imports
 const moment = require("moment");
-const request = require('request');
+const axios = require('axios');
 
 // Fomate für moment Lib
 moment.locale(language.toString());
@@ -890,11 +890,11 @@ async function checkUpdateAvailable(obj) {
         if (debug) console.debug(`[startScript] looking for new script versions is ${checkScriptUpdates ? 'activated' : 'deactivated'}`);
 
         if (checkScriptUpdates) {
-            var options = { url: scriptUrl, method: 'GET', headers: { 'User-Agent': 'request' } };
+            try {
+                const response = await axios.get(scriptUrl, {headers: {'User-Agent': 'axios'}});
 
-            request(options, async function (error, response, body) {
-                if (!error && response && response.statusCode && response.statusCode == 200) {
-                    let extractedVersion = body.match(/^let version = \'[0-9]*\.?[0-9]*.*$/m);
+                if (response.status === 200) {
+                    let extractedVersion = response.data.match(/^let version = \'[0-9]*\.?[0-9]*.*$/m);
 
                     if (extractedVersion) {
                         let availableVersion = extractedVersion.toString().match(/\d+(\.\d+)+/);
@@ -923,10 +923,10 @@ async function checkUpdateAvailable(obj) {
                             }
                         }
                     }
-                } else {
-                    console.warn(`[checkUpdateAvailable] check failed, code: ${response.statusCode == 200}, error: ${error}`);
                 }
-            });
+            } catch (error) {
+                console.warn(`[checkUpdateAvailable] check failed, error: ${error.message}`);
+            }
         }
     } catch (err) {
         console.error(`[checkUpdateAvailable] error: ${err.message}, stack: ${err.stack}`);

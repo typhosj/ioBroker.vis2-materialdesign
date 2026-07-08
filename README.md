@@ -1,6 +1,6 @@
 ![Logo](admin/vis-materialdesign.png)
 <!-- omit in toc -->
-## ioBroker.vis-materialdesign
+# ioBroker.vis-materialdesign
 
 ![stable version](http://iobroker.live/badges/vis-materialdesign.svg)
 [![NPM version](http://img.shields.io/npm/v/iobroker.vis-materialdesign.svg)](https://www.npmjs.com/package/iobroker.vis-materialdesign)
@@ -10,7 +10,7 @@
 [![NPM](https://nodei.co/npm/iobroker.vis-materialdesign.png?downloads=true)](https://nodei.co/npm/iobroker.vis-materialdesign/)
 
 <!-- omit in toc -->
-# Material Design Widgets for IoBroker VIS
+## Material Design Widgets for IoBroker VIS
 [![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=VWAXSTS634G88&source=url)
 
 
@@ -27,42 +27,42 @@ ioBroker Material Design Widgets are based on [Google's material design guidelin
 - [Changelog](#changelog)
 - [License](#license)
 
-# General
+## General
 
-## Online Example Project
+### Online Example Project
 provided by [iobroker.click](https://iobroker.click/index.html), thanks to bluefox and iobroker.
 
 * <a href="https://iobroker.click/vis/index.html?Material%20Design%20Widgets" target="_blank">VIS Runtime</a> (<a href="http://iobroker.click:8082/vis/index.html?Material%20Design%20Widgets" target="_blank">alternativ</a>)
 * <a href="https://iobroker.click/vis/edit.html?Material%20Design%20Widgets" target="_blank">VIS Editor</a> (<a href="http://iobroker.click:8082/vis/edit.html?Material%20Design%20Widgets" target="_blank">alternativ</a>)
 
-## Practical examples
+### Practical examples
 * [Weather View](https://forum.iobroker.net/topic/32232/material-design-widgets-wetter-view)
 * [Skript Status](https://forum.iobroker.net/topic/30662/material-design-widgets-skript-status)
 * [Adapter Status](https://forum.iobroker.net/topic/30661/material-design-widgets-adapter-status)
-* [UniFi Netzwerk Status](https://github.com/Scrounger/ioBroker.vis-materialdesign/tree/master/examples/UnifiNetworkState)
+* [UniFi Netzwerk Status](https://github.com/typhosj/ioBroker.vis-materialdesign/tree/master/examples/UnifiNetworkState)
 
-## Questions and answers about the widgets
+### Questions and answers about the widgets
 If you have questions about the individual widgets, then first look at the topics of the individual widgets
 
 * [German threads](https://forum.iobroker.net/search?term=Material%20Design%20Widgets%3A&in=titles&matchWords=all&by%5B%5D=Scrounger&categories%5B%5D=7&sortBy=topic.title&sortDirection=desc&showAs=topics)
 
-## Supported Browser
+### Supported Browser
 I officially support the last two versions of every major browser. Specifically, i test on the following browsers:
 * Firefox on Windows and Linux
 * Chrome on Android, Windows, and Linux
 
-## Supported Browser for vibrate on mobil devices function
+### Supported Browser for vibrate on mobil devices function
 https://developer.mozilla.org/en-US/docs/Web/API/Navigator/vibrate
 
-## ioBroker VIS App
+### ioBroker VIS App
 latest version needs to be implemented by the app, see https://github.com/ioBroker/ioBroker.vis.cordova.
 I do not use the app and do not test on it either
 
-# Adapter settings
+## Adapter settings
 
 Starting with version 0.4.0 there is a settings page for the adapter. You can find it under Instances in the user interface of the admin adapter
 
-## General
+### General
 ![Logo](doc/en/media/settings_general.png)
 
 | setting                | description                                                                                                                                                                                                                                                                |
@@ -71,15 +71,15 @@ Starting with version 0.4.0 there is a settings page for the adapter. You can fi
 | Generate global script | Create a global script for the [Javascript Script Engine](https://github.com/ioBroker/ioBroker.javascript) with all theme data points. This allows to use colors, fonts and font sizes comfortably in scripts.                                                             |
 | Sentry                 | use Sentry libraries to automatically report exceptions and code errors anonymously to the developers. For more details and for information how to disable the error reporting see [Sentry-Plugin Documentation](https://github.com/ioBroker/plugin-sentry#plugin-sentry)! |
 
-## Theme Editor
+### Theme Editor
 
 With the help of the Theme Editor you can centrally set colors, fonts and font sizes for all widgets via the adapter settings. For each widget datapoints (see screenshot below) are created with the set values. This makes it also possible to use these settings in other widgets (not Material Design Widgets) via bindings.
 
-##### Datapoint structure
+#### Datapoint structure
 
 ![Logo](doc/en/media/settings_datapoints.png)
 
-### Theme Settings
+#### Theme Settings
 
 ![Logo](doc/en/media/settings_colors_light.png)
 
@@ -90,7 +90,7 @@ Additionally, it is possible to assign your own colors / fonts /font sizes to th
 
 For colors there are two themes - light theme and dark theme. With the datapoint `vis-materialdesign.0.colors.darkTheme` you can switch between the two themes. For example this datapoint can be used in a script to switch between lights and dark colors on sunrise and sunset. 
 
-##### VIS Editor (Restore / update old Widgets)
+#### VIS Editor (Restore / update old Widgets)
 
 ![Logo](doc/en/media/vis_editor_theme_restore.gif)
 
@@ -98,19 +98,19 @@ In the VIS Editor you will find a button `use theme` for each widget. With this 
 
 With the help of this button it is also possible to update your widgets from versions before 0.4.0 to use the themes.
 
-##### Change Datapoint Binding for Material Design Widgets
+#### Change Datapoint Binding for Material Design Widgets
 
 ![Logo](doc/en/media/settings_mdw_binding.gif)
 
 If you would like to change the using of others colors that are defined for other widgets, you can copy the datapoint binding by pressing the button with the material design icon. Just paste this in any color, fonts or font sizes field of a material design widget. For example a color "state binding" looks like `#mdwTheme:vis-materialdesign.0.colors.card.background`
 
-##### Use Binding for non Material Design Widgets
+#### Use Binding for non Material Design Widgets
 
 ![Logo](doc/en/media/settings_binding.gif)
 
 In the adapter settings you can copy the binding command to the clipboard by clicking on the button with iobroker icon. This binding can then be used by copy and paste even for non Material Design Widgets. For example a color binding looks like `{mode:vis-materialdesign.0.colors.darkTheme;light:vis-materialdesign.0.colors.light.card.background;dark:vis-materialdesign.0.colors.dark.card.background; mode === "true" ? dark : light}`
 
-# Widget documentation
+## Widget documentation
 
 Detailed widget documentation was moved to separate files:
 
@@ -140,9 +140,9 @@ Detailed widget documentation was moved to separate files:
 
 Full index: [doc/en/widgets/README.md](https://github.com/typhosj/ioBroker.vis-materialdesign/tree/master/doc/en/widgets)
 
-# Informations
+## Informations
 
-## used libraries
+### used libraries
 The adapter uses the following libraries:
 * [Google material components for the web](https://github.com/material-components/material-components-web)
 * [Vuetify](https://github.com/vuetifyjs/vuetify)
@@ -152,7 +152,7 @@ The adapter uses the following libraries:
 
 
 ## Changelog
-### 0.5.10-f1 (2026-07-01)
+### 0.5.10 (2026-07-01)
 * Calendar Widget improved for VIS2: content loads immediately on open and no error is shown on first open
 * (Scrounger) JSON Chart Widget: method to use css color variables added
 * (Scrounger) Pie Chart Widget: method to use css color variables added
@@ -169,7 +169,7 @@ The adapter uses the following libraries:
 * (Scrounger) IconList Widget: added option for color and text of status bar if state is active
 * (Scrounger) List Widget: main header added
 * (Scrounger) List Widget: events bug fix
-* (darkiop) documentation updated ([#PR179](https://github.com/Scrounger/ioBroker.vis-materialdesign/pull/179))
+* (darkiop) documentation updated ([#PR179](https://github.com/typhosj/ioBroker.vis-materialdesign/pull/179))
 * (Scrounger) Top App Bar Widget: fixed bugs found by sentry
 * (Scrounger) Top App Bar Widget: icon color bug fix if using json string
 * (Scrounger) Top App Bar Widget: selected item icon color option added
@@ -181,7 +181,7 @@ The adapter uses the following libraries:
 * (Scrounger) Advanced View in Widget 8 widget added
 * (Scrounger) Dialog Widget: background color bug fix on close animation
 * (Scrounger) Dialog Widget: option added to show a save button and write a value to a datapoint
-* (Scrounger) HTML Widget: bug fix for wrong type ([#182](https://github.com/Scrounger/ioBroker.vis-materialdesign/issues/182))
+* (Scrounger) HTML Widget: bug fix for wrong type ([#182](https://github.com/typhosj/ioBroker.vis-materialdesign/issues/182))
 * (Scrounger) support for base64 images added
 * (Scrounger) Material Design Icons updated to v6.6.96
 * (Scrounger) bug fix for VIS Editor dev values
@@ -197,19 +197,19 @@ The adapter uses the following libraries:
 * (Scrounger) Top App Bar Widget: new layout 'auto' added - change between modal and permanent layout depending on screen resolution. [Details see documentation!](https://github.com/typhosj/ioBroker.vis-materialdesign/blob/master/doc/en/widgets/top-app-bar.md#layout-auto)
 * (Scrounger) Top App Bar Widget: option added to set value on click at item that toggle submenu
 * (Scrounger) IconList Widget: option added to set used space per row for every items
-* (Scrounger) IconList Widget: option added to set visibility condition for every items ([#118](https://github.com/Scrounger/ioBroker.vis-materialdesign/issues/118))
-* (Scrounger) IconList Widget: bug fix for applying active color ([#176](https://github.com/Scrounger/ioBroker.vis-materialdesign/issues/176))
+* (Scrounger) IconList Widget: option added to set visibility condition for every items ([#118](https://github.com/typhosj/ioBroker.vis-materialdesign/issues/118))
+* (Scrounger) IconList Widget: bug fix for applying active color ([#176](https://github.com/typhosj/ioBroker.vis-materialdesign/issues/176))
 * (Scrounger) Grid Widget: bug fix for visibility condition
 * (Scrounger) Masonry Widget: bug fix for visibility condition
 
 <!-- omit in toc -->
 ### 0.5.7 (2021-05-26)
-* (Scrounger) Top App Bar Widget: color option for menu icon added ([#171](https://github.com/Scrounger/ioBroker.vis-materialdesign/issues/171))
-* (Scrounger) Top App Bar Widget: Permission group - option to deactivate default value added ([#173](https://github.com/Scrounger/ioBroker.vis-materialdesign/issues/173))
-* (Scrounger) iconList Widget: bug fix for active state at diffrent types ([#168](https://github.com/Scrounger/ioBroker.vis-materialdesign/issues/168))
-* (Scrounger) iconList Widget: layout bug fix for radius of buttons ([#174](https://github.com/Scrounger/ioBroker.vis-materialdesign/issues/174))
+* (Scrounger) Top App Bar Widget: color option for menu icon added ([#171](https://github.com/typhosj/ioBroker.vis-materialdesign/issues/171))
+* (Scrounger) Top App Bar Widget: Permission group - option to deactivate default value added ([#173](https://github.com/typhosj/ioBroker.vis-materialdesign/issues/173))
+* (Scrounger) iconList Widget: bug fix for active state at diffrent types ([#168](https://github.com/typhosj/ioBroker.vis-materialdesign/issues/168))
+* (Scrounger) iconList Widget: layout bug fix for radius of buttons ([#174](https://github.com/typhosj/ioBroker.vis-materialdesign/issues/174))
 * (Scrounger) list Widget: bug fix for theme properties
-* (Scrounger) select Widget: bug fix for long text ([#169](https://github.com/Scrounger/ioBroker.vis-materialdesign/issues/169))
+* (Scrounger) select Widget: bug fix for long text ([#169](https://github.com/typhosj/ioBroker.vis-materialdesign/issues/169))
 * (Scrounger) fixed bugs found by sentry
 
 <!-- omit in toc -->
@@ -222,6 +222,8 @@ The adapter uses the following libraries:
 * (Scrounger) adapter settings bug fixes
 * (Scrounger) icon buttons: color bug fixes
 * (Scrounger) Fixing bugs found by sentry
+
+Older changelog entries are available in [CHANGELOG_OLD.md](CHANGELOG_OLD.md).
 
 <!-- omit in toc -->
 ## License
