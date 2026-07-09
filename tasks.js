@@ -5,6 +5,7 @@ const adapterName = require('./package.json').name.replace('iobroker.', '');
 const SRC_TS = 'src-widgets-ts/';
 const srcTs = `${__dirname}/${SRC_TS}`;
 const widgetTarget = `${__dirname}/widgets/${adapterName}`;
+const staticSource = `${srcTs}static`;
 
 function clean() {
     rmSync(`${srcTs}build`, { recursive: true, force: true });
@@ -22,6 +23,9 @@ function copyAllFiles() {
     }
     if (existsSync(`${srcTs}build/assets`)) {
         cpSync(`${srcTs}build/assets`, `${widgetTarget}/assets`, { recursive: true });
+    }
+    if (existsSync(staticSource)) {
+        cpSync(staticSource, widgetTarget, { recursive: true });
     }
     if (existsSync(`${__dirname}/admin/materialdesign-widgets-click-sound.mp3`)) {
         cpSync(

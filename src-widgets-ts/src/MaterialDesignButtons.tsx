@@ -37,15 +37,6 @@ interface ButtonData {
     colorizeFactor?: number;
     angleOffset?: number;
     angleArc?: number;
-    enable?: boolean;
-    widgetId?: string;
-    prepandText?: string;
-    appendText?: string;
-    unit?: string;
-    valueLabelMin?: string;
-    valueLabelMax?: string;
-    imageValueWidgetLink?: string;
-    imageColorValueWidgetLink?: string;
     generateHtmlControl?: boolean;
     debug?: boolean;
     mdwButtonPrimaryColor?: string;
@@ -90,15 +81,21 @@ interface ButtonDefinition {
     icon: string;
 }
 
-const previewIcons: Record<ButtonKind, string> = {
-    navigation: '▶',
-    link: '↗',
-    state: '✎',
-    multiState: '▣',
-    addition: '+',
-    toggle: '✓',
-    slider: '◉',
+const iconGlyphs: Record<string, string> = {
+    'checkbox-marked': 'F0132',
+    link: 'F0337',
+    navigation: 'F0390',
+    pencil: 'F03EB',
+    'pencil-box-multiple': 'F1144',
+    plus: 'F0415',
 };
+
+const imageIconField = (name: string, defaultValue?: string): Record<string, unknown> => ({
+    name,
+    label: name,
+    type: 'icon',
+    default: defaultValue,
+});
 
 const styleFields = [
     { name: 'buttonStyle', label: 'buttonStyle', type: 'select', options: ['text', 'raised', 'unelevated', 'outlined'], default: 'raised' },
@@ -124,11 +121,7 @@ const actionFields = {
     ],
     multiState: [
         { name: 'countOids', label: 'countOids', type: 'number', default: 1 },
-        ...Array.from({ length: 11 }, (_, index) => [
-            { name: `oid${index}`, label: `oid${index}`, type: 'id' },
-            { name: `value${index}`, label: `value${index}`, type: 'text' },
-            { name: `delayInMs${index}`, label: `delayInMs${index}`, type: 'number', default: 0 },
-        ]).flat(),
+        { name: 'generateHtmlControl', label: 'generateHtmlControl', type: 'checkbox' },
     ],
     addition: [
         { name: 'oid', label: 'oid', type: 'id' },
@@ -160,15 +153,6 @@ const actionFields = {
         { name: 'colorizeFactor', label: 'colorizeFactor', type: 'number', default: 0.5 },
         { name: 'angleOffset', label: 'angleOffset', type: 'number' },
         { name: 'angleArc', label: 'angleArc', type: 'number', default: 360 },
-        { name: 'enable', label: 'enable', type: 'checkbox' },
-        { name: 'widgetId', label: 'widgetId', type: 'text' },
-        { name: 'prepandText', label: 'prepandText', type: 'text' },
-        { name: 'appendText', label: 'appendText', type: 'text' },
-        { name: 'unit', label: 'unit', type: 'text' },
-        { name: 'valueLabelMin', label: 'valueLabelMin', type: 'text' },
-        { name: 'valueLabelMax', label: 'valueLabelMax', type: 'text' },
-        { name: 'imageValueWidgetLink', label: 'imageValueWidgetLink', type: 'image' },
-        { name: 'imageColorValueWidgetLink', label: 'imageColorValueWidgetLink', type: 'color' },
     ],
 } satisfies Record<ButtonKind, Record<string, unknown>[]>;
 
@@ -190,11 +174,29 @@ function attrs(def: ButtonDefinition): RxWidgetInfo['visAttrs'] {
               isVertical ? { name: 'distanceBetweenTextAndImage', label: 'distanceBetweenTextAndImage', type: 'slider', min: 0, max: 100, step: 1 } : null,
           ].filter(Boolean);
 
+    const multiStateGroups =
+        def.kind === 'multiState'
+            ? [
+                  {
+                      name: 'buttonOids',
+                      label: 'group.buttonOids',
+                      indexFrom: 0,
+                      indexTo: 'countOids',
+                      fields: [
+                          { name: 'oid', label: 'oid', type: 'id' },
+                          { name: 'value', label: 'value', type: 'text' },
+                          { name: 'delayInMs', label: 'delayInMs', type: 'number', default: 0 },
+                      ],
+                  },
+              ]
+            : [];
+
     return [
         {
             name: 'common',
             fields: [...(isIcon ? [] : styleFields), ...actionFields[def.kind], ...feedbackFields],
         },
+        ...multiStateGroups,
         {
             name: 'label',
             fields: labelFields,
@@ -213,9 +215,9 @@ function attrs(def: ButtonDefinition): RxWidgetInfo['visAttrs'] {
         {
             name: 'icon',
             fields: [
-                { name: 'image', label: 'image', type: 'image', default: def.icon },
+                imageIconField('image', def.icon),
                 { name: 'imageColor', label: 'imageColor', type: 'color' },
-                { name: 'imageTrue', label: 'imageTrue', type: 'image' },
+                imageIconField('imageTrue'),
                 { name: 'imageTrueColor', label: 'imageTrueColor', type: 'color' },
                 { name: 'iconPosition', label: 'iconPosition', type: 'select', options: isVertical ? ['top', 'bottom'] : ['left', 'right'], default: isVertical ? 'top' : 'left' },
                 { name: 'iconHeight', label: 'iconHeight', type: 'slider', min: 0, max: 200, step: 1, default: isVertical ? 26 : undefined },
@@ -226,7 +228,7 @@ function attrs(def: ButtonDefinition): RxWidgetInfo['visAttrs'] {
             fields: [
                 { name: 'lockEnabled', label: 'lockEnabled', type: 'checkbox' },
                 { name: 'autoLockAfter', label: 'autoLockAfter', type: 'number', default: 10 },
-                { name: 'lockIcon', label: 'lockIcon', type: 'image' },
+                imageIconField('lockIcon'),
                 { name: 'lockIconTop', label: 'lockIconTop', type: 'slider', min: 0, max: 100, step: 1, default: isIcon ? 45 : 5 },
                 { name: 'lockIconLeft', label: 'lockIconLeft', type: 'slider', min: 0, max: 100, step: 1, default: isIcon ? 55 : 5 },
                 { name: 'lockIconSize', label: 'lockIconSize', type: 'number' },
@@ -251,7 +253,7 @@ function numeric(value: unknown, fallback = 0): number {
 function isImageSource(value: string): boolean {
     const normalized = value.toLowerCase();
     return (
-        ['.gif', '.png', '.bmp', '.jpg', '.jpeg', '.tif', '.svg', 'http://', 'https://', ';base64,'].some(extension =>
+        ['.gif', '.png', '.bmp', '.jpg', '.jpeg', '.tif', '.svg', 'http://', 'https://', ';base64,', 'data:image/'].some(extension =>
             normalized.includes(extension),
         )
     );
@@ -262,7 +264,7 @@ function isSvgSource(value: string): boolean {
     return normalized.includes('.svg') || normalized.includes('image/svg+xml');
 }
 
-function renderIcon(image: string, colorValue: string, size: number): React.JSX.Element | null {
+function renderIcon(image: string, colorValue: string, size: number, recolor = true): React.JSX.Element | null {
     if (!image) {
         return null;
     }
@@ -275,7 +277,7 @@ function renderIcon(image: string, colorValue: string, size: number): React.JSX.
     };
 
     if (isImageSource(image)) {
-        if (isSvgSource(image)) {
+        if (isSvgSource(image) && recolor) {
             return (
                 <span
                     style={{
@@ -306,7 +308,7 @@ function renderIcon(image: string, colorValue: string, size: number): React.JSX.
         );
     }
 
-    return <span className={`mdi mdi-${image}`} style={style} />;
+    return <span className={`mdi ${image.startsWith('mdi-') ? image : `mdi-${image}`}`} style={style} />;
 }
 
 function isOn(current: ioBroker.StateValue | undefined, data: ButtonData): boolean {
@@ -344,22 +346,30 @@ function clampByMinMax(value: number, minmax: unknown): number {
     return value;
 }
 
-function formatSliderValue(value: number, data: ButtonData, min: number, max: number): string {
-    if (value <= min && data.valueLabelMin) {
-        return data.valueLabelMin;
+function indexedValue(data: ButtonData, name: string, index: number): unknown {
+    const direct = data[`${name}${index}`];
+    if (direct !== undefined) {
+        return direct;
     }
-    if (value >= max && data.valueLabelMax) {
-        return data.valueLabelMax;
+    const value = data[name];
+    if (Array.isArray(value)) {
+        return value[index];
     }
-    return `${Math.round(value)}${data.unit || ''}`;
+    if (value && typeof value === 'object') {
+        return (value as Record<string, unknown>)[String(index)];
+    }
+    return undefined;
 }
 
 function writeMultiState(props: VisRxWidgetProps, data: ButtonData): void {
-    const count = Math.max(0, numeric(data.countOids, 1));
+    const count = Math.max(0, Math.floor(numeric(data.countOids, 1)));
     for (let index = 0; index <= count; index++) {
-        const oid = String(data[`oid${index}`] ?? '');
-        const value = parseActionValue(String(data[`value${index}`] ?? ''));
-        const delay = Math.max(0, numeric(data[`delayInMs${index}`], 0));
+        const oid = String(indexedValue(data, 'oid', index) ?? '');
+        const value = parseActionValue(String(indexedValue(data, 'value', index) ?? ''));
+        const delay = Math.max(0, numeric(indexedValue(data, 'delayInMs', index), 0));
+        if (!oid) {
+            continue;
+        }
         if (delay) {
             window.setTimeout(() => setStateValue(props, oid, value), delay);
         } else {
@@ -381,22 +391,29 @@ function feedback(data: ButtonData): void {
 }
 
 function widgetLabel(def: ButtonDefinition): string {
-    return def.name.toLowerCase().replace(/&nbsp;/g, '').replace(/\s+/g, '_');
+    return def.name;
 }
 
 function preview(def: ButtonDefinition): string {
+    const legacyId = def.id.replace('tplVis2-', 'tplVis-');
     const isIcon = def.layout === 'icon';
-    const width = isIcon ? 48 : 100;
-    const height = def.layout === 'vertical' ? 60 : isIcon ? 48 : 30;
-    const radius = isIcon ? 24 : 4;
+    const isVertical = def.layout === 'vertical';
     const label = def.label.replace(/&nbsp;/g, '').trim();
-    const icon = previewIcons[def.kind];
-    const text = isIcon ? icon : def.layout === 'vertical' ? `${icon}\n${label}` : `${icon} ${label}`;
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
-<rect width="${width}" height="${height}" rx="${radius}" fill="${isIcon ? '#fff' : '#44739e'}" stroke="#44739e"/>
-<text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="Arial, sans-serif" font-size="${isIcon ? 24 : 13}" fill="${isIcon ? '#44739e' : '#fff'}">${text}</text>
-</svg>`;
-    return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+    const size = isIcon ? 48 : isVertical ? 60 : 30;
+    const width = isIcon ? 48 : 100;
+    const iconSize = isVertical ? '26px' : 'auto';
+    const iconColor = isIcon ? '#44739e' : '';
+    const icon = `&#x${iconGlyphs[def.icon] ?? iconGlyphs.plus};`;
+    const font = `<style>@font-face{font-family:"Material Design Icons";src:url("widgets/materialdesign/lib/fonts/material-design-icons/materialdesignicons-webfont.ttf") format("truetype");}.vis2-md-preview-icon{font-family:"Material Design Icons";font-weight:normal;font-style:normal;line-height:1;display:inline-block;}</style>`;
+    const bodyStyle = isVertical
+        ? 'display:flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; height: 100%;'
+        : 'display:flex; justify-content: center; align-items: center; width: 100%; height: 100%;';
+
+    if (isIcon) {
+        return `${font}<div id="prev_${legacyId}" style="position: relative; text-align: initial; padding: 0px !important; display: flex; justify-content:center;"><div class="vis-widget_prev materialdesign-widget materialdesign-icon-button mdc-ripple-upgraded--unbounded vis-tpl-materialdesign-${def.name} mdc-ripple-upgraded" style="width: 48px; height: 48px; background: rgba(0, 0, 0, 0) none repeat scroll 0% 0%; --materialdesign-font-size-button: inherit; --materialdesign-color-icon-button-hover:#44739e; position: absolute; z-index: 4;"><div class="materialdesign-button-body" style="${bodyStyle}"><span class="vis2-md-preview-icon materialdesign-icon-image" style="width: auto; height: auto; font-size: 24px; color: ${iconColor};">${icon}</span></div></div></div>`;
+    }
+
+    return `${font}<div id="prev_${legacyId}" style="position: relative; text-align: initial; padding: 0px !important; display: flex; justify-content:center;"><div class="vis-widget_prev materialdesign-widget materialdesign-button materialdesign-button--raised vis-tpl-materialdesign-${def.name} mdc-ripple-upgraded" style="width: ${width}px; height: ${size}px; padding: 0px; --materialdesign-color-primary:#44739e; --materialdesign-color-secondary:#FFFFFF; --materialdesign-font-button:RobotoCondensed-Regular; --materialdesign-font-size-button:${isVertical ? 16 : 14}px; --materialdesign-font-button-vertical-text-distance-image:2px; position: absolute; z-index: 4;"><div class="materialdesign-button-body" style="${bodyStyle}"><span class="vis2-md-preview-icon materialdesign-icon-image" style="width: ${iconSize}; height: ${iconSize}; font-size: ${iconSize}; color: ${iconColor};">${icon}</span><span class="materialdesign-button__label">${isVertical ? label : `&nbsp;${label}`}</span></div></div></div>`;
 }
 
 function execute(def: ButtonDefinition, props: VisRxWidgetProps, data: ButtonData, current: ioBroker.StateValue | undefined): void {
@@ -428,6 +445,7 @@ function execute(def: ButtonDefinition, props: VisRxWidgetProps, data: ButtonDat
 export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
     return class MaterialDesignButtonVariant extends VisWidget {
         private lockTimer: number | undefined;
+        private lastTouchAt = 0;
 
         constructor(props: VisRxWidgetProps) {
             super(props);
@@ -504,6 +522,23 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
             setStateValue(this.props, data.oid || '', offValue);
         }
 
+        setSliderFromPointer(event: React.PointerEvent<SVGSVGElement>, data: ButtonData): void {
+            if (data.readOnly || this.isLocked(data)) {
+                return;
+            }
+            const rect = event.currentTarget.getBoundingClientRect();
+            const x = event.clientX - rect.left - rect.width / 2;
+            const y = event.clientY - rect.top - rect.height / 2;
+            const min = numeric(data.valueOff, 0);
+            const max = numeric(data.valueOn, 100);
+            const arc = Math.max(1, Math.min(360, numeric(data.angleArc, 360)));
+            const offset = numeric(data.angleOffset, 0);
+            const angle = (Math.atan2(y, x) * 180) / Math.PI + 90 - offset;
+            const normalized = ((angle % 360) + 360) % 360;
+            const ratio = Math.max(0, Math.min(1, normalized / arc));
+            setStateValue(this.props, data.oid || '', Math.round(min + (max - min) * ratio));
+        }
+
         renderWidgetBody(props: RenderProps): React.JSX.Element {
             super.renderWidgetBody(props);
             const data = this.state.rxData as ButtonData;
@@ -515,10 +550,12 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
             const secondary = color(on ? data.imageTrueColor || data.mdwButtonSecondaryColor : data.mdwButtonSecondaryColor || data.imageColor, def.layout === 'icon' ? '#44739e' : '#fff');
             const labelColor = color(on ? data.labelColorTrue : data.labelColorFalse, secondary);
             const pressed = color(data.mdwButtonColorPress || data.colorPress, '#1565c0');
-            const background = pressState.active || pressState.hovered ? pressed : primary;
             const isVertical = def.layout === 'vertical';
             const isIcon = def.layout === 'icon';
+            const isSliderIcon = isIcon && def.kind === 'slider';
+            const background = !isSliderIcon && (pressState.active || pressState.hovered) ? pressed : primary;
             const image = on && data.imageTrue ? data.imageTrue : data.image || def.icon;
+            const imageColorSet = !!(on && data.imageTrue ? data.imageTrueColor : data.imageColor);
             const label = (on && data.labelTrue ? data.labelTrue : data.buttontext) || def.label;
             const iconFirst = isVertical ? data.iconPosition !== 'bottom' : data.iconPosition !== 'right';
             const iconSize = numeric(data.iconHeight, isVertical || isIcon ? 26 : 18);
@@ -533,10 +570,19 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
             const sliderVisible = def.kind === 'slider' && (data.showAlways || pressState.hovered || pressState.active);
             const sliderColor = color(data.foregroundColor, '#44739e');
             const sliderTrackColor = color(data.backgroundColor, '#eeeeee');
-            const sliderLabel = formatSliderValue(sliderValue, data, sliderMin, sliderMax);
+            const sliderRatio = sliderMax === sliderMin ? 0 : Math.max(0, Math.min(1, (sliderValue - sliderMin) / (sliderMax - sliderMin)));
+            const sliderSize = Math.max(32, Math.min(160, Math.max(48, numeric(data.sliderWidth, 54))));
+            const sliderStroke = Math.max(2, numeric(data.sliderThikness, 4));
+            const sliderRadius = 22;
+            const sliderCircumference = 2 * Math.PI * sliderRadius;
+            const sliderArc = Math.max(1, Math.min(360, numeric(data.angleArc, 360)));
+            const sliderArcLength = sliderCircumference * (sliderArc / 360);
+            const sliderDash = `${sliderArcLength * sliderRatio} ${sliderCircumference}`;
+            const sliderTrackDash = `${sliderArcLength} ${sliderCircumference}`;
+            const sliderRotation = numeric(data.angleOffset, 0) - 90;
             const content = (
                 <>
-                    {renderIcon(image, secondary, iconSize)}
+                    {renderIcon(image, secondary, iconSize, imageColorSet)}
                     {!isIcon ? (
                         <span
                             style={{
@@ -575,12 +621,23 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
                             position: 'relative',
                         }}
                         onMouseEnter={() => this.setState({ hovered: true } as PressState)}
-                        onMouseLeave={() => this.setState({ active: false, hovered: false } as PressState)}
+                        onMouseLeave={() => {
+                            if (data.pushButton) {
+                                this.pushUp(data);
+                            }
+                            this.setState({ active: false, hovered: false } as PressState);
+                        }}
                         onMouseDown={() => {
+                            if (Date.now() - this.lastTouchAt < 700) {
+                                return;
+                            }
                             this.setState({ active: true } as PressState);
                             this.pushDown(data);
                         }}
                         onMouseUp={() => {
+                            if (Date.now() - this.lastTouchAt < 700) {
+                                return;
+                            }
                             this.setState({ active: false } as PressState);
                             if (data.pushButton) {
                                 this.pushUp(data);
@@ -590,14 +647,18 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
                         }}
                         onKeyDown={event => {
                             if (event.key === 'Enter' || event.key === ' ') {
+                                event.preventDefault();
                                 this.setState({ active: true } as PressState);
+                                if (data.pushButton && !event.repeat) {
+                                    this.pushDown(data);
+                                }
                             }
                         }}
                         onKeyUp={event => {
                             if (event.key === 'Enter' || event.key === ' ') {
+                                event.preventDefault();
                                 this.setState({ active: false } as PressState);
                                 if (data.pushButton) {
-                                    this.pushDown(data);
                                     this.pushUp(data);
                                 } else {
                                     click();
@@ -605,16 +666,25 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
                             }
                         }}
                         onTouchStart={() => {
+                            this.lastTouchAt = Date.now();
                             this.setState({ active: true } as PressState);
                             this.pushDown(data);
                         }}
                         onTouchEnd={() => {
+                            this.lastTouchAt = Date.now();
                             this.setState({ active: false } as PressState);
                             if (data.pushButton) {
                                 this.pushUp(data);
                             } else {
                                 click();
                             }
+                        }}
+                        onTouchCancel={() => {
+                            this.lastTouchAt = Date.now();
+                            if (data.pushButton) {
+                                this.pushUp(data);
+                            }
+                            this.setState({ active: false } as PressState);
                         }}
                     >
                         <span
@@ -647,73 +717,81 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
                                     textAlign: 'center',
                                 }}
                             >
-                                {renderIcon(data.lockIcon || 'lock-outline', color(data.lockIconColor, '#B22222'), lockSize)}
+                                {renderIcon(data.lockIcon || 'lock-outline', color(data.lockIconColor, '#B22222'), lockSize, !!data.lockIconColor)}
                             </span>
                         ) : null}
                         {def.kind === 'slider' ? (
                             <>
-                                <input
+                                <svg
                                     aria-label={def.name}
-                                    disabled={data.readOnly || locked}
-                                    max={sliderMax}
-                                    min={sliderMin}
-                                    onChange={event => {
-                                        setStateValue(this.props, data.oid || '', Number(event.currentTarget.value));
-                                    }}
+                                    role="slider"
+                                    aria-valuemax={sliderMax}
+                                    aria-valuemin={sliderMin}
+                                    aria-valuenow={sliderValue}
+                                    height={sliderSize}
                                     onClick={event => event.stopPropagation()}
-                                    onMouseDown={event => {
+                                    onPointerDown={event => {
                                         event.stopPropagation();
+                                        event.currentTarget.setPointerCapture(event.pointerId);
                                         feedback(data);
+                                        this.setSliderFromPointer(event, data);
                                     }}
-                                    onMouseUp={event => event.stopPropagation()}
-                                    onTouchEnd={event => event.stopPropagation()}
-                                    onTouchStart={event => {
+                                    onPointerMove={event => {
+                                        if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+                                            event.stopPropagation();
+                                            this.setSliderFromPointer(event, data);
+                                        }
+                                    }}
+                                    onPointerUp={event => {
                                         event.stopPropagation();
-                                        feedback(data);
+                                        if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+                                            event.currentTarget.releasePointerCapture(event.pointerId);
+                                        }
                                     }}
-                                    step={1}
+                                    onPointerCancel={event => {
+                                        if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+                                            event.currentTarget.releasePointerCapture(event.pointerId);
+                                        }
+                                    }}
                                     style={{
-                                        accentColor: sliderColor,
-                                        background: sliderTrackColor,
-                                        bottom: data.showInFront ? '35%' : -Math.max(6, numeric(data.sliderWidth, 20)),
                                         cursor: data.readOnly || locked ? 'default' : 'pointer',
                                         display: sliderVisible ? 'block' : 'none',
-                                        height: Math.max(4, numeric(data.sliderThikness, 6)),
-                                        left: '10%',
+                                        left: '50%',
+                                        overflow: 'visible',
+                                        pointerEvents: data.readOnly || locked ? 'none' : 'auto',
                                         position: 'absolute',
-                                        width: '80%',
+                                        top: '50%',
+                                        touchAction: 'none',
+                                        transform: 'translate(-50%, -50%)',
+                                        width: sliderSize,
                                         zIndex: data.showInFront ? 2 : 0,
                                     }}
-                                    type="range"
-                                    value={sliderValue}
-                                />
-                                {data.enable && sliderVisible ? (
-                                    <span
-                                        style={{
-                                            alignItems: 'center',
-                                            background: 'rgba(0, 0, 0, 0.72)',
-                                            borderRadius: 4,
-                                            bottom: data.showInFront ? '58%' : 4,
-                                            color: '#fff',
-                                            display: 'flex',
-                                            fontSize: 11,
-                                            gap: 3,
-                                            left: '50%',
-                                            maxWidth: '92%',
-                                            padding: '2px 5px',
-                                            pointerEvents: 'none',
-                                            position: 'absolute',
-                                            transform: 'translateX(-50%)',
-                                            whiteSpace: 'nowrap',
-                                            zIndex: 3,
-                                        }}
-                                    >
-                                        {data.imageValueWidgetLink ? renderIcon(data.imageValueWidgetLink, color(data.imageColorValueWidgetLink, '#fff'), 12) : null}
-                                        {data.prepandText || ''}
-                                        {sliderLabel}
-                                        {data.appendText || ''}
-                                    </span>
-                                ) : null}
+                                    viewBox="0 0 48 48"
+                                    width={sliderSize}
+                                >
+                                    <circle
+                                        cx="24"
+                                        cy="24"
+                                        fill="none"
+                                        r={sliderRadius}
+                                        stroke={sliderTrackColor}
+                                        strokeDasharray={sliderTrackDash}
+                                        strokeLinecap="round"
+                                        strokeWidth={sliderStroke}
+                                        transform={`rotate(${sliderRotation} 24 24)`}
+                                    />
+                                    <circle
+                                        cx="24"
+                                        cy="24"
+                                        fill="none"
+                                        r={sliderRadius}
+                                        stroke={sliderColor}
+                                        strokeDasharray={sliderDash}
+                                        strokeLinecap="round"
+                                        strokeWidth={sliderStroke}
+                                        transform={`rotate(${sliderRotation} 24 24)`}
+                                    />
+                                </svg>
                             </>
                         ) : null}
                     </button>

@@ -94,7 +94,7 @@ export function createInfo(id: string, name: string, attrs: RxWidgetInfo['visAtt
     return {
         id,
         visSet: 'vis2-materialdesign',
-        visSetLabel: 'vis2_materialdesign',
+        visSetLabel: 'Material Design',
         visSetColor: setColor,
         visName: name,
         visAttrs: attrs,

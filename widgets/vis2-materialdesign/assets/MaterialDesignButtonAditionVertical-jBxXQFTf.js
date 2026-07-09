@@ -1,1 +1,0 @@
-import{t as e}from"./MaterialDesignButtons-C5it312I.js";var t=e({id:`tplVis-materialdesign-Button-Adition-vertical`,name:`Button Addition vertical`,kind:`addition`,layout:`vertical`,label:`Addition`,icon:`plus`});export{t as default};

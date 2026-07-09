@@ -1,1 +1,0 @@
-import{t as e}from"./MaterialDesignButtons-C5it312I.js";var t=e({id:`tplVis-materialdesign-Button-Adition`,name:`Button Addition`,kind:`addition`,layout:`default`,label:`&nbsp;Addition`,icon:`plus`});export{t as default};

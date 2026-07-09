@@ -1,1 +1,0 @@
-import{t as e}from"./MaterialDesignButtons-C5it312I.js";var t=e({id:`tplVis-materialdesign-Button-Toggle`,name:`Button Toggle`,kind:`toggle`,layout:`default`,label:`&nbsp;Toggle`,icon:`checkbox-marked`});export{t as default};

@@ -1,1 +1,0 @@
-import{t as e}from"./MaterialDesignButtons-C5it312I.js";var t=e({id:`tplVis-materialdesign-Button-Toggle-vertical`,name:`Button Toggle vertical`,kind:`toggle`,layout:`vertical`,label:`Toggle`,icon:`checkbox-marked`});export{t as default};
