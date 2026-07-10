@@ -19,6 +19,8 @@ export interface PressState {
     hovered?: boolean;
 }
 
+export const setColor = '#ff9800';
+
 export const commonAttrs = [
     {
         name: 'common',
@@ -93,6 +95,7 @@ export function createInfo(id: string, name: string, attrs: RxWidgetInfo['visAtt
         id,
         visSet: 'vis2-materialdesign',
         visSetLabel: 'Material Design',
+        visSetColor: setColor,
         visName: name,
         visAttrs: attrs,
     };
