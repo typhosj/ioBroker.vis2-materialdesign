@@ -2,31 +2,24 @@ import React from 'react';
 
 import type { RxWidgetInfo, VisRxWidgetProps } from '@iobroker/types-vis-2';
 
-import { BaseRxData, RenderProps, VisWidget, card, createInfo } from './widgetUtils';
+import { BaseRxData, RenderProps, VisWidget, createInfo } from './widgetUtils';
+import { renderIcon } from './MaterialDesignButtons';
 
-const attrs = [
+interface IconData extends BaseRxData {
+    mdwIcon?: string;
+    mdwIconSize?: number;
+    mdwIconColor?: string;
+}
+
+const attrs: RxWidgetInfo['visAttrs'] = [
     {
         name: 'common',
-        label: 'group_common',
         fields: [
-            {
-                name: 'icon',
-                label: 'icon',
-                type: 'text',
-                default: 'home',
-            },
-            {
-                name: 'color',
-                label: 'color',
-                type: 'color',
-                default: '#1976d2',
-            },
-            {
-                name: 'size',
-                label: 'size',
-                type: 'text',
-                default: '32px',
-            },
+            { name: 'mdwIcon', label: 'mdwIcon', type: 'icon', default: 'material-design' },
+            { name: 'mdwIconSize', label: 'mdwIconSize', type: 'number' },
+            { name: 'mdwIconColor', label: 'mdwIconColor', type: 'color' },
+            { name: 'generateHtmlControl', label: 'generateHtmlControl', type: 'checkbox' },
+            { name: 'debug', label: 'debug', type: 'checkbox' },
         ],
     },
 ];
@@ -37,7 +30,14 @@ export default class MaterialDesignIcon extends VisWidget {
     }
 
     static getWidgetInfo(): RxWidgetInfo {
-        return createInfo('tplMaterialDesignIcon', 'Icon', attrs);
+        return {
+            ...createInfo('tplVis2-materialdesign-Icon', 'Material Design Icon', attrs),
+            visPrev: '<img src="widgets/materialdesign/img/prev_icon.png"></img>',
+            visDefaultStyle: {
+                width: 50,
+                height: 50,
+            },
+        };
     }
 
     getWidgetInfo(): RxWidgetInfo {
@@ -46,17 +46,22 @@ export default class MaterialDesignIcon extends VisWidget {
 
     renderWidgetBody(props: RenderProps): React.JSX.Element {
         super.renderWidgetBody(props);
-        const data = this.state.rxData as BaseRxData;
+        const data = this.state.rxData as IconData;
+        const icon = renderIcon(data.mdwIcon || 'material-design', data.mdwIconColor || '#44739e', Number(data.mdwIconSize) || 50);
 
-        return card(
-            <span
-                className={`mdi mdi-${data.icon || 'home'}`}
+        return (
+            <div
+                className="materialdesign-widget materialdesign-icon"
                 style={{
-                    color: data.color || '#1976d2',
-                    fontSize: data.size || '32px',
-                    lineHeight: 1,
+                    alignItems: 'center',
+                    display: 'flex',
+                    height: '100%',
+                    justifyContent: 'center',
+                    width: '100%',
                 }}
-            />,
+            >
+                {icon}
+            </div>
         );
     }
 }
