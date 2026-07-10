@@ -19,7 +19,7 @@ export interface PressState {
     hovered?: boolean;
 }
 
-export const setColor = '#ff9800';
+export const setColor = '#ffc107';
 
 export const commonAttrs = [
     {

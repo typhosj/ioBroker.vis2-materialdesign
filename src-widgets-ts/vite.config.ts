@@ -35,6 +35,8 @@ export default {
                 './MaterialDesignIconButtonSlider': './src/MaterialDesignIconButtonSlider',
                 './MaterialDesignCheckbox': './src/MaterialDesignCheckbox',
                 './MaterialDesignIcon': './src/MaterialDesignIcon',
+                './MaterialDesignProgress': './src/MaterialDesignProgress',
+                './MaterialDesignProgressCircular': './src/MaterialDesignProgressCircular',
                 './MaterialDesignSwitch': './src/MaterialDesignSwitch',
                 './MaterialDesignValue': './src/MaterialDesignValue',
                 './translations': './src/translations',

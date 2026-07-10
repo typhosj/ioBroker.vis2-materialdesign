@@ -103,9 +103,9 @@ function attrs(kind: ControlKind): RxWidgetInfo['visAttrs'] {
 
     return [
         { name: 'common', label: 'group_common', fields: baseFields },
-        { name: 'label', label: 'group.label', fields: labelFields },
-        { name: 'color', label: 'group.color', fields: colorFields },
-        { name: 'lock', label: 'group.lock', fields: lockFields },
+        { name: 'label', label: 'group_label', fields: labelFields },
+        { name: 'color', label: 'group_color', fields: colorFields },
+        { name: 'lock', label: 'group_lock', fields: lockFields },
     ] as RxWidgetInfo['visAttrs'];
 }
 

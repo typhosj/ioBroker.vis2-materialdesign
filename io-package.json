@@ -114,6 +114,8 @@
                     "MaterialDesignIconButtonSlider",
                     "MaterialDesignCheckbox",
                     "MaterialDesignIcon",
+                    "MaterialDesignProgress",
+                    "MaterialDesignProgressCircular",
                     "MaterialDesignSwitch",
                     "MaterialDesignValue"
                 ]
