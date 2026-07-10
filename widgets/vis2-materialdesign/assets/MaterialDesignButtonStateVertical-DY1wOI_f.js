@@ -1,0 +1,1 @@
+import{t as e}from"./MaterialDesignButtons-B1-bvSPa.js";var t=e({id:`tplVis2-materialdesign-Button-State-vertical`,name:`Button State vertical`,kind:`state`,layout:`vertical`,label:`State`,icon:`pencil`});export{t as default};
