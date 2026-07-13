@@ -55,16 +55,19 @@
     "@types/react": "^18.3.31",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^6.0.3",
+    "jsdom": "^29.1.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "typescript": "~6.0.3",
-    "vite": "^8.1.3"
+    "vite": "^8.1.3",
+    "vitest": "^4.1.10"
   },
   "main": "widgets/vis2-materialdesign/customWidgets.js",
   "scripts": {
     "test:package": "node test/package.js",
     "test:pr-gate": "node test/pr-gate.js",
-    "test": "npm run test:package",
+    "test:widgets": "vitest run",
+    "test": "npm run test:package && npm run test:widgets",
     "pr:repocheck": "node -e \"require('fs').rmSync('src-widgets-ts/build', { recursive: true, force: true })\" && npx @iobroker/repochecker https://github.com/typhosj/ioBroker.vis2-materialdesign --local",
     "pr:check": "npm run build && npm test && npm run test:pr-gate && npm pack --dry-run && npm run pr:repocheck",
     "release": "release-script",

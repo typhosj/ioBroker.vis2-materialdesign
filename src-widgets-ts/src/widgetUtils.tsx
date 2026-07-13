@@ -1,5 +1,7 @@
 import React from 'react';
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
+import '@fontsource/jura/files/jura-latin-400-normal.woff2';
+import '@fontsource/roboto-condensed/files/roboto-condensed-latin-400-normal.woff2';
 
 import type { RxRenderWidgetProps, RxWidgetInfo, VisRxWidgetProps, VisRxWidgetState } from '@iobroker/types-vis-2';
 import type VisRxWidget from '@iobroker/types-vis-2/visRxWidget';
@@ -188,7 +190,7 @@ function themeFields(widgetName: string): RxWidgetInfo['visAttrs'][number]['fiel
     ];
 }
 
-function applyThemeVariables(data: Record<string, unknown>, values: Record<string, ioBroker.StateValue> | undefined): void {
+export function applyThemeVariables(data: Record<string, unknown>, values: Record<string, ioBroker.StateValue> | undefined): void {
     if (!values) return;
     const dark = data.__mdwThemeDark;
     const isDark = values[`${dark}.val`] === true || values[`${dark}.val`] === 'true';
