@@ -1,201 +1,198 @@
 {
-    "common": {
-        "name": "vis2-materialdesign",
-        "version": "0.1.0",
-        "news": {
-            "0.1.0": {
-                "en": "Initial native VIS 2 port of the Material Design button widgets. Based on the original VIS Material Design widgets version 0.5.9 by Scrounger.",
-                "de": "Erste native VIS-2-Portierung der Material-Design-Button-Widgets. Basiert auf den ursprünglichen VIS-Material-Design-Widgets Version 0.5.9 von Scrounger.",
-                "ru": "see changelog",
-                "pt": "see changelog",
-                "nl": "see changelog",
-                "fr": "see changelog",
-                "it": "see changelog",
-                "es": "see changelog",
-                "pl": "see changelog",
-                "zh-cn": "see changelog",
-                "uk": "see changelog"
-            }
-        },
-        "titleLang": {
-            "en": "Material Design Widgets",
-            "de": "Material Design Widgets",
-            "ru": "Material Design Widgets",
-            "pt": "Material Design Widgets",
-            "nl": "Material Design Widgets",
-            "fr": "Material Design Widgets",
-            "it": "Material Design Widgets",
-            "es": "Material Design Widgets",
-            "pl": "Material Design Widgets",
-            "zh-cn": "Material Design Widgets",
-            "uk": "Material Design Widgets"
-        },
-        "desc": {
-            "en": "Native VIS 2 Material Design widgets based on the original work by Scrounger.",
-            "de": "Native VIS-2-Material-Design-Widgets, basierend auf der ursprünglichen Arbeit von Scrounger.",
-            "ru": "Виджеты для проектирования материалов основаны на руководстве Google по проектированию материалов. Адаптер использует различные библиотеки (material components web library, vuetify, chartjs, и т.д.).",
-            "pt": "Os Widgets de design de materiais são baseados nas diretrizes de design de materiais do Google. O adaptador usa bibliotecas diferentes (material components web library, vuetify, chartjs, etc.).",
-            "nl": "Material Design Widgets zijn gebaseerd op de materiaalontwerprichtlijnen van Google. De adapter maakt gebruik van verschillende bibliotheken (material components web library, vuetify, chartjs, etc.).",
-            "fr": "Les Widgets de conception de matériaux sont basés sur les directives de conception de matériaux de Google. L'adaptateur utilise différentes bibliothèques (material components web library, vuetify, chartjs, etc.).",
-            "it": "I widget per il design dei materiali si basano sulle linee guida per il design dei materiali di Google. L'adattatore utilizza diverse librerie (material components web library, vuetify, chartjs, ecc.)",
-            "es": "Los Widgets de diseño de materiales se basan en las directrices de diseño de materiales de Google. El adaptador utiliza diferentes librerías (material components web library, vuetify, chartjs, etc.).",
-            "pl": "Widgety do projektowania materiałów oparte są na wytycznych Google dotyczących projektowania materiałów. Adapter wykorzystuje różne biblioteki (material components web library, vuetify, chartjs, itp.)",
-            "zh-cn": "Material Design Widgets基于Google的Material Design准则。适配器使用不同的库（材料组件Web库，vuetify，chartjs等）。",
-            "uk": "Native VIS 2 Material Design widgets based on the original work by Scrounger."
-        },
-        "authors": [
-            "typhosj <typhosj@gmx.de>",
-            "Scrounger <scrounger@gmx.net>"
-        ],
-        "keywords": [
-            "vis-2",
-            "material",
-            "GUI",
-            "vis2-materialdesign"
-        ],
-        "platform": "Javascript/Node.js",
-        "icon": "vis-materialdesign.png",
-        "enabled": true,
-        "extIcon": "https://raw.githubusercontent.com/typhosj/ioBroker.vis2-materialdesign/master/admin/vis-materialdesign.png",
-        "readme": "https://github.com/typhosj/ioBroker.vis2-materialdesign/blob/master/README.md",
-        "loglevel": "info",
-        "restartAdapters": [
-            "vis-2"
-        ],
-        "onlyWWW": true,
-        "singleton": true,
-        "type": "visualization-widgets",
-        "mode": "none",
-        "connectionType": "local",
-        "dataSource": "push",
-        "tier": 3,
-        "licenseInformation": {
-            "license": "MIT",
-            "type": "free",
-            "link": "https://opensource.org/license/mit"
-        },
-        "localLinks": {
-            "_default": "%web_protocol%://%ip%:%web_port%/vis-2/edit.html"
-        },
-        "adminUI": {
-            "config": "materialize"
-        },
-        "globalDependencies": [
-            {
-                "admin": ">=7.6.20"
-            }
-        ],
-        "dependencies": [],
-        "visWidgets": {
-            "vis2MaterialDesignWidgets": {
-                "i18n": "component",
-                "name": "vis2MaterialDesignWidgets",
-                "url": "vis2-materialdesign/customWidgets.js",
-                "bundlerType": "module",
-                "components": [
-                    "MaterialDesignColorScheme",
-                    "MaterialDesignDialogView",
-                    "MaterialDesignDialogIFrame",
-                    "MaterialDesignAutocomplete",
-                    "MaterialDesignAlerts",
-                    "MaterialDesignCard",
-                    "MaterialDesignButtonNavigationVertical",
-                    "MaterialDesignButtonLinkVertical",
-                    "MaterialDesignButtonStateVertical",
-                    "MaterialDesignButtonStateMultiVertical",
-                    "MaterialDesignButtonAditionVertical",
-                    "MaterialDesignButtonToggleVertical",
-                    "MaterialDesignButtonNavigation",
-                    "MaterialDesignButtonLink",
-                    "MaterialDesignButtonState",
-                    "MaterialDesignButtonStateMulti",
-                    "MaterialDesignButtonAdition",
-                    "MaterialDesignButtonToggle",
-                    "MaterialDesignIconButtonNavigation",
-                    "MaterialDesignIconButtonLink",
-                    "MaterialDesignIconButtonState",
-                    "MaterialDesignIconButtonStateMulti",
-                    "MaterialDesignIconButtonAdition",
-                    "MaterialDesignIconButtonToggle",
-                    "MaterialDesignIconButtonSlider",
-                    "MaterialDesignCheckbox",
-                    "MaterialDesignIcon",
-                    "MaterialDesignIconList",
-                    "MaterialDesignList",
-                    "MaterialDesignInput",
-                    "MaterialDesignInstalledVersion",
-                    "MaterialDesignSelect",
-                    "MaterialDesignProgress",
-                    "MaterialDesignProgressCircular",
-                    "MaterialDesignRoundSlider",
-                    "MaterialDesignSlider",
-                    "MaterialDesignSwitch",
-                    "MaterialDesignTable",
-                    "MaterialDesignTopAppBar",
-                    "MaterialDesignValue"
-                ]
-            }
-        }
+  "common": {
+    "name": "vis2-materialdesign",
+    "version": "0.1.0",
+    "news": {
+      "0.1.0": {
+        "en": "Initial native VIS 2 port of the Material Design button widgets. Based on the original VIS Material Design widgets version 0.5.9 by Scrounger.",
+        "de": "Erste native VIS-2-Portierung der Material-Design-Button-Widgets. Basiert auf den ursprünglichen VIS-Material-Design-Widgets Version 0.5.9 von Scrounger.",
+        "ru": "see changelog",
+        "pt": "see changelog",
+        "nl": "see changelog",
+        "fr": "see changelog",
+        "it": "see changelog",
+        "es": "see changelog",
+        "pl": "see changelog",
+        "zh-cn": "see changelog",
+        "uk": "see changelog"
+      }
     },
-    "native": {
-        "scriptName": "Theme",
-        "variableName": "myMdwTheme",
-        "javascriptInstance": "",
-        "sentryReport": false,
-        "colors": [],
-        "defaultcolors": [],
-        "colorsDark": [],
-        "defaultcolorsDark": [],
-        "fonts": [],
-        "defaultfonts": [],
-        "fontSizes": [],
-        "defaultfontSizes": [],
-        "dependencies": [
-            "basic"
+    "titleLang": {
+      "en": "Material Design Widgets",
+      "de": "Material Design Widgets",
+      "ru": "Material Design Widgets",
+      "pt": "Material Design Widgets",
+      "nl": "Material Design Widgets",
+      "fr": "Material Design Widgets",
+      "it": "Material Design Widgets",
+      "es": "Material Design Widgets",
+      "pl": "Material Design Widgets",
+      "zh-cn": "Material Design Widgets",
+      "uk": "Material Design Widgets"
+    },
+    "desc": {
+      "en": "Native VIS 2 Material Design widgets based on the original work by Scrounger.",
+      "de": "Native VIS-2-Material-Design-Widgets, basierend auf der ursprünglichen Arbeit von Scrounger.",
+      "ru": "Виджеты для проектирования материалов основаны на руководстве Google по проектированию материалов. Адаптер использует различные библиотеки (material components web library, vuetify, chartjs, и т.д.).",
+      "pt": "Os Widgets de design de materiais são baseados nas diretrizes de design de materiais do Google. O adaptador usa bibliotecas diferentes (material components web library, vuetify, chartjs, etc.).",
+      "nl": "Material Design Widgets zijn gebaseerd op de materiaalontwerprichtlijnen van Google. De adapter maakt gebruik van verschillende bibliotheken (material components web library, vuetify, chartjs, etc.).",
+      "fr": "Les Widgets de conception de matériaux sont basés sur les directives de conception de matériaux de Google. L'adaptateur utilise différentes bibliothèques (material components web library, vuetify, chartjs, etc.).",
+      "it": "I widget per il design dei materiali si basano sulle linee guida per il design dei materiali di Google. L'adattatore utilizza diverse librerie (material components web library, vuetify, chartjs, ecc.)",
+      "es": "Los Widgets de diseño de materiales se basan en las directrices de diseño de materiales de Google. El adaptador utiliza diferentes librerías (material components web library, vuetify, chartjs, etc.).",
+      "pl": "Widgety do projektowania materiałów oparte są na wytycznych Google dotyczących projektowania materiałów. Adapter wykorzystuje różne biblioteki (material components web library, vuetify, chartjs, itp.)",
+      "zh-cn": "Material Design Widgets基于Google的Material Design准则。适配器使用不同的库（材料组件Web库，vuetify，chartjs等）。",
+      "uk": "Native VIS 2 Material Design widgets based on the original work by Scrounger."
+    },
+    "authors": ["typhosj <typhosj@gmx.de>", "Scrounger <scrounger@gmx.net>"],
+    "keywords": ["vis-2", "material", "GUI", "vis2-materialdesign"],
+    "platform": "Javascript/Node.js",
+    "icon": "vis-materialdesign.png",
+    "enabled": true,
+    "extIcon": "https://raw.githubusercontent.com/typhosj/ioBroker.vis2-materialdesign/master/admin/vis-materialdesign.png",
+    "readme": "https://github.com/typhosj/ioBroker.vis2-materialdesign/blob/master/README.md",
+    "loglevel": "info",
+    "restartAdapters": ["vis-2"],
+    "onlyWWW": true,
+    "singleton": true,
+    "type": "visualization-widgets",
+    "mode": "none",
+    "connectionType": "local",
+    "dataSource": "push",
+    "tier": 3,
+    "licenseInformation": {
+      "license": "MIT",
+      "type": "free",
+      "link": "https://opensource.org/license/mit"
+    },
+    "localLinks": {
+      "_default": "%web_protocol%://%ip%:%web_port%/vis-2/edit.html"
+    },
+    "adminUI": {
+      "config": "materialize"
+    },
+    "globalDependencies": [
+      {
+        "admin": ">=7.6.20"
+      }
+    ],
+    "dependencies": [],
+    "visWidgets": {
+      "vis2MaterialDesignWidgets": {
+        "i18n": "component",
+        "name": "vis2MaterialDesignWidgets",
+        "url": "vis2-materialdesign/customWidgets.js",
+        "bundlerType": "module",
+        "components": [
+          "MaterialDesignColorScheme",
+          "MaterialDesignDialogView",
+          "MaterialDesignDialogIFrame",
+          "MaterialDesignAutocomplete",
+          "MaterialDesignAlerts",
+          "MaterialDesignCard",
+          "MaterialDesignMasonryViews",
+          "MaterialDesignGridViews",
+          "MaterialDesignAdvancedViewInWidget",
+          "MaterialDesignAdvancedViewInWidget8",
+          "MaterialDesignCalendar",
+          "MaterialDesignChartBar",
+          "MaterialDesignChartPie",
+          "MaterialDesignChartJson",
+          "MaterialDesignChartLineHistory",
+          "MaterialDesignButtonNavigationVertical",
+          "MaterialDesignButtonLinkVertical",
+          "MaterialDesignButtonStateVertical",
+          "MaterialDesignButtonStateMultiVertical",
+          "MaterialDesignButtonAditionVertical",
+          "MaterialDesignButtonToggleVertical",
+          "MaterialDesignButtonNavigation",
+          "MaterialDesignButtonLink",
+          "MaterialDesignButtonState",
+          "MaterialDesignButtonStateMulti",
+          "MaterialDesignButtonAdition",
+          "MaterialDesignButtonToggle",
+          "MaterialDesignIconButtonNavigation",
+          "MaterialDesignIconButtonLink",
+          "MaterialDesignIconButtonState",
+          "MaterialDesignIconButtonStateMulti",
+          "MaterialDesignIconButtonAdition",
+          "MaterialDesignIconButtonToggle",
+          "MaterialDesignIconButtonSlider",
+          "MaterialDesignCheckbox",
+          "MaterialDesignIcon",
+          "MaterialDesignIconList",
+          "MaterialDesignList",
+          "MaterialDesignInput",
+          "MaterialDesignInstalledVersion",
+          "MaterialDesignSelect",
+          "MaterialDesignProgress",
+          "MaterialDesignProgressCircular",
+          "MaterialDesignRoundSlider",
+          "MaterialDesignSlider",
+          "MaterialDesignSwitch",
+          "MaterialDesignTable",
+          "MaterialDesignTopAppBar",
+          "MaterialDesignValue"
         ]
+      }
+    }
+  },
+  "native": {
+    "scriptName": "Theme",
+    "variableName": "myMdwTheme",
+    "javascriptInstance": "",
+    "sentryReport": false,
+    "colors": [],
+    "defaultcolors": [],
+    "colorsDark": [],
+    "defaultcolorsDark": [],
+    "fonts": [],
+    "defaultfonts": [],
+    "fontSizes": [],
+    "defaultfontSizes": [],
+    "dependencies": ["basic"]
+  },
+  "objects": [],
+  "instanceObjects": [
+    {
+      "_id": "colors.darkTheme",
+      "type": "state",
+      "common": {
+        "role": "switch",
+        "name": "Switch between light and dark colors",
+        "type": "boolean",
+        "read": true,
+        "write": true,
+        "def": false
+      },
+      "native": {}
     },
-    "objects": [],
-    "instanceObjects": [
-        {
-            "_id": "colors.darkTheme",
-            "type": "state",
-            "common": {
-                "role": "switch",
-                "name": "Switch between light and dark colors",
-                "type": "boolean",
-                "read": true,
-                "write": true,
-                "def": false
-            },
-            "native": {}
-        },
-        {
-            "_id": "sentry",
-            "type": "state",
-            "common": {
-                "role": "switch",
-                "name": "send Widget error reports",
-                "desc": "Sentry - automatic error reporting",
-                "type": "boolean",
-                "read": true,
-                "write": true,
-                "def": false
-            },
-            "native": {}
-        },
-        {
-            "_id": "lastchange",
-            "type": "state",
-            "common": {
-                "role": "value",
-                "name": "last theme changes",
-                "desc": "last theme changes",
-                "type": "number",
-                "read": true,
-                "write": false,
-                "def": 0
-            },
-            "native": {}
-        }
-    ]
+    {
+      "_id": "sentry",
+      "type": "state",
+      "common": {
+        "role": "switch",
+        "name": "send Widget error reports",
+        "desc": "Sentry - automatic error reporting",
+        "type": "boolean",
+        "read": true,
+        "write": true,
+        "def": false
+      },
+      "native": {}
+    },
+    {
+      "_id": "lastchange",
+      "type": "state",
+      "common": {
+        "role": "value",
+        "name": "last theme changes",
+        "desc": "last theme changes",
+        "type": "number",
+        "read": true,
+        "write": false,
+        "def": 0
+      },
+      "native": {}
+    }
+  ]
 }

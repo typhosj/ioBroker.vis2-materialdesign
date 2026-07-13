@@ -1,0 +1,1 @@
+import{n as e,t}from"./MaterialDesignAdvancedView-JfO20pDQ.js";var n=class n extends t{constructor(e){super(e,`state8`)}static getWidgetInfo(){return e(`state8`)}getWidgetInfo(){return n.getWidgetInfo()}};export{n as default};
