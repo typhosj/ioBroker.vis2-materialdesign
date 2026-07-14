@@ -32,4 +32,4 @@ const __mfImport = (src) =>
   if (__mfModuleCache.pendingShareLoads) {
     await Promise.all(__mfModuleCache.pendingShareLoads);
   }
-})().then(() => __mfImport("./index-Bvy1zLVX.js"));
+})().then(() => __mfImport("./index-DFrcj5o4.js"));

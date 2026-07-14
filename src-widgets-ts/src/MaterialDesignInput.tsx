@@ -320,8 +320,8 @@ export default class MaterialDesignInput extends VisWidget {
                                 }}
                             >
                                 {layout.includes('outlined') ? (
-                                    <fieldset style={{ borderColor, borderStyle: 'solid', borderWidth: this.focused ? 2 : 1 }}>
-                                        <legend style={{ width: active ? Math.max((data.inputLabelText || '').length * 6, 20) : 0 }} />
+                                    <fieldset aria-hidden="true" style={{ backgroundColor: 'transparent', borderColor, borderStyle: 'solid', borderWidth: this.focused ? 2 : 1 }}>
+                                        <legend style={{ height: 11, lineHeight: '11px', width: active ? Math.max((data.inputLabelText || '').length * 6, 20) : 0 }} />
                                     </fieldset>
                                 ) : null}
                                 {icon(data.prepandInnerIcon, data.prepandInnerIconColor, num(data.prepandInnerIconSize, 16)) ? <div className="v-input__prepend-inner">{icon(data.prepandInnerIcon, data.prepandInnerIconColor, num(data.prepandInnerIconSize, 16))}</div> : null}
@@ -381,7 +381,7 @@ export default class MaterialDesignInput extends VisWidget {
                                             marginTop: !enclosed && !filled && data.inputLabelText ? 14 : undefined,
                                             maxWidth: '100%',
                                             minWidth: 0,
-                                            padding: '4px 28px 8px 0',
+                                            padding: '4px 0 8px 0',
                                             position: 'relative',
                                             textAlign: data.inputAlignment || 'left',
                                             width: '100%',
@@ -391,21 +391,23 @@ export default class MaterialDesignInput extends VisWidget {
                                         value={value}
                                     />
                                     {data.inputSuffix ? <div className="v-text-field__suffix" style={{ flex: '0 0 auto' }}>{data.inputSuffix}</div> : null}
-                                    <button
-                                        aria-label="clear"
-                                        onClick={() => {
-                                            this.localValue = '';
-                                            setStateValue(props as VisRxWidgetProps, data.oid || '', '');
-                                            this.forceUpdate();
-                                        }}
-                                        style={{ alignItems: 'center', background: 'transparent', border: 0, cursor: 'pointer', display: 'flex', height: 24, justifyContent: 'center', marginTop: !enclosed && !filled && data.inputLabelText ? 8 : 0, padding: 0, position: 'absolute', right: 0, top: '50%', transform: !enclosed && !filled && data.inputLabelText ? 'translateY(-30%)' : 'translateY(-50%)', width: 24, zIndex: 10 }}
-                                        type="button"
-                                    >
-                                        <span aria-hidden="true" style={{ display: 'block', height: num(data.clearIconSize, 16), position: 'relative', width: num(data.clearIconSize, 16) }}>
-                                            <span style={{ background: plainColor(data.clearIconColor, '#44739e'), height: 2, left: 0, position: 'absolute', top: '50%', transform: 'rotate(45deg)', width: '100%' }} />
-                                            <span style={{ background: plainColor(data.clearIconColor, '#44739e'), height: 2, left: 0, position: 'absolute', top: '50%', transform: 'rotate(-45deg)', width: '100%' }} />
-                                        </span>
-                                    </button>
+                                    {data.clearIconShow !== false && value !== '' ? (
+                                        <button
+                                            aria-label="clear"
+                                            onClick={() => {
+                                                this.localValue = '';
+                                                setStateValue(props as VisRxWidgetProps, data.oid || '', '');
+                                                this.forceUpdate();
+                                            }}
+                                            style={{ alignItems: 'center', background: 'transparent', border: 0, cursor: 'pointer', display: 'flex', flex: '0 0 auto', height: 24, justifyContent: 'center', marginLeft: 4, padding: 0, position: 'relative', width: 24, zIndex: 10 }}
+                                            type="button"
+                                        >
+                                            <span aria-hidden="true" style={{ display: 'block', height: num(data.clearIconSize, 16), position: 'relative', width: num(data.clearIconSize, 16) }}>
+                                                <span style={{ background: plainColor(data.clearIconColor, '#44739e'), height: 2, left: 0, position: 'absolute', top: '50%', transform: 'rotate(45deg)', width: '100%' }} />
+                                                <span style={{ background: plainColor(data.clearIconColor, '#44739e'), height: 2, left: 0, position: 'absolute', top: '50%', transform: 'rotate(-45deg)', width: '100%' }} />
+                                            </span>
+                                        </button>
+                                    ) : null}
                                 </div>
                                 {icon(data.appendIcon, data.appendIconColor, num(data.appendIconSize, 16)) ? <div className="v-input__append-inner">{icon(data.appendIcon, data.appendIconColor, num(data.appendIconSize, 16))}</div> : null}
                             </div>
