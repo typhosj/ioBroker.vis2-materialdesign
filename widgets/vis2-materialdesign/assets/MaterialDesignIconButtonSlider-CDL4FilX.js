@@ -1,0 +1,1 @@
+import{t as e}from"./MaterialDesignButtons-DJGX7C64.js";var t=e({id:`tplVis2-materialdesign-Icon-Button-Slider`,name:`Icon Button Slider`,kind:`slider`,layout:`icon`,label:``,icon:`checkbox-marked`});export{t as default};

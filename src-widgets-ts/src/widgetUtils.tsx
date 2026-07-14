@@ -8,7 +8,23 @@ import type VisRxWidget from '@iobroker/types-vis-2/visRxWidget';
 import colors from '../../admin/lib/colors.json';
 import fonts from '../../admin/lib/fonts.json';
 import fontSizes from '../../admin/lib/fontSizes.json';
+import translations from './translations';
 import '../../fonts.css';
+
+// VIS 2 resolves widget-attribute GROUP headers via the legacy `window.vis._` / `window.systemDictionary`,
+// which the component i18n does NOT populate — so custom groups (e.g. `group_theme`) render as raw keys.
+// Bridge our `group_*` labels into that legacy dictionary once on load.
+(function registerGroupLabels(): void {
+    const win = window as unknown as { systemDictionary?: Record<string, Record<string, string>> };
+    const sd = (win.systemDictionary ||= {});
+    (Object.keys(translations) as Array<keyof typeof translations>).forEach(lang => {
+        const words = translations[lang] as Record<string, string>;
+        Object.keys(words).forEach(key => {
+            if (!key.startsWith('group_')) return;
+            (sd[key] ||= {})[lang as string] = words[key];
+        });
+    });
+})();
 
 export interface BaseRxData {
     oid: string;

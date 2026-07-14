@@ -1,0 +1,1 @@
+import{t as e}from"./translations-ChBca4xj.js";export{e as default};

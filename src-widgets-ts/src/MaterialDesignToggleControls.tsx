@@ -62,8 +62,8 @@ const baseFields = [
 ];
 
 const labelFields = [
-    { name: 'labelFalse', label: 'labelFalse', type: 'html' },
-    { name: 'labelTrue', label: 'labelTrue', type: 'html' },
+    { name: 'labelFalse', label: 'labelFalse', type: 'text' },
+    { name: 'labelTrue', label: 'labelTrue', type: 'text' },
     { name: 'labelPosition', label: 'labelPosition', type: 'select', options: ['left', 'right', 'off'], default: 'right' },
     { name: 'labelClickActive', label: 'labelClickActive', type: 'checkbox', default: true },
     { name: 'valueFontFamily', label: 'valueFontFamily', type: 'fontname' },
@@ -215,15 +215,21 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
             const locked = !!data.lockEnabled && !this.unlocked;
             const label = on ? data.labelTrue || data.labelFalse || '' : data.labelFalse || '';
             const labelPosition = data.labelPosition || 'right';
+            const labelGap = labelPosition === 'off' ? 0 : 16;
             const labelElement =
                 labelPosition === 'off' ? null : (
                     <span
                         style={{
+                            alignItems: 'center',
                             color: color(on ? data.labelColorTrue : data.labelColorFalse, '#44739e'),
                             cursor: data.labelClickActive === false ? 'default' : 'pointer',
+                            display: 'inline-flex',
+                            flex: '1 1 auto',
                             fontFamily: data.valueFontFamily || undefined,
                             fontSize: data.valueFontSize ? `${data.valueFontSize}px` : undefined,
-                            width: '100%',
+                            minWidth: 0,
+                            overflow: 'visible',
+                            whiteSpace: 'nowrap',
                         }}
                     >
                         {label}
@@ -250,8 +256,9 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
                         role="switch"
                         style={{
                             filter: controlFilter,
-                            marginLeft: 10,
-                            marginRight: 10,
+                            marginLeft: labelGap,
+                            marginRight: labelGap,
+                            overflow: 'visible',
                             position: 'relative',
                             width: 36,
                             height: 20,
@@ -318,11 +325,11 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
                         className={`mdc-checkbox mdc-checkbox--upgraded${on ? ' mdc-checkbox--selected' : ''} mdc-ripple-upgraded mdc-ripple-upgraded--unbounded`}
                         role="checkbox"
                         style={{
+                            boxSizing: 'border-box',
                             filter: controlFilter,
                             flex: '0 0 auto',
                             height: 40,
-                            marginLeft: 10,
-                            marginRight: 10,
+                            padding: 0,
                             position: 'relative',
                             width: 40,
                             ['--materialdesign-color-checkbox' as string]: color(data.colorCheckBox, '#44739e'),
@@ -361,13 +368,25 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
                             </svg>
                             <div className="mdc-checkbox__mixedmark" />
                         </div>
-                        <div className="mdc-checkbox__ripple" />
+                        <div className="mdc-checkbox__ripple" style={{ borderRadius: '50%', inset: 0, overflow: 'visible', position: 'absolute' }} />
                     </div>
                 );
 
             return (
                 <div
                     className={`materialdesign-widget mdc-form-field materialdesign-${def.kind}${labelPosition === 'left' ? ' mdc-form-field--align-end' : ''}`}
+                    ref={element => {
+                        // VIS2 wraps every widget in an overflow-hidden element; labels and MDC ripples may extend beyond it.
+                        if (element?.parentElement) {
+                            const wrapper = element.parentElement;
+                            window.requestAnimationFrame(() => {
+                                wrapper.style.setProperty('overflow', 'visible', 'important');
+                                if (labelPosition !== 'off') {
+                                    wrapper.style.width = `${Math.max(wrapper.clientWidth, element.scrollWidth)}px`;
+                                }
+                            });
+                        }
+                    }}
                     onClick={toggle}
                     onKeyDown={(event) => {
                         if (event.key === 'Enter' || event.key === ' ') {
