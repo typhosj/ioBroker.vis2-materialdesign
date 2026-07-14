@@ -203,11 +203,25 @@ export default class MaterialDesignSelect extends VisWidget {
         const border = color(this.open ? data.inputLayoutBorderColorSelected : data.inputLayoutBorderColor, this.open ? '#44739e' : 'rgba(0, 0, 0, 0.54)');
         const textColor = color(data.inputTextColor, '#000000');
         const isTop = data.listPosition === 'top';
+        const lay = data.inputLayout || 'regular';
+        const outlined = lay.includes('outlined');
+        const solo = lay.includes('solo');
+        const filled = lay.includes('filled');
+        const rounded = lay.includes('rounded');
+        const enclosed = outlined || solo;
         const selectedSlot = data.showSelectedIcon || 'prepend-inner';
         const configuredIcon = selectedSlot === 'prepend' ? data.prepandIcon : selectedSlot === 'prepend-inner' ? data.prepandInnerIcon : data.appendOuterIcon;
         const configuredColor = selectedSlot === 'prepend' ? data.prepandIconColor : selectedSlot === 'prepend-inner' ? data.prepandInnerIconColor : data.appendOuterIconColor;
         const configuredSize = selectedSlot === 'prepend' ? data.prepandIconSize : selectedSlot === 'prepend-inner' ? data.prepandInnerIconSize : data.appendOuterIconSize;
         const selectedIcon = selectedSlot === 'no' ? null : renderIcon(configuredIcon || selected?.icon || '', color(configuredColor || selected?.selectedImageColor || selected?.imageColor, '#44739e'), num(configuredSize, num(data.listIconSize, 20)), !!(configuredColor || selected?.selectedImageColor || selected?.imageColor));
+        let openUp = isTop;
+        if (this.open && data.listPosition === 'auto' && typeof window !== 'undefined' && this.rootRef.current) {
+            const rect = this.rootRef.current.getBoundingClientRect();
+            const itemH = num(data.listItemHeight, 40) || 40;
+            const menuH = Math.min(300, list.length * itemH + 8);
+            const spaceBelow = window.innerHeight - rect.bottom;
+            openUp = spaceBelow < menuH && rect.top > spaceBelow;
+        }
         return (
             <div className="materialdesign-widget materialdesign-select" ref={this.rootRef} style={{ height: '100%', overflow: 'visible', position: 'relative', width: '100%' }}>
                 <div className="materialdesign-vuetify-select" style={{ boxSizing: 'border-box', height: '100%', position: 'relative', width: '100%' }}>
@@ -215,15 +229,20 @@ export default class MaterialDesignSelect extends VisWidget {
                         aria-expanded={this.open}
                         className="v-input v-input--dense v-select theme--light"
                         onClick={() => { this.open = !this.open; this.forceUpdate(); }}
-                        style={{ alignItems: 'center', background: color(data.inputLayoutBackgroundColor, 'transparent'), border: 0, borderBottom: `1px solid ${border}`, boxSizing: 'border-box', color: textColor, cursor: 'pointer', display: 'flex', height: '100%', padding: '0 10px', position: 'relative', textAlign: data.inputAlignment || 'left', width: '100%' }}
+                        style={{ alignItems: 'center', background: color(data.inputLayoutBackgroundColor, filled ? 'rgba(0, 0, 0, 0.06)' : 'transparent'), border: 0, borderBottom: enclosed ? undefined : `1px solid ${border}`, borderRadius: rounded ? 28 : enclosed ? 4 : filled ? '4px 4px 0 0' : undefined, boxShadow: solo ? '0 3px 1px -2px rgba(0,0,0,0.2), 0 2px 2px 0 rgba(0,0,0,0.14), 0 1px 5px 0 rgba(0,0,0,0.12)' : undefined, boxSizing: 'border-box', color: textColor, cursor: 'pointer', display: 'flex', height: '100%', padding: '0 10px', position: 'relative', textAlign: data.inputAlignment || 'left', width: '100%' }}
                         type="button"
                     >
+                        {outlined ? (
+                            <fieldset aria-hidden="true" style={{ backgroundColor: 'transparent', borderColor: border, borderRadius: rounded ? 28 : 4, borderStyle: 'solid', borderWidth: this.open ? 2 : 1, bottom: 0, left: 0, margin: 0, padding: '0 8px', pointerEvents: 'none', position: 'absolute', right: 0, top: 0 }}>
+                            <legend style={{ height: 11, lineHeight: '11px', padding: 0, width: active && data.inputLabelText ? Math.max((data.inputLabelText || '').length * 6, 20) : 0 }} />
+                            </fieldset>
+                        ) : null}
                         {data.prepandIcon && selectedSlot !== 'prepend' ? <span style={{ flex: '0 0 auto', marginRight: 4 }}>{renderIcon(data.prepandIcon, color(data.prepandIconColor, '#44739e'), num(data.prepandIconSize, 16), !!data.prepandIconColor)}</span> : null}
                         {data.inputPrefix ? <span style={{ color: color(data.inputAppendixColor, textColor), fontFamily: data.inputAppendixFontFamily || undefined, fontSize: num(data.inputAppendixFontSize, 14), marginRight: 4 }}>{data.inputPrefix}</span> : null}
                         {selectedIcon && selectedSlot === 'prepend' ? <span style={{ flex: '0 0 auto', marginRight: 4 }}>{selectedIcon}</span> : null}
                         <span style={{ flex: '1 1 auto', minWidth: 0, paddingTop: active ? 11 : 0 }}>
                             {selectedIcon && selectedSlot === 'prepend-inner' ? <span style={{ display: 'inline-block', marginRight: 4, verticalAlign: 'middle' }}>{selectedIcon}</span> : null}
-                            {data.inputLabelText ? <span style={{ color: color(this.open ? data.inputLabelColorSelected : data.inputLabelColor, 'rgba(0, 0, 0, 0.54)'), fontFamily: data.inputLabelFontFamily || undefined, fontSize: active ? Math.max(10, num(data.inputLabelFontSize, 16) * 0.75) : num(data.inputLabelFontSize, 16), left: 10, position: 'absolute', top: active ? 1 : 9, whiteSpace: 'nowrap' }}>{data.inputLabelText}</span> : null}
+                            {data.inputLabelText ? <span style={{ color: color(this.open ? data.inputLabelColorSelected : data.inputLabelColor, 'rgba(0, 0, 0, 0.54)'), fontFamily: data.inputLabelFontFamily || undefined, fontSize: active ? Math.max(10, num(data.inputLabelFontSize, 16) * 0.75) : num(data.inputLabelFontSize, 16), left: 10, position: 'absolute', top: active ? (outlined ? -6 : 1) : 9, whiteSpace: 'nowrap' }}>{data.inputLabelText}</span> : null}
                             <span style={{ display: 'block', fontFamily: data.inputTextFontFamily || undefined, fontSize: num(data.inputTextFontSize, 16), overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{selected?.text || ''}</span>
                         </span>
                         {data.inputSuffix ? <span style={{ color: color(data.inputAppendixColor, textColor), fontFamily: data.inputAppendixFontFamily || undefined, fontSize: num(data.inputAppendixFontSize, 14), marginLeft: 4 }}>{data.inputSuffix}</span> : null}
@@ -232,17 +251,19 @@ export default class MaterialDesignSelect extends VisWidget {
                         {selectedIcon && selectedSlot === 'append-outer' ? <span style={{ flex: '0 0 auto', marginLeft: 4 }}>{selectedIcon}</span> : null}
                     </button>
                     {this.open ? (
-                        <div className="v-menu__content v-select-list" style={{ background: color(data.listItemBackgroundColor, '#FFFFFF'), bottom: isTop ? (data.listPositionOffset ? '100%' : 'calc(100% + 4px)') : undefined, boxShadow: '0 4px 6px rgba(32, 33, 36, 0.28)', left: 0, maxHeight: 300, minWidth: '100%', overflowY: 'auto', position: 'absolute', top: isTop ? undefined : (data.listPositionOffset ? '100%' : 'calc(100% + 4px)'), zIndex: 1000 }}>
+                        <div className="v-menu__content v-select-list" style={{ background: color(data.listItemBackgroundColor, '#FFFFFF'), bottom: openUp ? (data.listPositionOffset ? '100%' : 'calc(100% + 4px)') : undefined, boxShadow: '0 4px 6px rgba(32, 33, 36, 0.28)', left: 0, maxHeight: 300, minWidth: '100%', overflowY: 'auto', position: 'absolute', top: openUp ? undefined : (data.listPositionOffset ? '100%' : 'calc(100% + 4px)'), zIndex: 1000 }}>
                             {list.map(item => {
                                 const isSelected = String(item.value) === String(current);
                                 const isHovered = this.hoveredValue === String(item.value);
-                                const itemColor = color(isSelected ? data.listItemFontSelectedColor : isHovered ? data.listItemFontHoverColor : data.listItemFontColor, textColor);
+                                const itemColor = isSelected
+                                    ? color(data.listItemFontSelectedColor, '#44739e')
+                                    : color(isHovered ? data.listItemFontHoverColor : data.listItemFontColor, textColor);
                                 const background = isSelected
-                                    ? color(data.listItemBackgroundSelectedColor, '#FFFFFF')
+                                    ? color(data.listItemBackgroundSelectedColor, 'rgba(68, 115, 158, 0.12)')
                                     : isHovered
                                         ? color(data.listItemBackgroundHoverColor, 'rgba(0, 0, 0, 0.04)')
                                         : color(data.listItemBackgroundColor, '#FFFFFF');
-                                return <button key={String(item.value)} className={`v-list-item${isSelected ? ' v-list-item--active' : ''}`} onClick={() => { this.localValue = item.value; setStateValue(this.props, data.oid || '', item.value); this.open = false; this.forceUpdate(); }} onMouseEnter={() => { this.hoveredValue = String(item.value); this.forceUpdate(); }} onMouseLeave={() => { this.hoveredValue = undefined; this.forceUpdate(); }} style={{ alignItems: 'center', background, border: 0, boxSizing: 'border-box', cursor: 'pointer', display: 'flex', minHeight: num(data.listItemHeight, 48) || 48, padding: '6px 12px', textAlign: 'left', width: '100%' }} type="button">
+                                return <button key={String(item.value)} className={`v-list-item${isSelected ? ' v-list-item--active' : ''}`} onClick={() => { this.localValue = item.value; setStateValue(this.props, data.oid || '', item.value); this.open = false; this.forceUpdate(); }} onMouseEnter={() => { this.hoveredValue = String(item.value); this.forceUpdate(); }} onMouseLeave={() => { this.hoveredValue = undefined; this.forceUpdate(); }} style={{ alignItems: 'center', background, border: 0, boxSizing: 'border-box', cursor: 'pointer', display: 'flex', minHeight: num(data.listItemHeight, 40) || 40, padding: '6px 12px', textAlign: 'left', width: '100%' }} type="button">
                                     {item.icon ? <span style={{ flex: '0 0 auto', marginRight: 12 }}>{renderIcon(item.icon, color(isSelected ? data.listIconSelectedColor : isHovered ? data.listIconHoverColor : item.imageColor, color(data.listIconColor, '#44739e')), num(data.listIconSize, 20), !!item.imageColor)}</span> : null}
                                     <span style={{ flex: '1 1 auto', minWidth: 0 }}><span className="materialdesign-v-list-item-title" style={{ color: itemColor, display: 'block', fontFamily: data.listItemFont || undefined, fontSize: num(data.listItemFontSize, 16) }}>{item.text}</span>{item.subText ? <span className="materialdesign-v-list-item-subtitle" style={{ color: color(isSelected ? data.listItemSubFontSelectedColor : isHovered ? data.listItemSubFontHoverColor : data.listItemSubFontColor, itemColor), display: 'block', fontFamily: data.listItemSubFont || undefined, fontSize: num(data.listItemSubFontSize, 14) }}>{item.subText}</span> : null}</span>
                                     {data.showValue ? <span className="materialdesign-v-list-item-value" style={{ color: color(isSelected ? data.listItemValueFontSelectedColor : isHovered ? data.listItemValueFontHoverColor : data.listItemValueFontColor, itemColor), fontFamily: data.listItemValueFont || undefined, fontSize: num(data.listItemValueFontSize, 14), marginLeft: 8 }}>{String(item.value)}</span> : null}
