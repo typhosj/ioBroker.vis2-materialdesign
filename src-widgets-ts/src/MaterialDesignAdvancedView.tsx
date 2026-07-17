@@ -204,7 +204,9 @@ export class MaterialDesignAdvancedView extends VisWidget {
                 opacity: view === selected ? 1 : 0,
                 transition: `opacity ${duration}ms ${s(data.fadeEffect, "ease")}`,
               }}
-            />
+            >
+              {this.embed(view)}
+            </div>
           ))
         ) : !b(data.hideErrorMessage) ? (
           <span className="container-error">error: view not found.</span>

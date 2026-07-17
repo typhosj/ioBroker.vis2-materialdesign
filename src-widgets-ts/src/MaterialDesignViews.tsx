@@ -394,7 +394,9 @@ function visible(
 
 export class MaterialDesignViews extends VisWidget {
   private readonly root = React.createRef<HTMLDivElement>();
-  private readonly rendered = new Set<string>();
+  private readonly cellRefs = new Map<number, HTMLDivElement | null>();
+  private measured: Record<number, number> = {};
+  private polling = false;
   private width = 0;
   private widgetId = "materialdesign-views";
   private observer?: ResizeObserver;
@@ -417,35 +419,49 @@ export class MaterialDesignViews extends VisWidget {
       }
     });
     if (this.root.current) this.observer.observe(this.root.current);
-    this.renderViews();
+    this.startMeasure();
   }
   componentDidUpdate(): void {
-    this.renderViews();
+    this.startMeasure();
   }
   componentWillUnmount(): void {
     this.observer?.disconnect();
     super.componentWillUnmount?.();
   }
-  private renderViews(): void {
-    const d = this.state.rxData as unknown as Data;
-    const vis = (
-      window as unknown as {
-        vis?: { renderView?: (target: string, view: string) => void };
+  // Native VIS2 child-view embed. The embedded view has no intrinsic height
+  // (absolute children) and loads async, so poll each cell's scrollHeight.
+  private embed(view: string): React.JSX.Element {
+    return (
+      this as unknown as {
+        getWidgetView: (
+          v: string,
+          p?: Record<string, unknown>,
+        ) => React.JSX.Element;
       }
-    ).vis;
-    if (!vis?.renderView) return;
-    for (
-      let index = 0;
-      index <= Math.max(0, Math.floor(n(d.countViews, 3)));
-      index++
-    ) {
-      const view = s(d[`View${index}`]);
-      const target = `${this.widgetId}-${this.kind}-${index}`;
-      if (view && !this.rendered.has(`${target}:${view}`)) {
-        vis.renderView(target, view);
-        this.rendered.add(`${target}:${view}`);
+    ).getWidgetView(view, { style: { width: "100%", height: "100%" } });
+  }
+  private startMeasure(): void {
+    if (this.polling) return;
+    this.polling = true;
+    let ticks = 0;
+    const tick = (): void => {
+      let changed = false;
+      this.cellRefs.forEach((el, index) => {
+        if (!el) return;
+        const h = el.scrollHeight;
+        if (h && Math.abs(h - (this.measured[index] || 0)) > 1) {
+          this.measured[index] = h;
+          changed = true;
+        }
+      });
+      if (changed) this.forceUpdate();
+      if (++ticks < 14) {
+        setTimeout(tick, 120);
+      } else {
+        this.polling = false;
       }
-    }
+    };
+    tick();
   }
   private layout(d: Data): { cols: number; gaps: number; key: string } {
     const width = this.width || this.root.current?.clientWidth || 1025;
@@ -545,12 +561,17 @@ export class MaterialDesignViews extends VisWidget {
             >
               <div
                 id={`${this.widgetId}-${this.kind}-${index}`}
+                ref={(el) => this.cellRefs.set(index, el)}
                 style={{
-                  height: height || "100%",
+                  height: height || this.measured[index] || (view ? undefined : "100%"),
                   width: "100%",
+                  overflow: "hidden",
+                  position: "relative",
                   border: view ? undefined : "2px dashed #44739e",
                 }}
-              />
+              >
+                {view ? this.embed(view) : null}
+              </div>
             </div>
           );
         })}
