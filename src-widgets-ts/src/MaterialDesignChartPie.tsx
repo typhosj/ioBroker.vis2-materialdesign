@@ -420,7 +420,7 @@ export default class MaterialDesignChartPie extends VisWidget {
         {pieces}
       </svg>
     );
-    const chartjs = <MaterialDesignChartCanvas type={s(data.chartType, "pie")} data={{ labels: values.map(item => item.label), datasets: [{ data: values.map(item => item.value), backgroundColor: values.map(item => item.color), borderColor: s(data.borderColor, "#fff"), borderWidth: n(data.borderWidth, 1) }] }} options={{ animation: { duration: n(data.animationDuration, 1000) }, cutoutPercentage: s(data.chartType) === "doughnut" ? n(data.doughnutCutOut, 50) : 0, legend: { display: false }, tooltips: { enabled: b(data.showTooltip, true) } }} />;
+    const chartjs = <MaterialDesignChartCanvas type={s(data.chartType, "pie")} data={{ labels: values.map(item => item.label), datasets: [{ data: values.map(item => item.value), backgroundColor: values.map(item => item.color), borderColor: s(data.borderColor, "#fff"), borderWidth: n(data.borderWidth, 1) }] }} options={{ animation: { duration: n(data.animationDuration, 1000) }, cutoutPercentage: s(data.chartType) === "doughnut" ? n(data.doughnutCutOut, 50) : 0, legend: { display: b(data.showLegend), position: s(data.legendPosition, "top") as "top" | "left" | "bottom" | "right", labels: { fontColor: s(data.legendFontColor) || undefined, fontSize: n(data.legendFontSize) || undefined } }, tooltips: { enabled: b(data.showTooltip, true) } }} />;
     return (
       <div
         className="materialdesign-widget materialdesign-chart"
