@@ -127,6 +127,7 @@
     "calendarTimeAxisHeaderBackgroundColor": "цвет фона заголовка",
     "calendarTimeAxisHeight": "высота",
     "calendarTimeAxisIntervalMinutes": "интервал в минутах",
+    "calendarTimeFormat": "формат времени",
     "calendarTimeAxisShortIntervals": "показывать короткие интервалы в виде текста",
     "calendarTimeAxisStartTime": "час начала",
     "calendarTimeAxisWidth": "ширина",

@@ -127,6 +127,7 @@
     "calendarTimeAxisHeaderBackgroundColor": "achtergrondkleur",
     "calendarTimeAxisHeight": "hoogte",
     "calendarTimeAxisIntervalMinutes": "interval in minuten",
+    "calendarTimeFormat": "tijdnotatie",
     "calendarTimeAxisShortIntervals": "toon korte intervallen als tekst",
     "calendarTimeAxisStartTime": "start uur",
     "calendarTimeAxisWidth": "breedte",

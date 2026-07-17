@@ -126,7 +126,6 @@ export function advancedViewInfo(kind: Kind): RxWidgetInfo {
 
 export class MaterialDesignAdvancedView extends VisWidget {
   private widgetId = "materialdesign-advanced-view";
-  private readonly rendered = new Set<string>();
   constructor(
     props: any,
     private readonly kind: Kind,
@@ -136,12 +135,16 @@ export class MaterialDesignAdvancedView extends VisWidget {
   getWidgetInfo(): RxWidgetInfo {
     return advancedViewInfo(this.kind);
   }
-  componentDidMount(): void {
-    super.componentDidMount();
-    this.renderViews();
-  }
-  componentDidUpdate(): void {
-    this.renderViews();
+  // Native VIS2 child-view embedding (legacy vis.renderView is a stub in VIS2).
+  private embed(view: string): React.JSX.Element {
+    return (
+      this as unknown as {
+        getWidgetView: (
+          v: string,
+          p?: Record<string, unknown>,
+        ) => React.JSX.Element;
+      }
+    ).getWidgetView(view, { style: { width: "100%", height: "100%" } });
   }
   private selected(data: Data): string {
     const value = stateValue(this.state as VisRxWidgetState, s(data.oid));
@@ -180,23 +183,6 @@ export class MaterialDesignAdvancedView extends VisWidget {
         ].filter(Boolean),
       ),
     );
-  }
-  private renderViews(): void {
-    const data = this.state.rxData as unknown as Data;
-    const vis = (
-      window as unknown as {
-        vis?: { renderView?: (target: string, view: string) => void };
-      }
-    ).vis;
-    if (!vis?.renderView) return;
-    this.candidates(data).forEach((view, index) => {
-      const target = `${this.widgetId}-${index}`;
-      const signature = `${target}:${view}`;
-      if (!this.rendered.has(signature)) {
-        vis.renderView(target, view);
-        this.rendered.add(signature);
-      }
-    });
   }
   renderWidgetBody(props: RenderProps): React.JSX.Element {
     super.renderWidgetBody(props);

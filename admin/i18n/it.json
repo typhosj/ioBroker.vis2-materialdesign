@@ -127,6 +127,7 @@
     "calendarTimeAxisHeaderBackgroundColor": "intestazione colore di sfondo",
     "calendarTimeAxisHeight": "altezza",
     "calendarTimeAxisIntervalMinutes": "intervallo in minuti",
+    "calendarTimeFormat": "formato ora",
     "calendarTimeAxisShortIntervals": "mostra brevi intervalli come testo",
     "calendarTimeAxisStartTime": "ora di inizio",
     "calendarTimeAxisWidth": "larghezza",

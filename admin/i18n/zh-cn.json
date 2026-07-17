@@ -127,6 +127,7 @@
     "calendarTimeAxisHeaderBackgroundColor": "标题背景颜色",
     "calendarTimeAxisHeight": "高度",
     "calendarTimeAxisIntervalMinutes": "分钟间隔",
+    "calendarTimeFormat": "时间格式",
     "calendarTimeAxisShortIntervals": "显示短时间间隔为文本",
     "calendarTimeAxisStartTime": "开始时间",
     "calendarTimeAxisWidth": "宽度",

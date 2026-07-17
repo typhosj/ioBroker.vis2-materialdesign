@@ -39,6 +39,32 @@ const b = (v: unknown, d = false) =>
   v === undefined || v === null || v === ""
     ? d
     : v === true || v === "true" || v === 1 || v === "1";
+export const jsonChartValue = (raw: unknown): number | null => {
+  const value = typeof raw === "object" && raw ? (raw as { y?: unknown }).y : raw;
+  if (value === null || value === undefined || value === "") return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+};
+export function jsonChartSegments<T>(points: Array<T | null>, spanGaps: boolean): T[][] {
+  if (spanGaps) {
+    const segment = points.filter((point): point is T => point !== null);
+    return segment.length ? [segment] : [];
+  }
+  const segments: T[][] = [];
+  let current: T[] | null = null;
+  for (const point of points) {
+    if (point === null) {
+      current = null;
+      continue;
+    }
+    if (!current) {
+      current = [];
+      segments.push(current);
+    }
+    current.push(point);
+  }
+  return segments;
+}
 const color = (name: string) => ({ name, label: name, type: "color" as const });
 const number = (name: string) => ({
   name,
@@ -250,11 +276,7 @@ export default class MaterialDesignChartJson extends VisWidget {
     const graphs = input?.graphs || [];
     const labels = input?.axisLabels || [];
     const values = graphs.flatMap((graph) =>
-      (graph.data || []).map((value) =>
-        typeof value === "object" && value
-          ? n((value as { y?: unknown }).y)
-          : n(value),
-      ),
+      (graph.data || []).map(jsonChartValue).filter((value): value is number => value !== null),
     );
     const min = Math.min(0, ...values),
       max = Math.max(1, ...values),
@@ -301,18 +323,10 @@ export default class MaterialDesignChartJson extends VisWidget {
       >
         {grid}
         {graphs.map((graph, gi) => {
-          const points = (graph.data || []).map((raw, i) => ({
-            x: x(i),
-            y: y(
-              typeof raw === "object" && raw
-                ? n((raw as { y?: unknown }).y)
-                : n(raw),
-            ),
-            value:
-              typeof raw === "object" && raw
-                ? n((raw as { y?: unknown }).y)
-                : n(raw),
-          }));
+          const points = (graph.data || []).map((raw, i) => {
+            const value = jsonChartValue(raw);
+            return value === null ? null : { x: x(i), y: y(value), value };
+          });
           const c = s(
             graph.color,
             palette[gi] || s(data.globalColor, "#44739e"),
@@ -320,7 +334,7 @@ export default class MaterialDesignChartJson extends VisWidget {
           if (s(graph.type, s(data.chartType, "bar")) === "bar")
             return (
               <g key={gi}>
-                {points.map((point, i) => (
+                {points.map((point, i) => point ? (
                   <rect
                     key={i}
                     x={
@@ -340,30 +354,31 @@ export default class MaterialDesignChartJson extends VisWidget {
                   >
                     <title>{`${graph.legendText || ""}: ${point.value}`}</title>
                   </rect>
-                ))}
+                ) : null)}
               </g>
             );
-          const path = points
-            .map((point, i) => {
-              const previous = points[i - 1];
-              return `${i ? b(graph.line_steppedLine) ? `L${point.x} ${previous.y} L` : "L" : "M"}${point.x} ${point.y}`;
-            })
-            .join(" ");
+          const segments = jsonChartSegments(points, b(graph.line_spanGaps, true));
+          const paths = segments.map((segment) => segment.map((point, i) => {
+            const previous = segment[i - 1];
+            return `${i ? b(graph.line_steppedLine) ? `L${point.x} ${previous.y} L` : "L" : "M"}${point.x} ${point.y}`;
+          }).join(" "));
           return (
             <g key={gi}>
               {b(graph.line_UseFillColor) ? (
-                <path
-                  d={`${path} L${points[points.length - 1]?.x || l} ${t + ah} L${points[0]?.x || l} ${t + ah} Z`}
+                segments.map((segment, segmentIndex) => <path
+                  key={`fill-${segmentIndex}`}
+                  d={`${paths[segmentIndex]} L${segment[segment.length - 1].x} ${t + ah} L${segment[0].x} ${t + ah} Z`}
                   fill={s(graph.line_FillColor, `${c}33`)}
-                />
+                />)
               ) : null}
-              <path
+              {paths.map((path, segmentIndex) => <path
+                key={`line-${segmentIndex}`}
                 d={path}
                 fill="none"
                 stroke={c}
                 strokeWidth={n(graph.line_Thickness, 2)}
-              />
-              {points.map((point, i) => (
+              />)}
+              {points.map((point, i) => point ? (
                 <circle
                   key={i}
                   cx={point.x}
@@ -373,9 +388,9 @@ export default class MaterialDesignChartJson extends VisWidget {
                 >
                   <title>{`${graph.legendText || ""}: ${point.value}`}</title>
                 </circle>
-              ))}
+              ) : null)}
               {points.map((point, i) =>
-                b(graph.datalabel_show, true) && i % Math.max(1, n(graph.datalabel_steps, 1)) === 0 ? (
+                point && b(graph.datalabel_show, true) && i % Math.max(1, n(graph.datalabel_steps, 1)) === 0 ? (
                   <text key={`label-${i}`} x={point.x} y={point.y - n(graph.datalabel_fontSize, 14) / 2} fill={s(graph.datalabel_color, c)} fontFamily={s(graph.datalabel_fontFamily)} fontSize={n(graph.datalabel_fontSize, 14)} textAnchor="middle">{`${point.value.toFixed(Math.max(0, n(graph.datalabel_maxDigits)))}${s(graph.datalabel_append)}`}</text>
                 ) : null,
               )}
@@ -428,7 +443,7 @@ export default class MaterialDesignChartJson extends VisWidget {
         ))}
       </div>
     ) : null;
-    const chartjs = <MaterialDesignChartCanvas type={s(data.chartType, "bar")} data={{ labels, datasets: graphs.map((graph, i) => ({ type: s(graph.type, s(data.chartType, "bar")), label: s(graph.legendText), data: (graph.data || []).map(value => typeof value === "object" && value ? n((value as { y?: unknown }).y) : n(value)), borderColor: s(graph.color, palette[i] || s(data.globalColor, "#44739e")), backgroundColor: b(graph.line_UseFillColor) ? s(graph.line_FillColor, `${s(graph.color, palette[i] || s(data.globalColor, "#44739e"))}33`) : s(graph.color, palette[i] || s(data.globalColor, "#44739e")), borderWidth: n(graph.line_Thickness, n(graph.barBorderWidth, 2)), steppedLine: b(graph.line_steppedLine), fill: b(graph.line_UseFillColor), yAxisID: `yAxis_id_${n((graph as Record<string, unknown>).yAxis_id, i)}`, stack: b(graph.barIsStacked) ? n((graph as Record<string, unknown>).barStackId, 0) : undefined })) }} options={{ animation: { duration: n(data.animationDuration, 1000) }, legend: { display: b(data.showLegend, true) }, tooltips: { enabled: b(data.showTooltip, true) }, scales: { yAxes: graphs.map((graph, i) => ({ id: `yAxis_id_${n((graph as Record<string, unknown>).yAxis_id, i)}`, position: s((graph as Record<string, unknown>).yAxis_position, "left"), stacked: b(graph.barIsStacked), ticks: { min: n((graph as Record<string, unknown>).yAxis_min, undefined as unknown as number), max: n((graph as Record<string, unknown>).yAxis_max, undefined as unknown as number) } })) } }} />;
+    const chartjs = <MaterialDesignChartCanvas type={s(data.chartType, "bar")} data={{ labels, datasets: graphs.map((graph, i) => ({ type: s(graph.type, s(data.chartType, "bar")), label: s(graph.legendText), data: (graph.data || []).map(jsonChartValue), borderColor: s(graph.color, palette[i] || s(data.globalColor, "#44739e")), backgroundColor: b(graph.line_UseFillColor) ? s(graph.line_FillColor, `${s(graph.color, palette[i] || s(data.globalColor, "#44739e"))}33`) : s(graph.color, palette[i] || s(data.globalColor, "#44739e")), borderWidth: n(graph.line_Thickness, n(graph.barBorderWidth, 2)), steppedLine: b(graph.line_steppedLine), spanGaps: b(graph.line_spanGaps, true), fill: b(graph.line_UseFillColor), yAxisID: `yAxis_id_${n((graph as Record<string, unknown>).yAxis_id, i)}`, stack: b(graph.barIsStacked) ? n((graph as Record<string, unknown>).barStackId, 0) : undefined })) }} options={{ animation: { duration: n(data.animationDuration, 1000) }, legend: { display: b(data.showLegend, true) }, tooltips: { enabled: b(data.showTooltip, true) }, scales: { yAxes: graphs.map((graph, i) => ({ id: `yAxis_id_${n((graph as Record<string, unknown>).yAxis_id, i)}`, position: s((graph as Record<string, unknown>).yAxis_position, "left"), stacked: b(graph.barIsStacked), ticks: { min: n((graph as Record<string, unknown>).yAxis_min, undefined as unknown as number), max: n((graph as Record<string, unknown>).yAxis_max, undefined as unknown as number) } })) } }} />;
     return (
       <div
         className="materialdesign-widget materialdesign-chart"
