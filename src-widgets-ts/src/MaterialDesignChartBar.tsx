@@ -16,6 +16,8 @@ type Bar = {
   valueText: string;
   valueColor: string;
   appendix: string;
+  tooltipTitle: string;
+  tooltipText: string;
 };
 const s = (v: unknown, d = ""): string =>
   v === undefined || v === null || v === "" || v === "null" ? d : String(v);
@@ -506,6 +508,8 @@ export default class MaterialDesignChartBar extends VisWidget {
           row?.valueAppendix,
           s(indexed(data, "labelValueAppend", i), s(data.valuesAppendText)),
         ),
+        tooltipTitle: s(row?.tooltipTitle, s(indexed(data, "tooltipTitle", i))),
+        tooltipText: s(row?.tooltipText, s(indexed(data, "tooltipText", i))),
       };
     });
     const min =
@@ -518,7 +522,10 @@ export default class MaterialDesignChartBar extends VisWidget {
         : n(data.axisValueMax, 1);
     const horizontal = s(data.chartType, "vertical") === "horizontal";
     const title = s(data.title);
-    const chartjs = <MaterialDesignChartCanvas type={horizontal ? "horizontalBar" : "bar"} data={{ labels: bars.map(bar => bar.label), datasets: [{ data: bars.map(bar => bar.value), backgroundColor: bars.map(bar => bar.color), borderColor: s(data.hoverBorderColor), borderWidth: n(data.hoverBorderWidth) }] }} options={{ animation: { duration: n(data.animationDuration, 1000) }, legend: { display: false }, scales: { yAxes: horizontal ? [{ ticks: { min, max } }] : [{ ticks: { min, max } }], xAxes: horizontal ? [{ ticks: { min, max } }] : [{}] }, tooltips: { enabled: b(data.showTooltip, true) } }} />;
+    const chartjs = <MaterialDesignChartCanvas type={horizontal ? "horizontalBar" : "bar"} data={{ labels: bars.map(bar => bar.label), datasets: [{ data: bars.map(bar => bar.value), backgroundColor: bars.map(bar => bar.color), borderColor: s(data.hoverBorderColor), borderWidth: n(data.hoverBorderWidth) }] }} options={{ animation: { duration: n(data.animationDuration, 1000) }, legend: { display: false }, scales: { yAxes: horizontal ? [{ ticks: { min, max } }] : [{ ticks: { min, max } }], xAxes: horizontal ? [{ ticks: { min, max } }] : [{}] }, tooltips: { enabled: b(data.showTooltip, true), callbacks: {
+      title: (items: { index?: number }[]) => { const bar = bars[n(items[0]?.index)]; return bar?.tooltipTitle ? bar.tooltipTitle.split("\\n") : s(bar?.label); },
+      label: (item: { index?: number }) => { const bar = bars[n(item.index)]; return bar?.tooltipText ? bar.tooltipText.split("\\n") : `${s(bar?.valueText)}${s(bar?.appendix)}`; },
+    } } }} />;
     return (
       <div
         className="materialdesign-widget materialdesign-chart"

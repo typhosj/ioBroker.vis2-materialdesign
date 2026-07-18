@@ -313,59 +313,9 @@ export default class MaterialDesignChartPie extends VisWidget {
           item?.valueAppendix,
           s(data[`labelValueAppend${i}`], s(data.valuesAppendText)),
         ),
+        tooltipTitle: s(item?.tooltipTitle, s(data[`tooltipTitle${i}`])),
+        tooltipText: s(item?.tooltipText, s(data[`tooltipText${i}`])),
       };
-    });
-    const total = Math.max(
-      1,
-      values.reduce((sum, item) => sum + item.value, 0),
-    );
-    const radius = 180,
-      inner =
-        s(data.chartType, "pie") === "doughnut"
-          ? (radius * Math.max(0, Math.min(100, n(data.doughnutCutOut, 50)))) /
-            100
-          : 0;
-    let angle = -Math.PI / 2;
-    const arc = (start: number, end: number): string => {
-      const a = [
-          500 + radius * Math.cos(start),
-          300 + radius * Math.sin(start),
-        ],
-        z = [500 + radius * Math.cos(end), 300 + radius * Math.sin(end)],
-        large = end - start > Math.PI ? 1 : 0;
-      if (!inner)
-        return `M500 300 L${a[0]} ${a[1]} A${radius} ${radius} 0 ${large} 1 ${z[0]} ${z[1]} Z`;
-      const ai = [500 + inner * Math.cos(end), 300 + inner * Math.sin(end)],
-        zi = [500 + inner * Math.cos(start), 300 + inner * Math.sin(start)];
-      return `M${a[0]} ${a[1]} A${radius} ${radius} 0 ${large} 1 ${z[0]} ${z[1]} L${ai[0]} ${ai[1]} A${inner} ${inner} 0 ${large} 0 ${zi[0]} ${zi[1]} Z`;
-    };
-    const pieces = values.map((item, i) => {
-      const start = angle,
-        end = (angle += (item.value / total) * Math.PI * 2),
-        mid = (start + end) / 2,
-        labelRadius = inner ? (radius + inner) / 2 : radius * 0.62;
-      return (
-        <g key={i}>
-          <path
-            d={arc(start, end)}
-            fill={item.color}
-            stroke={s(data.borderColor, "#fff")}
-            strokeWidth={n(data.borderWidth, 1)}
-          >
-            <title>{`${item.label}: ${item.value}${item.appendix}`}</title>
-          </path>
-          {s(data.showValues, "showValuesOn") !== "showValuesOff" && i % Math.max(1, n(data.valuesSteps, 1)) === 0 ? (
-            <text
-              x={500 + labelRadius * Math.cos(mid)}
-              y={300 + labelRadius * Math.sin(mid)}
-              fill={item.textColor}
-              fontFamily={s(data.valuesFontFamily)}
-              fontSize={n(data.valuesFontSize, 18)}
-              textAnchor="middle"
-            >{`${item.value.toLocaleString(undefined, { minimumFractionDigits: Math.max(0, n(data.valuesMinDecimals)), maximumFractionDigits: Math.max(0, n(data.valuesMaxDecimals)) })}${item.appendix}`}</text>
-          ) : null}
-        </g>
-      );
     });
     const legend = b(data.showLegend) ? (
       <div
@@ -405,22 +355,10 @@ export default class MaterialDesignChartPie extends VisWidget {
         ))}
       </div>
     ) : null;
-    const chart = (
-      <svg
-        viewBox="0 0 1000 600"
-        preserveAspectRatio="xMidYMid meet"
-        style={{
-          background: s(data.chartAreaBackgroundColor),
-          flex: 1,
-          height: "100%",
-          minHeight: 0,
-          width: "100%",
-        }}
-      >
-        {pieces}
-      </svg>
-    );
-    const chartjs = <MaterialDesignChartCanvas type={s(data.chartType, "pie")} data={{ labels: values.map(item => item.label), datasets: [{ data: values.map(item => item.value), backgroundColor: values.map(item => item.color), borderColor: s(data.borderColor, "#fff"), borderWidth: n(data.borderWidth, 1) }] }} options={{ animation: { duration: n(data.animationDuration, 1000) }, cutoutPercentage: s(data.chartType) === "doughnut" ? n(data.doughnutCutOut, 50) : 0, legend: { display: b(data.showLegend), position: s(data.legendPosition, "top") as "top" | "left" | "bottom" | "right", labels: { fontColor: s(data.legendFontColor) || undefined, fontSize: n(data.legendFontSize) || undefined } }, tooltips: { enabled: b(data.showTooltip, true) } }} />;
+    const chartjs = <MaterialDesignChartCanvas type={s(data.chartType, "pie")} data={{ labels: values.map(item => item.label), datasets: [{ data: values.map(item => item.value), backgroundColor: values.map(item => item.color), borderColor: s(data.borderColor, "#fff"), borderWidth: n(data.borderWidth, 1) }] }} options={{ animation: { duration: n(data.animationDuration, 1000) }, cutoutPercentage: s(data.chartType) === "doughnut" ? n(data.doughnutCutOut, 50) : 0, legend: { display: b(data.showLegend), position: s(data.legendPosition, "top") as "top" | "left" | "bottom" | "right", labels: { fontColor: s(data.legendFontColor) || undefined, fontSize: n(data.legendFontSize) || undefined } }, tooltips: { enabled: b(data.showTooltip, true), callbacks: {
+      title: (items: { index?: number }[]) => { const item = values[n(items[0]?.index)]; return item?.tooltipTitle ? item.tooltipTitle.split("\\n") : ""; },
+      label: (item: { index?: number }) => { const v = values[n(item.index)]; if (v?.tooltipText) return v.tooltipText.split("\\n"); const num = n(v?.value).toLocaleString(undefined, { minimumFractionDigits: Math.max(0, n(data.tooltipValueMinDecimals)), maximumFractionDigits: Math.max(0, n(data.tooltipValueMaxDecimals)) }); return `${s(v?.label)}: ${num}${s(v?.appendix)}`; },
+    } } }} />;
     return (
       <div
         className="materialdesign-widget materialdesign-chart"
