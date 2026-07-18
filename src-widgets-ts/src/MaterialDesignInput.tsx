@@ -359,6 +359,12 @@ export default class MaterialDesignInput extends VisWidget {
                                         }}
                                         onChange={event => {
                                             this.localValue = event.target.value;
+                                            // Native date/time pickers (esp. Android) fire only `change`,
+                                            // often without a blur — commit their atomic value immediately.
+                                            // Text/number keep committing on blur/Enter to avoid per-keystroke writes.
+                                            if (data.inputType === 'date' || data.inputType === 'time') {
+                                                this.commit(data, event.target.value);
+                                            }
                                             this.forceUpdate();
                                         }}
                                         onFocus={() => {
