@@ -71,64 +71,67 @@ for (const component of requiredComponents) {
     assert.ok(fs.existsSync(path.join(root, "src-widgets-ts", "src", `${component}.tsx`)), `${component} source must exist`);
 }
 
-const legacyTemplates = fs.readFileSync(path.join(root, "widgets", "materialdesign.html"), "utf8").match(/id="tplVis-materialdesign-[^"]+/g) || [];
-assert.ok(legacyTemplates.length >= 40, "legacy widget templates must remain available for parity comparison");
-const legacyCoverage = {
-    Alerts: "MaterialDesignAlerts",
-    Autocomplete: "MaterialDesignAutocomplete",
-    "Button-Adition": "MaterialDesignButtonAdition",
-    "Button-Adition-vertical": "MaterialDesignButtonAditionVertical",
-    "Button-Link": "MaterialDesignButtonLink",
-    "Button-Link-vertical": "MaterialDesignButtonLinkVertical",
-    "Button-Navigation": "MaterialDesignButtonNavigation",
-    "Button-Navigation-vertical": "MaterialDesignButtonNavigationVertical",
-    "Button-State": "MaterialDesignButtonState",
-    "Button-State-Multi": "MaterialDesignButtonStateMulti",
-    "Button-State-Multi-vertical": "MaterialDesignButtonStateMultiVertical",
-    "Button-State-vertical": "MaterialDesignButtonStateVertical",
-    "Button-Toggle": "MaterialDesignButtonToggle",
-    "Button-Toggle-vertical": "MaterialDesignButtonToggleVertical",
-    Calendar: "MaterialDesignCalendar",
-    Card: "MaterialDesignCard",
-    "Chart-Bar": "MaterialDesignChartBar",
-    "Chart-JSON": "MaterialDesignChartJson",
-    "Chart-Line-History": "MaterialDesignChartLineHistory",
-    "Chart-Pie": "MaterialDesignChartPie",
-    CheckBox: "MaterialDesignCheckbox",
-    "ColorScheme-Preview": "MaterialDesignColorScheme",
-    "Grid-Views": "MaterialDesignGridViews",
-    Icon: "MaterialDesignIcon",
-    "Icon-Button-Adition": "MaterialDesignIconButtonAdition",
-    "Icon-Button-Link": "MaterialDesignIconButtonLink",
-    "Icon-Button-Navigation": "MaterialDesignIconButtonNavigation",
-    "Icon-Button-Slider": "MaterialDesignIconButtonSlider",
-    "Icon-Button-State": "MaterialDesignIconButtonState",
-    "Icon-Button-State-Multi": "MaterialDesignIconButtonStateMulti",
-    "Icon-Button-Toggle": "MaterialDesignIconButtonToggle",
-    "Icon-List": "MaterialDesignIconList",
-    Input: "MaterialDesignInput",
-    "Installed-Version": "MaterialDesignInstalledVersion",
-    List: "MaterialDesignList",
-    "Masonry-Views": "MaterialDesignMasonryViews",
-    Progress: "MaterialDesignProgress",
-    "Progress-Circular": "MaterialDesignProgressCircular",
-    Select: "MaterialDesignSelect",
-    "Slider-Round": "MaterialDesignRoundSlider",
-    Switch: "MaterialDesignSwitch",
-    Table: "MaterialDesignTable",
-    "TopAppBar-Navigation": "MaterialDesignTopAppBar",
-    "Vuetify-Dialog-View": "MaterialDesignDialogView",
-    "Vuetify-Dialog-iFrame": "MaterialDesignDialogIFrame",
-    "Vuetify-Slider": "MaterialDesignSlider",
-    value: "MaterialDesignValue",
-    "view-in-widget": "MaterialDesignAdvancedViewInWidget",
-    "view-in-widget8": "MaterialDesignAdvancedViewInWidget8",
-};
-for (const [template, component] of Object.entries(legacyCoverage)) {
-    assert.ok(legacyTemplates.includes(`id="tplVis-materialdesign-${template}`), `${template} legacy template must exist`);
-    assert.ok(widgetRegistry.components.includes(component), `${template} must have a registered VIS2 counterpart`);
+// Every ported widget must be registered in io-package.json, exposed by Vite, and have source.
+// This list used to be cross-checked against the VIS1 legacy templates in
+// widgets/materialdesign.html; that legacy bundle has been removed, so the list is now the
+// authoritative set of VIS2 counterparts on its own.
+const portedComponents = [
+    "MaterialDesignAlerts",
+    "MaterialDesignAutocomplete",
+    "MaterialDesignButtonAdition",
+    "MaterialDesignButtonAditionVertical",
+    "MaterialDesignButtonLink",
+    "MaterialDesignButtonLinkVertical",
+    "MaterialDesignButtonNavigation",
+    "MaterialDesignButtonNavigationVertical",
+    "MaterialDesignButtonState",
+    "MaterialDesignButtonStateMulti",
+    "MaterialDesignButtonStateMultiVertical",
+    "MaterialDesignButtonStateVertical",
+    "MaterialDesignButtonToggle",
+    "MaterialDesignButtonToggleVertical",
+    "MaterialDesignCalendar",
+    "MaterialDesignCard",
+    "MaterialDesignChartBar",
+    "MaterialDesignChartJson",
+    "MaterialDesignChartLineHistory",
+    "MaterialDesignChartPie",
+    "MaterialDesignCheckbox",
+    "MaterialDesignColorScheme",
+    "MaterialDesignGridViews",
+    "MaterialDesignIcon",
+    "MaterialDesignIconButtonAdition",
+    "MaterialDesignIconButtonLink",
+    "MaterialDesignIconButtonNavigation",
+    "MaterialDesignIconButtonSlider",
+    "MaterialDesignIconButtonState",
+    "MaterialDesignIconButtonStateMulti",
+    "MaterialDesignIconButtonToggle",
+    "MaterialDesignIconList",
+    "MaterialDesignInput",
+    "MaterialDesignInstalledVersion",
+    "MaterialDesignList",
+    "MaterialDesignMasonryViews",
+    "MaterialDesignProgress",
+    "MaterialDesignProgressCircular",
+    "MaterialDesignSelect",
+    "MaterialDesignRoundSlider",
+    "MaterialDesignSwitch",
+    "MaterialDesignTable",
+    "MaterialDesignTopAppBar",
+    "MaterialDesignDialogView",
+    "MaterialDesignDialogIFrame",
+    "MaterialDesignSlider",
+    "MaterialDesignValue",
+    "MaterialDesignAdvancedViewInWidget",
+    "MaterialDesignAdvancedViewInWidget8",
+];
+for (const component of portedComponents) {
+    assert.ok(widgetRegistry.components.includes(component), `${component} must be registered in io-package.json`);
+    assert.ok(vite.includes(`./${component}`), `${component} must be exposed by Vite`);
+    assert.ok(fs.existsSync(path.join(root, "src-widgets-ts", "src", `${component}.tsx`)), `${component} source must exist`);
 }
-assert.strictEqual(Object.keys(legacyCoverage).length, legacyTemplates.length, "every legacy Material Design template must have a VIS2 counterpart");
+assert.strictEqual(widgetRegistry.components.length, portedComponents.length, "io-package.json must register exactly the ported VIS2 components");
 assert.ok(fs.existsSync(path.join(root, "widgets", "vis2-materialdesign", "materialdesign-widgets-click-sound.mp3")), "VIS2 click sound must be packaged");
 
 for (const file of walk(path.join(root, "admin"), (name) => name.endsWith(".json") && !name.endsWith("tsconfig.json"))) {

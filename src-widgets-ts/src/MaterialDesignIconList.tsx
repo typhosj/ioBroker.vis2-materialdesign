@@ -225,7 +225,7 @@ export default class MaterialDesignIconList extends VisWidget {
     private readonly relockTimers = new Map<number, number>();
 
     static getWidgetInfo(): RxWidgetInfo {
-        return { ...createInfo('tplVis2-materialdesign-Icon-List', 'Icon List', attrs), visPrev: '<img src="widgets/materialdesign/img/prev_iconlist.png"></img>', visDefaultStyle: { width: 400, height: 270 } };
+        return { ...createInfo('tplVis2-materialdesign-Icon-List', 'Icon List', attrs), visPrev: '<img src="widgets/vis2-materialdesign/img/prev_iconlist.png"></img>', visDefaultStyle: { width: 400, height: 270 } };
     }
 
     getWidgetInfo(): RxWidgetInfo { return MaterialDesignIconList.getWidgetInfo(); }

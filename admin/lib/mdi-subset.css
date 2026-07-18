@@ -1,0 +1,26 @@
+/*
+ * Minimal Material Design Icons subset for the admin theme editor.
+ *
+ * The editor only uses two MDI glyphs (`mdi-coffee` and the `mdi-material-design`
+ * brand mark). It previously pulled the full MDI stylesheet from the legacy VIS1
+ * upload path (files/vis/widgets/materialdesign/...), which breaks once the `vis`
+ * adapter is uninstalled. This vendors just the webfont (woff2) plus the two glyph
+ * rules locally, so the admin page is self-contained. Font is @mdi/font 6.7.96.
+ */
+@font-face {
+    font-family: "Material Design Icons";
+    src: url("materialdesignicons-webfont.woff2") format("woff2");
+    font-weight: normal;
+    font-style: normal;
+}
+.mdi:before {
+    display: inline-block;
+    font: normal normal normal 24px/1 "Material Design Icons";
+    font-size: inherit;
+    text-rendering: auto;
+    line-height: inherit;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+.mdi-coffee:before { content: "\F0176"; }
+.mdi-material-design:before { content: "\F0986"; }

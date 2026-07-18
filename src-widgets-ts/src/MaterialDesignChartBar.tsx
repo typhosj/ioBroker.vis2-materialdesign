@@ -451,7 +451,7 @@ export default class MaterialDesignChartBar extends VisWidget {
   static getWidgetInfo(): RxWidgetInfo {
     return {
       ...createInfo("tplVis2-materialdesign-Chart-Bar", "Bar Chart", attrs),
-      visPrev: '<img src="widgets/materialdesign/img/bar_chart.png"></img>',
+      visPrev: '<img src="widgets/vis2-materialdesign/img/bar_chart.png"></img>',
       visDefaultStyle: { width: 400, height: 270 },
     };
   }

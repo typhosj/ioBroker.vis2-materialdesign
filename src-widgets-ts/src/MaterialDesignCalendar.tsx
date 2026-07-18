@@ -71,7 +71,7 @@ export default class MaterialDesignCalendar extends VisWidget {
     private date = new Date();
     private view = '';
     private touchX = 0;
-    static getWidgetInfo(): RxWidgetInfo { return { ...createInfo('tplVis2-materialdesign-Calendar', 'Calendar', attrs), visPrev: '<img src="widgets/materialdesign/img/calendar.png"></img>', visDefaultStyle: { width: 500, height: 300 } }; }
+    static getWidgetInfo(): RxWidgetInfo { return { ...createInfo('tplVis2-materialdesign-Calendar', 'Calendar', attrs), visPrev: '<img src="widgets/vis2-materialdesign/img/calendar.png"></img>', visDefaultStyle: { width: 500, height: 300 } }; }
     getWidgetInfo(): RxWidgetInfo { return MaterialDesignCalendar.getWidgetInfo(); }
     renderWidgetBody(props: RenderProps): React.JSX.Element {
         super.renderWidgetBody(props);

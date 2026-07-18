@@ -270,7 +270,7 @@ export function dialogInfo(kind: Kind): RxWidgetInfo {
       ],
     ),
     visPrev:
-      '<img src="widgets/materialdesign/img/prev_dialog_view.png"></img>',
+      '<img src="widgets/vis2-materialdesign/img/prev_dialog_view.png"></img>',
     visDefaultStyle: { width: 100, height: 30 },
   };
 }

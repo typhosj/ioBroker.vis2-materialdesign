@@ -404,7 +404,7 @@ function preview(def: ButtonDefinition): string {
     const iconSize = isVertical ? '26px' : 'auto';
     const iconColor = isIcon ? '#44739e' : '';
     const icon = `&#x${iconGlyphs[def.icon] ?? iconGlyphs.plus};`;
-    const font = `<style>@font-face{font-family:"Material Design Icons";src:url("widgets/materialdesign/lib/fonts/material-design-icons/materialdesignicons-webfont.ttf") format("truetype");}.vis2-md-preview-icon{font-family:"Material Design Icons";font-weight:normal;font-style:normal;line-height:1;display:inline-block;}</style>`;
+    const font = `<style>@font-face{font-family:"Material Design Icons";src:url("widgets/vis2-materialdesign/img/materialdesignicons-webfont.woff2") format("woff2");}.vis2-md-preview-icon{font-family:"Material Design Icons";font-weight:normal;font-style:normal;line-height:1;display:inline-block;}</style>`;
     const bodyStyle = isVertical
         ? 'display:flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; height: 100%;'
         : 'display:flex; justify-content: center; align-items: center; width: 100%; height: 100%;';

@@ -272,7 +272,7 @@ export default class MaterialDesignChartPie extends VisWidget {
   static getWidgetInfo(): RxWidgetInfo {
     return {
       ...createInfo("tplVis2-materialdesign-Chart-Pie", "Pie Chart", attrs),
-      visPrev: '<img src="widgets/materialdesign/img/pie_chart.png"></img>',
+      visPrev: '<img src="widgets/vis2-materialdesign/img/pie_chart.png"></img>',
       visDefaultStyle: { width: 400, height: 270 },
     };
   }

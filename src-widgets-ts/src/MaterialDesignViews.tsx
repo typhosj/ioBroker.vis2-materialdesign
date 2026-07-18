@@ -358,7 +358,7 @@ export function viewsInfo(kind: Kind): RxWidgetInfo {
         },
       ],
     ),
-    visPrev: `<img src="widgets/materialdesign/img/prev_${masonry ? "masonry" : "grid"}_views.png"></img>`,
+    visPrev: `<img src="widgets/vis2-materialdesign/img/prev_${masonry ? "masonry" : "grid"}_views.png"></img>`,
     visDefaultStyle: { width: "100%", height: "100%" },
   };
 }

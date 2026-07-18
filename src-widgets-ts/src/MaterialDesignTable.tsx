@@ -28,7 +28,7 @@ const attrs: RxWidgetInfo['visAttrs'] = [
 
 export default class MaterialDesignTable extends VisWidget {
     private sortKey = ''; private sortAsc = true; private hoverRow = -1;
-    static getWidgetInfo(): RxWidgetInfo { return { ...createInfo('tplVis2-materialdesign-Table', 'Table', attrs), visPrev: '<img src="widgets/materialdesign/img/prev_table.png"></img>', visDefaultStyle: { width: 400, height: 250 } }; }
+    static getWidgetInfo(): RxWidgetInfo { return { ...createInfo('tplVis2-materialdesign-Table', 'Table', attrs), visPrev: '<img src="widgets/vis2-materialdesign/img/prev_table.png"></img>', visDefaultStyle: { width: 400, height: 250 } }; }
     getWidgetInfo(): RxWidgetInfo { return MaterialDesignTable.getWidgetInfo(); }
     renderWidgetBody(props: RenderProps): React.JSX.Element {
         super.renderWidgetBody(props);

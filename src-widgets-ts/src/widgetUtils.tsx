@@ -10,6 +10,16 @@ import fonts from '../../admin/lib/fonts.json';
 import fontSizes from '../../admin/lib/fontSizes.json';
 import translations from './translations';
 import '../../fonts.css';
+// Material Design Icons webfont, vendored from npm (@mdi/font 6.7.96 — the exact legacy
+// version). `mdi-font.css` carries the `.mdi` / `.mdi-<name>` glyph classes + a
+// woff2-ONLY "Material Design Icons" @font-face (generated from the package's min.css;
+// the eot/woff/ttf formats it also ships are dead weight for our chrome89 target). So the
+// VIS2 bundle supplies the icon font itself, no longer depending on legacy CSS.
+import './mdi-font.css';
+// MDC baseline rules (typography + card elevation/media aspect-ratio) that a few widgets
+// use ambiently and cannot express inline. Vendored from the legacy bundle so the widgets
+// keep rendering after the VIS1 legacy CSS is removed. See the file header for scope.
+import './materialdesign-mdc.css';
 
 // VIS 2 resolves widget-attribute GROUP headers via the legacy `window.vis._` / `window.systemDictionary`,
 // which the component i18n does NOT populate — so custom groups (e.g. `group_theme`) render as raw keys.

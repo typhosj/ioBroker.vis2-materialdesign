@@ -255,7 +255,7 @@ export default class MaterialDesignChartJson extends VisWidget {
     return {
       ...createInfo("tplVis2-materialdesign-Chart-JSON", "JSON Chart", attrs),
       visPrev:
-        '<img src="widgets/materialdesign/img/prev_json_chart.png"></img>',
+        '<img src="widgets/vis2-materialdesign/img/prev_json_chart.png"></img>',
       visDefaultStyle: { width: 400, height: 270 },
     };
   }

@@ -9,7 +9,8 @@ const s = (value: unknown, fallback = ''): string => value === '' || value === u
 const b = (value: unknown, fallback = false): boolean => value === undefined || value === null || value === '' ? fallback : value === true || value === 'true' || value === 1 || value === '1';
 const n = (value: unknown, fallback = 0): number => value === '' || value === undefined || value === null || !Number.isFinite(Number(value)) ? fallback : Number(value);
 const sizes = ['auto', 'headline1', 'headline2', 'headline3', 'headline4', 'headline5', 'headline6', 'subtitle1', 'subtitle2', 'body1', 'body2', 'caption', 'button', 'overline', 'xx-small', 'x-small', 'small', 'medium', 'large', 'x-large', 'xx-large', 'smaller', 'larger'];
-// MDC typography names render via the loaded legacy mdc-typography classes (size/weight/font); real CSS
+// MDC typography names render via the vendored `mdc-typography--*` classes (size/weight/font,
+// bundled in materialdesign-mdc.css); real CSS
 // sizes render via inline font-size. Old widget did the same split (class vs style); a bare inline
 // font-size:'subtitle2' is invalid and silently ignored, so subtitle/body must use the class path.
 const typoNames = new Set(['headline1', 'headline2', 'headline3', 'headline4', 'headline5', 'headline6', 'subtitle1', 'subtitle2', 'body1', 'body2', 'caption', 'button', 'overline']);
@@ -23,7 +24,7 @@ const attrs: RxWidgetInfo['visAttrs'] = [
     { name: 'controlCard', label: 'group_controlCard', fields: [{ name: 'clickType', label: 'clickType', type: 'select', options: ['none', 'card', 'image', 'text'], default: 'none' }, { name: 'controlType', label: 'controlType', type: 'select', options: ['link', 'state'], default: 'link' }, { name: 'href', label: 'href', type: 'url' }, { name: 'state_oid', label: 'state_oid', type: 'id' }, { name: 'state_value', label: 'state_value', type: 'text' }] },
 ];
 export default class MaterialDesignCard extends VisWidget {
-    static getWidgetInfo(): RxWidgetInfo { return { ...createInfo('tplVis2-materialdesign-Card', 'HTML Card', attrs), visPrev: '<div id="prev_tplVis-materialdesign-Card" style="position:relative;padding:4px"><div class="vis-widget_prev materialdesign-html-card mdc-card" style="width:100px;height:131px"><div class="mdc-card__media mdc-card__media--16-9" style="background-image:url(widgets/materialdesign/img/preview.jpg)"></div><div class="materialdesign-html-card card-title-section"><div class="materialdesign-html-card card-title">Title</div><div class="materialdesign-html-card card-subtitle">Subtitle</div></div></div></div>', visDefaultStyle: { width: 200, height: 130 } }; }
+    static getWidgetInfo(): RxWidgetInfo { return { ...createInfo('tplVis2-materialdesign-Card', 'HTML Card', attrs), visPrev: '<div id="prev_tplVis-materialdesign-Card" style="position:relative;padding:4px"><div class="vis-widget_prev materialdesign-html-card mdc-card" style="width:100px;height:131px"><div class="mdc-card__media mdc-card__media--16-9" style="background-image:url(widgets/vis2-materialdesign/img/preview.jpg)"></div><div class="materialdesign-html-card card-title-section"><div class="materialdesign-html-card card-title">Title</div><div class="materialdesign-html-card card-subtitle">Subtitle</div></div></div></div>', visDefaultStyle: { width: 200, height: 130 } }; }
     getWidgetInfo(): RxWidgetInfo { return MaterialDesignCard.getWidgetInfo(); }
     // #149 image refresh lifecycle: cache-bust the media URL on a trigger state, on view re-entry, or on wake-up.
     private seenRefresh: unknown; private refreshReady = false; private refreshTs = 0; private refreshTimer?: ReturnType<typeof setTimeout>;

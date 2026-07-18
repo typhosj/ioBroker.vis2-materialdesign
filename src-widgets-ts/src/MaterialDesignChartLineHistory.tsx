@@ -253,7 +253,7 @@ export default class MaterialDesignChartLineHistory extends VisWidget {
         attrs,
       ),
       visPrev:
-        '<img src="widgets/materialdesign/img/prev_line_history_chart.png"></img>',
+        '<img src="widgets/vis2-materialdesign/img/prev_line_history_chart.png"></img>',
       visDefaultStyle: { width: 400, height: 270 },
     };
   }

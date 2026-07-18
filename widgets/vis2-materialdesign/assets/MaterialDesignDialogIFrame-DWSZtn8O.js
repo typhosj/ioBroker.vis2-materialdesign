@@ -1,1 +1,0 @@
-import{n as e,t}from"./MaterialDesignDialog-CzZQ8-ju.js";var n=class n extends t{constructor(e){super(e,`iframe`)}static getWidgetInfo(){return e(`iframe`)}getWidgetInfo(){return n.getWidgetInfo()}};export{n as default};
