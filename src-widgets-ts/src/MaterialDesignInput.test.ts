@@ -1,5 +1,18 @@
 import { describe, expect, it } from 'vitest';
-import { applyMask } from './MaterialDesignInput';
+import { activeLabelTranslateY, applyMask, outlinedNotchWidth } from './MaterialDesignInput';
+
+describe('outlined input geometry', () => {
+    it('uses VIS1 label offset unless a custom non-zero offset is configured', () => {
+        expect(activeLabelTranslateY(undefined)).toBe(-16);
+        expect(activeLabelTranslateY(0)).toBe(-16);
+        expect(activeLabelTranslateY(-12)).toBe(-12);
+    });
+
+    it('keeps the outline notch wider than the scaled label', () => {
+        expect(outlinedNotchWidth('Name', 16)).toBeCloseTo(37.76);
+        expect(outlinedNotchWidth('', 16)).toBe(0);
+    });
+});
 
 describe('applyMask (Input inputType:mask, VueTheMask parity)', () => {
     it('auto-inserts literal separators and keeps only matching chars', () => {

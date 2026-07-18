@@ -70,7 +70,13 @@ const attrs: RxWidgetInfo['visAttrs'] = [
         label: 'group_common',
         fields: [
             { name: 'oid', label: 'oid', type: 'id' },
-            { name: 'inputType', label: 'inputType', type: 'select', options: ['text', 'number', 'date', 'time', 'mask'], default: 'text' },
+            {
+                name: 'inputType',
+                label: 'inputType',
+                type: 'select',
+                options: ['text', 'number', 'date', 'time', 'mask'],
+                default: 'text',
+            },
             { name: 'inputMask', label: 'inputMask', type: 'text' },
             { name: 'inputMaxLength', label: 'inputMaxLength', type: 'number' },
             { name: 'generateHtmlControl', label: 'generateHtmlControl', type: 'checkbox' },
@@ -81,14 +87,52 @@ const attrs: RxWidgetInfo['visAttrs'] = [
         name: 'inputLayout',
         label: 'group_inputLayout',
         fields: [
-            { name: 'inputLayout', label: 'inputLayout', type: 'select', options: ['regular', 'solo', 'solo-rounded', 'solo-shaped', 'filled', 'filled-rounded', 'filled-shaped', 'outlined', 'outlined-rounded', 'outlined-shaped'], default: 'regular' },
-            { name: 'inputAlignment', label: 'inputAlignment', type: 'select', options: ['left', 'center', 'right'], default: 'left' },
+            {
+                name: 'inputLayout',
+                label: 'inputLayout',
+                type: 'select',
+                options: [
+                    'regular',
+                    'solo',
+                    'solo-rounded',
+                    'solo-shaped',
+                    'filled',
+                    'filled-rounded',
+                    'filled-shaped',
+                    'outlined',
+                    'outlined-rounded',
+                    'outlined-shaped',
+                ],
+                default: 'regular',
+            },
+            {
+                name: 'inputAlignment',
+                label: 'inputAlignment',
+                type: 'select',
+                options: ['left', 'center', 'right'],
+                default: 'left',
+            },
             { name: 'inputLayoutBackgroundColor', label: 'inputLayoutBackgroundColor', type: 'color' },
             { name: 'inputLayoutBackgroundColorHover', label: 'inputLayoutBackgroundColorHover', type: 'color' },
             { name: 'inputLayoutBackgroundColorSelected', label: 'inputLayoutBackgroundColorSelected', type: 'color' },
-            { name: 'inputLayoutBorderColor', label: 'inputLayoutBorderColor', type: 'color', default: '#mdwTheme:vis-materialdesign.0.colors.input.border' },
-            { name: 'inputLayoutBorderColorHover', label: 'inputLayoutBorderColorHover', type: 'color', default: '#mdwTheme:vis-materialdesign.0.colors.input.border_hover' },
-            { name: 'inputLayoutBorderColorSelected', label: 'inputLayoutBorderColorSelected', type: 'color', default: '#mdwTheme:vis-materialdesign.0.colors.input.border_selected' },
+            {
+                name: 'inputLayoutBorderColor',
+                label: 'inputLayoutBorderColor',
+                type: 'color',
+                default: '#mdwTheme:vis-materialdesign.0.colors.input.border',
+            },
+            {
+                name: 'inputLayoutBorderColorHover',
+                label: 'inputLayoutBorderColorHover',
+                type: 'color',
+                default: '#mdwTheme:vis-materialdesign.0.colors.input.border_hover',
+            },
+            {
+                name: 'inputLayoutBorderColorSelected',
+                label: 'inputLayoutBorderColorSelected',
+                type: 'color',
+                default: '#mdwTheme:vis-materialdesign.0.colors.input.border_selected',
+            },
             { name: 'inputTextFontFamily', label: 'inputTextFontFamily', type: 'fontname' },
             { name: 'inputTextFontSize', label: 'inputTextFontSize', type: 'number', default: 16 },
             { name: 'inputTextColor', label: 'inputTextColor', type: 'color', default: '#000000' },
@@ -100,10 +144,28 @@ const attrs: RxWidgetInfo['visAttrs'] = [
         label: 'group_inputLabel',
         fields: [
             { name: 'inputLabelText', label: 'inputLabelText', type: 'text' },
-            { name: 'inputLabelColor', label: 'inputLabelColor', type: 'color', default: '#mdwTheme:vis-materialdesign.0.colors.input.label' },
-            { name: 'inputLabelColorSelected', label: 'inputLabelColorSelected', type: 'color', default: '#mdwTheme:vis-materialdesign.0.colors.input.label_selected' },
+            {
+                name: 'inputLabelColor',
+                label: 'inputLabelColor',
+                type: 'color',
+                default: '#mdwTheme:vis-materialdesign.0.colors.input.label',
+            },
+            {
+                name: 'inputLabelColorSelected',
+                label: 'inputLabelColorSelected',
+                type: 'color',
+                default: '#mdwTheme:vis-materialdesign.0.colors.input.label_selected',
+            },
             { name: 'inputLabelFontFamily', label: 'inputLabelFontFamily', type: 'fontname' },
-            { name: 'inputLabelFontSize', label: 'inputLabelFontSize', type: 'slider', min: 0, max: 24, step: 1, default: 16 },
+            {
+                name: 'inputLabelFontSize',
+                label: 'inputLabelFontSize',
+                type: 'slider',
+                min: 0,
+                max: 24,
+                step: 1,
+                default: 16,
+            },
             { name: 'inputTranslateX', label: 'inputTranslateX', type: 'number' },
             { name: 'inputTranslateY', label: 'inputTranslateY', type: 'number' },
         ],
@@ -114,7 +176,12 @@ const attrs: RxWidgetInfo['visAttrs'] = [
         fields: [
             { name: 'inputPrefix', label: 'inputPrefix', type: 'text' },
             { name: 'inputSuffix', label: 'inputSuffix', type: 'text' },
-            { name: 'inputAppendixColor', label: 'inputAppendixColor', type: 'color', default: '#mdwTheme:vis-materialdesign.0.colors.input.appendix' },
+            {
+                name: 'inputAppendixColor',
+                label: 'inputAppendixColor',
+                type: 'color',
+                default: '#mdwTheme:vis-materialdesign.0.colors.input.appendix',
+            },
             { name: 'inputAppendixFontSize', label: 'inputAppendixFontSize', type: 'number', default: 14 },
             { name: 'inputAppendixFontFamily', label: 'inputAppendixFontFamily', type: 'fontname' },
         ],
@@ -127,7 +194,12 @@ const attrs: RxWidgetInfo['visAttrs'] = [
             { name: 'inputMessage', label: 'inputMessage', type: 'text' },
             { name: 'inputMessageFontFamily', label: 'inputMessageFontFamily', type: 'fontname' },
             { name: 'inputMessageFontSize', label: 'inputMessageFontSize', type: 'number', default: 14 },
-            { name: 'inputMessageColor', label: 'inputMessageColor', type: 'color', default: '#mdwTheme:vis-materialdesign.0.colors.input.message' },
+            {
+                name: 'inputMessageColor',
+                label: 'inputMessageColor',
+                type: 'color',
+                default: '#mdwTheme:vis-materialdesign.0.colors.input.message',
+            },
         ],
     },
     {
@@ -135,7 +207,12 @@ const attrs: RxWidgetInfo['visAttrs'] = [
         label: 'group_counter',
         fields: [
             { name: 'showInputCounter', label: 'showInputCounter', type: 'checkbox', default: true },
-            { name: 'inputCounterColor', label: 'inputCounterColor', type: 'color', default: '#mdwTheme:vis-materialdesign.0.colors.input.counter' },
+            {
+                name: 'inputCounterColor',
+                label: 'inputCounterColor',
+                type: 'color',
+                default: '#mdwTheme:vis-materialdesign.0.colors.input.counter',
+            },
             { name: 'inputCounterFontSize', label: 'inputCounterFontSize', type: 'number', default: 14 },
             { name: 'inputCounterFontFamily', label: 'inputCounterFontFamily', type: 'fontname' },
         ],
@@ -166,8 +243,20 @@ const attrs: RxWidgetInfo['visAttrs'] = [
 
 function layoutClass(layoutValue: string | undefined): string {
     const layout = layoutValue || 'regular';
-    const base = layout.includes('outlined') ? 'v-text-field--outlined' : layout.includes('filled') ? 'v-text-field--filled' : layout.includes('solo') ? 'v-text-field--solo' : '';
-    return [base, layout.includes('rounded') ? 'v-text-field--rounded' : '', layout.includes('shaped') ? 'v-text-field--shaped' : ''].filter(Boolean).join(' ');
+    const base = layout.includes('outlined')
+        ? 'v-text-field--outlined'
+        : layout.includes('filled')
+          ? 'v-text-field--filled'
+          : layout.includes('solo')
+            ? 'v-text-field--solo'
+            : '';
+    return [
+        base,
+        layout.includes('rounded') ? 'v-text-field--rounded' : '',
+        layout.includes('shaped') ? 'v-text-field--shaped' : '',
+    ]
+        .filter(Boolean)
+        .join(' ');
 }
 
 function inputType(data: InputData): string {
@@ -255,6 +344,18 @@ function fontSize(value: unknown, fallback: number): string {
     return sizeCss(value, fallback);
 }
 
+export function activeLabelTranslateY(value: unknown): number {
+    return value === undefined || value === '' || Number(value) === 0 ? -16 : num(value, -16);
+}
+
+export function outlinedNotchWidth(label: string, labelFontSize: unknown): number {
+    if (!label) {
+        return 0;
+    }
+    const activeFontSize = Math.max(10, num(labelFontSize, 16) * 0.75);
+    return Math.max(label.length * activeFontSize * 0.62 + 8, 20);
+}
+
 export default class MaterialDesignInput extends VisWidget {
     private focused = false;
     private localValue: string | undefined;
@@ -304,21 +405,39 @@ export default class MaterialDesignInput extends VisWidget {
         const value = this.localValue ?? String(state ?? '');
         const active = this.focused || value !== '';
         const layout = layoutClass(data.inputLayout);
-        const inactiveBorderColor = plainColor(data.inputLayoutBorderColor, 'rgba(0, 0, 0, 0.54)');
+        const inactiveBorderColor = plainColor(
+            data.inputLayoutBorderColor,
+            layout.includes('outlined') ? 'rgba(0, 0, 0, 0.24)' : 'rgba(0, 0, 0, 0.54)',
+        );
         const activeBorderColor = themeColor(data.inputLayoutBorderColorSelected, '#44739e');
         const borderColor = this.focused ? activeBorderColor : inactiveBorderColor;
-        const bg = this.focused ? cleanColor(data.inputLayoutBackgroundColorSelected, 'transparent') : cleanColor(data.inputLayoutBackgroundColor, 'transparent');
-        const labelColor = this.focused ? themeColor(data.inputLabelColorSelected, '#44739e') : themeColor(data.inputLabelColor, 'rgba(0, 0, 0, 0.54)');
-        const textColor = typeof data.inputTextColor === 'string' && data.inputTextColor.startsWith('#mdwTheme:') ? '#000000' : themeColor(data.inputTextColor, '#000000');
+        const bg = this.focused
+            ? cleanColor(data.inputLayoutBackgroundColorSelected, 'transparent')
+            : cleanColor(data.inputLayoutBackgroundColor, 'transparent');
+        const labelColor = this.focused
+            ? themeColor(data.inputLabelColorSelected, '#44739e')
+            : themeColor(data.inputLabelColor, 'rgba(0, 0, 0, 0.54)');
+        const textColor =
+            typeof data.inputTextColor === 'string' && data.inputTextColor.startsWith('#mdwTheme:')
+                ? '#000000'
+                : themeColor(data.inputTextColor, '#000000');
+        const appendixColor = themeColor(data.inputAppendixColor, 'rgba(0, 0, 0, 0.6)');
         const enclosed = layout.includes('outlined') || layout.includes('solo');
         const filled = layout.includes('filled');
         const hasDetails = !!data.inputMessage || !!data.showInputCounter;
         const slotMinHeight = enclosed || filled ? 40 : 32;
-        const labelTranslateY = data.inputTranslateY === undefined || data.inputTranslateY === '' || Number(data.inputTranslateY) === 0 ? -8 : num(data.inputTranslateY, -16);
+        const labelTranslateY = activeLabelTranslateY(data.inputTranslateY);
 
         return (
-            <div className="materialdesign-widget materialdesign-input" ref={this.rootRef} style={{ alignItems: 'center', display: 'flex', height: '100%', overflow: 'visible', width: '100%' }}>
-                <div className="materialdesign-vuetify-textField" style={{ height: '100%', width: '100%' }}>
+            <div
+                className="materialdesign-widget materialdesign-input"
+                ref={this.rootRef}
+                style={{ alignItems: 'center', display: 'flex', height: '100%', overflow: 'visible', width: '100%' }}
+            >
+                <div
+                    className="materialdesign-vuetify-textField"
+                    style={{ height: '100%', width: '100%' }}
+                >
                     <div
                         className={`v-input v-input--dense theme--light materialdesign-text-field ${layout}${this.focused ? ' v-input--is-focused' : ''}${active ? ' v-input--is-label-active v-input--is-dirty' : ''}`}
                         style={
@@ -327,14 +446,24 @@ export default class MaterialDesignInput extends VisWidget {
                                 '--vue-text-field-input-text-font-family': data.inputTextFontFamily || undefined,
                                 '--vue-text-field-input-text-font-size': `${fontSize(data.inputTextFontSize, 16)}px`,
                                 '--vue-text-field-before-color': inactiveBorderColor,
-                                '--vue-text-field-hover-color': themeColor(data.inputLayoutBorderColorHover, borderColor),
+                                '--vue-text-field-hover-color': themeColor(
+                                    data.inputLayoutBorderColorHover,
+                                    borderColor,
+                                ),
                                 '--vue-text-field-after-color': activeBorderColor,
-                                '--vue-text-field-label-before-color': themeColor(data.inputLabelColor, 'rgba(0, 0, 0, 0.54)'),
-                                '--vue-text-field-label-after-color': themeColor(data.inputLabelColorSelected, '#44739e'),
+                                '--vue-text-field-label-before-color': themeColor(
+                                    data.inputLabelColor,
+                                    'rgba(0, 0, 0, 0.54)',
+                                ),
+                                '--vue-text-field-label-after-color': themeColor(
+                                    data.inputLabelColorSelected,
+                                    '#44739e',
+                                ),
                                 '--vue-text-field-label-font-family': data.inputLabelFontFamily || undefined,
                                 '--vue-text-field-label-font-size': `${fontSize(data.inputLabelFontSize, 16)}px`,
-                                '--vue-text-field-appendix-color': themeColor(data.inputAppendixColor, textColor),
-                                '--vue-text-field-appendix-font-family': data.inputAppendixFontFamily || data.inputTextFontFamily || undefined,
+                                '--vue-text-field-appendix-color': appendixColor,
+                                '--vue-text-field-appendix-font-family':
+                                    data.inputAppendixFontFamily || data.inputTextFontFamily || undefined,
                                 '--vue-text-field-appendix-font-size': `${fontSize(data.inputAppendixFontSize, fontSize(data.inputTextFontSize, 16))}px`,
                                 boxSizing: 'border-box',
                                 color: textColor,
@@ -345,14 +474,30 @@ export default class MaterialDesignInput extends VisWidget {
                             } as React.CSSProperties
                         }
                     >
-                        {icon(data.prepandIcon, data.prepandIconColor, num(data.prepandIconSize, 16)) ? <div className="v-input__prepend-outer">{icon(data.prepandIcon, data.prepandIconColor, num(data.prepandIconSize, 16))}</div> : null}
-                        <div className="v-input__control" style={{ display: 'flex', flex: '1 1 auto', flexDirection: 'column', minHeight: 0, minWidth: 0, width: '100%' }}>
+                        {icon(data.prepandIcon, data.prepandIconColor, num(data.prepandIconSize, 16)) ? (
+                            <div className="v-input__prepend-outer">
+                                {icon(data.prepandIcon, data.prepandIconColor, num(data.prepandIconSize, 16))}
+                            </div>
+                        ) : null}
+                        <div
+                            className="v-input__control"
+                            style={{
+                                display: 'flex',
+                                flex: '1 1 auto',
+                                flexDirection: 'column',
+                                minHeight: 0,
+                                minWidth: 0,
+                                width: '100%',
+                            }}
+                        >
                             <div
                                 className="v-input__slot"
                                 style={{
                                     alignItems: 'stretch',
                                     background: bg,
-                                    borderBottom: enclosed ? undefined : `${this.focused ? 2 : 1}px solid ${this.focused ? activeBorderColor : inactiveBorderColor}`,
+                                    borderBottom: enclosed
+                                        ? undefined
+                                        : `${this.focused ? 2 : 1}px solid ${this.focused ? activeBorderColor : inactiveBorderColor}`,
                                     borderRadius: layout.includes('rounded') ? 28 : enclosed ? 4 : undefined,
                                     boxSizing: 'border-box',
                                     cursor: 'text',
@@ -365,13 +510,72 @@ export default class MaterialDesignInput extends VisWidget {
                                 }}
                             >
                                 {layout.includes('outlined') ? (
-                                    <fieldset aria-hidden="true" style={{ backgroundColor: 'transparent', borderColor, borderStyle: 'solid', borderWidth: this.focused ? 2 : 1 }}>
-                                        <legend style={{ height: 11, lineHeight: '11px', width: active ? Math.max((data.inputLabelText || '').length * 6, 20) : 0 }} />
+                                    <fieldset
+                                        aria-hidden="true"
+                                        style={{
+                                            backgroundColor: 'transparent',
+                                            borderColor,
+                                            borderRadius: layout.includes('rounded') ? 28 : 4,
+                                            borderStyle: 'solid',
+                                            borderWidth: this.focused ? 2 : 1,
+                                            margin: 0,
+                                            padding: '0 8px',
+                                        }}
+                                    >
+                                        <legend
+                                            style={{
+                                                height: 11,
+                                                lineHeight: '11px',
+                                                width: active
+                                                    ? outlinedNotchWidth(
+                                                          data.inputLabelText || '',
+                                                          data.inputLabelFontSize,
+                                                      )
+                                                    : 0,
+                                            }}
+                                        />
                                     </fieldset>
                                 ) : null}
-                                {icon(data.prepandInnerIcon, data.prepandInnerIconColor, num(data.prepandInnerIconSize, 16)) ? <div className="v-input__prepend-inner">{icon(data.prepandInnerIcon, data.prepandInnerIconColor, num(data.prepandInnerIconSize, 16))}</div> : null}
-                                <div className="v-text-field__slot" style={{ alignItems: 'center', boxSizing: 'border-box', display: 'flex', flex: '1 1 auto', minHeight: slotMinHeight, minWidth: 0, padding: '0 10px', position: 'relative', width: '100%' }}>
-                                    {data.inputPrefix ? <div className="v-text-field__prefix" style={{ flex: '0 0 auto' }}>{data.inputPrefix}</div> : null}
+                                {icon(
+                                    data.prepandInnerIcon,
+                                    data.prepandInnerIconColor,
+                                    num(data.prepandInnerIconSize, 16),
+                                ) ? (
+                                    <div className="v-input__prepend-inner">
+                                        {icon(
+                                            data.prepandInnerIcon,
+                                            data.prepandInnerIconColor,
+                                            num(data.prepandInnerIconSize, 16),
+                                        )}
+                                    </div>
+                                ) : null}
+                                <div
+                                    className="v-text-field__slot"
+                                    style={{
+                                        alignItems: 'center',
+                                        boxSizing: 'border-box',
+                                        display: 'flex',
+                                        flex: '1 1 auto',
+                                        minHeight: slotMinHeight,
+                                        minWidth: 0,
+                                        padding: '0 10px',
+                                        position: 'relative',
+                                        width: '100%',
+                                    }}
+                                >
+                                    {data.inputPrefix ? (
+                                        <div
+                                            className="v-text-field__prefix"
+                                            style={{
+                                                alignItems: 'center',
+                                                display: 'flex',
+                                                flex: '0 0 auto',
+                                                lineHeight: '20px',
+                                            }}
+                                        >
+                                            {data.inputPrefix}
+                                        </div>
+                                    ) : null}
                                     {data.inputLabelText ? (
                                         <label
                                             className={`v-label${active ? ' v-label--active' : ''}`}
@@ -379,13 +583,16 @@ export default class MaterialDesignInput extends VisWidget {
                                                 color: labelColor,
                                                 fontFamily: data.inputLabelFontFamily || undefined,
                                                 fontSize: fontSize(data.inputLabelFontSize, 16),
-                                                left: 0,
+                                                left: 12,
                                                 lineHeight: '20px',
                                                 maxWidth: '90%',
                                                 overflow: 'hidden',
+                                                paddingLeft: 0,
                                                 position: 'absolute',
                                                 top: filled ? 17 : 8,
-                                                transform: active ? `translateX(${num(data.inputTranslateX, 0)}px) translateY(${labelTranslateY}px) scale(0.75)` : undefined,
+                                                transform: active
+                                                    ? `translateX(${num(data.inputTranslateX, 0)}px) translateY(${labelTranslateY}px) scale(0.75)`
+                                                    : undefined,
                                                 transformOrigin: 'top left',
                                                 whiteSpace: 'nowrap',
                                                 zIndex: 2,
@@ -404,7 +611,10 @@ export default class MaterialDesignInput extends VisWidget {
                                         }}
                                         onChange={event => {
                                             // Mask type enforces the pattern as you type (VIS1 vue-the-mask parity).
-                                            this.localValue = data.inputType === 'mask' ? applyMask(event.target.value, maskPattern(data)) : event.target.value;
+                                            this.localValue =
+                                                data.inputType === 'mask'
+                                                    ? applyMask(event.target.value, maskPattern(data))
+                                                    : event.target.value;
                                             // Native date/time pickers (esp. Android) fire only `change`,
                                             // often without a blur — commit their atomic value immediately.
                                             // Text/number/mask keep committing on blur/Enter to avoid per-keystroke writes.
@@ -429,11 +639,12 @@ export default class MaterialDesignInput extends VisWidget {
                                             fontFamily: data.inputTextFontFamily || undefined,
                                             fontSize: fontSize(data.inputTextFontSize, 16),
                                             flex: '1 1 auto',
+                                            height: enclosed ? 20 : undefined,
                                             lineHeight: '20px',
                                             marginTop: !enclosed && !filled && data.inputLabelText ? 14 : undefined,
                                             maxWidth: '100%',
                                             minWidth: 0,
-                                            padding: '4px 0 8px 0',
+                                            padding: enclosed ? 0 : '4px 0 8px 0',
                                             position: 'relative',
                                             textAlign: data.inputAlignment || 'left',
                                             width: '100%',
@@ -442,7 +653,19 @@ export default class MaterialDesignInput extends VisWidget {
                                         type={inputType(data)}
                                         value={value}
                                     />
-                                    {data.inputSuffix ? <div className="v-text-field__suffix" style={{ flex: '0 0 auto' }}>{data.inputSuffix}</div> : null}
+                                    {data.inputSuffix ? (
+                                        <div
+                                            className="v-text-field__suffix"
+                                            style={{
+                                                alignItems: 'center',
+                                                display: 'flex',
+                                                flex: '0 0 auto',
+                                                lineHeight: '20px',
+                                            }}
+                                        >
+                                            {data.inputSuffix}
+                                        </div>
+                                    ) : null}
                                     {data.clearIconShow !== false && value !== '' ? (
                                         <button
                                             aria-label="clear"
@@ -451,25 +674,81 @@ export default class MaterialDesignInput extends VisWidget {
                                                 setStateValue(props as VisRxWidgetProps, data.oid || '', '');
                                                 this.forceUpdate();
                                             }}
-                                            style={{ alignItems: 'center', background: 'transparent', border: 0, cursor: 'pointer', display: 'flex', flex: '0 0 auto', height: 24, justifyContent: 'center', marginLeft: 4, padding: 0, position: 'relative', width: 24, zIndex: 10 }}
+                                            style={{
+                                                alignItems: 'center',
+                                                background: 'transparent',
+                                                border: 0,
+                                                cursor: 'pointer',
+                                                display: 'flex',
+                                                flex: '0 0 auto',
+                                                height: 24,
+                                                justifyContent: 'center',
+                                                marginLeft: 4,
+                                                padding: 0,
+                                                position: 'relative',
+                                                width: 24,
+                                                zIndex: 10,
+                                            }}
                                             type="button"
                                         >
-                                            <span aria-hidden="true" style={{ display: 'block', height: num(data.clearIconSize, 16), position: 'relative', width: num(data.clearIconSize, 16) }}>
-                                                <span style={{ background: plainColor(data.clearIconColor, '#44739e'), height: 2, left: 0, position: 'absolute', top: '50%', transform: 'rotate(45deg)', width: '100%' }} />
-                                                <span style={{ background: plainColor(data.clearIconColor, '#44739e'), height: 2, left: 0, position: 'absolute', top: '50%', transform: 'rotate(-45deg)', width: '100%' }} />
-                                            </span>
+                                            {renderIcon(
+                                                data.clearIcon || 'close',
+                                                plainColor(data.clearIconColor, '#44739e'),
+                                                num(data.clearIconSize, 16),
+                                                !!data.clearIconColor,
+                                            )}
                                         </button>
                                     ) : null}
                                 </div>
-                                {icon(data.appendIcon, data.appendIconColor, num(data.appendIconSize, 16)) ? <div className="v-input__append-inner">{icon(data.appendIcon, data.appendIconColor, num(data.appendIconSize, 16))}</div> : null}
+                                {icon(data.appendIcon, data.appendIconColor, num(data.appendIconSize, 16)) ? (
+                                    <div className="v-input__append-inner">
+                                        {icon(data.appendIcon, data.appendIconColor, num(data.appendIconSize, 16))}
+                                    </div>
+                                ) : null}
                             </div>
                             {hasDetails ? (
-                                <div className="v-text-field__details" style={{ alignItems: 'center', display: 'flex', flex: '0 0 auto', justifyContent: 'flex-end', maxWidth: '100%', minHeight: 14, overflow: 'visible', padding: '0 10px' }}>
+                                <div
+                                    className="v-text-field__details"
+                                    style={{
+                                        alignItems: 'center',
+                                        display: 'flex',
+                                        flex: '0 0 auto',
+                                        justifyContent: 'flex-end',
+                                        maxWidth: '100%',
+                                        minHeight: 14,
+                                        overflow: 'visible',
+                                        padding: '0 10px',
+                                    }}
+                                >
                                     {data.inputMessage ? (
-                                        <div style={{ color: themeColor(data.inputMessageColor, 'rgba(0, 0, 0, 0.54)'), flex: 1, fontFamily: data.inputMessageFontFamily || undefined, fontSize: fontSize(data.inputMessageFontSize, 14) }}>{data.inputMessage}</div>
+                                        <div
+                                            style={{
+                                                color: themeColor(data.inputMessageColor, 'rgba(0, 0, 0, 0.54)'),
+                                                flex: 1,
+                                                fontFamily: data.inputMessageFontFamily || undefined,
+                                                fontSize: fontSize(data.inputMessageFontSize, 14),
+                                            }}
+                                        >
+                                            {data.inputMessage}
+                                        </div>
                                     ) : null}
                                     {data.showInputCounter ? (
-                                        <div className="v-counter" style={{ color: plainColor(data.inputCounterColor, 'rgba(0, 0, 0, 0.54)'), flex: '0 1 auto', fontFamily: data.inputCounterFontFamily || undefined, fontSize: fontSize(data.inputCounterFontSize, 14), lineHeight: 1, marginLeft: 8, marginTop: 5, minHeight: 12, position: 'relative', whiteSpace: 'nowrap', zIndex: 5 }}>
+                                        <div
+                                            className="v-counter"
+                                            style={{
+                                                color: plainColor(data.inputCounterColor, 'rgba(0, 0, 0, 0.54)'),
+                                                flex: '0 1 auto',
+                                                fontFamily: data.inputCounterFontFamily || undefined,
+                                                fontSize: fontSize(data.inputCounterFontSize, 14),
+                                                lineHeight: 1,
+                                                marginLeft: 8,
+                                                marginTop: 5,
+                                                minHeight: 12,
+                                                position: 'relative',
+                                                whiteSpace: 'nowrap',
+                                                zIndex: 5,
+                                            }}
+                                        >
                                             {value.length}
                                             {data.inputMaxLength ? ` / ${num(data.inputMaxLength, 0)}` : ''}
                                         </div>
@@ -477,7 +756,15 @@ export default class MaterialDesignInput extends VisWidget {
                                 </div>
                             ) : null}
                         </div>
-                        {icon(data.appendOuterIcon, data.appendOuterIconColor, num(data.appendOuterIconSize, 16)) ? <div className="v-input__append-outer">{icon(data.appendOuterIcon, data.appendOuterIconColor, num(data.appendOuterIconSize, 16))}</div> : null}
+                        {icon(data.appendOuterIcon, data.appendOuterIconColor, num(data.appendOuterIconSize, 16)) ? (
+                            <div className="v-input__append-outer">
+                                {icon(
+                                    data.appendOuterIcon,
+                                    data.appendOuterIconColor,
+                                    num(data.appendOuterIconSize, 16),
+                                )}
+                            </div>
+                        ) : null}
                     </div>
                 </div>
             </div>
