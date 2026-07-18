@@ -6,7 +6,7 @@ Eine Material-Design-Checkbox, die einen Datenpunkt liest und schreibt – boole
 oder mit eigenen Ein-/Aus-Werten, mit optionaler Beschriftung, Theming, Farben
 und einer Sperr-Überlagerung.
 
-Widget-Template-ID: `tplVis2-materialdesign-Checkbox`.
+Widget-Template-ID: `tplVis2-materialdesign-CheckBox`.
 
 <img src="../../media/vis2_checkbox_runtime.png" alt="Checkbox zur Laufzeit">
 
@@ -22,9 +22,9 @@ aufgeführte Einstellungen sind selbsterklärend.
 <tr><td><b>labelPosition</b></td><td>Beschriftung <code>links</code>, <code>rechts</code> oder <code>aus</code>; <i>Label-Klick aktivieren</i> lässt auch das Label umschalten.</td></tr>
 </table>
 
-* **Farben** und **Verriegeln** sind optionale Gruppen – über das Kontrollkästchen
+- **Farben** und **Verriegeln** sind optionale Gruppen – über das Kontrollkästchen
   neben dem Gruppentitel aktivieren. Farben überschreibt das Theme (Box, Rahmen,
   Hover, Label); Verriegeln fügt eine Sperr-Überlagerung hinzu, die vor dem Ändern
   entsperrt werden muss und nach einer Verzögerung wieder sperrt.
-* **Thema** übernimmt Farben und Schriften aus dem zentralen Material-Design-Theme;
+- **Thema** übernimmt Farben und Schriften aus dem zentralen Material-Design-Theme;
   dazu die Gruppe Farben deaktiviert lassen.

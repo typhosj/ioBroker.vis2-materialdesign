@@ -1,5 +1,6 @@
 ![Logo](admin/vis-materialdesign.png)
 <!-- omit in toc -->
+
 # ioBroker.vis2-materialdesign
 
 ![stable version](http://iobroker.live/badges/vis2-materialdesign.svg)
@@ -10,7 +11,9 @@
 [![NPM](https://nodei.co/npm/iobroker.vis2-materialdesign.png?downloads=true)](https://nodei.co/npm/iobroker.vis2-materialdesign/)
 
 <!-- omit in toc -->
+
 ## Material Design Widgets for ioBroker VIS 2
+
 ioBroker VIS 2 Material Design widgets based on [Google's material design guidelines](https://material.io/design/).
 
 This adapter is maintained by typhosj. The widgets are based on the original
@@ -19,7 +22,9 @@ VIS Material Design widget work by Scrounger.
 <br>
 
 <!-- omit in toc -->
+
 ## Table of Content
+
 - [General](#general)
 - [Adapter settings](#adapter-settings)
 - [Widget documentation](#widget-documentation)
@@ -40,31 +45,38 @@ Scrounger <scrounger@gmx.net>.
 
 The following examples and discussion threads refer to the original VIS1 widgets. Use them as design/feature references, not as VIS2 installation instructions.
 
-* [Weather View](https://forum.iobroker.net/topic/32232/material-design-widgets-wetter-view)
-* [Skript Status](https://forum.iobroker.net/topic/30662/material-design-widgets-skript-status)
-* [Adapter Status](https://forum.iobroker.net/topic/30661/material-design-widgets-adapter-status)
-* [UniFi Netzwerk Status](https://github.com/typhosj/ioBroker.vis2-materialdesign/tree/master/examples/UnifiNetworkState)
+- [Weather View](https://forum.iobroker.net/topic/32232/material-design-widgets-wetter-view)
+- [Skript Status](https://forum.iobroker.net/topic/30662/material-design-widgets-skript-status)
+- [Adapter Status](https://forum.iobroker.net/topic/30661/material-design-widgets-adapter-status)
+- [UniFi Netzwerk Status](https://github.com/typhosj/ioBroker.vis2-materialdesign/tree/master/examples/UnifiNetworkState)
 
 ### Questions about the legacy widgets
 
-* [German threads](https://forum.iobroker.net/search?term=Material%20Design%20Widgets%3A&in=titles&matchWords=all&by%5B%5D=Scrounger&categories%5B%5D=7&sortBy=topic.title&sortDirection=desc&showAs=topics)
+- [German threads](https://forum.iobroker.net/search?term=Material%20Design%20Widgets%3A&in=titles&matchWords=all&by%5B%5D=Scrounger&categories%5B%5D=7&sortBy=topic.title&sortDirection=desc&showAs=topics)
 
 ### Browser support
 
 The generated widgets target modern Chromium-based browsers and current Firefox versions. Installed VIS2 runtime/browser compatibility testing is still pending.
 
 ### Supported Browser for vibrate on mobil devices function
+
 https://developer.mozilla.org/en-US/docs/Web/API/Navigator/vibrate
 
 ## Adapter settings
 
-The inherited Theme Editor and its `vis-materialdesign.0.*` bindings belong to the VIS1 widget set. They are retained for legacy compatibility, but are not native VIS2 configuration and have not been verified for the ported widgets. Configure native widgets through the VIS2 editor.
+The adapter configuration contains the VIS 2 theme editor. Widgets can copy the
+configured colors, fonts and font sizes through their **Theme** group in the
+VIS 2 editor. Widget-specific groups can override individual theme values.
 
 ## Widget documentation
 
-The following documents describe the original VIS1 widgets. They remain useful for option names and intended behavior, but are not yet native VIS2 user documentation.
+Native VIS 2 documentation is available in English and German. Screenshots show
+the current VIS 2 widgets and editor groups.
 
-- [Material Design Icons and Images](https://github.com/typhosj/ioBroker.vis2-materialdesign/blob/master/doc/en/widgets/material-design-icons-and-images.md)
+- [English index](https://github.com/typhosj/ioBroker.vis2-materialdesign/tree/master/doc/en/widgets)
+- [Deutscher Index](https://github.com/typhosj/ioBroker.vis2-materialdesign/tree/master/doc/de/widgets)
+
+- [Material Design Icons and Utilities](https://github.com/typhosj/ioBroker.vis2-materialdesign/blob/master/doc/en/widgets/material-design-icons-and-images.md)
 - [Buttons](https://github.com/typhosj/ioBroker.vis2-materialdesign/blob/master/doc/en/widgets/buttons.md)
 - [Buttons Vertical](https://github.com/typhosj/ioBroker.vis2-materialdesign/blob/master/doc/en/widgets/buttons-vertical.md)
 - [Icon Buttons](https://github.com/typhosj/ioBroker.vis2-materialdesign/blob/master/doc/en/widgets/icon-buttons.md)
@@ -86,41 +98,46 @@ The following documents describe the original VIS1 widgets. They remain useful f
 - [Alerts](https://github.com/typhosj/ioBroker.vis2-materialdesign/blob/master/doc/en/widgets/alerts.md)
 - [Calendar](https://github.com/typhosj/ioBroker.vis2-materialdesign/blob/master/doc/en/widgets/calendar.md)
 - [Dialog](https://github.com/typhosj/ioBroker.vis2-materialdesign/blob/master/doc/en/widgets/dialog.md)
-- [HTML Widgets](https://github.com/typhosj/ioBroker.vis2-materialdesign/blob/master/doc/en/widgets/html-widgets.md)
+- [Advanced View in Widget](https://github.com/typhosj/ioBroker.vis2-materialdesign/blob/master/doc/en/widgets/html-widgets.md)
 
-Full index: [doc/en/widgets/README.md](https://github.com/typhosj/ioBroker.vis2-materialdesign/tree/master/doc/en/widgets)
+Full indexes: [English](https://github.com/typhosj/ioBroker.vis2-materialdesign/tree/master/doc/en/widgets) · [Deutsch](https://github.com/typhosj/ioBroker.vis2-materialdesign/tree/master/doc/de/widgets)
 
 ## Informations
 
 ### Legacy library references
 
 The original VIS1 widget set used the following libraries. Native VIS2 components only use the dependencies bundled by their VIS2 build.
-* [Google material components for the web](https://github.com/material-components/material-components-web)
-* [Vuetify](https://github.com/vuetifyjs/vuetify)
-* [chartjs](https://www.chartjs.org/)
-* [round-slider from thomasloven](https://github.com/thomasloven/round-slider)
-* [Material Design Icons](https://materialdesignicons.com/)
 
+- [Google material components for the web](https://github.com/material-components/material-components-web)
+- [Vuetify](https://github.com/vuetifyjs/vuetify)
+- [chartjs](https://www.chartjs.org/)
+- [round-slider from thomasloven](https://github.com/thomasloven/round-slider)
+- [Material Design Icons](https://materialdesignicons.com/)
 
 ## Changelog
+
 ### **WORK IN PROGRESS**
 
 ### 0.2.0 (2026-07-13)
-* (typhosj) Ported all remaining legacy Material Design widget templates to native VIS 2 components
-* (typhosj) Added calendar, chart, table and embedded child-view widgets for dialogs, masonry, grid and advanced views
-* (typhosj) Added automated legacy-template-to-VIS2 registration coverage checks
-* (typhosj) Ported the adapter configuration UI to React 5 with the native theme editor
-* (typhosj) Restored the VIS2 editor action to apply Material Design theme values to widget properties
+
+- (typhosj) Ported all remaining legacy Material Design widget templates to native VIS 2 components
+- (typhosj) Added calendar, chart, table and embedded child-view widgets for dialogs, masonry, grid and advanced views
+- (typhosj) Added automated legacy-template-to-VIS2 registration coverage checks
+- (typhosj) Ported the adapter configuration UI to React 5 with the native theme editor
+- (typhosj) Restored the VIS2 editor action to apply Material Design theme values to widget properties
 
 ### 0.1.0 (2026-07-09)
-* (typhosj) Initial native VIS 2 port of the Material Design button widgets
-* (typhosj) Added one-to-one VIS 2 button variants for navigation, link, state, multi-state, addition, toggle, vertical buttons, icon buttons, and icon button slider
-* (typhosj) Added VIS 2 editor previews using the original Material Design icon glyphs
-* (typhosj) Ported button state writes, delayed multi-state writes, toggle and push-button behavior, lock overlay, click sound, vibration feedback, image/icon handling, and SVG color behavior
-* Based on the original VIS Material Design widgets version 0.5.9 by Scrounger
+
+- (typhosj) Initial native VIS 2 port of the Material Design button widgets
+- (typhosj) Added one-to-one VIS 2 button variants for navigation, link, state, multi-state, addition, toggle, vertical buttons, icon buttons, and icon button slider
+- (typhosj) Added VIS 2 editor previews using the original Material Design icon glyphs
+- (typhosj) Ported button state writes, delayed multi-state writes, toggle and push-button behavior, lock overlay, click sound, vibration feedback, image/icon handling, and SVG color behavior
+- Based on the original VIS Material Design widgets version 0.5.9 by Scrounger
 
 <!-- omit in toc -->
+
 ## License
+
 MIT License
 
 Copyright (c) 2026 typhosj <typhosj@gmx.de>  

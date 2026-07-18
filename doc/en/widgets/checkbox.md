@@ -5,7 +5,7 @@
 A Material Design checkbox that reads and writes a state — boolean or custom
 on/off values, with an optional label, theming, colors and a lock overlay.
 
-Widget template id: `tplVis2-materialdesign-Checkbox`.
+Widget template id: `tplVis2-materialdesign-CheckBox`.
 
 <img src="../../media/vis2_checkbox_runtime.png" alt="Checkbox at runtime">
 
@@ -22,9 +22,9 @@ ioBroker system language; the screenshot is from a German system.)
 <tr><td><b>labelPosition</b></td><td>Place the label <code>left</code>, <code>right</code> or <code>off</code>; <i>activate label click</i> lets the label toggle the state too.</td></tr>
 </table>
 
-* **Colors** and **Locking** are optional groups — enable them with the checkbox
+- **Colors** and **Locking** are optional groups — enable them with the checkbox
   next to the group title. Colors overrides the theme (box, border, hover, label);
   Locking adds a lock overlay that must be unlocked before the box changes and
   re-locks after a delay.
-* **Theme** takes colors and fonts from the central Material Design theme; leave
+- **Theme** takes colors and fonts from the central Material Design theme; leave
   the Colors group disabled to use it.

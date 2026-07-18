@@ -1,85 +1,22 @@
-# Material Design Icons and Images
+# Material Design Icons and Utilities
 
 [Back to README](../../../README.md#widget-documentation)
 
-![Logo](../media/materialdesignicons.png)
+Native VIS 2 utility widgets for a standalone icon, color-scheme preview and
+installed package version.
 
-### Editor Settings
+Template ids: `tplVis2-materialdesign-Icon`,
+`tplVis2-materialdesign-ColorScheme-Preview` and
+`tplVis2-materialdesign-Installed-Version`.
 
-Settings that are not listed in the table below are self-explanatory.
+<img src="../../media/vis2_material_design_icons_and_images_runtime.png" alt="Material Design icons in VIS 2">
 
-<table>
-    <thead>
-        <tr>
-            <th>Screenshot</th>
-            <th>Description</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td rowspan=6><img src="../media/material-icons.png"></td>
-            <td>Some of the widgets support <a href="https://materialdesignicons.com/" target="_blank">Material Design Icons</a> library. You can pic up an icon from the list above or open the image picker by clicking the button on the right of the input field.<br><br><b>Image colors only applies to the material design icons, not to an image!</b></td>
-        </tr>
-    </tbody>
-</table>
-
-### HTML Properties
-
-The following properties can be used as [HTML Widgets](html-widgets.md).
+## Editor settings
 
 <table>
-	<thead>
-		<tr>
-			<th>Property</th>
-			<th>Description</th>
-			<th>Type</th>
-			<th>Values</th>
-		</tr>
-	</thead>
-	<tbody>
-		<tr>
-			<td colspan="4" style="background: #44739e; color: white; border-color: #44739e;"><i><b><br>Common</b></i></td>
-		</tr>
-		<tr>
-			<td>mdw-mdwIcon</td>
-			<td>icon</td>
-			<td>string</td>
-			<td>
-		</tr>
-		<tr>
-			<td>mdw-mdwIconSize</td>
-			<td>icon size</td>
-			<td>number</td>
-			<td>
-		</tr>
-		<tr>
-			<td>mdw-mdwIconColor</td>
-			<td>icon color</td>
-			<td>string</td>
-			<td>hex(#44739e), rgb(20, 50, 200), rgba(20, 50, 200, 0.5)
-		</tr>
-		<tr>
-			<td>mdw-debug</td>
-			<td>debug</td>
-			<td>boolean</td>
-			<td>false | true
-		</tr>
-	</tbody>
+<tr><td><img src="../../media/vis2_material_design_icons_and_images_editor_overview.png" width="300"></td>
+<td><ul><li><b>Icon:</b> choose a Material Design icon or image, size and color.</li><li><b>Color Scheme Preview:</b> displays the available Material Design palettes.</li><li><b>Installed Version:</b> displays the packaged widget version.</li></ul></td></tr>
 </table>
 
-<!-- omit in toc -->
-#### HTML Properties - Example
-
-<details>
-
-```
-<div class='vis-widget materialdesign-widget materialdesign-icon materialdesign-materialdesignicons-html-element'
-	style='width: 50px; height: 50px; position: relative; display: flex; align-items: center;'
-	mdw-mdwIcon='iobroker'
-	mdw-mdwIconSize='30'
-	mdw-mdwIconColor='#mdwTheme:vis-materialdesign.0.colors.material_design_icon.color'
-	mdw-debug='true'
-></div>
-```
-
-</details>
+Icon/image fields accept Material Design icon names, common image paths, HTTP(S)
+URLs and data URLs. SVG masks support a single configured color.

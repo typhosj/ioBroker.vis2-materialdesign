@@ -2,7 +2,7 @@
 
 [Back to README](../../../README.md#widget-documentation)
 
-- [Material Design Icons and Images](material-design-icons-and-images.md)
+- [Material Design Icons and Utilities](material-design-icons-and-images.md)
 - [Buttons](buttons.md)
 - [Buttons Vertical](buttons-vertical.md)
 - [Icon Buttons](icon-buttons.md)
@@ -16,7 +16,7 @@
 - [Progress Circular](progress-circular.md)
 - [Slider](slider.md)
 - [Slider Round](slider-round.md)
-- [Input](input.md)
+- [Input, Select and Autocomplete](input.md)
 - [Top App Bar](top-app-bar.md)
 - [Charts](charts.md)
 - [Table](table.md)
@@ -24,4 +24,6 @@
 - [Alerts](alerts.md)
 - [Calendar](calendar.md)
 - [Dialog](dialog.md)
-- [HTML Widgets](html-widgets.md)
+- [Advanced View in Widget](html-widgets.md)
+
+[Deutsche Dokumentation](../../de/widgets/README.md)

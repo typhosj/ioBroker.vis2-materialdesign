@@ -2,33 +2,19 @@
 
 [Back to README](../../../README.md#widget-documentation)
 
-![Logo](../media/dialog.png)
+Two VIS 2 dialogs opened by a state: one embeds a VIS 2 view, the other an
+iFrame URL.
 
-### Editor Settings
+Template ids: `tplVis2-materialdesign-Vuetify-Dialog-View` and
+`tplVis2-materialdesign-Vuetify-Dialog-iFrame`.
 
-Settings that are not listed in the table below are self-explanatory.
+<img src="../../media/vis2_dialog_runtime.png" alt="Material Design dialog in VIS 2">
+
+## Editor settings
 
 <table>
-    <thead>
-        <tr>
-            <th>Screenshot</th>
-            <th>Setting</th>
-            <th>Description</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td rowspan=3><img src="../media/dialog_settings_common.png"></td>
-            <td>method to show dialog</td>
-            <td>show dialog using a button or using a datapoint (type boolean)</td>
-        </tr>
-        <tr>
-            <td>Conatins view</td>
-            <td>the view that should be shown by the dialog</td>
-        </tr>
-        <tr>
-            <td>show fullscreen dialog if resoltuion is lower than</td>
-            <td>Show fullscreen dialog if resolution is lower than the given value.</td>
-        </tr>
-    </tbody>
+<tr><td><img src="../../media/vis2_dialog_editor_overview.png" width="300"></td>
+<td><ul><li>Choose a local button or a datapoint as the opening method. A boolean true opens the datapoint-controlled dialog; closing writes false.</li><li>View variant: choose the embedded VIS 2 view.</li><li>iFrame variant: set URL, sandbox and scrolling.</li><li>Dialog, title, action buttons and close behaviour have separate groups.</li></ul></td></tr>
 </table>
+
+Use **no sandbox** only for trusted iFrame content.
