@@ -36,15 +36,6 @@ Author and maintainer: typhosj <typhosj@gmx.de>
 The widgets are based on the original VIS Material Design widget work by
 Scrounger <scrounger@gmx.net>.
 
-### Legacy VIS example project
-
-The original project is provided by [iobroker.click](https://iobroker.click/index.html), thanks to bluefox and ioBroker.
-
-* <a href="https://iobroker.click/vis/index.html?Material%20Design%20Widgets" target="_blank">VIS Runtime</a> (<a href="http://iobroker.click:8082/vis/index.html?Material%20Design%20Widgets" target="_blank">alternativ</a>)
-* <a href="https://iobroker.click/vis/edit.html?Material%20Design%20Widgets" target="_blank">VIS Editor</a> (<a href="http://iobroker.click:8082/vis/edit.html?Material%20Design%20Widgets" target="_blank">alternativ</a>)
-
-These links are **VIS1-only legacy references**. Native VIS2 surfaces must be rebuilt manually; they are not compatible with the old project format.
-
 ### Legacy examples and forum posts
 
 The following examples and discussion threads refer to the original VIS1 widgets. Use them as design/feature references, not as VIS2 installation instructions.
