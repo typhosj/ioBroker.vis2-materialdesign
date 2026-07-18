@@ -2,7 +2,7 @@ import React from 'react';
 
 import type { RxWidgetInfo, VisRxWidgetProps, VisRxWidgetState } from '@iobroker/types-vis-2';
 
-import { cleanColor, num } from './MaterialDesignProgress';
+import { cleanColor, num, snapToStep } from './MaterialDesignProgress';
 import { RenderProps, VisWidget, createInfo, setStateValue, stateValue } from './widgetUtils';
 
 export interface SliderData {
@@ -236,7 +236,7 @@ export default class MaterialDesignSlider extends VisWidget {
                 : (event.clientX - box.left) / box.width;
         const ratio = data.reverseSlider ? 1 - rawRatio : rawRatio;
         const value = min + Math.max(0, Math.min(1, ratio)) * (max - min);
-        const stepped = Math.round(value / step) * step;
+        const stepped = snapToStep(value, step);
         return Math.min(max, Math.max(min, stepped));
     }
 

@@ -109,6 +109,17 @@ export function num(value: unknown, fallback = 0): number {
     return Number.isFinite(parsed) ? parsed : fallback;
 }
 
+// Snap a value to the nearest multiple of step and strip binary-float noise
+// (e.g. step 0.1 -> 0.1*3 = 0.30000000000000004). Rounds to the step's decimals.
+export function snapToStep(value: number, step: number): number {
+    if (!Number.isFinite(step) || step <= 0) {
+        return value;
+    }
+    const stepped = Math.round(value / step) * step;
+    const decimals = (String(step).split('.')[1] || '').length;
+    return decimals ? Number(stepped.toFixed(decimals)) : stepped;
+}
+
 export function cleanColor(value: unknown, fallback: string): string {
     const raw = typeof value === 'string' ? value : '';
     return raw && !raw.startsWith('#mdwTheme:') ? raw : fallback;

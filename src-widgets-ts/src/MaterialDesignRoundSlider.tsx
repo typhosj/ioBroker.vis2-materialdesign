@@ -2,7 +2,7 @@ import React from 'react';
 
 import type { RxWidgetInfo, VisRxWidgetProps, VisRxWidgetState } from '@iobroker/types-vis-2';
 
-import { cleanColor, num } from './MaterialDesignProgress';
+import { cleanColor, num, snapToStep } from './MaterialDesignProgress';
 import { RenderProps, VisWidget, createInfo, setStateValue, stateValue } from './widgetUtils';
 
 export interface RoundSliderData {
@@ -196,7 +196,7 @@ export default class MaterialDesignRoundSlider extends VisWidget {
         delta = Math.min(arc, Math.max(0, delta));
         const pct = data.rtl ? 1 - delta / arc : delta / arc;
         const { min, max, step } = range(data);
-        const stepped = Math.round((min + pct * (max - min)) / step) * step;
+        const stepped = snapToStep(min + pct * (max - min), step);
         return Math.min(max, Math.max(min, stepped));
     }
 
