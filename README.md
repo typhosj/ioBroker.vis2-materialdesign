@@ -118,6 +118,13 @@ The original VIS1 widget set used the following libraries. Native VIS2 component
 
 ### **WORK IN PROGRESS**
 
+- (typhosj) Removed all VIS 1 legacy: the bundled `materialdesign` VIS 1 widget set and `materialdesign.html` are gone; the adapter no longer ships or depends on any VIS 1 files
+- (typhosj) Made all widgets self-contained by vendoring the Material Design Icons webfont and the required Material Components base CSS into the widget bundle, so icons and styling render without the legacy stylesheet
+- (typhosj) Removed the obsolete jQuery/Materialize configuration page; the native React theme editor is now the only admin UI
+- (typhosj) Roughly halved the published package size (woff2-only fonts, dead-code removal, smaller preview image)
+- (typhosj) Added text input masking and custom calendar date/time formats
+- (typhosj) Restored full visual parity of the ported widgets against the original VIS 1 versions and migrated the widget documentation to VIS 2
+
 ### 0.2.0 (2026-07-13)
 
 - (typhosj) Ported all remaining legacy Material Design widget templates to native VIS 2 components
