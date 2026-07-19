@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import MaterialDesignCalendar, { formatCalendarTime, formatMoment } from './MaterialDesignCalendar';
+import MaterialDesignCalendar, { calendarEventHasTime, calendarEventOccursOnDate, formatCalendarTime, formatMoment } from './MaterialDesignCalendar';
 
 describe('MaterialDesignCalendar time format', () => {
     it('formats explicit 24-hour and 12-hour times independently from locale', () => {
@@ -7,6 +7,20 @@ describe('MaterialDesignCalendar time format', () => {
         expect(formatCalendarTime(810, '24h', 'en-US')).toBe('13:30');
         expect(formatCalendarTime(65, '12h', 'de-DE')).toBe('1:05 AM');
         expect(formatCalendarTime(810, '12h', 'de-DE')).toBe('1:30 PM');
+    });
+
+    it('distinguishes timed events from all-day dates', () => {
+        expect(calendarEventHasTime('2026-07-19')).toBe(false);
+        expect(calendarEventHasTime('2026-07-19T05:00:00')).toBe(true);
+        expect(calendarEventHasTime('2026-07-19 05:00')).toBe(true);
+    });
+
+    it('treats all-day end dates as exclusive', () => {
+        const holiday = { start: '2026-07-25', end: '2026-08-09', name: 'Holiday' };
+        expect(calendarEventOccursOnDate(holiday, '2026-07-25')).toBe(true);
+        expect(calendarEventOccursOnDate(holiday, '2026-08-08')).toBe(true);
+        expect(calendarEventOccursOnDate(holiday, '2026-08-09')).toBe(false);
+        expect(calendarEventOccursOnDate({ start: '2026-07-25' }, '2026-07-25')).toBe(true);
     });
 
     it('exposes an explicit time-format selector in the time-axis group', () => {
