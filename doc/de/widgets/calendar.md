@@ -7,6 +7,10 @@ Template-ID: `tplVis2-materialdesign-Calendar`.
 
 <img src="../../media/vis2_calendar_runtime.png" alt="Material-Design-Kalender in VIS 2">
 
+Wochen-/Tagesansicht mit Zeitachse:
+
+<img src="../../media/vis2_calendar_runtime_week.png" alt="Material-Design-Kalender – Wochenansicht" width="600">
+
 ## Editor-Einstellungen
 
 <table>
