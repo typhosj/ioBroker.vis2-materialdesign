@@ -2,7 +2,7 @@ import React from 'react';
 
 import type { RxWidgetInfo, VisRxWidgetProps } from '@iobroker/types-vis-2';
 
-import { squarePreview, PressState, RenderProps, VisWidget, createInfo, parseActionValue, setStateValue, sizeCss, stateValue } from './widgetUtils';
+import { squarePreview, PressState, RenderProps, VisWidget, createInfo, parseActionValue, setStateValue, sizeCss, stateValue, sanitizeHtml } from './widgetUtils';
 
 type ButtonKind = 'navigation' | 'link' | 'state' | 'multiState' | 'addition' | 'toggle' | 'slider';
 type ButtonLayout = 'default' | 'vertical' | 'icon';
@@ -587,7 +587,7 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
                                 fontSize: data.textFontSize ? sizeCss(data.textFontSize, 14) : undefined,
                                 width: !isVertical && numeric(data.labelWidth, 0) > 0 ? `${numeric(data.labelWidth)}%` : undefined,
                             }}
-                            dangerouslySetInnerHTML={{ __html: label }}
+                            dangerouslySetInnerHTML={{ __html: sanitizeHtml(label) }}
                         />
                     ) : null}
                 </>

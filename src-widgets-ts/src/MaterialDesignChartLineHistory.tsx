@@ -1,5 +1,5 @@
 import React from "react";
-import { squarePreview , RenderProps, VisWidget, createInfo, stateValue } from './widgetUtils';
+import { squarePreview , RenderProps, VisWidget, createInfo, stateValue, sanitizeHtml } from './widgetUtils';
 import type { RxWidgetInfo, VisRxWidgetState } from "@iobroker/types-vis-2";
 import { colorSchemes, scheme } from "./MaterialDesignColorScheme";
 import { MaterialDesignChartCanvas } from "./MaterialDesignChartCanvas";
@@ -393,7 +393,7 @@ export default class MaterialDesignChartLineHistory extends VisWidget {
           width: "100%",
         }}
       >
-        {b(d.cardUse) ? <div className="materialdesign-html-card-container mdc-card" style={{ background: s(d.colorBackground), boxSizing: "border-box", display: "flex", flexDirection: "column", height: "100%", padding: n(d.borderDistance, 8), width: "100%" }}><div style={{ background: s(d.colorTitleSectionBackground), color: s(d.colorTitle), fontFamily: s(d.titleFontFamily) }} dangerouslySetInnerHTML={{ __html: s(d.title) }} />{chartjs}</div> : chartjs}
+        {b(d.cardUse) ? <div className="materialdesign-html-card-container mdc-card" style={{ background: s(d.colorBackground), boxSizing: "border-box", display: "flex", flexDirection: "column", height: "100%", padding: n(d.borderDistance, 8), width: "100%" }}><div style={{ background: s(d.colorTitleSectionBackground), color: s(d.colorTitle), fontFamily: s(d.titleFontFamily) }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(s(d.title)) }} />{chartjs}</div> : chartjs}
         {b(d.showLegend, true) ? (
           <div
             style={{

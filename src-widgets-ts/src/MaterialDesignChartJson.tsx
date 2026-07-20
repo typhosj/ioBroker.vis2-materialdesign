@@ -1,5 +1,5 @@
 import React from "react";
-import { squarePreview , RenderProps, VisWidget, createInfo, stateValue } from './widgetUtils';
+import { squarePreview , RenderProps, VisWidget, createInfo, stateValue, sanitizeHtml } from './widgetUtils';
 import type { RxWidgetInfo, VisRxWidgetState } from "@iobroker/types-vis-2";
 import { colorSchemes, scheme } from "./MaterialDesignColorScheme";
 import { MaterialDesignChartCanvas } from "./MaterialDesignChartCanvas";
@@ -344,7 +344,7 @@ export default class MaterialDesignChartJson extends VisWidget {
                 color: s(data.colorTitle),
                 fontFamily: s(data.titleFontFamily),
               }}
-              dangerouslySetInnerHTML={{ __html: s(data.title) }}
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(s(data.title)) }}
             />
             {chartjs}
             {legend}

@@ -3,7 +3,7 @@ import React from 'react';
 import type { RxWidgetInfo, VisRxWidgetProps, VisRxWidgetState } from '@iobroker/types-vis-2';
 
 import { cleanColor, num, snapToStep } from './MaterialDesignProgress';
-import { squarePreview, RenderProps, VisWidget, createInfo, setStateValue, sizeCss, stateValue } from './widgetUtils';
+import { squarePreview, RenderProps, VisWidget, createInfo, setStateValue, sizeCss, stateValue, sanitizeHtml } from './widgetUtils';
 
 export interface SliderData {
     oid?: string;
@@ -358,7 +358,7 @@ export default class MaterialDesignSlider extends VisWidget {
                                                         }}
                                                     >
                                                         <div>
-                                                            <span dangerouslySetInnerHTML={{ __html: thumbLabel }} />
+                                                            <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(thumbLabel) }} />
                                                         </div>
                                                     </div>
                                                 </div>
@@ -395,7 +395,7 @@ export default class MaterialDesignSlider extends VisWidget {
                         {data.showValueLabel !== false ? (
                             <div
                                 className="materialdesign-vuetifySlider-value-label"
-                                dangerouslySetInnerHTML={{ __html: valueLabel }}
+                                dangerouslySetInnerHTML={{ __html: sanitizeHtml(valueLabel) }}
                                 style={{
                                     color: cleanColor(data.valueLabelColor, '#44739e'),
                                     flex: `0 0 ${num(data.valueLabelWidth, 50)}px`,

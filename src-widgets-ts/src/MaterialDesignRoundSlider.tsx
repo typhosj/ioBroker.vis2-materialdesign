@@ -3,7 +3,7 @@ import React from 'react';
 import type { RxWidgetInfo, VisRxWidgetProps, VisRxWidgetState } from '@iobroker/types-vis-2';
 
 import { cleanColor, num, snapToStep } from './MaterialDesignProgress';
-import { squarePreview, RenderProps, VisWidget, createInfo, setStateValue, sizeCss, stateValue } from './widgetUtils';
+import { squarePreview, RenderProps, VisWidget, createInfo, setStateValue, sizeCss, stateValue, sanitizeHtml } from './widgetUtils';
 
 export interface RoundSliderData {
     oid?: string;
@@ -282,7 +282,7 @@ export default class MaterialDesignRoundSlider extends VisWidget {
                 {data.showValueLabel !== false ? (
                     <label
                         className="labelValue"
-                        dangerouslySetInnerHTML={{ __html: label(value.raw, value.percent, data) }}
+                        dangerouslySetInnerHTML={{ __html: sanitizeHtml(label(value.raw, value.percent, data)) }}
                         style={{
                             color: cleanColor(data.valueLabelColor, '#44739e'),
                             display: 'flex',

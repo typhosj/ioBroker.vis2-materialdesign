@@ -2,7 +2,7 @@ import React from 'react';
 
 import type { RxWidgetInfo, VisRxWidgetProps, VisRxWidgetState } from '@iobroker/types-vis-2';
 
-import { squarePreview, BaseRxData, RenderProps, VisWidget, createInfo, sizeCss, stateValue, formatMoment, formatDurationTokens, humanizeDuration, visLocale } from './widgetUtils';
+import { squarePreview, BaseRxData, RenderProps, VisWidget, createInfo, sizeCss, stateValue, formatMoment, formatDurationTokens, humanizeDuration, visLocale, sanitizeHtml } from './widgetUtils';
 import { renderIcon } from './MaterialDesignButtons';
 
 interface ValueData extends BaseRxData {
@@ -257,9 +257,9 @@ export default class MaterialDesignValue extends VisWidget {
                 style={{ alignItems: 'center', boxSizing: 'border-box', display: 'flex', height: '100%', padding: 0, width: '100%' }}
             >
                 {iconFirst ? <div className="materialdesign-value-icon">{icon}</div> : null}
-                <div className="materialdesign-value prepand-text" dangerouslySetInnerHTML={{ __html: text(data.prepandText) }} style={prependStyle} />
-                <div className="materialdesign-value value-text" dangerouslySetInnerHTML={{ __html: formattedValue(value, data) }} style={valueStyle} />
-                <div className="materialdesign-value append-text" dangerouslySetInnerHTML={{ __html: text(data.appendText) }} style={appendStyle} />
+                <div className="materialdesign-value prepand-text" dangerouslySetInnerHTML={{ __html: sanitizeHtml(text(data.prepandText)) }} style={prependStyle} />
+                <div className="materialdesign-value value-text" dangerouslySetInnerHTML={{ __html: sanitizeHtml(formattedValue(value, data)) }} style={valueStyle} />
+                <div className="materialdesign-value append-text" dangerouslySetInnerHTML={{ __html: sanitizeHtml(text(data.appendText)) }} style={appendStyle} />
                 {!iconFirst ? <div className="materialdesign-value-icon">{icon}</div> : null}
             </div>
         );

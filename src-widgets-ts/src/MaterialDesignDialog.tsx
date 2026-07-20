@@ -5,8 +5,7 @@ import { squarePreview ,
   createInfo,
   setStateValue,
   sizeCss,
-  stateValue,
-} from './widgetUtils';
+  stateValue, sanitizeHtml } from './widgetUtils';
 import type { RxWidgetInfo, VisRxWidgetState } from "@iobroker/types-vis-2";
 import { renderIcon } from "./MaterialDesignButtons";
 
@@ -437,7 +436,7 @@ export class MaterialDesignDialog extends VisWidget {
                   !!d.imageColor,
                 )
               : null}
-            <span dangerouslySetInnerHTML={{ __html: s(d.buttontext) }} />
+            <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(s(d.buttontext)) }} />
             {s(d.iconPosition) === "right"
               ? renderIcon(
                   s(d.image),
@@ -493,7 +492,7 @@ export class MaterialDesignDialog extends VisWidget {
                     height: n(d.headerHeight, 50),
                     padding: "0 24px",
                   }}
-                  dangerouslySetInnerHTML={{ __html: title }}
+                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(title) }}
                 />
               ) : null}
               <main style={{ flex: 1, minHeight: 0, overflow: "auto", padding: n(d.viewDistanceToBorder, 24) }}>
@@ -538,7 +537,7 @@ export class MaterialDesignDialog extends VisWidget {
                   // Fullscreen shows the close icon (child); windowed shows the buttonText HTML.
                   {...(fullscreen
                     ? {}
-                    : { dangerouslySetInnerHTML: { __html: s(d.buttonText, "close") } })}
+                    : { dangerouslySetInnerHTML: { __html: sanitizeHtml(s(d.buttonText, "close")) } })}
                 >
                   {fullscreen
                     ? renderIcon(

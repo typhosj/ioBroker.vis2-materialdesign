@@ -2,7 +2,7 @@ import React from 'react';
 
 import type { RxWidgetInfo, VisRxWidgetProps, VisRxWidgetState } from '@iobroker/types-vis-2';
 
-import { squarePreview, RenderProps, VisWidget, createInfo, sizeCss, stateValue } from './widgetUtils';
+import { squarePreview, RenderProps, VisWidget, createInfo, sizeCss, stateValue, sanitizeHtml } from './widgetUtils';
 import { ProgressData, cleanColor, num, progressState } from './MaterialDesignProgress';
 
 
@@ -121,7 +121,7 @@ export default class MaterialDesignProgressCircular extends VisWidget {
                                     position: 'absolute',
                                 }}
                             >
-                                <div className="materialdesign-vuetify-progress-circular-value-label" dangerouslySetInnerHTML={{ __html: progress.label }} />
+                                <div className="materialdesign-vuetify-progress-circular-value-label" dangerouslySetInnerHTML={{ __html: sanitizeHtml(progress.label) }} />
                             </div>
                         ) : null}
                     </div>

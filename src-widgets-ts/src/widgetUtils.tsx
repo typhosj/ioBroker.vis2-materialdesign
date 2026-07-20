@@ -183,6 +183,43 @@ export function humanizeDuration(totalSeconds: number, locale?: string): string 
     }
 }
 
+// Widgets render author/state HTML through dangerouslySetInnerHTML. innerHTML-inserted <script>
+// never executes, but event-handler attributes (onerror/onclick/…) and javascript: URLs do — a
+// stored-XSS vector when the HTML comes from a state value. Sanitize with the browser's own parser
+// (an inert <template>, no dependency, no regex-bypass surface): drop active-content elements, strip
+// on* handlers, and neutralize script-y URLs. Formatting HTML (font/b/img/table/data:image…) passes
+// through unchanged. Always route HTML sinks through this via the `html()` helper below.
+const UNSAFE_ELEMENTS = 'script,iframe,object,embed,base,meta,link,form,noscript';
+const URL_ATTRS = new Set(['href', 'src', 'xlink:href', 'action', 'formaction', 'background', 'poster', 'data']);
+export function sanitizeHtml(input: unknown): string {
+    if (input === null || input === undefined) return '';
+    const html = String(input);
+    if (!html || typeof document === 'undefined') return html;
+    const template = document.createElement('template');
+    template.innerHTML = html;
+    template.content.querySelectorAll(UNSAFE_ELEMENTS).forEach(element => element.remove());
+    template.content.querySelectorAll('*').forEach(element => {
+        for (const attribute of Array.from(element.attributes)) {
+            const name = attribute.name.toLowerCase();
+            const value = attribute.value;
+            if (name.startsWith('on')) {
+                element.removeAttribute(attribute.name);
+                // eslint-disable-next-line no-control-regex -- deliberately strip C0 controls/space that obfuscate `java\0script:`
+            } else if (URL_ATTRS.has(name) && /^(?:javascript|vbscript|data:text\/html)/i.test(value.replace(/[\x00-\x20]+/g, ''))) {
+                element.removeAttribute(attribute.name);
+            } else if (name === 'style' && /(?:expression|javascript:|vbscript:|url\s*\(\s*['"]?\s*(?:javascript|vbscript):)/i.test(value)) {
+                element.removeAttribute(attribute.name);
+            }
+        }
+    });
+    return template.innerHTML;
+}
+
+// Convenience for JSX HTML sinks: <div {...html(value)} /> instead of a raw dangerouslySetInnerHTML.
+export function html(input: unknown): { dangerouslySetInnerHTML: { __html: string } } {
+    return { dangerouslySetInnerHTML: { __html: sanitizeHtml(input) } };
+}
+
 // CSS font-size that survives a theme `var(--…)` (or any string with a unit): return it as-is, otherwise numeric → `${n}px`.
 export function sizeCss(value: unknown, fallbackPx: number): string {
     if (typeof value === 'string') {

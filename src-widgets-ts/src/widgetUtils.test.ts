@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { pickerValueName } from './IconFilePicker';
-import { applyThemeVariables, createInfo, editorDialogPalette, formatDurationTokens, formatMoment, humanizeDuration, iconFieldDataKey, parseActionValue, setStateValue, stateValue } from './widgetUtils';
+import { applyThemeVariables, createInfo, editorDialogPalette, formatDurationTokens, formatMoment, humanizeDuration, iconFieldDataKey, parseActionValue, sanitizeHtml, setStateValue, stateValue } from './widgetUtils';
 
 describe('widget utilities', () => {
     it('keeps legacy action values typed', () => {
@@ -93,5 +93,21 @@ describe('widget utilities', () => {
         expect(humanizeDuration(7200, 'en-US')).toBe('2 hours');
         expect(humanizeDuration(45, 'en-US')).toBe('45 seconds');
         expect(humanizeDuration(90000, 'en-US')).toBe('1 day');
+    });
+
+    it('sanitizes HTML sinks: strips handlers/scripts, keeps formatting', () => {
+        // formatting HTML and data:image survive untouched
+        expect(sanitizeHtml('<b style="color:red">hi</b>')).toBe('<b style="color:red">hi</b>');
+        expect(sanitizeHtml('<img src="data:image/png;base64,AAAA">')).toContain('data:image/png');
+        // active content and handlers are removed
+        expect(sanitizeHtml('<img src="x" onerror="alert(1)">')).toBe('<img src="x">');
+        expect(sanitizeHtml('<div onclick="steal()">x</div>')).toBe('<div>x</div>');
+        expect(sanitizeHtml('<script>alert(1)</script>ok')).toBe('ok');
+        expect(sanitizeHtml('<a href="javascript:alert(1)">x</a>')).toBe('<a>x</a>');
+        // obfuscated javascript: URL (tabs/newlines between chars) is still caught
+        expect(sanitizeHtml('<a href="java\tscript:alert(1)">x</a>')).toBe('<a>x</a>');
+        // empty / non-string inputs are safe
+        expect(sanitizeHtml(undefined)).toBe('');
+        expect(sanitizeHtml(42)).toBe('42');
     });
 });

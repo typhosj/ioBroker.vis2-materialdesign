@@ -2,7 +2,7 @@ import React from 'react';
 
 import type { RxWidgetInfo, VisRxWidgetProps, VisRxWidgetState } from '@iobroker/types-vis-2';
 
-import { squarePreview, BaseRxData, RenderProps, VisWidget, createInfo, sizeCss, stateValue } from './widgetUtils';
+import { squarePreview, BaseRxData, RenderProps, VisWidget, createInfo, sizeCss, stateValue, sanitizeHtml } from './widgetUtils';
 
 export interface ProgressData extends BaseRxData {
     min?: number;
@@ -227,7 +227,7 @@ export default class MaterialDesignProgress extends VisWidget {
                                     width: '100%',
                                 }}
                             >
-                                <div className="materialdesign-vuetify-progress-value-label" dangerouslySetInnerHTML={{ __html: progress.label }} style={{ marginLeft: 10, marginRight: 10 }} />
+                                <div className="materialdesign-vuetify-progress-value-label" dangerouslySetInnerHTML={{ __html: sanitizeHtml(progress.label) }} style={{ marginLeft: 10, marginRight: 10 }} />
                             </div>
                         ) : null}
                     </div>
