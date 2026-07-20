@@ -1,6 +1,6 @@
 import React from 'react';
 import type { RxWidgetInfo, VisRxWidgetState } from '@iobroker/types-vis-2';
-import { RenderProps, VisWidget, createInfo, stateValue } from './widgetUtils';
+import { squarePreview, RenderProps, VisWidget, createInfo, stateValue } from './widgetUtils';
 
 type Data = Record<string, unknown> & { oid?: string; dataJson?: string; countCols?: number };
 type Row = Record<string, unknown>;
@@ -28,7 +28,7 @@ const attrs: RxWidgetInfo['visAttrs'] = [
 
 export default class MaterialDesignTable extends VisWidget {
     private sortKey = ''; private sortAsc = true; private hoverRow = -1;
-    static getWidgetInfo(): RxWidgetInfo { return { ...createInfo('tplVis2-materialdesign-Table', 'Table', attrs), visPrev: '<img src="widgets/vis2-materialdesign/img/prev_table.png"></img>', visDefaultStyle: { width: 400, height: 250 } }; }
+    static getWidgetInfo(): RxWidgetInfo { return { ...createInfo('tplVis2-materialdesign-Table', 'Table', attrs), visPrev: squarePreview('F04EB'), visDefaultStyle: { width: 400, height: 250 } }; }
     getWidgetInfo(): RxWidgetInfo { return MaterialDesignTable.getWidgetInfo(); }
     renderWidgetBody(props: RenderProps): React.JSX.Element {
         super.renderWidgetBody(props);

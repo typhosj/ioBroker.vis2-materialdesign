@@ -3,7 +3,7 @@ import React from 'react';
 import type { RxWidgetInfo, VisRxWidgetState, WidgetData } from '@iobroker/types-vis-2';
 
 import { renderIcon } from './MaterialDesignButtons';
-import { RenderProps, VisWidget, createInfo, iconField, parseActionValue, setStateValue, sizeCss, stateValue } from './widgetUtils';
+import { squarePreview, RenderProps, VisWidget, createInfo, iconField, parseActionValue, setStateValue, sizeCss, stateValue } from './widgetUtils';
 
 type Data = Record<string, unknown> & { listItemDataMethod?: string; countListItems?: number; json_string_oid?: string };
 type Item = { objectId: string; text: string; subText: string; rightText: string; rightSubText: string; image: string; imageColor: string; imageActive: string; imageActiveColor: string; header: string; divider: boolean; buttonStateValue: unknown; buttonNavView: string; buttonLink: string; overflow: boolean };
@@ -102,10 +102,10 @@ const listCss = '.materialdesign-list .mdc-list{list-style:none;margin:0;padding
     + '.materialdesign-list .mdc-list-item__graphic{flex-shrink:0;display:inline-flex;align-items:center;width:auto!important;height:auto!important;overflow:visible}';
 
 export default class MaterialDesignList extends VisWidget {
-    static getWidgetInfo(): RxWidgetInfo { return { ...createInfo('tplVis2-materialdesign-List', 'List', attrs), visPrev: '<img src="widgets/vis2-materialdesign/img/prev_list.png"></img>', visDefaultStyle: { width: 400, height: 270 } }; }
+    static getWidgetInfo(): RxWidgetInfo { return { ...createInfo('tplVis2-materialdesign-List', 'List', attrs), visPrev: squarePreview('F0279'), visDefaultStyle: { width: 400, height: 270 } }; }
     getWidgetInfo(): RxWidgetInfo { return MaterialDesignList.getWidgetInfo(); }
     private feedback(data: Data): void { if (n(data.vibrateOnMobilDevices) > 0) navigator.vibrate?.(n(data.vibrateOnMobilDevices)); if (b(data.clickSoundPlay)) { const audio = new Audio('widgets/vis2-materialdesign/materialdesign-widgets-click-sound.mp3'); audio.volume = Math.max(0, Math.min(1, n(data.clickSoundVolume, .5))); void audio.play().catch(() => undefined); } }
-    private activate(data: Data, value: unknown, current: unknown, row: Item): void { const type = s(data.listType); if (type.endsWith('_readonly') || type === 'text') return; this.feedback(data); if (type === 'checkbox' || type === 'switch') setStateValue(this.props, row.objectId, value); else if (type === 'buttonToggle') setStateValue(this.props, row.objectId, !current); else if (type === 'buttonState') setStateValue(this.props, row.objectId, parseActionValue(s(row.buttonStateValue))); else if (type === 'buttonNav') this.props.context?.changeView?.(row.buttonNavView); else if (type === 'buttonLink') window.open(row.buttonLink); }
+    private activate(data: Data, value: unknown, current: unknown, row: Item): void { const type = s(data.listType); if (type.endsWith('_readonly') || type === 'text') return; this.feedback(data); if (type === 'checkbox' || type === 'switch') setStateValue(this.props, row.objectId, value); else if (type === 'buttonToggle') setStateValue(this.props, row.objectId, !current); else if (type === 'buttonState') setStateValue(this.props, row.objectId, parseActionValue(s(row.buttonStateValue))); else if (type === 'buttonNav') this.props.context?.changeView?.(row.buttonNavView); else if (type === 'buttonLink') window.open(row.buttonLink, '_blank', 'noopener,noreferrer'); }
     renderWidgetBody(props: RenderProps): React.JSX.Element {
         super.renderWidgetBody(props); const data = this.state.rxData as unknown as Data; let json: Record<string, unknown>[] | undefined;
         if (data.listItemDataMethod === 'jsonStringObject') { try { const value = JSON.parse(s(stateValue(this.state as VisRxWidgetState, s(data.json_string_oid)), '[]')); json = Array.isArray(value) ? value : []; } catch (e) { json = [{ text: `<font color="red"><b>Error in JSON string</b></font>`, subText: String(e) }]; } }

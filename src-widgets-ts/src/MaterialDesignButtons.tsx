@@ -2,7 +2,7 @@ import React from 'react';
 
 import type { RxWidgetInfo, VisRxWidgetProps } from '@iobroker/types-vis-2';
 
-import { PressState, RenderProps, VisWidget, createInfo, parseActionValue, setStateValue, sizeCss, stateValue } from './widgetUtils';
+import { squarePreview, PressState, RenderProps, VisWidget, createInfo, parseActionValue, setStateValue, sizeCss, stateValue } from './widgetUtils';
 
 type ButtonKind = 'navigation' | 'link' | 'state' | 'multiState' | 'addition' | 'toggle' | 'slider';
 type ButtonLayout = 'default' | 'vertical' | 'icon';
@@ -88,6 +88,13 @@ const iconGlyphs: Record<string, string> = {
     pencil: 'F03EB',
     'pencil-box-multiple': 'F1144',
     plus: 'F0415',
+};
+
+// Editor-palette preview glyph override per button kind (keeps the widget's runtime
+// default icon untouched, only the palette thumbnail gets a more fitting symbol).
+const previewGlyph: Partial<Record<ButtonKind, string>> = {
+    toggle: 'F0521', // toggle-switch
+    slider: 'F1543', // tune-vertical-variant
 };
 
 const imageIconField = (name: string, defaultValue?: string): Record<string, unknown> => ({
@@ -398,25 +405,7 @@ function widgetLabel(def: ButtonDefinition): string {
 }
 
 function preview(def: ButtonDefinition): string {
-    const legacyId = def.id.replace('tplVis2-', 'tplVis-');
-    const isIcon = def.layout === 'icon';
-    const isVertical = def.layout === 'vertical';
-    const label = def.label.replace(/&nbsp;/g, '').trim();
-    const size = isIcon ? 48 : isVertical ? 60 : 30;
-    const width = isIcon ? 48 : 100;
-    const iconSize = isVertical ? '26px' : 'auto';
-    const iconColor = isIcon ? '#44739e' : '';
-    const icon = `&#x${iconGlyphs[def.icon] ?? iconGlyphs.plus};`;
-    const font = `<style>@font-face{font-family:"Material Design Icons";src:url("widgets/vis2-materialdesign/img/materialdesignicons-webfont.woff2") format("woff2");}.vis2-md-preview-icon{font-family:"Material Design Icons";font-weight:normal;font-style:normal;line-height:1;display:inline-block;}</style>`;
-    const bodyStyle = isVertical
-        ? 'display:flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; height: 100%;'
-        : 'display:flex; justify-content: center; align-items: center; width: 100%; height: 100%;';
-
-    if (isIcon) {
-        return `${font}<div id="prev_${legacyId}" style="position: relative; text-align: initial; padding: 0px !important; display: flex; justify-content:center;"><div class="vis-widget_prev materialdesign-widget materialdesign-icon-button mdc-ripple-upgraded--unbounded vis-tpl-materialdesign-${def.name} mdc-ripple-upgraded" style="width: 48px; height: 48px; background: rgba(0, 0, 0, 0) none repeat scroll 0% 0%; --materialdesign-font-size-button: inherit; --materialdesign-color-icon-button-hover:#44739e; position: absolute; z-index: 4;"><div class="materialdesign-button-body" style="${bodyStyle}"><span class="vis2-md-preview-icon materialdesign-icon-image" style="width: auto; height: auto; font-size: 24px; color: ${iconColor};">${icon}</span></div></div></div>`;
-    }
-
-    return `${font}<div id="prev_${legacyId}" style="position: relative; text-align: initial; padding: 0px !important; display: flex; justify-content:center;"><div class="vis-widget_prev materialdesign-widget materialdesign-button materialdesign-button--raised vis-tpl-materialdesign-${def.name} mdc-ripple-upgraded" style="width: ${width}px; height: ${size}px; padding: 0px; --materialdesign-color-primary:#44739e; --materialdesign-color-secondary:#FFFFFF; --materialdesign-font-button:RobotoCondensed-Regular; --materialdesign-font-size-button:${isVertical ? 16 : 14}px; --materialdesign-font-button-vertical-text-distance-image:2px; position: absolute; z-index: 4;"><div class="materialdesign-button-body" style="${bodyStyle}"><span class="vis2-md-preview-icon materialdesign-icon-image" style="width: ${iconSize}; height: ${iconSize}; font-size: ${iconSize}; color: ${iconColor};">${icon}</span><span class="materialdesign-button__label">${isVertical ? label : `&nbsp;${label}`}</span></div></div></div>`;
+    return squarePreview(previewGlyph[def.kind] ?? iconGlyphs[def.icon] ?? iconGlyphs.plus);
 }
 
 function execute(def: ButtonDefinition, props: VisRxWidgetProps, data: ButtonData, current: ioBroker.StateValue | undefined): void {

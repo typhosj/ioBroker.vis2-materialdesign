@@ -1,8 +1,8 @@
 import React from "react";
+import { squarePreview , RenderProps, VisWidget, createInfo, stateValue } from './widgetUtils';
 import type { RxWidgetInfo, VisRxWidgetState } from "@iobroker/types-vis-2";
 import { colorSchemes, scheme } from "./MaterialDesignColorScheme";
 import { MaterialDesignChartCanvas } from "./MaterialDesignChartCanvas";
-import { RenderProps, VisWidget, createInfo, stateValue } from "./widgetUtils";
 
 type Data = Record<string, unknown> & {
   oid?: string;
@@ -451,7 +451,7 @@ export default class MaterialDesignChartBar extends VisWidget {
   static getWidgetInfo(): RxWidgetInfo {
     return {
       ...createInfo("tplVis2-materialdesign-Chart-Bar", "Bar Chart", attrs),
-      visPrev: '<img src="widgets/vis2-materialdesign/img/bar_chart.png"></img>',
+      visPrev: squarePreview('F0128'),
       visDefaultStyle: { width: 400, height: 270 },
     };
   }

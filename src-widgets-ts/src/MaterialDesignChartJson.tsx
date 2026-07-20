@@ -1,8 +1,8 @@
 import React from "react";
+import { squarePreview , RenderProps, VisWidget, createInfo, stateValue } from './widgetUtils';
 import type { RxWidgetInfo, VisRxWidgetState } from "@iobroker/types-vis-2";
 import { colorSchemes, scheme } from "./MaterialDesignColorScheme";
 import { MaterialDesignChartCanvas } from "./MaterialDesignChartCanvas";
-import { RenderProps, VisWidget, createInfo, stateValue } from "./widgetUtils";
 
 type Graph = {
   data?: unknown[];
@@ -254,8 +254,7 @@ export default class MaterialDesignChartJson extends VisWidget {
   static getWidgetInfo(): RxWidgetInfo {
     return {
       ...createInfo("tplVis2-materialdesign-Chart-JSON", "JSON Chart", attrs),
-      visPrev:
-        '<img src="widgets/vis2-materialdesign/img/prev_json_chart.png"></img>',
+      visPrev: squarePreview('F154E'),
       visDefaultStyle: { width: 400, height: 270 },
     };
   }

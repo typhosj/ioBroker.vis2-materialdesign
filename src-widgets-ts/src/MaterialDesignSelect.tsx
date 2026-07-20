@@ -4,7 +4,7 @@ import type { RxWidgetInfo, VisRxWidgetState } from '@iobroker/types-vis-2';
 
 import { renderIcon } from './MaterialDesignButtons';
 import { cleanColor, num } from './MaterialDesignProgress';
-import { RenderProps, VisWidget, createInfo, setStateValue, sizeCss, stateValue } from './widgetUtils';
+import { squarePreview, RenderProps, VisWidget, createInfo, setStateValue, sizeCss, stateValue } from './widgetUtils';
 
 interface SelectData {
     oid?: string;
@@ -451,7 +451,7 @@ export default class MaterialDesignSelect extends VisWidget {
     static getWidgetInfo(): RxWidgetInfo {
         return {
             ...createInfo('tplVis2-materialdesign-Select', 'Select', attrs),
-            visPrev: '<img src="widgets/vis2-materialdesign/img/prev_select_value.png"></img>',
+            visPrev: squarePreview('F1400'),
             visDefaultStyle: { width: 150, height: 38 },
         };
     }

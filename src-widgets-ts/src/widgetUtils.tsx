@@ -134,6 +134,19 @@ export function card(children: React.ReactNode): React.JSX.Element {
     return <div style={{ boxSizing: 'border-box', width: '100%', height: '100%', padding: 8 }}>{children}</div>;
 }
 
+// Uniform editor-palette preview: a small square white chip with a single MDI
+// glyph (slate). Self-contained (own @font-face) so it renders in the palette
+// without the widget's runtime CSS. `glyph` is an MDI codepoint, e.g. 'F00ED'.
+export function squarePreview(glyph: string): string {
+    return (
+        '<style>@font-face{font-family:"Material Design Icons";src:url("widgets/vis2-materialdesign/img/materialdesignicons-webfont.woff2") format("woff2");}' +
+        '.mdw-prev-icon{font-family:"Material Design Icons";font-weight:normal;font-style:normal;line-height:1;display:inline-block;}</style>' +
+        '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;box-sizing:border-box;padding:0;">' +
+        '<div style="width:100%;max-width:44px;aspect-ratio:1;border-radius:8px;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08);box-sizing:border-box;">' +
+        `<span class="mdw-prev-icon" style="font-size:22px;color:#44739e;">&#x${glyph};</span></div></div>`
+    );
+}
+
 export function createInfo(id: string, name: string, attrs: RxWidgetInfo['visAttrs']): RxWidgetInfo {
     return {
         id,

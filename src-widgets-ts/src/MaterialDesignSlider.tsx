@@ -3,7 +3,7 @@ import React from 'react';
 import type { RxWidgetInfo, VisRxWidgetProps, VisRxWidgetState } from '@iobroker/types-vis-2';
 
 import { cleanColor, num, snapToStep } from './MaterialDesignProgress';
-import { RenderProps, VisWidget, createInfo, setStateValue, sizeCss, stateValue } from './widgetUtils';
+import { squarePreview, RenderProps, VisWidget, createInfo, setStateValue, sizeCss, stateValue } from './widgetUtils';
 
 export interface SliderData {
     oid?: string;
@@ -58,8 +58,6 @@ export interface SliderData {
     debug?: boolean;
 }
 
-const preview =
-    '<div id="prev_tplVis-materialdesign-Vuetify-Slider" style="position: relative; text-align: initial; margin-bottom: -40px; padding: 0px !important; display: flex; justify-content:center;"><div class="vis-widget_prev materialdesign-widget materialdesign-slider-vertical vis-tpl-materialdesign-Slider " style="width: 135px; height: 110px; overflow: visible !important; display: flex; align-items: center; left: 92px; top: 66px; position: absolute; --vue-slider-thumb-label-font-color:#FFFFFF; --vue-slider-thumb-label-font-size:12px; --vue-slider-tick-before-color:#44739e; --vue-slider-tick-after-color:#44739e; --vue-slider-tick-color:#808080; --vue-slider-tick-font-family:RobotoCondensed-LightItalic; --vue-slider-tick-font-size:14px; --vue-text-field-label-before-color:#44739e; --vue-text-field-label-font-family:RobotoCondensed-Regular; --vue-text-field-label-font-size:16px; --vue-text-field-label-width: inherit;" data-oid-working=""> <div class="materialdesign-vuetifySlider" style="width: 100%; height: 100%;"><div class="v-row" style="align-items: center;"><div class="v-input v-input--hide-details v-input--is-label-active v-input--is-dirty theme--light v-input__slider"><div class="v-input__control"><div class="v-input__slot"><div class="v-slider v-slider--horizontal theme--light"><input value="54" id="input-28" readonly="readonly" tabindex="-1" always-dirty=""><div class="v-slider__track-container"><div class="v-slider__track-background" style="right: 0px; width: calc(46%); background-color: rgba(161, 161, 161, 0.26); border-color: rgba(161, 161, 161, 0.26);"></div><div class="v-slider__track-fill" style="left: 0px; right: auto; width: 54%; background-color: rgb(68, 115, 158); border-color: rgb(68, 115, 158);"></div></div><div role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="54" aria-readonly="false" aria-orientation="horizontal" always-dirty="" class="v-slider__thumb-container v-slider__thumb-container--show-label" style="left: 54%; color: rgb(68, 115, 158); caret-color: rgb(68, 115, 158); height: 0px;"><div class="v-slider__thumb" style="background-color: rgb(68, 115, 158); border-color: rgb(68, 115, 158);"></div><div class="v-slider__thumb-label-container"><div class="v-slider__thumb-label" style="height: 32px; width: 32px; transform: translateY(-20%) translateY(-12px) translateX(-50%) rotate(45deg); background-color: rgb(68, 115, 158); border-color: rgb(68, 115, 158);"><div><span>54</span></div></div></div></div></div></div></div></div></div></div><div class="ui-resizable-handle ui-resizable-n" style="z-index: 90;"></div><div class="ui-resizable-handle ui-resizable-w" style="z-index: 90;"></div><div class="ui-resizable-handle ui-resizable-nw" style="z-index: 90;"></div><div class="ui-resizable-handle ui-resizable-ne" style="z-index: 90;"></div><div class="ui-resizable-handle ui-resizable-sw" style="z-index: 90;"></div></div></div>';
 
 const attrs: RxWidgetInfo['visAttrs'] = [
     {
@@ -218,7 +216,7 @@ export default class MaterialDesignSlider extends VisWidget {
     static getWidgetInfo(): RxWidgetInfo {
         return {
             ...createInfo('tplVis2-materialdesign-Slider', 'Slider', attrs),
-            visPrev: preview,
+            visPrev: squarePreview('F1542'),
             visDefaultStyle: { width: 200, height: 100 },
         };
     }

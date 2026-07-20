@@ -1,6 +1,6 @@
 import React from "react";
+import { squarePreview , createInfo, RenderProps, stateValue, VisWidget } from './widgetUtils';
 import type { RxWidgetInfo, VisRxWidgetState } from "@iobroker/types-vis-2";
-import { createInfo, RenderProps, stateValue, VisWidget } from "./widgetUtils";
 
 type Kind = "state" | "state8";
 type Data = Record<string, unknown>;
@@ -119,7 +119,7 @@ export function advancedViewInfo(kind: Kind): RxWidgetInfo {
             },
           ],
     ),
-    visPrev: '<img src="widgets/basic/img/Prev_ContainerView.png"></img>',
+    visPrev: squarePreview('F056A'),
     visDefaultStyle: { width: 400, height: 270 },
   };
 }

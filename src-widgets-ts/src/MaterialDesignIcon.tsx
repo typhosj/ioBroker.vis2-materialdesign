@@ -2,7 +2,7 @@ import React from 'react';
 
 import type { RxWidgetInfo, VisRxWidgetProps } from '@iobroker/types-vis-2';
 
-import { BaseRxData, RenderProps, VisWidget, createInfo } from './widgetUtils';
+import { squarePreview, BaseRxData, RenderProps, VisWidget, createInfo } from './widgetUtils';
 import { renderIcon } from './MaterialDesignButtons';
 
 interface IconData extends BaseRxData {
@@ -32,7 +32,7 @@ export default class MaterialDesignIcon extends VisWidget {
     static getWidgetInfo(): RxWidgetInfo {
         return {
             ...createInfo('tplVis2-materialdesign-Icon', 'Material Design Icon', attrs),
-            visPrev: '<img src="widgets/vis2-materialdesign/img/prev_icon.png"></img>',
+            visPrev: squarePreview('F0976'),
             visDefaultStyle: {
                 width: 50,
                 height: 50,

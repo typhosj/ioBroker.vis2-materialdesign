@@ -1,6 +1,6 @@
 import React from "react";
+import { squarePreview , createInfo, RenderProps, stateValue, VisWidget } from './widgetUtils';
 import type { RxWidgetInfo, VisRxWidgetState } from "@iobroker/types-vis-2";
-import { createInfo, RenderProps, stateValue, VisWidget } from "./widgetUtils";
 
 type Kind = "masonry" | "grid";
 type Data = Record<string, unknown> & { countViews?: number };
@@ -358,7 +358,7 @@ export function viewsInfo(kind: Kind): RxWidgetInfo {
         },
       ],
     ),
-    visPrev: `<img src="widgets/vis2-materialdesign/img/prev_${masonry ? "masonry" : "grid"}_views.png"></img>`,
+    visPrev: squarePreview(masonry ? 'F056E' : 'F11D9'),
     visDefaultStyle: { width: "100%", height: "100%" },
   };
 }

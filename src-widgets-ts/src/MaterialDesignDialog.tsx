@@ -1,14 +1,14 @@
 import React from "react";
-import type { RxWidgetInfo, VisRxWidgetState } from "@iobroker/types-vis-2";
-import { renderIcon } from "./MaterialDesignButtons";
-import {
+import { squarePreview ,
   RenderProps,
   VisWidget,
   createInfo,
   setStateValue,
   sizeCss,
   stateValue,
-} from "./widgetUtils";
+} from './widgetUtils';
+import type { RxWidgetInfo, VisRxWidgetState } from "@iobroker/types-vis-2";
+import { renderIcon } from "./MaterialDesignButtons";
 
 type Kind = "view" | "iframe";
 type Data = Record<string, unknown> & {
@@ -269,8 +269,7 @@ export function dialogInfo(kind: Kind): RxWidgetInfo {
         },
       ],
     ),
-    visPrev:
-      '<img src="widgets/vis2-materialdesign/img/prev_dialog_view.png"></img>',
+    visPrev: squarePreview('F10AC'),
     visDefaultStyle: { width: 100, height: 30 },
   };
 }

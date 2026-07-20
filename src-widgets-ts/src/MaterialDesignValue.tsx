@@ -2,7 +2,7 @@ import React from 'react';
 
 import type { RxWidgetInfo, VisRxWidgetProps, VisRxWidgetState } from '@iobroker/types-vis-2';
 
-import { BaseRxData, RenderProps, VisWidget, createInfo, sizeCss, stateValue } from './widgetUtils';
+import { squarePreview, BaseRxData, RenderProps, VisWidget, createInfo, sizeCss, stateValue } from './widgetUtils';
 import { renderIcon } from './MaterialDesignButtons';
 
 interface ValueData extends BaseRxData {
@@ -40,8 +40,6 @@ interface ValueData extends BaseRxData {
     effectDuration?: number;
 }
 
-const preview =
-    '<div id="prev_tplVis-materialdesign-value" style="position: relative; text-align: initial; padding: 4px "><div class="vis-widget_prev materialdesign-widget materialdesign-value vis-tpl-materialdesign-Value " style="width: 100px; height: 24px; padding: 0px; display: flex; align-items: center; left: 220px; top: 323px; position: absolute; --value-color-text:#44739e; --value-font-text:RobotoCondensed-Regular; --value-font-size-text:14px; --value-color-prepand:#44739e; --value-font-prepand:RobotoCondensed-Regular; --value-font-size-prepand:14px; --value-color-append:#44739e; --value-font-append:RobotoCondensed-Regular; --value-font-size-append:14px; z-index: 4;" data-tmodified="true" data-zmodified="true"> <span class="mdi mdi-information materialdesign-icon-image " style="width: auto; height: auto; font-size: 24px; color: #44739e; ;"></span> <div class="materialdesign-value prepand-text" style="margin: 0 2px 0 2px;"></div> <div class="materialdesign-value value-text" style="margin: 0 2px 0 2px; flex: 1;text-align: center">1,23 kWh</div> <div class="materialdesign-value append-text" style="margin: 0 2px 0 2px;"></div> <div class="ui-resizable-handle ui-resizable-n" style="z-index: 90;"></div><div class="ui-resizable-handle ui-resizable-w" style="z-index: 90;"></div><div class="ui-resizable-handle ui-resizable-nw" style="z-index: 90;"></div><div class="ui-resizable-handle ui-resizable-ne" style="z-index: 90;"></div><div class="ui-resizable-handle ui-resizable-sw" style="z-index: 90;"></div></div></div>';
 
 const attrs: RxWidgetInfo['visAttrs'] = [
     {
@@ -229,7 +227,7 @@ export default class MaterialDesignValue extends VisWidget {
     static getWidgetInfo(): RxWidgetInfo {
         return {
             ...createInfo('tplVis2-materialdesign-value', 'Value', attrs),
-            visPrev: preview,
+            visPrev: squarePreview('F0199'),
             visDefaultStyle: {
                 width: 100,
                 height: 30,

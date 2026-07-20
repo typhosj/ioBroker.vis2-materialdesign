@@ -3,7 +3,7 @@ import React from 'react';
 import type { RxWidgetInfo, VisRxWidgetState, WidgetData } from '@iobroker/types-vis-2';
 
 import { renderIcon } from './MaterialDesignButtons';
-import { RenderProps, VisWidget, createInfo, iconField, parseActionValue, setStateValue, stateValue } from './widgetUtils';
+import { squarePreview, RenderProps, VisWidget, createInfo, iconField, parseActionValue, setStateValue, stateValue } from './widgetUtils';
 
 type Data = Record<string, unknown> & {
     listItemDataMethod?: string;
@@ -225,7 +225,7 @@ export default class MaterialDesignIconList extends VisWidget {
     private readonly relockTimers = new Map<number, number>();
 
     static getWidgetInfo(): RxWidgetInfo {
-        return { ...createInfo('tplVis2-materialdesign-Icon-List', 'Icon List', attrs), visPrev: '<img src="widgets/vis2-materialdesign/img/prev_iconlist.png"></img>', visDefaultStyle: { width: 400, height: 270 } };
+        return { ...createInfo('tplVis2-materialdesign-Icon-List', 'Icon List', attrs), visPrev: squarePreview('F0572'), visDefaultStyle: { width: 400, height: 270 } };
     }
 
     getWidgetInfo(): RxWidgetInfo { return MaterialDesignIconList.getWidgetInfo(); }
@@ -262,7 +262,7 @@ export default class MaterialDesignIconList extends VisWidget {
         else if (item.listType === 'buttonToggleValueTrue') setStateValue(this.props, item.objectId, parseActionValue(String(String(current) === String(item.buttonToggleValueTrue) ? item.buttonToggleValueFalse : item.buttonToggleValueTrue)));
         else if (item.listType === 'buttonToggleValueFalse') setStateValue(this.props, item.objectId, parseActionValue(String(String(current) === String(item.buttonToggleValueFalse) ? item.buttonToggleValueTrue : item.buttonToggleValueFalse)));
         else if (item.listType === 'buttonNav') this.props.context?.changeView?.(item.buttonNavView);
-        else if (item.listType === 'buttonLink') window.open(item.buttonLink);
+        else if (item.listType === 'buttonLink') window.open(item.buttonLink, '_blank', 'noopener,noreferrer');
     }
 
     private renderLock(data: Data, locked: boolean): React.JSX.Element | null {

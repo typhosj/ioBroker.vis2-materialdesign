@@ -2,7 +2,7 @@ import React from 'react';
 
 import type { RxWidgetInfo, VisRxWidgetProps, VisRxWidgetState } from '@iobroker/types-vis-2';
 
-import { BaseRxData, RenderProps, VisWidget, createInfo, sizeCss, stateValue } from './widgetUtils';
+import { squarePreview, BaseRxData, RenderProps, VisWidget, createInfo, sizeCss, stateValue } from './widgetUtils';
 
 export interface ProgressData extends BaseRxData {
     min?: number;
@@ -161,7 +161,7 @@ export default class MaterialDesignProgress extends VisWidget {
     static getWidgetInfo(): RxWidgetInfo {
         return {
             ...createInfo('tplVis2-materialdesign-Progress', 'Progress', linearAttrs),
-            visPrev: linearPreview,
+            visPrev: squarePreview('F03F0'),
             visDefaultStyle: { width: 100, height: 30 },
         };
     }

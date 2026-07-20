@@ -3,7 +3,7 @@ import React from 'react';
 import type { RxWidgetInfo, VisRxWidgetProps, VisRxWidgetState } from '@iobroker/types-vis-2';
 
 import { cleanColor, num, snapToStep } from './MaterialDesignProgress';
-import { RenderProps, VisWidget, createInfo, setStateValue, sizeCss, stateValue } from './widgetUtils';
+import { squarePreview, RenderProps, VisWidget, createInfo, setStateValue, sizeCss, stateValue } from './widgetUtils';
 
 export interface RoundSliderData {
     oid?: string;
@@ -42,8 +42,6 @@ export interface RoundSliderData {
     debug?: boolean;
 }
 
-const preview =
-    '<div id="prev_tplVis-materialdesign-Slider-Round" style="position: relative; text-align: initial; margin-bottom: -10px; padding: 0px !important; display: flex; justify-content:center;"><div class="vis-widget_prev materialdesign-widget materialdesign-slider-round vis-tpl-materialdesign-Slider Round " style="width: 100px; height: 100px; left: 213px; top: 121px; position: absolute; z-index: 4;" data-oid-working="" data-tmodified="true" data-zmodified="true"> <round-slider class="materialdesign-round-slider-element" value="54" max="100" min="0" step="1" startangle="135" arclength="270" handlesize="6" handlezoom="1.5" style="--round-slider-path-width:3; background: rgba(0, 0, 0, 0) none repeat scroll 0% 0%; --round-slider-path-color:rgba(161, 161, 161, 0.26); --round-slider-bar-color:#44739e; --round-slider-handle-color:#44739e;"> </round-slider> <label class="labelValue" style="position: absolute; width: 100%; text-align: center; display: flex; justify-content: center; pointer-events: none; top: 40%; color: #44739e; font-family: RobotoCondensed-Light; font-size: 16px;">54 %</label> <div class="ui-resizable-handle ui-resizable-n" style="z-index: 90;"></div><div class="ui-resizable-handle ui-resizable-w" style="z-index: 90;"></div><div class="ui-resizable-handle ui-resizable-nw" style="z-index: 90;"></div><div class="ui-resizable-handle ui-resizable-ne" style="z-index: 90;"></div><div class="ui-resizable-handle ui-resizable-sw" style="z-index: 90;"></div></div></div>';
 
 const attrs: RxWidgetInfo['visAttrs'] = [
     {
@@ -172,7 +170,7 @@ export default class MaterialDesignRoundSlider extends VisWidget {
     static getWidgetInfo(): RxWidgetInfo {
         return {
             ...createInfo('tplVis2-materialdesign-Slider-Round', 'Slider Round', attrs),
-            visPrev: preview,
+            visPrev: squarePreview('F04C5'),
             visDefaultStyle: { width: 100, height: 100 },
         };
     }

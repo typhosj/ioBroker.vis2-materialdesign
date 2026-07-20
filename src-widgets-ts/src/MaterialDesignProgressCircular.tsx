@@ -2,11 +2,9 @@ import React from 'react';
 
 import type { RxWidgetInfo, VisRxWidgetProps, VisRxWidgetState } from '@iobroker/types-vis-2';
 
-import { RenderProps, VisWidget, createInfo, sizeCss, stateValue } from './widgetUtils';
+import { squarePreview, RenderProps, VisWidget, createInfo, sizeCss, stateValue } from './widgetUtils';
 import { ProgressData, cleanColor, num, progressState } from './MaterialDesignProgress';
 
-const preview =
-    '<div id="prev_tplVis-materialdesign-Progress-Circular" style="position: relative; text-align: initial; display: flex; justify-content:center;"><div class="vis-widget_prev materialdesign-widget materialdesign-progress vis-tpl-materialdesign-Progress Circular " style="width: 110px; height: 63px; left: 500px; top: 110px; text-align: center; font-size: 14px; font-weight: bold; position: absolute;" > <div class="materialdesign-vuetify-progress-circular" style="width: 100%; height: 100%; display: flex; justify-content: center;"><div role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="74" class="v-progress-circular" style="height: 60px; width: 60px;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="21.428571428571427 21.428571428571427 42.857142857142854 42.857142857142854" style="transform: rotate(90deg);"><circle fill="transparent" cx="42.857142857142854" cy="42.857142857142854" r="20" stroke-width="2.8571428571428568" stroke-dasharray="125.664" stroke-dashoffset="0" class="v-progress-circular__underlay"></circle><circle fill="transparent" cx="42.857142857142854" cy="42.857142857142854" r="20" stroke-width="2.8571428571428568" stroke-dasharray="125.664" stroke-dashoffset="32.67256359733385px" class="v-progress-circular__overlay"></circle></svg><div class="v-progress-circular__info"><div class="materialdesign-vuetify-progress-circular-value-label">74 %</div></div></div></div><div class="ui-resizable-handle ui-resizable-n" style="z-index: 90;"></div><div class="ui-resizable-handle ui-resizable-w" style="z-index: 90;"></div><div class="ui-resizable-handle ui-resizable-nw" style="z-index: 90;"></div><div class="ui-resizable-handle ui-resizable-ne" style="z-index: 90;"></div><div class="ui-resizable-handle ui-resizable-sw" style="z-index: 90;"></div></div></div>';
 
 const attrs: RxWidgetInfo['visAttrs'] = [
     {
@@ -63,7 +61,7 @@ export default class MaterialDesignProgressCircular extends VisWidget {
     static getWidgetInfo(): RxWidgetInfo {
         return {
             ...createInfo('tplVis2-materialdesign-Progress-Circular', 'Progress Circular', attrs),
-            visPrev: preview,
+            visPrev: squarePreview('F07AF'),
             visDefaultStyle: { width: 70, height: 70 },
         };
     }

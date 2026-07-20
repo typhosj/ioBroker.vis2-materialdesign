@@ -4,7 +4,7 @@ import type { RxWidgetInfo, VisRxWidgetProps, VisRxWidgetState } from '@iobroker
 
 import { renderIcon } from './MaterialDesignButtons';
 import { cleanColor, num } from './MaterialDesignProgress';
-import { RenderProps, VisWidget, createInfo, setStateValue, sizeCss, stateValue } from './widgetUtils';
+import { squarePreview, RenderProps, VisWidget, createInfo, setStateValue, sizeCss, stateValue } from './widgetUtils';
 
 interface InputData {
     oid?: string;
@@ -376,7 +376,7 @@ export default class MaterialDesignInput extends VisWidget {
     static getWidgetInfo(): RxWidgetInfo {
         return {
             ...createInfo('tplVis2-materialdesign-Input', 'Input', attrs),
-            visPrev: '<img src="widgets/vis2-materialdesign/img/prev_input.png"></img>',
+            visPrev: squarePreview('F060E'),
             visDefaultStyle: { width: 150, height: 38 },
         };
     }

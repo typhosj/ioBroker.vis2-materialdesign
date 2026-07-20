@@ -1,8 +1,8 @@
 import React from "react";
+import { squarePreview , RenderProps, VisWidget, createInfo, stateValue } from './widgetUtils';
 import type { RxWidgetInfo, VisRxWidgetState } from "@iobroker/types-vis-2";
 import { colorSchemes, scheme } from "./MaterialDesignColorScheme";
 import { MaterialDesignChartCanvas } from "./MaterialDesignChartCanvas";
-import { RenderProps, VisWidget, createInfo, stateValue } from "./widgetUtils";
 
 type Data = Record<string, unknown>;
 type Point = { ts: number; val: number | null };
@@ -252,8 +252,7 @@ export default class MaterialDesignChartLineHistory extends VisWidget {
         "Line History Chart",
         attrs,
       ),
-      visPrev:
-        '<img src="widgets/vis2-materialdesign/img/prev_line_history_chart.png"></img>',
+      visPrev: squarePreview('F012A'),
       visDefaultStyle: { width: 400, height: 270 },
     };
   }

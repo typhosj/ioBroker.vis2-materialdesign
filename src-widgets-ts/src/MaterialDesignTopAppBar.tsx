@@ -1,7 +1,7 @@
 import React from 'react';
 import type { RxWidgetInfo, VisRxWidgetState } from '@iobroker/types-vis-2';
 import { renderIcon } from './MaterialDesignButtons';
-import { RenderProps, VisWidget, createInfo, setStateValue, sizeCss, stateValue } from './widgetUtils';
+import { squarePreview, RenderProps, VisWidget, createInfo, setStateValue, sizeCss, stateValue } from './widgetUtils';
 
 type Item = { menuId?: string; text?: string; header?: string; divider?: boolean; icon?: string; iconColor?: string; subMenuIconColor?: string; setValueOnMenuToggleClick?: boolean; subMenus?: Item[]; empty?: boolean };
 type Data = Record<string, unknown> & { oid?: string; navItemCount?: number; drawerItemsDataMethod?: string; drawerItemsJsonString?: string };
@@ -23,7 +23,7 @@ const attrs: RxWidgetInfo['visAttrs'] = [
 ];
 export default class MaterialDesignTopAppBar extends VisWidget {
     private open = false; private expanded = new Set<number>();
-    static getWidgetInfo(): RxWidgetInfo { return { ...createInfo('tplVis2-materialdesign-TopAppBar-Navigation', 'Top App Bar', attrs), visPrev: '<img src="widgets/vis2-materialdesign/img/prev_top_app_bar_nav_drawer.png"></img>', visDefaultStyle: { width: 400, height: 270 } }; }
+    static getWidgetInfo(): RxWidgetInfo { return { ...createInfo('tplVis2-materialdesign-TopAppBar-Navigation', 'Top App Bar', attrs), visPrev: squarePreview('F06FC'), visDefaultStyle: { width: 400, height: 270 } }; }
     getWidgetInfo(): RxWidgetInfo { return MaterialDesignTopAppBar.getWidgetInfo(); }
     renderWidgetBody(props: RenderProps): React.JSX.Element {
         super.renderWidgetBody(props); const data = this.state.rxData as unknown as Data; const list = items(data); const current = stateValue(this.state as VisRxWidgetState, s(data.oid)); const selected = current === undefined && !b(data.navDisableDefaultValue) ? n(data.navDefaultValue) : n(current); const permanent = s(data.drawerLayout) === 'permanent' || (s(data.drawerLayout) === 'auto' && typeof window !== 'undefined' && window.innerWidth >= n(data.permanentIfResolutionHigherThan, 800)); const visible = permanent || this.open; const flat: Array<{ item: Item; index: number; parent?: Item }> = []; let index = 0; list.forEach(item => { flat.push({ item, index: index++ }); item.subMenus?.forEach(sub => flat.push({ item: sub, index: index++, parent: item })); }); const chosen = flat.find(entry => entry.index === selected); const title = b(data.showSelectedItemAsTitle, true) && chosen ? chosen.item.text : s(data.titleTopAppBar, 'Material Design Widgets'); const select = (entry: { item: Item; index: number; parent?: Item }): void => { if (entry.item.subMenus?.length) { if (this.expanded.has(entry.index)) this.expanded.delete(entry.index); else this.expanded.add(entry.index); if (entry.item.setValueOnMenuToggleClick) setStateValue(this.props, s(data.oid), entry.index); this.forceUpdate(); return; } setStateValue(this.props, s(data.oid), entry.index); if (s(data.selectedItemName_oid)) setStateValue(this.props, s(data.selectedItemName_oid), entry.parent ? `${s(entry.parent.menuId, entry.parent.text)}.${s(entry.item.menuId, entry.item.text)}` : s(entry.item.menuId, entry.item.text)); if (!permanent) { this.open = false; this.forceUpdate(); } window.scrollTo?.({ top: 0, left: 0 }); };
