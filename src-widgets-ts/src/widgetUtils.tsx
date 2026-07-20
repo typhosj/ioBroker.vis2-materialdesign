@@ -103,6 +103,86 @@ export function stateValue(state: VisRxWidgetState, oid: string): ioBroker.State
     return oid ? state.values?.[`${oid}.val`] : undefined;
 }
 
+// The vis/ioBroker system language (like the legacy widgets used), falling back to the browser locale.
+export function visLocale(): string | undefined {
+    if (typeof window === 'undefined') return undefined;
+    const win = window as unknown as { vis?: { language?: string }; systemLang?: string };
+    return win.vis?.language || win.systemLang || window.navigator.language;
+}
+
+// Native replacement for moment's date tokens (VIS1 custom-format fields used moment).
+// Longer tokens must precede shorter ones in the alternation so YYYY beats YY, MMMM beats MM, etc.
+export function formatMoment(date: Date, token: string, locale?: string): string {
+    if (!token) return '';
+    const pad = (value: number): string => String(value).padStart(2, '0');
+    const hours12 = date.getHours() % 12 || 12;
+    const map: Record<string, () => string> = {
+        YYYY: () => String(date.getFullYear()),
+        YY: () => String(date.getFullYear()).slice(-2),
+        MMMM: () => new Intl.DateTimeFormat(locale, { month: 'long' }).format(date),
+        MMM: () => new Intl.DateTimeFormat(locale, { month: 'short' }).format(date).replace('.', ''),
+        MM: () => pad(date.getMonth() + 1),
+        M: () => String(date.getMonth() + 1),
+        DD: () => pad(date.getDate()),
+        D: () => String(date.getDate()),
+        dddd: () => new Intl.DateTimeFormat(locale, { weekday: 'long' }).format(date),
+        ddd: () => new Intl.DateTimeFormat(locale, { weekday: 'short' }).format(date).replace('.', ''),
+        dd: () => new Intl.DateTimeFormat(locale, { weekday: 'narrow' }).format(date),
+        HH: () => pad(date.getHours()),
+        H: () => String(date.getHours()),
+        hh: () => pad(hours12),
+        h: () => String(hours12),
+        mm: () => pad(date.getMinutes()),
+        m: () => String(date.getMinutes()),
+        ss: () => pad(date.getSeconds()),
+        s: () => String(date.getSeconds()),
+        A: () => (date.getHours() < 12 ? 'AM' : 'PM'),
+        a: () => (date.getHours() < 12 ? 'am' : 'pm'),
+    };
+    return token.replace(/YYYY|YY|MMMM|MMM|MM|M|dddd|ddd|dd|DD|D|HH|H|hh|h|mm|m|ss|s|A|a/g, match => (map[match] ? map[match]() : match));
+}
+
+// Native replacement for moment-duration-format tokens. The largest unit present accumulates the
+// overflow (moment-duration-format's default), because higher units skipped in the loop leave their
+// seconds in `remainder`. Doubled tokens (hh, mm, …) zero-pad; single tokens don't.
+export function formatDurationTokens(totalSeconds: number, template: string): string {
+    const units: Array<[string, number]> = [['d', 86400], ['h', 3600], ['m', 60], ['s', 1]];
+    if (!units.some(([letter]) => template.includes(letter))) return String(totalSeconds);
+    const sign = totalSeconds < 0 ? '-' : '';
+    let remainder = Math.abs(Math.floor(totalSeconds));
+    const values: Record<string, number> = {};
+    for (const [letter, per] of units) {
+        if (!template.includes(letter)) continue;
+        values[letter] = Math.floor(remainder / per);
+        remainder %= per;
+    }
+    return sign + template.replace(/dd|hh|mm|ss|d|h|m|s/g, token => {
+        const value = values[token[0]];
+        if (value === undefined) return token;
+        return token.length === 2 ? String(value).padStart(2, '0') : String(value);
+    });
+}
+
+// Native replacement for moment's duration().humanize(): the single largest applicable unit,
+// localized via Intl unit formatting (e.g. "2 hours" / "2 Stunden").
+export function humanizeDuration(totalSeconds: number, locale?: string): string {
+    const abs = Math.abs(totalSeconds);
+    const table: Array<[Intl.NumberFormatOptions['unit'], number]> = [
+        ['year', 31536000], ['month', 2592000], ['week', 604800], ['day', 86400],
+        ['hour', 3600], ['minute', 60], ['second', 1],
+    ];
+    let unit: Intl.NumberFormatOptions['unit'] = 'second';
+    let value = Math.round(abs);
+    for (const [candidate, per] of table) {
+        if (abs >= per) { unit = candidate; value = Math.round(abs / per); break; }
+    }
+    try {
+        return new Intl.NumberFormat(locale, { style: 'unit', unit, unitDisplay: 'long' }).format(value);
+    } catch {
+        return `${value} ${unit}${value === 1 ? '' : 's'}`;
+    }
+}
+
 // CSS font-size that survives a theme `var(--…)` (or any string with a unit): return it as-is, otherwise numeric → `${n}px`.
 export function sizeCss(value: unknown, fallbackPx: number): string {
     if (typeof value === 'string') {

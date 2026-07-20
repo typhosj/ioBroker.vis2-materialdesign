@@ -1,6 +1,9 @@
 import React from 'react';
 import type { RxWidgetInfo, VisRxWidgetState } from '@iobroker/types-vis-2';
-import { squarePreview, RenderProps, VisWidget, createInfo, sizeCss, stateValue } from './widgetUtils';
+import { squarePreview, RenderProps, VisWidget, createInfo, sizeCss, stateValue, formatMoment } from './widgetUtils';
+
+// Re-exported for existing importers/tests; the implementation now lives in widgetUtils (shared with Value).
+export { formatMoment };
 
 type Data = Record<string, unknown> & { oid?: string };
 type Event = { start?: string; end?: string; name?: string; color?: string; colorText?: string };
@@ -36,31 +39,6 @@ export function formatCalendarTime(minutes: number, mode = 'locale', locale?: st
     // German locale: match the legacy Vuetify axis format `HH Uhr` (full hours) instead of Intl's `HH:MM`.
     if (locale && locale.toLowerCase().startsWith('de')) return mins === 0 ? `${String(hours).padStart(2, '0')} Uhr` : `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
     return new Intl.DateTimeFormat(locale, { hour: '2-digit', minute: '2-digit' }).format(new Date(2000, 0, 1, hours, mins));
-}
-
-// Minimal moment-style date formatter for the widget's custom-format fields (VIS1 used moment tokens).
-// Longer tokens must precede shorter ones in the alternation so YYYY beats YY, MMMM beats MM, etc.
-export function formatMoment(date: Date, token: string, locale?: string): string {
-    if (!token) return '';
-    const pad = (value: number): string => String(value).padStart(2, '0');
-    const map: Record<string, () => string> = {
-        YYYY: () => String(date.getFullYear()),
-        YY: () => String(date.getFullYear()).slice(-2),
-        MMMM: () => new Intl.DateTimeFormat(locale, { month: 'long' }).format(date),
-        MMM: () => new Intl.DateTimeFormat(locale, { month: 'short' }).format(date).replace('.', ''),
-        MM: () => pad(date.getMonth() + 1),
-        M: () => String(date.getMonth() + 1),
-        DD: () => pad(date.getDate()),
-        D: () => String(date.getDate()),
-        dddd: () => new Intl.DateTimeFormat(locale, { weekday: 'long' }).format(date),
-        ddd: () => new Intl.DateTimeFormat(locale, { weekday: 'short' }).format(date).replace('.', ''),
-        dd: () => new Intl.DateTimeFormat(locale, { weekday: 'narrow' }).format(date),
-        HH: () => pad(date.getHours()),
-        H: () => String(date.getHours()),
-        mm: () => pad(date.getMinutes()),
-        m: () => String(date.getMinutes()),
-    };
-    return token.replace(/YYYY|YY|MMMM|MMM|MM|M|dddd|ddd|dd|DD|D|HH|H|mm|m/g, match => (map[match] ? map[match]() : match));
 }
 
 const attrs: RxWidgetInfo['visAttrs'] = [

@@ -2,7 +2,7 @@ import React from 'react';
 
 import type { RxWidgetInfo, VisRxWidgetProps, VisRxWidgetState } from '@iobroker/types-vis-2';
 
-import { squarePreview, BaseRxData, RenderProps, VisWidget, createInfo, sizeCss, stateValue } from './widgetUtils';
+import { squarePreview, BaseRxData, RenderProps, VisWidget, createInfo, sizeCss, stateValue, formatMoment, formatDurationTokens, humanizeDuration, visLocale } from './widgetUtils';
 import { renderIcon } from './MaterialDesignButtons';
 
 interface ValueData extends BaseRxData {
@@ -143,32 +143,18 @@ function evalMaybe(expression: string | undefined, value: unknown): unknown {
     return Function(`"use strict";return (${replaced});`)() as unknown;
 }
 
+// Native (moment-free) duration/timestamp formatting. VIS1 used moment tokens here; the shared
+// widgetUtils helpers reproduce them via Intl + arithmetic, so the runtime no longer needs moment.
 function formatDuration(seconds: number, template: string): string {
-    const moment = (window as unknown as {
-        moment?: {
-            duration: (value: number, unit: string) => { humanize: () => string; format?: (template: string) => string };
-        };
-    }).moment;
-    const duration = moment?.duration(seconds, 'seconds');
-    if (duration) {
-        return template === 'humanize' ? duration.humanize() : duration.format?.(template) ?? String(seconds);
-    }
     if (template === 'humanize') {
-        return `${Math.round(seconds)} seconds`;
+        return humanizeDuration(seconds, visLocale());
     }
-    const whole = Math.max(0, Math.floor(seconds));
-    const hours = Math.floor(whole / 3600);
-    const minutes = Math.floor((whole % 3600) / 60);
-    const rest = whole % 60;
-    return [hours, minutes, rest].map(part => String(part).padStart(2, '0')).join(':');
+    return formatDurationTokens(seconds, template);
 }
 
 function formatTimestamp(seconds: number, template: string): string {
-    const moment = (window as unknown as { moment?: { unix: (value: number) => { format: (template: string) => string } } }).moment;
-    if (moment?.unix) {
-        return moment.unix(seconds).format(template);
-    }
-    return new Date(seconds * 1000).toLocaleString();
+    const date = new Date(seconds * 1000);
+    return template ? formatMoment(date, template, visLocale()) : date.toLocaleString();
 }
 
 function formatNumber(value: unknown, data: ValueData): string {

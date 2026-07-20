@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { pickerValueName } from './IconFilePicker';
-import { applyThemeVariables, createInfo, editorDialogPalette, iconFieldDataKey, parseActionValue, setStateValue, stateValue } from './widgetUtils';
+import { applyThemeVariables, createInfo, editorDialogPalette, formatDurationTokens, formatMoment, humanizeDuration, iconFieldDataKey, parseActionValue, setStateValue, stateValue } from './widgetUtils';
 
 describe('widget utilities', () => {
     it('keeps legacy action values typed', () => {
@@ -73,5 +73,25 @@ describe('widget utilities', () => {
     it('shows icon names and file names in picker buttons', () => {
         expect(pickerValueName('home-outline')).toBe('home-outline');
         expect(pickerValueName('/icons-mfd-svg/weather/cloud%20white.svg')).toBe('cloud white.svg');
+    });
+
+    it('formats timestamps with moment-style tokens natively (no moment)', () => {
+        const date = new Date(2024, 0, 5, 9, 7, 3); // 2024-01-05 09:07:03, local
+        expect(formatMoment(date, 'YYYY-MM-DD HH:mm:ss')).toBe('2024-01-05 09:07:03');
+        expect(formatMoment(date, 'D.M.YY h:mm a')).toBe('5.1.24 9:07 am');
+        expect(formatMoment(new Date(2024, 0, 5, 15, 0, 0), 'h A')).toBe('3 PM');
+    });
+
+    it('formats durations with the largest present token accumulating overflow', () => {
+        expect(formatDurationTokens(3661, 'hh:mm:ss')).toBe('01:01:01');
+        expect(formatDurationTokens(3700, 'mm:ss')).toBe('61:40'); // minutes accumulate the hour
+        expect(formatDurationTokens(90061, 'd:hh:mm:ss')).toBe('1:01:01:01');
+        expect(formatDurationTokens(-61, 'mm:ss')).toBe('-01:01');
+    });
+
+    it('humanizes a duration to its largest unit, localized', () => {
+        expect(humanizeDuration(7200, 'en-US')).toBe('2 hours');
+        expect(humanizeDuration(45, 'en-US')).toBe('45 seconds');
+        expect(humanizeDuration(90000, 'en-US')).toBe('1 day');
     });
 });

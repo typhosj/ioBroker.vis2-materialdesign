@@ -89,10 +89,7 @@
     "url": "https://github.com/typhosj/ioBroker.vis2-materialdesign/issues"
   },
   "readmeFilename": "README.md",
-  "dependencies": {
-    "moment": "^2.30.1",
-    "moment-duration-format": "^2.3.2"
-  },
+  "dependencies": {},
   "contributors": [
     "Scrounger <scrounger@gmx.net>"
   ]
