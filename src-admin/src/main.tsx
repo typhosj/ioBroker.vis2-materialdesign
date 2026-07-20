@@ -12,17 +12,6 @@ import defaultfontSizes from '../../admin/lib/defaultfontSizes.json';
 import defaultfonts from '../../admin/lib/defaultfonts.json';
 import fontSizes from '../../admin/lib/fontSizes.json';
 import fonts from '../../admin/lib/fonts.json';
-import de from '../../admin/i18n/de.json';
-import en from '../../admin/i18n/en.json';
-import es from '../../admin/i18n/es.json';
-import fr from '../../admin/i18n/fr.json';
-import it from '../../admin/i18n/it.json';
-import nl from '../../admin/i18n/nl.json';
-import pl from '../../admin/i18n/pl.json';
-import pt from '../../admin/i18n/pt.json';
-import ru from '../../admin/i18n/ru.json';
-import uk from '../../admin/i18n/uk.json';
-import zhCn from '../../admin/i18n/zh-cn.json';
 import '../../fonts.css';
 import './style.css';
 
@@ -31,7 +20,23 @@ type ThemeEntry = { id: string; desc: string; widget: string; defaultValue?: num
 type NativeConfig = Record<string, unknown> & { scriptName?: string; variableName?: string; javascriptInstance?: string; sentryReport?: boolean };
 type ThemeDefinition = { entries: ThemeEntry[]; defaults: Array<string | number>; title: string; widgetTitle: string };
 
-const translations = { de, en, es, fr, it, nl, pl, pt, ru, uk, 'zh-cn': zhCn };
+// Admin adapter translations load per-language at runtime — only English plus the active language —
+// so the config bundle no longer inlines all 11 dictionaries (~124 kB gz). Vite still emits each
+// admin/i18n/<lang>.json as its own lazy chunk; the open config fetches just what it needs. The
+// full dictionaries still back the vis widget editor via the separate widget bundle.
+const KNOWN_LANGS = ['de', 'en', 'es', 'fr', 'it', 'nl', 'pl', 'pt', 'ru', 'uk', 'zh-cn'];
+const translations: Record<string, Record<string, string>> = {};
+
+async function loadLang(lang: string): Promise<void> {
+    const key = KNOWN_LANGS.includes(lang) ? lang : 'en';
+    if (translations[key]) return;
+    try {
+        const module = await import(`../../admin/i18n/${key}.json`);
+        translations[key] = (module.default ?? module) as Record<string, string>;
+    } catch {
+        // leave missing — adapter-react-v5 falls back to the key / English
+    }
+}
 const themeDefinitions: Record<ThemeName, ThemeDefinition> = {
     colors: { entries: colors, defaults: defaultcolors, title: 'default light colors', widgetTitle: 'Widget colors' },
     colorsDark: { entries: colorsDark, defaults: defaultcolorsDark, title: 'default dark colors', widgetTitle: 'Widget colors' },
@@ -39,7 +44,8 @@ const themeDefinitions: Record<ThemeName, ThemeDefinition> = {
     fontSizes: { entries: fontSizes, defaults: defaultfontSizes, title: 'config_fontSizes', widgetTitle: 'Widget font sizes' },
 };
 
-I18n.setTranslations(translations);
+// GenericApp's constructor merges `translations` into the framework dictionary and calls
+// I18n.setTranslations itself, after bootstrap() has populated the active languages.
 const t = (text: string): string => I18n.t(text);
 
 function defaultsKey(theme: ThemeName): string {
@@ -179,7 +185,25 @@ class MaterialDesignAdmin extends GenericApp<GenericAppProps, GenericAppState> {
         super.onSave(isClose);
         void this.syncRuntimeStates().catch(error => this.showAlert(String(error), 'error'));
     }
+    // The active language comes from the socket after connect and can differ from the UI language we
+    // preloaded (admin-UI language ≠ ioBroker system language). If its dictionary isn't loaded yet,
+    // fetch it and merge (without wiping the framework strings), then re-render.
+    async onConnectionReady(): Promise<void> {
+        const lang = this.socket.systemLang;
+        if (lang && !translations[lang]) {
+            await loadLang(lang);
+            if (translations[lang]) {
+                I18n.extendTranslations(translations[lang], lang);
+                this.forceUpdate();
+            }
+        }
+    }
     render(): React.JSX.Element { if (!this.state.loaded) return <Loader />; return <ThemeProvider theme={this.state.theme}><CssBaseline /><Config common={this.common as Record<string, unknown>} config={this.state.native as NativeConfig} instance={this.instance} onError={this.showError} onLoad={settings => this.setState({ native: settings })} update={(key, value) => this.updateNativeValue(key, value)} onGenerate={() => void this.generateGlobalScript().catch(error => this.showAlert(String(error), 'error'))} />{this.renderHelperDialogs()}</ThemeProvider>; }
 }
 
-createRoot(document.getElementById('root')!).render(<MaterialDesignAdmin />);
+async function bootstrap(): Promise<void> {
+    const initial = (window as unknown as { sysLang?: string }).sysLang || navigator.language?.split('-')[0] || 'en';
+    await Promise.all([loadLang('en'), loadLang(initial)]);
+    createRoot(document.getElementById('root')!).render(<MaterialDesignAdmin />);
+}
+void bootstrap();
