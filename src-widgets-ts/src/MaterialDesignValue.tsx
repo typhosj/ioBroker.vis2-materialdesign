@@ -2,7 +2,7 @@ import React from 'react';
 
 import type { RxWidgetInfo, VisRxWidgetProps, VisRxWidgetState } from '@iobroker/types-vis-2';
 
-import { squarePreview, BaseRxData, RenderProps, VisWidget, createInfo, sizeCss, stateValue, formatMoment, formatDurationTokens, humanizeDuration, visLocale, sanitizeHtml } from './widgetUtils';
+import { squarePreview, BaseRxData, RenderProps, VisWidget, createInfo, iconField, sizeCss, stateValue, formatMoment, formatDurationTokens, humanizeDuration, visLocale, sanitizeHtml } from './widgetUtils';
 import { renderIcon } from './MaterialDesignButtons';
 
 interface ValueData extends BaseRxData {
@@ -95,7 +95,7 @@ const attrs: RxWidgetInfo['visAttrs'] = [
     {
         name: 'icon',
         fields: [
-            { name: 'image', label: 'image', type: 'icon', default: 'information' },
+            iconField('image', 'image', 'information'),
             { name: 'imageColor', label: 'imageColor', type: 'color' },
             { name: 'iconPosition', label: 'iconPosition', type: 'select', options: ['left', 'right'], default: 'left' },
             { name: 'iconHeight', label: 'iconHeight', type: 'slider', min: 0, max: 200, step: 1 },

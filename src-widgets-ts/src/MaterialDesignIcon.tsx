@@ -2,7 +2,7 @@ import React from 'react';
 
 import type { RxWidgetInfo, VisRxWidgetProps } from '@iobroker/types-vis-2';
 
-import { squarePreview, BaseRxData, RenderProps, VisWidget, createInfo } from './widgetUtils';
+import { squarePreview, BaseRxData, RenderProps, VisWidget, createInfo, iconField } from './widgetUtils';
 import { renderIcon } from './MaterialDesignButtons';
 
 interface IconData extends BaseRxData {
@@ -15,7 +15,7 @@ const attrs: RxWidgetInfo['visAttrs'] = [
     {
         name: 'common',
         fields: [
-            { name: 'mdwIcon', label: 'mdwIcon', type: 'icon', default: 'material-design' },
+            iconField('mdwIcon', 'mdwIcon', 'material-design'),
             { name: 'mdwIconSize', label: 'mdwIconSize', type: 'number' },
             { name: 'mdwIconColor', label: 'mdwIconColor', type: 'color' },
             { name: 'generateHtmlControl', label: 'generateHtmlControl', type: 'checkbox' },

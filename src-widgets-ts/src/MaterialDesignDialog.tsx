@@ -5,7 +5,7 @@ import { squarePreview ,
   createInfo,
   setStateValue,
   sizeCss,
-  stateValue, sanitizeHtml } from './widgetUtils';
+  stateValue, sanitizeHtml, iconField } from './widgetUtils';
 import type { RxWidgetInfo, VisRxWidgetState } from "@iobroker/types-vis-2";
 import { renderIcon } from "./MaterialDesignButtons";
 
@@ -64,7 +64,7 @@ const buttonFields = [
     max: 100,
     step: 1,
   },
-  { name: "image", label: "image", type: "icon" as const },
+  iconField("image", "image"),
   { name: "imageColor", label: "imageColor", type: "color" as const },
   {
     name: "iconPosition",

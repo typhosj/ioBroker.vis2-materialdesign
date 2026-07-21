@@ -4,7 +4,7 @@ import type { RxWidgetInfo, VisRxWidgetState } from '@iobroker/types-vis-2';
 
 import { renderIcon } from './MaterialDesignButtons';
 import { cleanColor, num } from './MaterialDesignProgress';
-import { squarePreview, RenderProps, VisWidget, createInfo, setStateValue, sizeCss, stateValue } from './widgetUtils';
+import { squarePreview, RenderProps, VisWidget, createInfo, iconField, setStateValue, sizeCss, stateValue } from './widgetUtils';
 
 interface SelectData {
     oid?: string;
@@ -308,7 +308,7 @@ const attrs: RxWidgetInfo['visAttrs'] = [
             { name: 'value', label: 'value', type: 'text', index: 0 },
             { name: 'label', label: 'label', type: 'text', index: 0 },
             { name: 'subLabel', label: 'subLabel', type: 'text', index: 0 },
-            { name: 'listIcon', label: 'listIcon', type: 'icon', index: 0 },
+            { ...iconField('listIcon', 'listIcon'), index: 0 },
             { name: 'listIconColor', label: 'listIconColor', type: 'color', index: 0 },
             { name: 'imageColorSelectedTextField', label: 'imageColorSelectedTextField', type: 'color', index: 0 },
         ],

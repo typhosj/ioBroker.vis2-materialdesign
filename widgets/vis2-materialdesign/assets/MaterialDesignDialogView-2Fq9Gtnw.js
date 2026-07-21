@@ -1,1 +1,0 @@
-import{n as e,t}from"./MaterialDesignDialog-BUdZlET3.js";var n=class n extends t{constructor(e){super(e,`view`)}static getWidgetInfo(){return e(`view`)}getWidgetInfo(){return n.getWidgetInfo()}};export{n as default};
