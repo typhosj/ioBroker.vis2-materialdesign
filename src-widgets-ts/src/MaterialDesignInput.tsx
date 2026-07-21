@@ -348,12 +348,34 @@ export function activeLabelTranslateY(value: unknown): number {
     return value === undefined || value === '' || Number(value) === 0 ? -16 : num(value, -16);
 }
 
-export function outlinedNotchWidth(label: string, labelFontSize: unknown): number {
+let notchCanvas: HTMLCanvasElement | null | undefined;
+
+// Width of the outline notch (the border gap the floating label sits in). A per-character
+// heuristic wildly overestimates proportional text (e.g. "Zieltemperatur" measured 77px but the
+// old length*factor formula returned 112px → an oversized notch), so measure the real rendered
+// text via canvas when available and only fall back to a heuristic for SSR / no-canvas contexts.
+export function outlinedNotchWidth(label: string, labelFontSize: unknown, labelFontFamily?: unknown): number {
     if (!label) {
         return 0;
     }
     const activeFontSize = Math.max(10, num(labelFontSize, 16) * 0.75);
-    return Math.max(label.length * activeFontSize * 0.62 + 8, 20);
+    const family = (typeof labelFontFamily === 'string' && labelFontFamily) || 'sans-serif';
+    if (typeof document !== 'undefined') {
+        try {
+            if (notchCanvas === undefined) {
+                notchCanvas = document.createElement('canvas');
+            }
+            const ctx = notchCanvas ? notchCanvas.getContext('2d') : null;
+            if (ctx) {
+                ctx.font = `${activeFontSize}px ${family}`;
+                return Math.round(ctx.measureText(label).width) + 8;
+            }
+        } catch {
+            /* fall through to heuristic */
+        }
+    }
+    // Heuristic fallback (SSR / no canvas): fixed overhead + average per-character advance.
+    return Math.max(Math.round(label.length * activeFontSize * 0.5 + activeFontSize * 0.7), 20);
 }
 
 export default class MaterialDesignInput extends VisWidget {
@@ -427,6 +449,16 @@ export default class MaterialDesignInput extends VisWidget {
         const hasDetails = !!data.inputMessage || !!data.showInputCounter;
         const slotMinHeight = enclosed || filled ? 40 : 32;
         const labelTranslateY = activeLabelTranslateY(data.inputTranslateY);
+        // A prepend-inner icon shifts the text slot (and thus the label) to the right. When the label
+        // floats up it should sit in the notch at the field's front, exactly like a field without an
+        // icon, so shift the ACTIVE label back left by the icon column width (padding + icon size).
+        const innerIconShift = icon(
+            data.prepandInnerIcon,
+            data.prepandInnerIconColor,
+            num(data.prepandInnerIconSize, 16),
+        )
+            ? 10 + num(data.prepandInnerIconSize, 16)
+            : 0;
 
         return (
             <div
@@ -513,13 +545,23 @@ export default class MaterialDesignInput extends VisWidget {
                                     <fieldset
                                         aria-hidden="true"
                                         style={{
+                                            // The outline must wrap the WHOLE field. Inside the flex `v-input__slot`
+                                            // an in-flow fieldset collapses to the legend width (a small box on the
+                                            // left); position it absolutely so it spans the slot. The old widget got
+                                            // this from ambient legacy Vuetify CSS which is gone once legacy is removed.
                                             backgroundColor: 'transparent',
                                             borderColor,
                                             borderRadius: layout.includes('rounded') ? 28 : 4,
                                             borderStyle: 'solid',
                                             borderWidth: this.focused ? 2 : 1,
+                                            bottom: 0,
+                                            left: 0,
                                             margin: 0,
                                             padding: '0 8px',
+                                            pointerEvents: 'none',
+                                            position: 'absolute',
+                                            right: 0,
+                                            top: -5,
                                         }}
                                     >
                                         <legend
@@ -530,6 +572,7 @@ export default class MaterialDesignInput extends VisWidget {
                                                     ? outlinedNotchWidth(
                                                           data.inputLabelText || '',
                                                           data.inputLabelFontSize,
+                                                          data.inputLabelFontFamily,
                                                       )
                                                     : 0,
                                             }}
@@ -541,7 +584,17 @@ export default class MaterialDesignInput extends VisWidget {
                                     data.prepandInnerIconColor,
                                     num(data.prepandInnerIconSize, 16),
                                 ) ? (
-                                    <div className="v-input__prepend-inner">
+                                    <div
+                                        className="v-input__prepend-inner"
+                                        style={{
+                                            // Center the inner icon vertically inside the flex slot instead of
+                                            // letting it stick to the top-left (ambient legacy CSS did this before).
+                                            alignItems: 'center',
+                                            alignSelf: 'center',
+                                            display: 'flex',
+                                            paddingLeft: 10,
+                                        }}
+                                    >
                                         {icon(
                                             data.prepandInnerIcon,
                                             data.prepandInnerIconColor,
@@ -591,7 +644,7 @@ export default class MaterialDesignInput extends VisWidget {
                                                 position: 'absolute',
                                                 top: filled ? 17 : 8,
                                                 transform: active
-                                                    ? `translateX(${num(data.inputTranslateX, 0)}px) translateY(${labelTranslateY}px) scale(0.75)`
+                                                    ? `translateX(${num(data.inputTranslateX, 0) - innerIconShift}px) translateY(${labelTranslateY}px) scale(0.75)`
                                                     : undefined,
                                                 transformOrigin: 'top left',
                                                 whiteSpace: 'nowrap',
@@ -634,6 +687,13 @@ export default class MaterialDesignInput extends VisWidget {
                                         }}
                                         placeholder={placeholder(data)}
                                         style={{
+                                            // Reset the native input chrome (border/background/outline). The old widget
+                                            // relied on ambient legacy Vuetify CSS for this; keep it self-contained here.
+                                            appearance: 'none',
+                                            background: 'transparent',
+                                            border: 0,
+                                            borderRadius: 0,
+                                            outline: 'none',
                                             boxSizing: 'border-box',
                                             color: textColor,
                                             fontFamily: data.inputTextFontFamily || undefined,
@@ -641,7 +701,9 @@ export default class MaterialDesignInput extends VisWidget {
                                             flex: '1 1 auto',
                                             height: enclosed ? 20 : undefined,
                                             lineHeight: '20px',
-                                            marginTop: !enclosed && !filled && data.inputLabelText ? 14 : undefined,
+                                            // Push the text down for regular AND filled so the floating label
+                                            // (which moves to the top of the box) does not overlap the value.
+                                            marginTop: !enclosed && data.inputLabelText ? 14 : undefined,
                                             maxWidth: '100%',
                                             minWidth: 0,
                                             padding: enclosed ? 0 : '4px 0 8px 0',

@@ -19,7 +19,8 @@ Abhängigkeit und sollten nicht geändert werden.
 
 ## Werte eingeben
 
-- [Eingabe, Select und Autocomplete](input.md) – Text, Zahl oder Auswahl
+- [Eingabe](input.md) – Text oder Zahl eingeben
+- [Select und Autocomplete](select.md) – Wert aus einer Liste wählen
 - [Slider](slider.md) – numerischen Wert horizontal oder vertikal ändern
 - [Runder Slider](slider-round.md) – numerischen Wert kreisförmig ändern
 

@@ -5,6 +5,34 @@ import type { RxWidgetInfo, VisRxWidgetProps, VisRxWidgetState } from '@iobroker
 import { cleanColor, num, snapToStep } from './MaterialDesignProgress';
 import { squarePreview, RenderProps, VisWidget, createInfo, setStateValue, sizeCss, stateValue, sanitizeHtml } from './widgetUtils';
 
+// Self-contained layout for the Vuetify-style slider DOM. The old widget relied on ambient
+// legacy Vuetify CSS (v-slider*) for track/thumb geometry and for hiding the raw value <input>;
+// once the legacy widget set is removed that CSS is gone, so ship the minimal geometry here.
+// Colors/percentages stay inline on the elements; this only positions and sizes them.
+const SLIDER_CSS = `
+.materialdesign-vuetifySlider input{display:none!important}
+.materialdesign-vuetifySlider .v-slider__track-container{position:absolute;border-radius:6px;overflow:hidden}
+.materialdesign-vuetifySlider .v-slider--horizontal .v-slider__track-container{height:4px;width:100%;top:50%;left:0;transform:translateY(-50%)}
+.materialdesign-vuetifySlider .v-slider--vertical .v-slider__track-container{width:4px;height:100%;left:50%;top:0;transform:translateX(-50%)}
+.materialdesign-vuetifySlider .v-slider__track-background,.materialdesign-vuetifySlider .v-slider__track-fill{position:absolute}
+.materialdesign-vuetifySlider .v-slider--horizontal .v-slider__track-background,.materialdesign-vuetifySlider .v-slider--horizontal .v-slider__track-fill{height:100%;top:0}
+.materialdesign-vuetifySlider .v-slider--vertical .v-slider__track-background,.materialdesign-vuetifySlider .v-slider--vertical .v-slider__track-fill{width:100%;left:0}
+.materialdesign-vuetifySlider .v-slider__thumb-container{position:absolute}
+.materialdesign-vuetifySlider .v-slider--horizontal .v-slider__thumb-container{top:50%}
+.materialdesign-vuetifySlider .v-slider--vertical .v-slider__thumb-container{left:50%}
+.materialdesign-vuetifySlider .v-slider__thumb{position:absolute;width:14px;height:14px;border-radius:50%;background:currentColor;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.materialdesign-vuetifySlider .v-slider--horizontal .v-slider__thumb{top:50%;left:0;transform:translate(-50%,-50%)}
+.materialdesign-vuetifySlider .v-slider--vertical .v-slider__thumb{left:50%;bottom:0;transform:translate(-50%,50%)}
+.materialdesign-vuetifySlider .v-slider__thumb.medium-size{width:18px;height:18px}
+.materialdesign-vuetifySlider .v-slider__thumb.big-size{width:24px;height:24px}
+.materialdesign-vuetifySlider .v-slider__ticks-container{position:absolute;left:0;top:50%;width:100%;height:0}
+.materialdesign-vuetifySlider .v-slider__tick{position:absolute;background:rgba(0,0,0,.35);transform:translate(-50%,-50%)}
+.materialdesign-vuetifySlider .v-slider__tick-label{position:absolute;top:8px;left:0;transform:translateX(-50%);font-size:11px;white-space:nowrap}
+.materialdesign-vuetifySlider .v-slider__thumb-label-container{position:absolute;top:0;left:0}
+.materialdesign-vuetifySlider .v-slider__thumb-label{position:absolute;display:flex;align-items:center;justify-content:center;color:#fff;border-radius:50% 50% 0;transform:translate(-50%,-140%) rotate(45deg)}
+.materialdesign-vuetifySlider .v-slider__thumb-label>div{transform:rotate(-45deg)}
+`;
+
 export interface SliderData {
     oid?: string;
     'oid-working'?: string;
@@ -276,6 +304,7 @@ export default class MaterialDesignSlider extends VisWidget {
 
         return (
             <div className="materialdesign-widget materialdesign-slider-vertical" style={{ alignItems: 'center', display: 'flex', height: '100%', overflow: 'visible', width: '100%', ...cssVars(data) }}>
+                <style>{SLIDER_CSS}</style>
                 <div className="materialdesign-vuetifySlider" style={{ height: '100%', width: '100%' }}>
                     <div className="v-row" style={{ alignItems: 'center', display: 'flex', height: '100%', width: '100%' }}>
                         {data.prepandText ? (

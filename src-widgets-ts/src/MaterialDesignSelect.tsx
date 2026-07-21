@@ -641,9 +641,9 @@ export default class MaterialDesignSelect extends VisWidget {
                         {selectedIcon && selectedSlot === 'prepend' ? (
                             <span style={{ flex: '0 0 auto', marginRight: 4 }}>{selectedIcon}</span>
                         ) : null}
-                        <span style={{ flex: '1 1 auto', minWidth: 0, paddingTop: active ? 11 : 0 }}>
+                        <span style={{ alignItems: 'center', display: 'flex', flex: '1 1 auto', minWidth: 0, paddingTop: active ? 11 : 0 }}>
                             {selectedIcon && selectedSlot === 'prepend-inner' ? (
-                                <span style={{ display: 'inline-block', marginRight: 4, verticalAlign: 'middle' }}>
+                                <span style={{ alignItems: 'center', display: 'flex', flex: '0 0 auto', marginRight: 4 }}>
                                     {selectedIcon}
                                 </span>
                             ) : null}
@@ -702,8 +702,10 @@ export default class MaterialDesignSelect extends VisWidget {
                                         border: 0,
                                         color: textColor,
                                         display: 'block',
+                                        flex: '1 1 auto',
                                         fontFamily: data.inputTextFontFamily || 'inherit',
                                         fontSize: sizeCss(data.inputTextFontSize, 16),
+                                        minWidth: 0,
                                         outline: 'none',
                                         padding: 0,
                                         textOverflow: 'ellipsis',
@@ -716,8 +718,10 @@ export default class MaterialDesignSelect extends VisWidget {
                                 <span
                                     style={{
                                         display: 'block',
+                                        flex: '1 1 auto',
                                         fontFamily: data.inputTextFontFamily || 'inherit',
                                         fontSize: sizeCss(data.inputTextFontSize, 16),
+                                        minWidth: 0,
                                         overflow: 'hidden',
                                         textOverflow: 'ellipsis',
                                         whiteSpace: 'nowrap',

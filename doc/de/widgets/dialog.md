@@ -8,7 +8,12 @@ andere eine iFrame-URL.
 Template-IDs: `tplVis2-materialdesign-Vuetify-Dialog-View` und
 `tplVis2-materialdesign-Vuetify-Dialog-iFrame`.
 
-<img src="../../media/vis2_dialog_runtime.png" alt="Material-Design-Dialog in VIS 2">
+<p>
+<img src="../../media/vis2_dialog_runtime.png" alt="Geöffneter View-Dialog in VIS 2" width="300">
+<img src="../../media/vis2_dialog_iframe_runtime.png" alt="Geöffneter iFrame-Dialog in VIS 2" width="300">
+</p>
+
+Links: ein Dialog mit eingebetteter VIS-2-View (ein Raum-Steuerpanel). Rechts: ein Dialog mit eingebetteter iFrame-Seite.
 
 ## Editor-Einstellungen
 

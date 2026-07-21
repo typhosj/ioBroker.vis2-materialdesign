@@ -8,8 +8,11 @@ describe('outlined input geometry', () => {
         expect(activeLabelTranslateY(-12)).toBe(-12);
     });
 
-    it('keeps the outline notch wider than the scaled label', () => {
-        expect(outlinedNotchWidth('Name', 16)).toBeCloseTo(37.76);
+    it('keeps the outline notch just wider than the scaled label (heuristic fallback, no canvas)', () => {
+        // jsdom has no 2d canvas, so outlinedNotchWidth uses its heuristic fallback here;
+        // in the browser it measures the real text width instead. Either way the notch stays
+        // snug — the old length*0.62 formula returned an oversized 37.76 for "Name".
+        expect(outlinedNotchWidth('Name', 16)).toBe(32);
         expect(outlinedNotchWidth('', 16)).toBe(0);
     });
 });

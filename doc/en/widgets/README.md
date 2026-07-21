@@ -19,7 +19,8 @@ and must not be changed.
 
 ## Enter values
 
-- [Input, Select and Autocomplete](input.md) – enter text, numbers or selections
+- [Input](input.md) – enter text or numbers
+- [Select and Autocomplete](select.md) – choose a value from a list
 - [Slider](slider.md) – change a numeric value horizontally or vertically
 - [Slider Round](slider-round.md) – change a numeric value on a circular control
 

@@ -451,7 +451,11 @@ function themeFields(widgetName: string): RxWidgetInfo['visAttrs'][number]['fiel
 }
 
 export function applyThemeVariables(data: Record<string, unknown>, values: Record<string, ioBroker.StateValue> | undefined): void {
-    if (!values) return;
+    // Client-only: this writes CSS custom properties onto document.documentElement. During the
+    // vis-2 server-side prerender there is no document, and the widget data may be null — either
+    // would throw ("cannot call visUtils: Cannot convert undefined or null to object" for the
+    // unguarded Object.keys(null)). Skip entirely when we cannot / need not touch the DOM.
+    if (typeof document === 'undefined' || !data || !values) return;
     const dark = data.__mdwThemeDark;
     const isDark = values[`${dark}.val`] === true || values[`${dark}.val`] === 'true';
     Object.keys(data).filter(key => key.startsWith('__mdwTheme_') && !key.endsWith('_dark')).forEach(key => {

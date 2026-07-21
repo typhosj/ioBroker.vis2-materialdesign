@@ -31,7 +31,7 @@ export default class MaterialDesignIcon extends VisWidget {
 
     static getWidgetInfo(): RxWidgetInfo {
         return {
-            ...createInfo('tplVis2-materialdesign-Icon', 'Material Design Icon', attrs),
+            ...createInfo('tplVis2-materialdesign-Icon', 'Icon', attrs),
             visPrev: squarePreview('F0976'),
             visDefaultStyle: {
                 width: 50,

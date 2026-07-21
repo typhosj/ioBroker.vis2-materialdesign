@@ -91,9 +91,14 @@ function listToggle(kind: 'switch' | 'checkbox', on: boolean, readonly: boolean,
 // here (scoped) so the list stays intact once that legacy CSS is gone: without display:flex the item
 // stacks the icon above the text, and without the list reset the <ul> gets browser indent/bullets.
 const listCss = '.materialdesign-list .mdc-list{list-style:none;margin:0;padding:0}'
-    + '.materialdesign-list .mdc-list-item{display:flex;align-items:center;position:relative}'
+    // Legacy MDC gave list items `padding:0 16px` ambiently; without it the left icon hugs the edge and the
+    // switch thumb-underlay (extends past its 32px track) gets clipped by the list's overflow-x:hidden.
+    + '.materialdesign-list .mdc-list-item{display:flex;align-items:center;position:relative;padding:0 16px}'
     + '.materialdesign-list .mdc-list-item__text{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;justify-content:center}'
     + '.materialdesign-list .mdc-list-item__primary-text,.materialdesign-list .mdc-list-item__secondary-text{display:block}'
+    // Legacy MDC defaults for the secondary line (grey + smaller); the per-item inline style only sets
+    // color/font-size when the editor provides them, so these apply otherwise (matches the fontSizeStyle comment).
+    + '.materialdesign-list .mdc-list-item__secondary-text{color:rgba(0,0,0,.54);font-size:.875rem}'
     + '.materialdesign-list .mdc-list-item__meta{margin-left:auto}'
     + '.materialdesign-list .mdc-list-group__subheader{display:block;margin:0;list-style:none}'
     // Counter the legacy `min-height:40px!important` (if still present) with a CSS-var-driven row height,
