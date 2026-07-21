@@ -325,6 +325,7 @@ export default class MaterialDesignChartPie extends VisWidget {
             ? "row"
             : "column",
           flexWrap: "wrap",
+          flexShrink: 0,
           fontFamily: s(data.legendFontFamily),
           fontSize: n(data.legendFontSize, 14),
           gap: n(data.legendPadding, 8),
@@ -355,10 +356,21 @@ export default class MaterialDesignChartPie extends VisWidget {
         ))}
       </div>
     ) : null;
-    const chartjs = <MaterialDesignChartCanvas type={s(data.chartType, "pie")} data={{ labels: values.map(item => item.label), datasets: [{ data: values.map(item => item.value), backgroundColor: values.map(item => item.color), borderColor: s(data.borderColor, "#fff"), borderWidth: n(data.borderWidth, 1) }] }} options={{ animation: { duration: n(data.animationDuration, 1000) }, cutoutPercentage: s(data.chartType) === "doughnut" ? n(data.doughnutCutOut, 50) : 0, legend: { display: b(data.showLegend), position: s(data.legendPosition, "top") as "top" | "left" | "bottom" | "right", labels: { fontColor: s(data.legendFontColor) || undefined, fontSize: n(data.legendFontSize) || undefined } }, tooltips: { enabled: b(data.showTooltip, true), callbacks: {
+    const chartjs = <MaterialDesignChartCanvas type={s(data.chartType, "pie")} data={{ labels: values.map(item => item.label), datasets: [{ data: values.map(item => item.value), backgroundColor: values.map(item => item.color), borderColor: s(data.borderColor, "#fff"), borderWidth: n(data.borderWidth, 1) }] }} options={{ responsive: true, maintainAspectRatio: false, animation: { duration: n(data.animationDuration, 1000) }, cutoutPercentage: s(data.chartType) === "doughnut" ? n(data.doughnutCutOut, 50) : 0, legend: { display: false }, tooltips: { enabled: b(data.showTooltip, true), callbacks: {
       title: (items: { index?: number }[]) => { const item = values[n(items[0]?.index)]; return item?.tooltipTitle ? item.tooltipTitle.split("\\n") : ""; },
       label: (item: { index?: number }) => { const v = values[n(item.index)]; if (v?.tooltipText) return v.tooltipText.split("\\n"); const num = n(v?.value).toLocaleString(undefined, { minimumFractionDigits: Math.max(0, n(data.tooltipValueMinDecimals)), maximumFractionDigits: Math.max(0, n(data.tooltipValueMaxDecimals)) }); return `${s(v?.label)}: ${num}${s(v?.appendix)}`; },
     } } }} />;
+    // shrink chart so the legend stays inside the widget frame.
+    const chartBox = (
+      <div style={{ flex: 1, minWidth: 0, minHeight: 0, position: "relative" }}>{chartjs}</div>
+    );
+    // top/left -> legend before chart; bottom/right -> after.
+    const legendFirst = ["top", "left"].includes(s(data.legendPosition, "top"));
+    const body = legendFirst ? (
+      <>{legend}{chartBox}</>
+    ) : (
+      <>{chartBox}{legend}</>
+    );
     return (
       <div
         className="materialdesign-widget materialdesign-chart"
@@ -394,14 +406,10 @@ export default class MaterialDesignChartPie extends VisWidget {
               }}
               dangerouslySetInnerHTML={{ __html: sanitizeHtml(s(data.title)) }}
             />
-            {chartjs}
-            {legend}
+            {body}
           </div>
         ) : (
-          <>
-            {chartjs}
-            {legend}
-          </>
+          body
         )}
       </div>
     );

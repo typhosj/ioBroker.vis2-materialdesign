@@ -35,6 +35,12 @@ const n = (v: unknown, d = 0) =>
   v === undefined || v === null || v === "" || !Number.isFinite(Number(v))
     ? d
     : Number(v);
+// like n() but yields undefined (not 0) for empty/invalid, so an unset
+// axis min/max stays auto-scaling instead of collapsing the axis to 0.
+const optN = (v: unknown): number | undefined =>
+  v === undefined || v === null || v === "" || !Number.isFinite(Number(v))
+    ? undefined
+    : Number(v);
 const b = (v: unknown, d = false) =>
   v === undefined || v === null || v === ""
     ? d
@@ -285,6 +291,7 @@ export default class MaterialDesignChartJson extends VisWidget {
             ? "row"
             : "column",
           flexWrap: "wrap",
+          flexShrink: 0,
           gap: n(data.legendPadding, 8),
           padding: n(data.legendDistanceToChart),
           fontFamily: s(data.legendFontFamily),
@@ -310,7 +317,26 @@ export default class MaterialDesignChartJson extends VisWidget {
         ))}
       </div>
     ) : null;
-    const chartjs = <MaterialDesignChartCanvas type={s(data.chartType, "bar")} data={{ labels, datasets: graphs.map((graph, i) => ({ type: s(graph.type, s(data.chartType, "bar")), label: s(graph.legendText), data: (graph.data || []).map(jsonChartValue), borderColor: s(graph.color, palette[i] || s(data.globalColor, "#44739e")), backgroundColor: b(graph.line_UseFillColor) ? s(graph.line_FillColor, `${s(graph.color, palette[i] || s(data.globalColor, "#44739e"))}33`) : s(graph.color, palette[i] || s(data.globalColor, "#44739e")), borderWidth: n(graph.line_Thickness, n(graph.barBorderWidth, 2)), steppedLine: b(graph.line_steppedLine), spanGaps: b(graph.line_spanGaps, true), fill: b(graph.line_UseFillColor), yAxisID: `yAxis_id_${n((graph as Record<string, unknown>).yAxis_id, i)}`, stack: b(graph.barIsStacked) ? n((graph as Record<string, unknown>).barStackId, 0) : undefined })) }} options={{ animation: { duration: n(data.animationDuration, 1000) }, legend: { display: b(data.showLegend, true) }, tooltips: { enabled: b(data.showTooltip, true) }, scales: { yAxes: graphs.map((graph, i) => ({ id: `yAxis_id_${n((graph as Record<string, unknown>).yAxis_id, i)}`, position: s((graph as Record<string, unknown>).yAxis_position, "left"), stacked: b(graph.barIsStacked), ticks: { min: n((graph as Record<string, unknown>).yAxis_min, undefined as unknown as number), max: n((graph as Record<string, unknown>).yAxis_max, undefined as unknown as number) } })) } }} />;
+    // unset yAxis_id -> id 0, so all graphs share one y-axis instead of
+    // each graph getting its own axis by index.
+    const axisId = (graph: Graph) => `yAxis_id_${n((graph as Record<string, unknown>).yAxis_id, 0)}`;
+    // one axis config per distinct id (dedupe; else duplicate axis ids).
+    const yAxes = graphs
+      .filter((graph, i) => graphs.findIndex(g => axisId(g) === axisId(graph)) === i)
+      .map(graph => ({ id: axisId(graph), position: s((graph as Record<string, unknown>).yAxis_position, "left"), stacked: b(graph.barIsStacked), ticks: { min: optN((graph as Record<string, unknown>).yAxis_min), max: optN((graph as Record<string, unknown>).yAxis_max) } }));
+    const chartjs = <MaterialDesignChartCanvas type={s(data.chartType, "bar")} data={{ labels, datasets: graphs.map((graph, i) => ({ type: s(graph.type, s(data.chartType, "bar")), label: s(graph.legendText), data: (graph.data || []).map(jsonChartValue), borderColor: s(graph.color, palette[i] || s(data.globalColor, "#44739e")), backgroundColor: b(graph.line_UseFillColor) ? s(graph.line_FillColor, `${s(graph.color, palette[i] || s(data.globalColor, "#44739e"))}33`) : s(graph.color, palette[i] || s(data.globalColor, "#44739e")), borderWidth: n(graph.line_Thickness, n(graph.barBorderWidth, 2)), steppedLine: b(graph.line_steppedLine), spanGaps: b(graph.line_spanGaps, true), fill: b(graph.line_UseFillColor), yAxisID: axisId(graph), stack: b(graph.barIsStacked) ? n((graph as Record<string, unknown>).barStackId, 0) : undefined })) }} options={{ responsive: true, maintainAspectRatio: false, animation: { duration: n(data.animationDuration, 1000) }, legend: { display: false }, tooltips: { enabled: b(data.showTooltip, true) }, scales: { yAxes } }} />;
+    // keep the canvas from eating the whole flex box (else legend spills
+    // outside the widget frame); shrink chart, keep legend natural size.
+    const chartBox = (
+      <div style={{ flex: 1, minWidth: 0, minHeight: 0, position: "relative" }}>{chartjs}</div>
+    );
+    // top/left -> legend before chart; bottom/right -> after.
+    const legendFirst = ["top", "left"].includes(s(data.legendPosition, "right"));
+    const body = legendFirst ? (
+      <>{legend}{chartBox}</>
+    ) : (
+      <>{chartBox}{legend}</>
+    );
     return (
       <div
         className="materialdesign-widget materialdesign-chart"
@@ -346,14 +372,10 @@ export default class MaterialDesignChartJson extends VisWidget {
               }}
               dangerouslySetInnerHTML={{ __html: sanitizeHtml(s(data.title)) }}
             />
-            {chartjs}
-            {legend}
+            {body}
           </div>
         ) : (
-          <>
-            {chartjs}
-            {legend}
-          </>
+          body
         )}
       </div>
     );

@@ -379,7 +379,60 @@ export default class MaterialDesignChartLineHistory extends VisWidget {
       colors = s(d.colorScheme)
         ? scheme(s(d.colorScheme), this.series.length)
         : [];
-    const chartjs = <MaterialDesignChartCanvas type="line" data={{ datasets: this.series.map((series, i) => ({ label: s(item(d, "legendText", i), series.oid), data: series.points.filter(point => point.val !== null).map(point => ({ t: point.ts, y: point.val })), borderColor: s(item(d, "dataColor", i), colors[i] || s(d.globalColor, "#44739e")), backgroundColor: b(item(d, "useFillColor", i)) ? s(item(d, "fillColor", i), `${s(item(d, "dataColor", i), colors[i] || s(d.globalColor, "#44739e"))}33`) : "transparent", fill: b(item(d, "useFillColor", i)), borderWidth: n(item(d, "lineThikness", i), 2), steppedLine: b(item(d, "steppedLine", i)), lineTension: 0, pointBackgroundColor: s(item(d, "pointColor", i)), pointRadius: n(d.pointSize, 3), yAxisID: `yAxis_id_${n(item(d, "commonYAxis", i), i)}` })) }} options={{ animation: { duration: n(d.animationDuration, 1000) }, legend: { display: b(d.showLegend, true) }, plugins: { datalabels: { display: false } }, tooltips: { enabled: b(d.showTooltip, true) }, scales: { xAxes: [{ type: "time", time: { tooltipFormat: "lll" } }], yAxes: this.series.map((series, i) => ({ id: `yAxis_id_${n(item(d, "commonYAxis", i), i)}`, position: s(item(d, "yAxisPosition", i), "left"), display: b(item(d, "showYAxis", i), true), ticks: { min: n(item(d, "yAxisMinValue", i), undefined as unknown as number), max: n(item(d, "yAxisMaxValue", i), undefined as unknown as number), stepSize: n(item(d, "yAxisStep", i), undefined as unknown as number), callback: (value: number) => value } })) } }} />;
+    // unset commonYAxis -> id 0, so series share one y-axis instead of each
+    // series getting its own axis by index.
+    const yAxisIdOf = (i: number) => `yAxis_id_${n(item(d, "commonYAxis", i), 0)}`;
+    // one axis config per distinct id (dedupe; else duplicate axis ids).
+    const yAxes = this.series
+      .map((_series, i) => i)
+      .filter(i => this.series.findIndex((_s, j) => yAxisIdOf(j) === yAxisIdOf(i)) === i)
+      .map(i => ({ id: yAxisIdOf(i), position: s(item(d, "yAxisPosition", i), "left"), display: b(item(d, "showYAxis", i), true), ticks: { min: n(item(d, "yAxisMinValue", i), undefined as unknown as number), max: n(item(d, "yAxisMaxValue", i), undefined as unknown as number), stepSize: n(item(d, "yAxisStep", i), undefined as unknown as number), callback: (value: number) => value } }));
+    const chartjs = <MaterialDesignChartCanvas type="line" data={{ datasets: this.series.map((series, i) => ({ label: s(item(d, "legendText", i), series.oid), data: series.points.filter(point => point.val !== null).map(point => ({ t: point.ts, y: point.val })), borderColor: s(item(d, "dataColor", i), colors[i] || s(d.globalColor, "#44739e")), backgroundColor: b(item(d, "useFillColor", i)) ? s(item(d, "fillColor", i), `${s(item(d, "dataColor", i), colors[i] || s(d.globalColor, "#44739e"))}33`) : "transparent", fill: b(item(d, "useFillColor", i)), borderWidth: n(item(d, "lineThikness", i), 2), steppedLine: b(item(d, "steppedLine", i)), lineTension: 0, pointBackgroundColor: s(item(d, "pointColor", i)), pointRadius: n(d.pointSize, 3), yAxisID: yAxisIdOf(i) })) }} options={{ responsive: true, maintainAspectRatio: false, animation: { duration: n(d.animationDuration, 1000) }, legend: { display: false }, plugins: { datalabels: { display: false } }, tooltips: { enabled: b(d.showTooltip, true) }, scales: { xAxes: [{ type: "time", time: { tooltipFormat: "lll" } }], yAxes } }} />;
+    const legend = b(d.showLegend, true) ? (
+      <div
+        style={{
+          color: s(d.legendFontColor),
+          fontFamily: s(d.legendFontFamily),
+          fontSize: n(d.legendFontSize, 14),
+          flexShrink: 0,
+        }}
+      >
+        {this.series.map((series, i) => (
+          <span key={series.oid} style={{ display: "block" }}>
+            <i
+              style={{
+                background: s(
+                  item(d, "dataColor", i),
+                  colors[i] || s(d.globalColor, "#44739e"),
+                ),
+                display: "inline-block",
+                height: n(d.legendBoxWidth, 10),
+                marginRight: 4,
+                width: n(d.legendBoxWidth, 10),
+              }}
+            />
+            {s(item(d, "legendText", i), series.oid)}
+          </span>
+        ))}
+      </div>
+    ) : null;
+    const chartMain = b(d.cardUse) ? (
+      <div className="materialdesign-html-card-container mdc-card" style={{ background: s(d.colorBackground), boxSizing: "border-box", display: "flex", flexDirection: "column", height: "100%", padding: n(d.borderDistance, 8), width: "100%" }}>
+        <div style={{ background: s(d.colorTitleSectionBackground), color: s(d.colorTitle), fontFamily: s(d.titleFontFamily) }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(s(d.title)) }} />
+        {chartjs}
+      </div>
+    ) : chartjs;
+    // shrink chart so the legend stays inside the widget frame.
+    const chartBox = (
+      <div style={{ flex: 1, minWidth: 0, minHeight: 0, position: "relative" }}>{chartMain}</div>
+    );
+    // top/left -> legend before chart; bottom/right -> after.
+    const legendFirst = ["top", "left"].includes(s(d.legendPosition, "right"));
+    const body = legendFirst ? (
+      <>{legend}{chartBox}</>
+    ) : (
+      <>{chartBox}{legend}</>
+    );
     return (
       <div
         className="materialdesign-widget materialdesign-chart"
@@ -393,34 +446,7 @@ export default class MaterialDesignChartLineHistory extends VisWidget {
           width: "100%",
         }}
       >
-        {b(d.cardUse) ? <div className="materialdesign-html-card-container mdc-card" style={{ background: s(d.colorBackground), boxSizing: "border-box", display: "flex", flexDirection: "column", height: "100%", padding: n(d.borderDistance, 8), width: "100%" }}><div style={{ background: s(d.colorTitleSectionBackground), color: s(d.colorTitle), fontFamily: s(d.titleFontFamily) }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(s(d.title)) }} />{chartjs}</div> : chartjs}
-        {b(d.showLegend, true) ? (
-          <div
-            style={{
-              color: s(d.legendFontColor),
-              fontFamily: s(d.legendFontFamily),
-              fontSize: n(d.legendFontSize, 14),
-            }}
-          >
-            {this.series.map((series, i) => (
-              <span key={series.oid} style={{ display: "block" }}>
-                <i
-                  style={{
-                    background: s(
-                      item(d, "dataColor", i),
-                      colors[i] || s(d.globalColor, "#44739e"),
-                    ),
-                    display: "inline-block",
-                    height: n(d.legendBoxWidth, 10),
-                    marginRight: 4,
-                    width: n(d.legendBoxWidth, 10),
-                  }}
-                />
-                {s(item(d, "legendText", i), series.oid)}
-              </span>
-            ))}
-          </div>
-        ) : null}
+        {body}
       </div>
     );
   }
