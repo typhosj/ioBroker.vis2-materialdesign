@@ -379,7 +379,7 @@ function items(data: SelectData, objects: Record<string, ioBroker.Object>): Sele
         }
         if (states && typeof states === 'object') {
             return Object.entries(states).map(([key, value], index) =>
-                itemFromData(data, index, value as string | number | boolean, key.replace(/_/g, ' ')),
+                itemFromData(data, index, key, stringValue(value, key.replace(/_/g, ' '))),
             );
         }
         return [];

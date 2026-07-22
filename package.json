@@ -60,6 +60,7 @@
     "@types/react": "^18.3.31",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^6.0.3",
+    "@vitest/coverage-v8": "^4.1.10",
     "axios": "^1.18.1",
     "chart.js": "^2.9.4",
     "chartjs-plugin-datalabels": "^0.7.0",
@@ -76,8 +77,9 @@
   "scripts": {
     "test:package": "node test/package.js",
     "test:pr-gate": "node test/pr-gate.js",
+    "test:coverage": "vitest run --coverage",
     "test:widgets": "vitest run",
-    "test": "npm run test:package && npm run test:widgets",
+    "test": "npm run test:package && npm run test:coverage",
     "pr:repocheck": "node -e \"require('fs').rmSync('src-widgets-ts/build', { recursive: true, force: true })\" && npx @iobroker/repochecker https://github.com/typhosj/ioBroker.vis2-materialdesign --local",
     "pr:check": "npm run build && npm run lint && npm test && npm run test:pr-gate && npm pack --dry-run && npm run pr:repocheck",
     "release": "release-script",

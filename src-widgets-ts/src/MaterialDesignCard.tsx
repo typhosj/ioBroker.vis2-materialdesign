@@ -33,7 +33,7 @@ export default class MaterialDesignCard extends VisWidget {
     static getWidgetInfo(): RxWidgetInfo { return { ...createInfo('tplVis2-materialdesign-Card', 'HTML Card', attrs), visPrev: squarePreview('F0B78'), visDefaultStyle: { width: 200, height: 130 } }; }
     getWidgetInfo(): RxWidgetInfo { return MaterialDesignCard.getWidgetInfo(); }
     // #149 image refresh lifecycle: cache-bust the media URL on a trigger state, on view re-entry, or on wake-up.
-    private seenRefresh: unknown; private refreshReady = false; private refreshTs = 0; private refreshTimer?: ReturnType<typeof setTimeout>;
+    private seenRefresh: unknown; private refreshReady = false; private refreshTs = 0; private refreshTimer?: number;
     private bust(): void { this.refreshTs = Date.now(); this.forceUpdate(); }
     private readonly onVisible = (): void => { if (typeof document !== 'undefined' && document.visibilityState === 'visible' && b((this.state.rxData as unknown as Data).refreshOnWakeUp)) { this.bust(); } };
     componentDidMount(): void { super.componentDidMount(); if (typeof document !== 'undefined') { document.addEventListener('visibilitychange', this.onVisible); } if (b((this.state.rxData as unknown as Data).refreshOnViewChange)) { this.refreshTs = Date.now(); } }

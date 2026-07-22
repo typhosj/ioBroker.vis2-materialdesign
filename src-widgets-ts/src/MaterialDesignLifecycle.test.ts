@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createButtonClass } from './MaterialDesignButtons';
 import MaterialDesignCard from './MaterialDesignCard';
 import { MaterialDesignDialog } from './MaterialDesignDialog';
+import MaterialDesignIconList from './MaterialDesignIconList';
 import MaterialDesignSelect from './MaterialDesignSelect';
 import { MaterialDesignViews } from './MaterialDesignViews';
 
@@ -45,7 +46,7 @@ describe('widget lifecycle cleanup', () => {
         dialog.viewRef.current = { scrollHeight: 100 };
         dialog.startMeasure();
 
-        const select = new MaterialDesignSelect({}) as unknown as { scheduleFilterReset: () => void; componentWillUnmount: () => void };
+        const select = new MaterialDesignSelect({} as never) as unknown as { scheduleFilterReset: () => void; componentWillUnmount: () => void };
         select.scheduleFilterReset();
         expect(vi.getTimerCount()).toBe(2);
 
@@ -67,6 +68,23 @@ describe('widget lifecycle cleanup', () => {
 
         card.componentWillUnmount();
         vi.runAllTimers();
+        expect(vi.getTimerCount()).toBe(0);
+    });
+
+    it('cancels icon-list auto-relock work on unmount', () => {
+        vi.useFakeTimers();
+        const setValue = vi.fn();
+        const iconList = new MaterialDesignIconList({ context: { setValue } } as never) as unknown as {
+            actionProps: (item: Record<string, unknown>, index: number, current: unknown, data: Record<string, unknown>) => { onClick: () => void };
+            componentWillUnmount: () => void;
+        };
+        const action = iconList.actionProps({
+            listType: 'buttonToggle', objectId: 'test.0.value', lockEnabled: true, text: 'Toggle',
+        }, 0, false, { autoLockAfter: 1 });
+        action.onClick();
+        expect(setValue).not.toHaveBeenCalled();
+        expect(vi.getTimerCount()).toBe(1);
+        iconList.componentWillUnmount();
         expect(vi.getTimerCount()).toBe(0);
     });
 });

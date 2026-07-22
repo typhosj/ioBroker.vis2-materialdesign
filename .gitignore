@@ -1,6 +1,7 @@
 .git
 .idea
 node_modules
+coverage
 src-widgets-ts/build
 src-widgets-ts/node_modules
 nbproject

@@ -1,1 +1,0 @@
-import{t as e}from"./MaterialDesignButtons-DwQoLC5y.js";var t=e({id:`tplVis2-materialdesign-Icon-Button-State`,name:`Icon Button State`,kind:`state`,layout:`icon`,label:``,icon:`pencil`});export{t as default};

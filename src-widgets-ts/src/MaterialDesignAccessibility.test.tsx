@@ -1,6 +1,7 @@
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { VisRxWidgetProps } from '@iobroker/types-vis-2';
 
 import MaterialDesignAlerts from './MaterialDesignAlerts';
 import MaterialDesignCard from './MaterialDesignCard';
@@ -62,7 +63,7 @@ describe('widget accessibility', () => {
 
     it('exposes icon-list actions as keyboard buttons', () => {
         const changeView = vi.fn();
-        const widget = new MaterialDesignIconList({ context: { changeView } } as never) as unknown as { actionProps: (...args: unknown[]) => Record<string, unknown> };
+        const widget = new MaterialDesignIconList({ context: { changeView } } as unknown as VisRxWidgetProps) as unknown as { actionProps: (...args: unknown[]) => Record<string, unknown> };
         const action = widget.actionProps({ listType: 'buttonNav', buttonNavView: 'details', text: 'Open view', readOnly: false }, 0, undefined, {});
         expect(action).toMatchObject({ 'aria-disabled': false, 'aria-label': 'Open view', role: 'button', tabIndex: 0 });
         (action.onKeyDown as (event: unknown) => void)({ key: 'Enter', preventDefault: vi.fn() });

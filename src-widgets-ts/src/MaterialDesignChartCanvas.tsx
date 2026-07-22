@@ -14,7 +14,7 @@ type Props = { type: string; data: object; options: object };
 
 export function MaterialDesignChartCanvas({ type, data, options }: Props): React.JSX.Element {
   const canvas = useRef<HTMLCanvasElement>(null);
-  const chart = useRef<Chart | null>(null);
+  const chart = useRef<{ destroy(): void } | null>(null);
   useEffect(() => {
     if (!canvas.current) return;
     chart.current?.destroy();

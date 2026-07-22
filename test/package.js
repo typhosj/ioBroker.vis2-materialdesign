@@ -48,6 +48,12 @@ assert.strictEqual(sentry.common.def, false);
 const widgetRegistry = io.common.visWidgets.vis2MaterialDesignWidgets;
 assert.ok(widgetRegistry, "VIS2 widget registry must exist");
 const vite = fs.readFileSync(path.join(root, "src-widgets-ts", "vite.config.ts"), "utf8");
+const exposedComponents = [...vite.matchAll(/["']\.\/(MaterialDesign[^"']+)["']\s*:/g)].map((match) => match[1]).sort();
+assert.deepStrictEqual(
+    [...widgetRegistry.components].sort(),
+    exposedComponents,
+    "io-package.json components and Vite MaterialDesign exposes must match exactly",
+);
 const widgetUtils = fs.readFileSync(path.join(root, "src-widgets-ts", "src", "widgetUtils.tsx"), "utf8");
 assert.ok(widgetUtils.includes("name: 'useTheme'"), "all VIS2 widgets must expose the legacy theme action");
 assert.ok(widgetUtils.includes("__mdwThemeDark"), "VIS2 widgets must subscribe to the theme selector state");
@@ -136,6 +142,16 @@ assert.ok(fs.existsSync(path.join(root, "widgets", "vis2-materialdesign", "mater
 
 for (const file of walk(path.join(root, "admin"), (name) => name.endsWith(".json") && !name.endsWith("tsconfig.json"))) {
     JSON.parse(fs.readFileSync(file, "utf8"));
+}
+
+const i18nDir = path.join(root, "admin", "i18n");
+const languageFiles = fs.readdirSync(i18nDir).filter((name) => name.endsWith(".json"));
+assert.ok(languageFiles.includes("en.json") && languageFiles.includes("de.json") && languageFiles.includes("ru.json"), "widget translations need en, de and ru");
+const englishKeys = Object.keys(readJson("admin/i18n/en.json")).sort();
+for (const file of languageFiles) {
+    const content = fs.readFileSync(path.join(i18nDir, file), "utf8");
+    assert.ok(!content.includes("Ã"), `${file} must not contain mojibake`);
+    assert.deepStrictEqual(Object.keys(JSON.parse(content)).sort(), englishKeys, `${file} must contain the same keys as en.json`);
 }
 
 console.log("Package checks passed");

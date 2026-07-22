@@ -513,11 +513,11 @@ export function applyThemeVariables(data: Record<string, unknown>, values: Recor
     });
 }
 
-const BaseVisWidget = window.visRxWidget as typeof VisRxWidget<BaseRxData, WidgetState>;
+const BaseVisWidget: typeof VisRxWidget<BaseRxData, WidgetState> = window.visRxWidget;
 
 export class VisWidget extends BaseVisWidget {
     render(): React.JSX.Element | null {
-        applyThemeVariables(this.state.rxData as unknown as Record<string, unknown>, this.state.values as unknown as Record<string, ioBroker.StateValue> | undefined);
+        applyThemeVariables({ ...this.state.rxData }, { ...this.state.values });
         return super.render();
     }
 }
