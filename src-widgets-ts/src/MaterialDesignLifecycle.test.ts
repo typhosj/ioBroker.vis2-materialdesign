@@ -60,12 +60,12 @@ describe('widget lifecycle cleanup', () => {
 
     it('cancels card refresh work on unmount', () => {
         vi.useFakeTimers();
-        const props = fixture<ConstructorParameters<typeof MaterialDesignCard>[0] & Parameters<MaterialDesignCard['renderWidgetBody']>[0]>({ id: 'card', context: {} });
-        const card = new MaterialDesignCard(props);
+        const props = { id: 'card', context: {} };
+        const card = new MaterialDesignCard(fixture<ConstructorParameters<typeof MaterialDesignCard>[0]>(props));
         card.state = fixture<typeof card.state>({ rxData: { refresh_oid: 'test.0.refresh', refresh_oid_delay: 100 }, values: { 'test.0.refresh.val': 1 } });
-        card.renderWidgetBody(props);
+        card.renderWidgetBody(fixture<Parameters<MaterialDesignCard['renderWidgetBody']>[0]>(props));
         card.state = fixture<typeof card.state>({ rxData: { refresh_oid: 'test.0.refresh', refresh_oid_delay: 100 }, values: { 'test.0.refresh.val': 2 } });
-        card.renderWidgetBody(props);
+        card.renderWidgetBody(fixture<Parameters<MaterialDesignCard['renderWidgetBody']>[0]>(props));
         expect(vi.getTimerCount()).toBe(1);
 
         card.componentWillUnmount();
