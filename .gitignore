@@ -21,3 +21,6 @@ widgets/materialdesign/img/preview_2.jpg
 widgets/materialdesign/img/preview_3.jpg
 widgets/materialdesign/js/charts/*
 widgets/materialdesign/js/google-charts-api.js
+
+# release-script temporary commit-message file
+.commitmessage
