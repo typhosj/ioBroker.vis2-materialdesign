@@ -9,10 +9,34 @@ id: `tplVis2-materialdesign-Table`.
 
 ## Editor settings
 
-<table>
-<tr><td><img src="../../media/vis2_table_editor_overview.png" width="300"></td>
-<td><ul><li><b>oid/data JSON:</b> JSON array from a state or direct text.</li><li><b>column count:</b> creates indexed column groups.</li><li>Each column sets label, sort key, text or image type, width and alignment. Display order follows the JSON property order.</li><li>Choose standard, card or outlined-card layout.</li></ul></td></tr>
-</table>
+The screenshots show the general/layout groups and one indexed column. Settings
+not listed below are self-explanatory. The editor UI follows the ioBroker system
+language, so the screenshots are German.
+
+<img src="../../media/vis2_table_editor_overview.png" width="340" alt="Table general and layout options">
+
+**General**
+
+- **oid / data JSON** – a JSON array taken from a state, or entered directly as text.
+- **column count** – number of indexed **Column [n]** groups.
+
+**Layout**
+
+- **table layout** – standard, card or outlined card.
+- **show header / fixed header** – header row and whether it stays on scroll.
+- **row height / round border** – row spacing and rounded corners.
+
+Each column is configured in its own indexed group:
+
+<img src="../../media/vis2_table_editor_2.png" width="340" alt="Indexed table column options">
+
+- **label** – column header text.
+- **column type** – text or image cell.
+- **sort key** – the JSON property this column reads and sorts by.
+- **width / alignment / no-wrap** – column sizing and text behaviour.
+- **prefix / suffix** – text added around the cell value.
+
+Display order follows the JSON property order.
 
 ```json
 [{ "device": "Temperature", "room": "Living room", "value": "22.4 °C" }]

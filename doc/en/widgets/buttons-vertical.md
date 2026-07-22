@@ -12,10 +12,25 @@ Template ids use the suffix `-vertical`, for example
 
 ## Editor settings
 
-<table>
-<tr><td><img src="../../media/vis2_buttons_vertical_editor_overview.png" width="300"></td>
-<td><ul><li>Pick Navigation, Link, State, Multi State, Addition or Toggle.</li><li>Use <b>alignment</b> and <b>distance between text and image</b> for the vertical layout.</li><li>Configure action values exactly like the corresponding normal button.</li></ul></td></tr>
-</table>
+The screenshot shows the **General**, **Label** and **Image / Icon** groups
+expanded. Settings not listed below are self-explanatory. The editor UI follows
+the ioBroker system language, so the screenshots are German.
 
-Optional color, feedback and locking groups override the theme and protect the
-button against accidental activation.
+<img src="../../media/vis2_buttons_vertical_editor_overview.png" width="340" alt="Vertical button general, label and icon options">
+
+**General** – the action fields match the corresponding normal
+[button](buttons.md) (Navigation, Link, State, Multi State, Addition, Toggle).
+
+**Label**
+
+- **alignment** – vertical arrangement of icon and text.
+- **distance between text and image** – spacing between the icon and the caption.
+- **label width** – fixed caption width.
+
+**Image / Icon**
+
+- **image** – Material Design icon name or image source shown above the text.
+- **icon color / on-state color** – recolor a single-color icon, with a separate color for the on state.
+
+Optional **Colors**, **Feedback** and **Locking** groups override the theme and
+protect the button against accidental activation.

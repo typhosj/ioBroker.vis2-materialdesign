@@ -17,12 +17,29 @@ Left: a dialog embedding a VIS 2 view (a room control panel). Right: a dialog em
 
 ## Editor settings
 
-<table>
-<tr><td><img src="../../media/vis2_dialog_editor_overview.png" width="300"></td>
-<td><ul><li>Choose a local button or a datapoint as the opening method. A boolean true opens the datapoint-controlled dialog; closing writes false.</li><li>View variant: choose the embedded VIS 2 view.</li><li>iFrame variant: set URL, sandbox and scrolling.</li><li>Dialog, title, action buttons and close behaviour have separate groups.</li></ul></td></tr>
-</table>
+The screenshots show the view dialog's **General** group and the iFrame group.
+Settings not listed below are self-explanatory. The editor UI follows the
+ioBroker system language, so the screenshots are German.
 
-Use **no sandbox** only for trusted iFrame content.
+<img src="../../media/vis2_dialog_editor_overview.png" width="340" alt="View dialog general options">
+
+**General**
+
+- **opening method** – a local button or a datapoint. With a datapoint, a boolean `true` opens the dialog and closing writes `false`.
+- **open datapoint** – the state that controls the datapoint method.
+- **fullscreen below resolution** – show the dialog fullscreen under this screen width.
+- **embedded view** (`contains_view`) – the VIS 2 view shown inside the dialog (view variant).
+
+The **iFrame** variant replaces the embedded view with a web page:
+
+<img src="../../media/vis2_dialog_editor_2.png" width="340" alt="iFrame dialog settings">
+
+- **URL** – page shown in the iFrame.
+- **no sandbox** – disables the iFrame sandbox; use only for trusted content.
+- **scroll X / Y / seamless** – scrolling and seamless embedding options.
+
+The trigger button text/style, dialog size, header, footer and action buttons
+have their own layout groups.
 
 For permanently embedded content without a dialog, see
 [Advanced View in Widget](html-widgets.md).

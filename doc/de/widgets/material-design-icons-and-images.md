@@ -13,10 +13,20 @@ Template-IDs: `tplVis2-materialdesign-Icon`,
 
 ## Editor-Einstellungen
 
-<table>
-<tr><td><img src="../../media/vis2_material_design_icons_and_images_editor_overview.png" width="300"></td>
-<td><ul><li><b>Icon:</b> Material-Design-Icon oder Bild, Größe und Farbe wählen.</li><li><b>Farbschema-Vorschau:</b> zeigt die verfügbaren Material-Design-Paletten.</li><li><b>Installierte Version:</b> zeigt die paketierte Widget-Version.</li></ul></td></tr>
-</table>
+Der Screenshot zeigt das **Icon**-Widget mit aufgeklappter Gruppe
+**Allgemein**. Nicht aufgeführte Einstellungen sind selbsterklärend.
+
+<img src="../../media/vis2_material_design_icons_and_images_editor_overview.png" width="340" alt="Icon-Editoroptionen">
+
+**Allgemein (Icon-Widget)**
+
+- **Bild** – ein Material-Design-Icon-Name (z. B. `lightbulb`), ein Bildpfad/URL oder eine Data-URL.
+- **Icon-Farbe** – färbt einfarbige SVG/Icons per CSS-Maske um; mehrfarbige Bilder bleiben unverändert.
+- **Icon-Größe für Bild verwenden** / **Breite / Höhe** – erzwingt eine feste Icon-Größe statt der automatischen.
+- **Objekt-ID** – optional; nur nötig, wenn das Icon auf einen Zustandswert reagieren soll.
+
+Das Widget **Farbschema-Vorschau** zeigt die verfügbaren Material-Design-Paletten,
+**Installierte Version** die paketierte Widget-Version – beide brauchen keine Optionen.
 
 Icon-/Bildfelder akzeptieren Material-Design-Namen, gängige Bildpfade, HTTP(S)-
 URLs und Data-URLs. SVG-Masken unterstützen eine einzelne konfigurierte Farbe.

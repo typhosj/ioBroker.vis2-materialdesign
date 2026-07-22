@@ -13,10 +13,32 @@ Week/day view with time axis:
 
 ## Editor settings
 
-<table>
-<tr><td><img src="../../media/vis2_calendar_editor_overview.png" width="300"></td>
-<td><ul><li><b>calendar view:</b> month, week or day.</li><li>Layout groups control weekdays, week numbers, header, controls and time axis.</li><li>Event settings control overlap, height and typography.</li><li>Custom format fields accept date token patterns.</li></ul></td></tr>
-</table>
+The screenshots show the general/layout groups and the event/date-format groups.
+Settings not listed below are self-explanatory. The editor UI follows the
+ioBroker system language, so the screenshots are German.
+
+<img src="../../media/vis2_calendar_editor_overview.png" width="340" alt="Calendar general and layout options">
+
+**General**
+
+- **object id** – state with the JSON event array.
+- **calendar view** – month, week or day.
+
+**Layout**
+
+- **weekdays / short weekdays** – full or abbreviated weekday names.
+- **border / day background colors** – grid and day-cell colors.
+
+Event display and date formats have their own groups:
+
+<img src="../../media/vis2_calendar_editor_2.png" width="340" alt="Calendar event and date-format options">
+
+- **event overlap mode** – how simultaneous events are arranged (stack or side by side).
+- **event height / fonts** – size and typography of events.
+- **custom date formats** – per-view header and day format strings using date tokens (e.g. `dddd`, `D. MMMM`).
+
+The header, week-number, controls and time-axis layout groups style the
+remaining calendar chrome.
 
 ```json
 [

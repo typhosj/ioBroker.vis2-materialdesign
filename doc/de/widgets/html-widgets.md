@@ -12,10 +12,20 @@ Template-IDs: `tplVis2-materialdesign-view-in-widget` und
 
 ## Editor-Einstellungen
 
-<table>
-<tr><td><img src="../../media/vis2_html_widgets_editor_overview.png" width="300"></td>
-<td><ul><li>Steuernde Objekt-ID und einzubettende Ansichten wählen.</li><li>Ein-/Ausblenddauer und optionales Vorrendern konfigurieren.</li><li>Die `8`-Variante bietet indizierte State-zu-View-Einträge und Persistenz.</li></ul></td></tr>
-</table>
+Der Screenshot zeigt die Gruppe **Allgemein**. Nicht aufgeführte Einstellungen
+sind selbsterklärend.
+
+<img src="../../media/vis2_html_widgets_editor_overview.png" width="340" alt="Advanced View in Widget Allgemein">
+
+**Allgemein**
+
+- **Objekt-ID** – der State, dessen Wert die eingebettete Ansicht auswählt.
+- **Ansichten** – die anzeigbaren VIS-2-Ansichten.
+- **Einblenden / Ausblenden** – Übergang beim Wechsel zwischen Ansichten.
+- **Vorrendern** – Ansichten optional geladen halten, damit der Wechsel sofort erfolgt.
+
+Die `8`-Variante ergänzt indizierte State-Wert-zu-View-Einträge und
+Persistenzeinstellungen für bis zu acht Zuordnungen.
 
 Sollen mehrere Child Views gleichzeitig angeordnet werden, stattdessen
 [Responsives Layout](responsive-layout.md) verwenden.

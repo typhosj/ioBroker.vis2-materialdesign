@@ -9,10 +9,33 @@ Template-ID: `tplVis2-materialdesign-Table`.
 
 ## Editor-Einstellungen
 
-<table>
-<tr><td><img src="../../media/vis2_table_editor_overview.png" width="300"></td>
-<td><ul><li><b>oid/Daten-JSON:</b> JSON-Array aus State oder direktem Text.</li><li><b>Spaltenanzahl:</b> erzeugt indizierte Spaltengruppen.</li><li>Pro Spalte Beschriftung, Sortierschlüssel, Text oder Bild, Breite und Ausrichtung. Die Anzeige folgt der JSON-Eigenschaftsreihenfolge.</li><li>Standard-, Karten- oder umrandetes Kartenlayout wählen.</li></ul></td></tr>
-</table>
+Die Screenshots zeigen die Allgemein-/Layout-Gruppen und eine indizierte Spalte.
+Nicht aufgeführte Einstellungen sind selbsterklärend.
+
+<img src="../../media/vis2_table_editor_overview.png" width="340" alt="Tabelle Allgemein und Layout">
+
+**Allgemein**
+
+- **oid / Daten-JSON** – ein JSON-Array aus einem State oder direkt als Text eingegeben.
+- **Spaltenanzahl** – Anzahl der indizierten Gruppen **Spaltenlayout [n]**.
+
+**Layout**
+
+- **Tabellenlayout** – Standard, Karte oder umrandete Karte.
+- **Kopf zeigen / fixierter Kopf** – Kopfzeile und ob sie beim Scrollen bleibt.
+- **Zeilenhöhe / abgerundeter Rand** – Zeilenabstand und runde Ecken.
+
+Jede Spalte wird in ihrer eigenen indizierten Gruppe konfiguriert:
+
+<img src="../../media/vis2_table_editor_2.png" width="340" alt="Indizierte Tabellenspalte">
+
+- **Beschriftung** – Spaltenkopftext.
+- **Spaltentyp** – Text- oder Bildzelle.
+- **Sortierschlüssel** – die JSON-Eigenschaft, die die Spalte liest und sortiert.
+- **Breite / Ausrichtung / kein Umbruch** – Spaltengröße und Textverhalten.
+- **Präfix / Suffix** – Text um den Zellenwert.
+
+Die Anzeige folgt der JSON-Eigenschaftsreihenfolge.
 
 ```json
 [{ "geraet": "Temperatur", "raum": "Wohnzimmer", "wert": "22,4 °C" }]

@@ -12,7 +12,25 @@ Template-IDs verwenden das Suffix `-vertical`, zum Beispiel
 
 ## Editor-Einstellungen
 
-<table>
-<tr><td><img src="../../media/vis2_buttons_vertical_editor_overview.png" width="300"></td>
-<td><ul><li>Navigation, Link, State, Multi State, Addition oder Toggle wählen.</li><li><b>Ausrichtung</b> und <b>Abstand zwischen Text und Bild</b> bestimmen das vertikale Layout.</li><li>Aktionswerte wie beim entsprechenden normalen Button konfigurieren.</li></ul></td></tr>
-</table>
+Der Screenshot zeigt die Gruppen **Allgemein**, **Beschriftung** und
+**Bild / Icon** aufgeklappt. Nicht aufgeführte Einstellungen sind
+selbsterklärend.
+
+<img src="../../media/vis2_buttons_vertical_editor_overview.png" width="340" alt="Vertikaler Button Allgemein, Beschriftung und Icon">
+
+**Allgemein** – die Aktionsfelder entsprechen dem jeweiligen normalen
+[Button](buttons.md) (Navigation, Link, State, Multi State, Addition, Toggle).
+
+**Beschriftung**
+
+- **Ausrichtung** – vertikale Anordnung von Icon und Text.
+- **Abstand zwischen Text und Bild** – Abstand zwischen Icon und Beschriftung.
+- **Beschriftungsbreite** – feste Textbreite.
+
+**Bild / Icon**
+
+- **Bild** – Material-Design-Iconname oder Bildquelle über dem Text.
+- **Icon-Farbe / Ein-Zustand-Farbe** – einfarbiges Icon umfärben, mit eigener Farbe für den Ein-Zustand.
+
+Optionale Gruppen **Farben**, **Feedback** und **Verriegeln** überschreiben das
+Thema und schützen vor versehentlicher Bedienung.

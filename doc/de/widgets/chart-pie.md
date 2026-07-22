@@ -14,6 +14,18 @@ Template-ID: `tplVis2-materialdesign-Chart-Pie`.
 Negative Eingangswerte werden als `0` dargestellt. Für Daten mit positiven und
 negativen Werten eignet sich daher das Balken- oder JSON-Diagramm.
 
+## Editor-Einstellungen
+
+Die Editor-Sprache folgt der ioBroker-Systemsprache, daher ist der Screenshot
+deutsch. Nicht aufgeführte Einstellungen sind selbsterklärend.
+
+<img src="../../media/vis2_chart_pie_editor.png" width="340" alt="Kreisdiagramm Allgemein und Kreislayout">
+
+- **Allgemein** – Datenquelle (Editor-Abschnitte oder ein JSON-State), Anzahl der Abschnitte, Objekt-ID, **Typ** (Kreis oder Ring) und der **Ausschnitt**, der die leere Mitte bemisst. Je Editor-Abschnitt ergänzt eine indizierte Gruppe dessen Objekt-ID, Beschriftung und Farbe.
+
+Die gemeinsamen Gruppen **Diagramm Layout**, **Legende** und **Tooltip** aus
+[Diagramme](charts.md) gelten hier ebenfalls.
+
 ## JSON-Format
 
 Das Format entspricht den Datensätzen des [Balkendiagramms](chart-bar.md),

@@ -10,10 +10,31 @@ Rows can come from indexed editor fields or a JSON state. Template id:
 
 ## Editor settings
 
-<table>
-<tr><td><img src="../../media/vis2_list_editor_overview.png" width="300"></td>
-<td><ul><li><b>list type:</b> text, state/toggle/navigation/link button, switch or checkbox.</li><li><b>data method:</b> editor entries or JSON object state.</li><li><b>list layout:</b> standard, card or outlined card.</li><li><b>Entries:</b> object id, labels, icon, action and divider per indexed row.</li></ul></td></tr>
-</table>
+The screenshots show the list-wide groups and one indexed row entry. Settings not
+listed below are self-explanatory. The editor UI follows the ioBroker system
+language, so the screenshots are German.
+
+<img src="../../media/vis2_list_editor_overview.png" width="340" alt="List layout and data options">
+
+**List layout**
+
+- **list type** – text row, state / toggle / navigation / link button, switch or checkbox.
+- **list layout** – standard, card or outlined card.
+- **divider style** – separator drawn between rows.
+
+**Data of the list**
+
+- **data method** – indexed editor entries or a JSON object state.
+- **number of entries** – how many indexed row groups exist (editor method).
+
+Each row is configured in its own indexed **List item [n]** group:
+
+<img src="../../media/vis2_list_editor_2.png" width="340" alt="Indexed list item entry">
+
+- **object id** – state shown/controlled by the row.
+- **label / subLabel / right label** – primary, secondary and right-aligned text.
+- **icon + active color** – row icon and its on-state color.
+- **button / toggle values** – the value(s) written by the button/toggle list types.
 
 Minimal JSON example:
 

@@ -16,11 +16,28 @@ long value lists such as cities or titles.
 
 ## Editor settings
 
-<table>
-<tr><td><img src="../../media/vis2_select_editor_overview.png" width="300"></td>
-<td><ul><li><b>Data of the menu:</b> value list, JSON string, JSON object or the states of the bound object.</li><li><b>Layout:</b> outlined, filled or solo (optionally rounded/shaped) — same as the <a href="input.md">Input</a> widget.</li><li><b>Icons:</b> a per-entry icon plus the selected value's icon (prepend, prepend-inner or append).</li><li>Labels, clear/collapse icons and colors live in their optional groups.</li></ul></td></tr>
-</table>
+The screenshot shows the menu groups expanded. Settings not listed below are
+self-explanatory. The editor UI follows the ioBroker system language, so the
+screenshots are German.
 
-Value-list example: values `1;2;3`, labels `Living room;Kitchen;Bath`, icons
-`sofa;silverware-fork-knife;shower`. JSON entries can use `value`, `text`,
-`subText`, `icon` and `iconColor`.
+<img src="../../media/vis2_select_editor_overview.png" width="340" alt="Select menu data, layout and item options">
+
+**Data of the menu**
+
+- **data method** – *value list*, *JSON string*, *JSON object* or *states of the object* (uses the enum values of the bound object).
+- **value list / labels / icons** – semicolon-separated lists that build the entries, e.g. values `1;2;3`, labels `Living room;Kitchen;Bath`, icons `sofa;silverware-fork-knife;shower`.
+
+**Menu layout**
+
+- **list position / offset** – where the dropdown opens relative to the field.
+- **show selected icon** – marks the active entry with a check.
+- **open on clear** – reopens the list after the value is cleared.
+
+**Menu item**
+
+- Per-entry **value**, **label**, **subLabel**, **icon** and **icon color** when the entries are configured in the editor.
+
+The **Input layout** group (outlined / filled / solo, rounded / shaped) matches the
+[Input](input.md) widget. Labels, clear / collapse icons and colors live in their
+own optional groups. JSON entries can use `value`, `text`, `subText`, `icon` and
+`iconColor`.

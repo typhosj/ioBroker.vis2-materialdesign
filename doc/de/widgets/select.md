@@ -16,11 +16,27 @@ praktisch bei langen Wertelisten wie Städten oder Titeln.
 
 ## Editor-Einstellungen
 
-<table>
-<tr><td><img src="../../media/vis2_select_editor_overview.png" width="300"></td>
-<td><ul><li><b>Daten des Menüs:</b> Werteliste, JSON-String, JSON-Objekt oder die States des verknüpften Objekts.</li><li><b>Layout:</b> outlined, filled oder solo (optional rounded/shaped) — wie beim <a href="input.md">Eingabe</a>-Widget.</li><li><b>Symbole:</b> ein Icon je Eintrag plus das Icon des gewählten Werts (prepend, prepend-inner oder append).</li><li>Beschriftungen, Löschen-/Aufklapp-Icons und Farben liegen in optionalen Gruppen.</li></ul></td></tr>
-</table>
+Der Screenshot zeigt die Menü-Gruppen aufgeklappt. Nicht aufgeführte
+Einstellungen sind selbsterklärend.
 
-Wertelisten-Beispiel: Werte `1;2;3`, Texte `Wohnzimmer;Küche;Bad`, Icons
-`sofa;silverware-fork-knife;shower`. JSON-Einträge können `value`, `text`,
-`subText`, `icon` und `iconColor` nutzen.
+<img src="../../media/vis2_select_editor_overview.png" width="340" alt="Select Menüdaten, Layout und Eintragsoptionen">
+
+**Daten des Menüs**
+
+- **Datenmethode** – *Werteliste*, *JSON-String*, *JSON-Objekt* oder *States des Objekts* (nutzt die enum-Werte des verknüpften Objekts).
+- **Werteliste / Texte / Icons** – semikolongetrennte Listen, die die Einträge bilden, z. B. Werte `1;2;3`, Texte `Wohnzimmer;Küche;Bad`, Icons `sofa;silverware-fork-knife;shower`.
+
+**Menü-Layout**
+
+- **Listenposition / Versatz** – wo das Dropdown relativ zum Feld öffnet.
+- **gewähltes Icon zeigen** – markiert den aktiven Eintrag mit einem Haken.
+- **beim Leeren öffnen** – öffnet die Liste nach dem Löschen erneut.
+
+**Menüpunkt**
+
+- Pro Eintrag **Wert**, **Text**, **Untertext**, **Icon** und **Icon-Farbe**, wenn die Einträge im Editor gepflegt werden.
+
+Die Gruppe **Layout Eingabe** (outlined / filled / solo, rounded / shaped)
+entspricht dem [Eingabe](input.md)-Widget. Beschriftungen, Löschen-/Aufklapp-Icons
+und Farben liegen in eigenen optionalen Gruppen. JSON-Einträge können `value`,
+`text`, `subText`, `icon` und `iconColor` nutzen.

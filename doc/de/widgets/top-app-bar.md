@@ -9,10 +9,32 @@ Template-ID: `tplVis2-materialdesign-TopAppBar-Navigation`.
 
 ## Editor-Einstellungen
 
-<table>
-<tr><td><img src="../../media/vis2_top_app_bar_editor_overview.png" width="300"></td>
-<td><ul><li><b>Top App Bar:</b> Standard, dicht oder kurz; Titel und Farben.</li><li><b>Drawer:</b> modal, permanent oder automatisch nach Bildschirmbreite.</li><li><b>Menüdaten:</b> indizierte Editor-Einträge oder JSON.</li><li>Pro Eintrag ID, Text, Kopfzeile, Trenner, Icon, Untermenüs und Rechte.</li></ul></td></tr>
-</table>
+Die Screenshots zeigen die Allgemein-/Bar-Gruppen sowie die Menüdaten und einen
+Eintrag. Nicht aufgeführte Einstellungen sind selbsterklärend.
 
-Der gewählte Index wird in die Objekt-ID geschrieben. Ein zweiter State kann den
-Namen des gewählten Eintrags erhalten.
+<img src="../../media/vis2_top_app_bar_editor_overview.png" width="340" alt="Top App Bar Allgemein und Layout">
+
+**Allgemein**
+
+- **Objekt-ID** – erhält den gewählten Menü-Index; ein optionaler zweiter State erhält den **Namen** des gewählten Eintrags.
+- **Anzahl Menüeinträge** – Anzahl der indizierten Eintragsgruppen (Editor-Methode).
+- **Standard- / Standardwert deaktivieren** – welcher Eintrag vorausgewählt ist, oder keiner.
+
+**Top App Bar Layout**
+
+- **Layout** – Standard, dicht oder kurz.
+- **Titel / gewählten Eintrag als Titel zeigen** – fester Titel oder der aktive Menüeintrag als Titel.
+- **Farben** – Titel-, Hintergrund- und Icon-Farben.
+
+Die Gruppe **Navigationsleiste: Layout** bestimmt den Drawer-Modus (modal,
+permanent oder automatisch ab einer Bildschirmbreite), Drawer-Breite, Kopfzeile
+und Sichtbarkeit der Beschriftungen.
+
+Die Menüeinträge stammen aus den Daten- und Eintragsgruppen:
+
+<img src="../../media/vis2_top_app_bar_editor_2.png" width="340" alt="Top App Bar Menüdaten und Eintrag">
+
+- **Datenmethode** – indizierte Editor-Einträge oder ein JSON-String.
+- **Menü-ID** – der für diesen Eintrag geschriebene Wert.
+- **Beschriftung / Kopfzeile / Trenner** – Eintragstext, Abschnittskopf-Flag und Trennlinie.
+- **Icon + Farbe**, **Untermenüs** und **Berechtigungsgruppe / Sichtbarkeit** pro Eintrag.

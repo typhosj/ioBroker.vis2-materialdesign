@@ -10,10 +10,23 @@ Meldungen werden aus dem State entfernt. Template-ID:
 
 ## Editor-Einstellungen
 
-<table>
-<tr><td><img src="../../media/vis2_alerts_editor_overview.png" width="300"></td>
-<td><ul><li>JSON-Objekt-ID und maximale Zahl sichtbarer Meldungen wählen.</li><li>Normales, umrandetes oder Kachel-Layout einstellen.</li><li>Dichte, Höhe, Rand, Schrift und Schließen-Icon konfigurieren.</li></ul></td></tr>
-</table>
+Der Screenshot zeigt die Gruppen **Allgemein** und **Layout** aufgeklappt. Nicht
+aufgeführte Einstellungen sind selbsterklärend.
+
+<img src="../../media/vis2_alerts_editor_overview.png" width="340" alt="Warnmeldungen Allgemein und Layout">
+
+**Allgemein**
+
+- **Objekt-ID** – State mit dem JSON-Meldungs-Array.
+- **max. Meldungen** – wie viele Meldungen gleichzeitig gezeigt werden.
+- **min. Bildschirmauflösung** – blendet das Widget unterhalb dieser Breite aus.
+
+**Layout**
+
+- **Layout** – normal, umrandet oder Kachel.
+- **dicht / Höhe / Abstand unten** – Kompaktheit, Schattentiefe und Abstand zwischen Meldungen.
+- **Rand-Layout** – Rahmenstil jeder Meldung.
+- **Schließen-Icon / Farbe** – das Schließen-Icon und seine Farbe; Schließen entfernt die Meldung aus dem State.
 
 ```json
 [

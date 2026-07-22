@@ -9,7 +9,28 @@ der lineare Balken. Template-ID: `tplVis2-materialdesign-Progress-Circular`.
 
 ## Editor-Einstellungen
 
-<table>
-<tr><td><img src="../../media/vis2_progress_circular_editor_overview.png" width="300"></td>
-<td><ul><li>Objekt-ID, Minimum und Maximum unter <b>Allgemein</b> setzen.</li><li>Größe, Ringbreite und Drehung unter <b>Layout</b> einstellen.</li><li>Prozent, Wert oder eigene Beschriftung wählen.</li><li>Standard- und Schwellenfarben unter <b>Farben</b> konfigurieren.</li></ul></td></tr>
-</table>
+Der Screenshot zeigt die Gruppen **Allgemein**, **Layout** und **Beschriftung**
+aufgeklappt. Nicht aufgeführte Einstellungen sind selbsterklärend.
+
+<img src="../../media/vis2_progress_circular_editor_overview.png" width="340" alt="Kreisförmiger Fortschritt Allgemein, Layout und Beschriftung">
+
+**Allgemein**
+
+- **Min / Max** – bildet den State-Wert auf 0–100 Prozent ab.
+- **unbestimmt** – Dauerrotation, die den Wert ignoriert (Busy-Anzeige).
+
+**Layout**
+
+- **Größe** – Durchmesser des Rings.
+- **Ringbreite** – Stärke des Fortschritts-Strichs.
+- **Drehung** – Startwinkel des Rings.
+
+**Beschriftung**
+
+- **Beschriftungsstil** – Prozent, Rohwert oder eigene Vorlage.
+- **Einheit** – an den Wert angehängter Text.
+- **eigene Beschriftung** – freier Text/Binding, wenn der Stil *eigene* ist.
+
+Unter **Farben** werden Fortschrittsfarbe, Hintergrundring, Innen-(Mitte-)Farbe
+sowie zwei optionale Schwellenfarben gesetzt, die die Fortschrittsfarbe je nach
+Bedingung ersetzen.

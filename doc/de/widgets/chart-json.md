@@ -38,6 +38,20 @@ X-Achse. Jeder Eintrag in `graphs` erzeugt eine Datenreihe.
 Fehlerhaftes JSON zeigt `Error in JSON string`. Fehlende, leere oder nicht
 numerische Datenwerte werden als Lücke behandelt.
 
+## Editor-Einstellungen
+
+Das Diagramm wird größtenteils vom JSON-State gesteuert; der Editor setzt nur
+Quelle und globale Vorgaben. Die Editor-Sprache folgt der ioBroker-Systemsprache,
+daher ist der Screenshot deutsch.
+
+<img src="../../media/vis2_chart_json_editor.png" width="340" alt="JSON-Diagramm Allgemein und Diagramm-Layout">
+
+- **Allgemein** – die Objekt-ID des oben beschriebenen JSON-States und der globale **Diagrammtyp** (`bar` oder `line`) für Datenreihen ohne eigenes `type`.
+
+Kartenlayout sowie die gemeinsamen Gruppen **Legende**, **Tooltip** und Achsen
+aus [Diagramme](charts.md) gelten; das Aussehen je Datenreihe stammt aus den
+JSON-Eigenschaften unten.
+
 ## Eigenschaften einer Datenreihe
 
 | Eigenschaft | Bedeutung |

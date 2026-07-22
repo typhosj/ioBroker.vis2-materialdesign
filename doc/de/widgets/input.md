@@ -9,9 +9,23 @@ Template-ID: `tplVis2-materialdesign-Input`.
 
 ## Editor-Einstellungen
 
-<table>
-<tr><td><img src="../../media/vis2_input_editor_overview.png" width="300"></td>
-<td><ul><li><b>Typ:</b> Text, Zahl, Datum, Zeit oder Maske (mit Prüfung).</li><li><b>Layout:</b> outlined, filled oder solo, optional rounded/shaped.</li><li><b>Zähler & Löschen:</b> Zeichenzähler und Löschen-Icon.</li><li>Beschriftungen, Hinweise, Prefix/Suffix, innere Icons und Farben liegen in optionalen Gruppen.</li></ul></td></tr>
-</table>
+Der Screenshot zeigt die Gruppen **Allgemein** und **Layout Eingabe**
+aufgeklappt. Nicht aufgeführte Einstellungen sind selbsterklärend.
+
+<img src="../../media/vis2_input_editor_overview.png" width="340" alt="Eingabe Allgemein und Layout">
+
+**Allgemein**
+
+- **Typ** – Text, Zahl, Datum, Zeit oder **Maske**.
+- **Eingabemaske / max. Länge** – festes Eingabemuster und Zeichenbegrenzung für den Masken-Typ.
+
+**Layout Eingabe**
+
+- **Layout** – outlined, filled, solo (randlos) sowie die rounded-/shaped-Varianten.
+- **Ausrichtung** – horizontale Ausrichtung des eingegebenen Texts.
+
+Zeichenzähler und Löschen-Icon (**Zählerlayout**) sowie Beschriftungen,
+Hinweise, Prefix/Suffix, innere Icons und Farben liegen in eigenen optionalen
+Gruppen.
 
 Für die Auswahl aus einer Werteliste nutze stattdessen das [Select](select.md)-Widget.

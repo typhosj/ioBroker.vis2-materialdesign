@@ -10,7 +10,29 @@ the linear progress widget. Template id:
 
 ## Editor settings
 
-<table>
-<tr><td><img src="../../media/vis2_progress_circular_editor_overview.png" width="300"></td>
-<td><ul><li>Set object id, minimum and maximum in <b>Common</b>.</li><li>Use size, ring width and rotation in <b>Layout</b>.</li><li>Select percent, value or custom label in <b>Label</b>.</li><li>Configure normal and threshold colors in <b>Colors</b>.</li></ul></td></tr>
-</table>
+The screenshot shows the **General**, **Layout** and **Label** groups expanded.
+Settings not listed below are self-explanatory. The editor UI follows the
+ioBroker system language, so the screenshots are German.
+
+<img src="../../media/vis2_progress_circular_editor_overview.png" width="340" alt="Circular progress general, layout and label options">
+
+**General**
+
+- **min / max** – map the state value onto 0–100 percent.
+- **indeterminate** – continuous spin that ignores the value (busy indicator).
+
+**Layout**
+
+- **size** – diameter of the ring.
+- **ring width** – thickness of the progress stroke.
+- **rotate** – start angle of the ring.
+
+**Label**
+
+- **label style** – percent, raw value or a custom template.
+- **unit** – text appended to the value.
+- **custom label** – free text/binding used when the style is *custom*.
+
+In **Colors** you set the progress color, the background ring, the inner (center)
+color and two optional threshold colors that replace the progress color by
+condition.

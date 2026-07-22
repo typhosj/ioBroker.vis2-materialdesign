@@ -9,9 +9,30 @@ A linear VIS 2 progress indicator for numeric or boolean states. Template id:
 
 ## Editor settings
 
-<table>
-<tr><td><img src="../../media/vis2_progress_editor_overview.png" width="300"></td>
-<td><ul><li><b>min/max:</b> map the state to 0–100 percent.</li><li><b>reverse/invert:</b> change direction or displayed percentage.</li><li><b>Layout:</b> rounded, indeterminate and rotation.</li><li><b>Striped:</b> enable and style the stripe pattern.</li><li><b>Label:</b> percent, raw value or custom template.</li></ul></td></tr>
-</table>
+The screenshot shows the **General**, **Layout** and **Label** groups expanded.
+Settings not listed below are self-explanatory. The editor UI follows the
+ioBroker system language, so the screenshots are German.
 
-Two optional threshold colors can replace the normal progress color.
+<img src="../../media/vis2_progress_editor_overview.png" width="340" alt="Progress general, layout and label options">
+
+**General**
+
+- **min / max** – map the state value onto 0–100 percent.
+- **reverse** – fills from the opposite side.
+- **invert value** – shows the remaining percentage instead of the reached one.
+
+**Layout**
+
+- **rounded** – rounds the bar ends.
+- **indeterminate** – continuous animation that ignores the value (busy indicator).
+- **rotate** – rotates the whole bar by a given angle.
+
+**Label**
+
+- **label style** – percent, raw value or a custom template.
+- **unit** – text appended to the value.
+- **custom label** – free text/binding used when the style is *custom*.
+
+The **Striped** group enables and styles a stripe pattern. In **Colors**, two
+optional threshold colors (each with a condition) replace the normal progress
+color once the value passes them.

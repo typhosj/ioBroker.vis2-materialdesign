@@ -13,10 +13,31 @@ Wochen-/Tagesansicht mit Zeitachse:
 
 ## Editor-Einstellungen
 
-<table>
-<tr><td><img src="../../media/vis2_calendar_editor_overview.png" width="300"></td>
-<td><ul><li><b>Kalenderansicht:</b> Monat, Woche oder Tag.</li><li>Layoutgruppen steuern Wochentage, Kalenderwochen, Kopfzeile, Bedienung und Zeitachse.</li><li>Termineinstellungen steuern Überlappung, Höhe und Schrift.</li><li>Eigene Formatfelder akzeptieren Datums-Token.</li></ul></td></tr>
-</table>
+Die Screenshots zeigen die Allgemein-/Layout-Gruppen sowie die Termin- und
+Datumsformat-Gruppen. Nicht aufgeführte Einstellungen sind selbsterklärend.
+
+<img src="../../media/vis2_calendar_editor_overview.png" width="340" alt="Kalender Allgemein und Layout">
+
+**Allgemein**
+
+- **Objekt-ID** – State mit dem JSON-Termin-Array.
+- **Kalenderansicht** – Monat, Woche oder Tag.
+
+**Layout**
+
+- **Wochentage / Kurze Wochentage** – volle oder abgekürzte Wochentagsnamen.
+- **Rahmen- / Tageshintergrundfarben** – Raster- und Tageszellenfarben.
+
+Termindarstellung und Datumsformate haben eigene Gruppen:
+
+<img src="../../media/vis2_calendar_editor_2.png" width="340" alt="Kalender Termin- und Datumsformat">
+
+- **Termin-Überlappungsmodus** – wie gleichzeitige Termine angeordnet werden (gestapelt oder nebeneinander).
+- **Terminhöhe / Schriften** – Größe und Typografie der Termine.
+- **benutzerdefinierte Datumsformate** – je Ansicht Kopf- und Tagesformat mit Datums-Token (z. B. `dddd`, `D. MMMM`).
+
+Die Gruppen für Kopfzeile, Kalenderwochen, Bedienung und Zeitachse gestalten die
+übrige Kalenderoberfläche.
 
 ```json
 [

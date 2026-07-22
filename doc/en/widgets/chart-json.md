@@ -38,6 +38,20 @@ The state selected under Object ID must contain an object with `axisLabels` and
 Invalid JSON displays `Error in JSON string`. Missing, empty or non-numeric
 data values are treated as gaps.
 
+## Editor settings
+
+Most of this chart is driven by the JSON state; the editor only sets the source
+and global defaults. The editor UI follows the ioBroker system language, so the
+screenshot is German.
+
+<img src="../../media/vis2_chart_json_editor.png" width="340" alt="JSON chart general and chart layout options">
+
+- **General** – the object id of the JSON state described above and the global **chart type** (`bar` or `line`) used by datasets without their own `type`.
+
+The card layout, shared **Legend**, **Tooltip** and axis groups from
+[Charts](charts.md) apply;
+per-dataset appearance comes from the JSON properties below.
+
 ## Dataset properties
 
 | Property | Meaning |

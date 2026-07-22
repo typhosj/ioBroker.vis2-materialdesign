@@ -9,9 +9,32 @@ Template-ID: `tplVis2-materialdesign-Slider`.
 
 ## Editor-Einstellungen
 
-<table>
-<tr><td><img src="../../media/vis2_slider_editor_overview.png" width="300"></td>
-<td><ul><li><b>oid:</b> Wert-State; <b>oid-working</b> meldet optional die Bedienung.</li><li>Ausrichtung, Min, Max und Schritt unter <b>Allgemein</b>.</li><li><b>Skala:</b> Teilstriche und Texte.</li><li><b>Beschriftung:</b> Rohwert oder Prozent, Einheit und Grenztexte.</li><li><b>Thumb-Label:</b> aus, beim Ziehen oder immer sichtbar.</li></ul></td></tr>
-</table>
+Die Screenshots zeigen die Gruppen, die Verhalten und Beschriftung bestimmen.
+Nicht aufgeführte Einstellungen sind selbsterklärend.
 
-**Nur lesen** zeigt den Wert, ohne Änderungen zu schreiben.
+<img src="../../media/vis2_slider_editor_overview.png" width="340" alt="Slider Allgemein und Skala">
+
+**Allgemein**
+
+- **oid** – der Wert-State; **oid-working** meldet optional, dass ein Gerät die Zielposition noch anfährt.
+- **Ausrichtung / Umkehren** – horizontal oder vertikal, sowie invertierte Richtung.
+- **Min / Max / Schritt** – Wertebereich und Schrittweite.
+- **Nur lesen** – zeigt den Wert an, schreibt aber nie.
+
+**Schritte Layout (Teilstriche)**
+
+- **Teilstriche zeigen** – zeichnet Markierungen entlang der Spur.
+- **Teilstrich-Texte** – zeigt den Wert an jedem Teilstrich; Größe und Farben folgen.
+
+<img src="../../media/vis2_slider_editor_2.png" width="340" alt="Slider Beschriftung und Regler-Label">
+
+**Beschriftung**
+
+- **Vorangestellter Text** – Beschriftung links vom Slider.
+- **Wertlabel-Stil / Einheit** – Rohwert oder Prozent samt Einheitensuffix.
+- **Min-/Max-Texte** und **Kleiner-/Größer-als-Ersatztexte** – zeigen an den Enden oder unter/über einer Grenze festen Text statt der Zahl.
+
+**Layout des Regler-Labels**
+
+- **Regler-Label zeigen** – aus, beim Ziehen oder immer.
+- Regler-**Größe**, Hintergrund- und Schriftfarben folgen.

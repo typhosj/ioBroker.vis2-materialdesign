@@ -10,10 +10,25 @@ Aus-/Ein-Werte liest und schreibt. Template-ID:
 
 ## Editor-Einstellungen
 
-<table>
-<tr><td><img src="../../media/vis2_checkbox_editor_overview.png" width="300"></td>
-<td><ul><li><b>Art der Umschaltung:</b> boolean schreibt true/false; value nutzt eigene Aus-/Ein-Werte.</li><li><b>Zustand bei anderem Wert:</b> bestimmt die Anzeige, wenn kein Aus-/Ein-Wert passt.</li><li><b>Label-Position:</b> links, rechts oder aus.</li><li><b>Nur lesen:</b> Zustand anzeigen, aber nicht schreiben.</li></ul></td></tr>
-</table>
+Der Screenshot zeigt die beiden relevanten Gruppen (**Allgemein** und
+**Beschriftung**) aufgeklappt. Nicht aufgeführte Einstellungen sind
+selbsterklärend.
+
+<img src="../../media/vis2_checkbox_editor_overview.png" width="340" alt="Checkbox-Editoroptionen">
+
+**Allgemein**
+
+- **Art der Umschaltung** – `boolean` schreibt `true`/`false`; `value` schreibt stattdessen die unten gesetzten Werte **Wert für aus** / **Wert für ein**.
+- **Zustand, wenn der Wert nicht der Bedingung 'Ein' entspricht** – welcher Zustand (an/aus) angezeigt wird, wenn der gelesene Wert weder zum Aus- noch zum Ein-Wert passt.
+- **auf mobilen Geräten vibrieren [s]** – haptische Rückmeldung beim Drücken (nur mobil).
+- **Klicksound-Lautstärke** – Lautstärke des Klicksounds, wenn *Klicksound abspielen* aktiv ist.
+- **Nur lesen** – zeigt den Zustand an, schreibt aber nie.
+
+**Beschriftung**
+
+- **Beschriftung False / True** – Text neben der Box im Aus- / Ein-Zustand.
+- **Beschriftungsposition** – links, rechts oder aus.
+- **Beschriftungs-Klick aktivieren** – ein Klick auf die Beschriftung schaltet den Wert um, nicht nur die Box.
 
 **Farben** steuert Box, Rahmen, Hover- und Labelfarben. **Verriegeln** ergänzt
 Entsperren und eine automatische Wiederverriegelung.

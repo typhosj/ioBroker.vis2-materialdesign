@@ -15,6 +15,24 @@ Bei Editor-Eingabe enthält jede Datensatzgruppe Objekt-ID, Achsenbeschriftung,
 optionale Farbe, abweichenden Werttext und Tooltip-Texte. Ohne feste
 Achsenwerte skaliert das Widget automatisch und bezieht Null mit ein.
 
+## Editor-Einstellungen
+
+Die Editor-Sprache folgt der ioBroker-Systemsprache, daher sind die Screenshots
+deutsch. Nicht aufgeführte Einstellungen sind selbsterklärend.
+
+<img src="../../media/vis2_chart_bar_editor.png" width="340" alt="Balkendiagramm Allgemein und Balkenlayout">
+
+- **Allgemein** – Datenquelle (Editor-Datensätze oder ein JSON-State), Anzahl der Datensätze, Objekt-ID und **Diagrammtyp** (vertikal oder horizontal). Je Editor-Datensatz ergänzt eine indizierte Gruppe dessen Objekt-ID, Achsenbeschriftung, Farbe und Tooltip-Texte.
+- **Balkendiagramm Layout** – Balkenstärke und -abstand.
+
+<img src="../../media/vis2_chart_bar_editor_2.png" width="340" alt="Balkendiagramm Achsen und Tooltip">
+
+- **y-Achse** – Achsentitel, Position (links / rechts), Gitterlinien und Sichtbarkeit von Achse/Beschriftung. Das **Minimum / Maximum** der Wertachse liegt in der Gruppe Diagramm Layout (leer = automatische Skalierung).
+- **Tooltip** – Tooltip aktivieren und Farben setzen; ein `tooltipText` je Datensatz ersetzt den erzeugten Text.
+
+Die gemeinsamen Gruppen **Diagramm Layout**, **Legende** und Farbschema aus
+[Diagramme](charts.md) gelten hier ebenfalls.
+
 ## JSON-Format
 
 Der State muss ein Array enthalten. Nicht gesetzte Darstellungswerte fallen auf

@@ -9,7 +9,25 @@ Kreisförmiger nativer VIS-2-Slider für numerische Zustände. Template-ID:
 
 ## Editor-Einstellungen
 
-<table>
-<tr><td><img src="../../media/vis2_slider_round_editor_overview.png" width="300"></td>
-<td><ul><li>Objekt-ID, Min, Max, Schritt und optionalen Working-State setzen.</li><li>Startwinkel, Bogen und Drehrichtung unter <b>Layout</b>.</li><li>Skala und Beschriftung steuern Teilstriche, Wert und Einheit.</li><li>Farben steuern Spur, aktiven Bogen und Drehknopf.</li></ul></td></tr>
-</table>
+Der Screenshot zeigt die Gruppen **Allgemein** und **Beschriftung** aufgeklappt.
+Nicht aufgeführte Einstellungen sind selbsterklärend.
+
+<img src="../../media/vis2_slider_round_editor_overview.png" width="340" alt="Runder Slider Allgemein und Beschriftung">
+
+**Allgemein**
+
+- **oid** – Wert-State; **oid-working** meldet optional, dass ein Gerät noch anfährt.
+- **Min / Max / Schritt** – Wertebereich und Schrittweite.
+- **Startwinkel / Bogenlänge** – wo die kreisförmige Spur beginnt und wie weit sie verläuft.
+- **Slider-Breite / Griffgröße** – Strichstärke und Knopfgröße.
+- **rtl** – kehrt die Richtung um (gegen/im Uhrzeigersinn).
+- **Nur lesen** – zeigt den Wert an, nimmt aber keine Eingabe an.
+
+**Beschriftung**
+
+- **Wertlabel-Stil / Einheit** – Rohwert oder Prozent samt Einheitensuffix.
+- **vertikale Position** – platziert das Wertlabel in der Mitte.
+- **Min-/Max-Texte** und **Kleiner-/Größer-als-Ersatztexte** – zeigen unter/über einer Grenze festen Text statt der Zahl.
+
+Die Gruppe **Farben** steuert Spurhintergrund, aktiven Bogen (vor/nach dem
+Knopf) und den Knopf selbst.

@@ -20,7 +20,21 @@ History-Adapterinstanz ab.
 
 ## Gemeinsame Einstellungen
 
-<table>
-<tr><td><img src="../../media/vis2_charts_editor_overview.png" width="300"></td>
-<td><ul><li><b>Kartenlayout:</b> bettet das Diagramm mit optionalem HTML-Titel in eine Material-Design-Karte ein.</li><li><b>Farbschema:</b> verteilt eine Palette auf Datensätze ohne eigene Farbe.</li><li><b>Legendenposition:</b> oben und unten ordnen Einträge horizontal, links und rechts vertikal an.</li><li><b>Tooltip:</b> zeigt Werte beim Berühren oder Überfahren eines Diagrammelements.</li></ul></td></tr>
-</table>
+Alle vier Diagramme teilen diese Gruppen. Der Screenshot zeigt die Gruppen
+**Diagramm Layout** und **Legende** aufgeklappt. Die Editor-Sprache folgt der
+ioBroker-Systemsprache, daher sind die Screenshots deutsch.
+
+<img src="../../media/vis2_charts_editor_overview.png" width="340" alt="Gemeinsame Diagramm- und Legenden-Optionen">
+
+**Diagramm Layout** – allgemeines Aussehen: Hintergrundfarben, Wertachsen-Vorgaben
+(Min / Max, Dezimalstellen) und Animationsdauer.
+
+**Card Hintergrund** – bettet Diagramm und HTML-Titel optional in eine
+Material-Design-Karte ein.
+
+**Legende** – ob die Legende gezeigt wird und ihre **Position**: oben/unten
+ordnen Einträge horizontal an, links/rechts vertikal.
+
+**Tooltip** – zeigt Werte beim Berühren oder Überfahren eines Diagrammelements.
+
+Ein **Farbschema** verteilt eine Palette auf Datensätze ohne eigene Farbe.

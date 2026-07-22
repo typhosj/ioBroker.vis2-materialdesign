@@ -9,9 +9,29 @@ Link- oder State-Aktion. Template-ID: `tplVis2-materialdesign-Card`.
 
 ## Editor-Einstellungen
 
-<table>
-<tr><td><img src="../../media/vis2_html_card_editor_overview.png" width="300"></td>
-<td><ul><li><b>Kartenlayout:</b> Basic, Basic Header, Header Overlay oder Horizontal.</li><li><b>Kartenstil:</b> Standard oder umrandet.</li><li><b>Bild:</b> Quelle sowie optionales Refresh-Objekt und Verzögerung.</li><li><b>Kartenaktion:</b> URL oder State-Schreibvorgang über Karte, Bild oder Text.</li></ul></td></tr>
-</table>
+Die Screenshots zeigen die Layout-/Bild-Gruppen und die Aktionsgruppe. Nicht
+aufgeführte Einstellungen sind selbsterklärend.
 
-Inhaltsfelder unterstützen VIS-2-HTML/Bindings. Nur vertrauenswürdiges HTML nutzen.
+<img src="../../media/vis2_html_card_editor_overview.png" width="340" alt="Karte Layout und Bild">
+
+**Allgemein**
+
+- **Kartenlayout** – Basic, Basic Header, Header Overlay oder Horizontal.
+- **Kartenstil** – Standard oder umrandet.
+
+**Bild**
+
+- **Bild** – Bildquelle (Pfad, URL oder Data-URL).
+- **Refresh-Objekt / Verzögerung** – lädt das Bild bei State-Änderung nach, mit Verzögerung.
+- **Refresh bei Aufwachen / Ansichtswechsel** – weitere Auslöser für das Neuladen.
+
+Die Gruppe **Kartenaktion** macht die Karte klickbar:
+
+<img src="../../media/vis2_html_card_editor_2.png" width="340" alt="Kartenaktion">
+
+- **Klicktyp** – welcher Bereich reagiert (ganze Karte, Bild oder Text).
+- **Steuerungstyp** – URL öffnen oder State schreiben.
+- **href / State-Objekt + Wert** – das vom gewählten Steuerungstyp genutzte Ziel.
+
+Inhaltsfelder (Titel, Untertitel, Text) unterstützen VIS-2-HTML/Bindings. Nur
+vertrauenswürdiges HTML nutzen.

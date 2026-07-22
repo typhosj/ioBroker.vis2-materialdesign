@@ -13,10 +13,26 @@ and `tplVis2-materialdesign-view-in-widget8`.
 
 ## Editor settings
 
-<table>
-<tr><td><img src="../../media/vis2_responsive_layout_editor_overview.png" width="300"></td>
-<td><ul><li><b>Resolutions:</b> define layout breakpoints.</li><li><b>Views:</b> configure the indexed embedded VIS 2 views.</li><li><b>Masonry:</b> flowing columns; <b>Grid:</b> explicit grid spans.</li><li><b>Advanced View:</b> selects one embedded view from a state value.</li></ul></td></tr>
-</table>
+The screenshot shows the **General** group and one indexed **View** entry of the
+Masonry container. Settings not listed below are self-explanatory. The editor UI
+follows the ioBroker system language, so the screenshots are German.
+
+<img src="../../media/vis2_responsive_layout_editor_overview.png" width="340" alt="Responsive layout general and view options">
+
+**General**
+
+- **number of columns / spacing between views** – the base grid used on desktop.
+- **number of views** – how many indexed **View [n]** groups exist.
+- The **Phone settings** and **Tablet settings** groups override the column count per screen size.
+
+**View [n]**
+
+- **view** (`Seite`) – the embedded VIS 2 view.
+- **height / width / order** – size and position within the grid (Grid uses explicit row/column spans).
+- **visibility object / condition / value** – show this view only when a state matches.
+
+**Advanced View** selects a single embedded view from a state value; see
+[Advanced View in Widget](html-widgets.md).
 
 Embedded content uses the native VIS 2 child-view mechanism; it does not change
 the active top-level view.

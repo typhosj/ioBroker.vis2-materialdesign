@@ -9,9 +9,29 @@ Template-ID: `tplVis2-materialdesign-Progress`.
 
 ## Editor-Einstellungen
 
-<table>
-<tr><td><img src="../../media/vis2_progress_editor_overview.png" width="300"></td>
-<td><ul><li><b>Min/Max:</b> State auf 0–100 Prozent abbilden.</li><li><b>Umkehren/Invertieren:</b> Richtung oder Prozentwert ändern.</li><li><b>Layout:</b> abgerundet, unbestimmt und Drehung.</li><li><b>Streifen:</b> Muster aktivieren und gestalten.</li><li><b>Beschriftung:</b> Prozent, Rohwert oder eigene Vorlage.</li></ul></td></tr>
-</table>
+Der Screenshot zeigt die Gruppen **Allgemein**, **Layout** und **Beschriftung**
+aufgeklappt. Nicht aufgeführte Einstellungen sind selbsterklärend.
 
-Zwei optionale Schwellenfarben ersetzen abhängig vom Wert die Standardfarbe.
+<img src="../../media/vis2_progress_editor_overview.png" width="340" alt="Fortschritt Allgemein, Layout und Beschriftung">
+
+**Allgemein**
+
+- **Min / Max** – bildet den State-Wert auf 0–100 Prozent ab.
+- **Umkehren** – füllt von der gegenüberliegenden Seite.
+- **Wert invertieren** – zeigt den verbleibenden statt des erreichten Prozentwerts.
+
+**Layout**
+
+- **abgerundet** – rundet die Balkenenden.
+- **unbestimmt** – Daueranimation, die den Wert ignoriert (Busy-Anzeige).
+- **Drehung** – dreht den gesamten Balken um einen Winkel.
+
+**Beschriftung**
+
+- **Beschriftungsstil** – Prozent, Rohwert oder eigene Vorlage.
+- **Einheit** – an den Wert angehängter Text.
+- **eigene Beschriftung** – freier Text/Binding, wenn der Stil *eigene* ist.
+
+Die Gruppe **Streifen** aktiviert und gestaltet ein Streifenmuster. Unter
+**Farben** ersetzen zwei optionale Schwellenfarben (je mit Bedingung) die
+Standardfarbe, sobald der Wert sie überschreitet.

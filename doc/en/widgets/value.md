@@ -10,10 +10,33 @@ formatting, prefix/suffix and optional icon. Template id:
 
 ## Editor settings
 
-<table>
-<tr><td><img src="../../media/vis2_value_editor_overview.png" width="300"></td>
-<td><ul><li><b>target type:</b> auto, number, string, boolean or linked.</li><li><b>Number format:</b> decimals, unit, calculation, duration or timestamp conversion.</li><li><b>Boolean format:</b> separate true/false text and optional condition.</li><li><b>Icon:</b> image, color, side and size.</li></ul></td></tr>
-</table>
+The screenshots show the groups that shape the output. Settings not listed below
+are self-explanatory. The editor UI follows the ioBroker system language, so the
+screenshots are German.
 
-The change effect briefly highlights updated values. Theme values can be applied
-from the **Theme** group.
+<img src="../../media/vis2_value_editor_overview.png" width="340" alt="Value general and number format">
+
+**General**
+
+- **target type** – how the state is interpreted: `auto`, number, string, boolean or *linked* (a clickable value opening the object).
+- **prefix / suffix** – fixed text before / after the value (a unit, a label).
+
+**Number formatting**
+
+- **min / max decimals** – number of fractional digits shown.
+- **unit** – unit text appended to the number.
+- **calculation** – math expression applied to the value before display (e.g. `x/1000` for Wh → kWh).
+- **convert to duration / to timestamp** – render a number of seconds as `hh:mm:ss`, or a timestamp as a formatted date/time.
+
+<img src="../../media/vis2_value_editor_2.png" width="340" alt="Value icon options">
+
+**Icon**
+
+- **image** – Material Design icon name, image path/URL or data URL shown next to the value.
+- **icon position** – before or after the value.
+- **icon color / height** – recolor (single-color SVG) and size of the icon.
+
+A separate **Boolean formatting** group appears once the target type is boolean:
+it holds the **text for true / false** and a **condition** value that decides the
+true/false state for non-boolean inputs. The change effect briefly highlights
+updated values.

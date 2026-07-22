@@ -12,10 +12,30 @@ Template ids start with `tplVis2-materialdesign-Icon-Button-`, followed by
 
 ## Editor settings
 
-<table>
-<tr><td><img src="../../media/vis2_icon_buttons_editor_overview.png" width="300"></td>
-<td><ul><li>Select the object, view or URL in <b>Common</b>.</li><li>Choose the icon, colors and size in <b>Image / Icon</b>.</li><li>The slider variant adds value range, arc, width and foreground/background settings.</li></ul></td></tr>
-</table>
+The screenshots show a normal icon button and the circular *Slider* variant.
+Settings not listed below are self-explanatory. The editor UI follows the
+ioBroker system language, so the screenshots are German.
+
+<img src="../../media/vis2_icon_buttons_editor_overview.png" width="340" alt="Icon button general and icon options">
+
+**General** – the action fields match the corresponding [button](buttons.md)
+variant (target view, URL, object id and value, …).
+
+**Image / Icon**
+
+- **image** – Material Design icon name or image source.
+- **icon color / on-state color** – recolor a single-color icon; a separate color can mark the on state.
+- **icon size** – size of the icon inside the round button.
+
+The **Slider** variant turns the button into a circular value slider:
+
+<img src="../../media/vis2_icon_buttons_editor_2.png" width="340" alt="Icon button slider variant options">
+
+- **slider only** – value control without the click action.
+- **value off / on** – value range mapped onto the arc.
+- **angle offset / arc** – where the arc starts and how far it sweeps.
+- **slider width / thickness** – geometry of the arc.
+- **foreground / background color** and **show in front / always** – arc colors and when the arc is visible.
 
 Material Design icon names, local image paths, URLs and data URLs are supported.
 Single-color SVGs can be recolored with the icon color.

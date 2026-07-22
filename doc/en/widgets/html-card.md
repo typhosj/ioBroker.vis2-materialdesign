@@ -9,9 +9,30 @@ optional link or state-write action. Template id: `tplVis2-materialdesign-Card`.
 
 ## Editor settings
 
-<table>
-<tr><td><img src="../../media/vis2_html_card_editor_overview.png" width="300"></td>
-<td><ul><li><b>card layout:</b> Basic, Basic Header, Header Overlay or Horizontal.</li><li><b>card style:</b> default or outlined.</li><li><b>Image:</b> source plus optional refresh object and delay.</li><li><b>Card action:</b> trigger a URL or state write from card, image or text.</li></ul></td></tr>
-</table>
+The screenshots show the layout/image groups and the card-action group. Settings
+not listed below are self-explanatory. The editor UI follows the ioBroker system
+language, so the screenshots are German.
 
-Content fields accept VIS 2 HTML/bindings. Use only trusted HTML.
+<img src="../../media/vis2_html_card_editor_overview.png" width="340" alt="Card layout and image options">
+
+**General**
+
+- **card layout** – Basic, Basic Header, Header Overlay or Horizontal.
+- **card style** – default or outlined.
+
+**Image**
+
+- **image** – image source (path, URL or data URL).
+- **refresh object / delay** – reload the image when a state changes, after a delay.
+- **refresh on wake-up / view change** – additional reload triggers.
+
+The **Card action** group makes the card clickable:
+
+<img src="../../media/vis2_html_card_editor_2.png" width="340" alt="Card action options">
+
+- **click type** – which region reacts (whole card, image or text).
+- **control type** – open a URL or write a state.
+- **href / state object + value** – the target used by the chosen control type.
+
+Content fields (title, subtitle, text) accept VIS 2 HTML/bindings. Use only
+trusted HTML.

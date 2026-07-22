@@ -17,12 +17,28 @@ Links: ein Dialog mit eingebetteter VIS-2-View (ein Raum-Steuerpanel). Rechts: e
 
 ## Editor-Einstellungen
 
-<table>
-<tr><td><img src="../../media/vis2_dialog_editor_overview.png" width="300"></td>
-<td><ul><li>Lokalen Button oder Datenpunkt als Öffnungsmethode wählen. Boolesch true öffnet den Datenpunkt-Dialog; Schließen schreibt false.</li><li>View-Variante: eingebettete VIS-2-Ansicht wählen.</li><li>iFrame-Variante: URL, Sandbox und Scrollen einstellen.</li><li>Dialog, Titel, Aktionsbuttons und Schließen liegen in eigenen Gruppen.</li></ul></td></tr>
-</table>
+Die Screenshots zeigen die Gruppe **Allgemein** des View-Dialogs und die
+iFrame-Gruppe. Nicht aufgeführte Einstellungen sind selbsterklärend.
 
-**Keine Sandbox** nur für vertrauenswürdige iFrame-Inhalte aktivieren.
+<img src="../../media/vis2_dialog_editor_overview.png" width="340" alt="View-Dialog Allgemein">
+
+**Allgemein**
+
+- **Öffnungsmethode** – lokaler Button oder Datenpunkt. Beim Datenpunkt öffnet boolesch `true` den Dialog, Schließen schreibt `false`.
+- **Öffnen-Datenpunkt** – der State, der die Datenpunkt-Methode steuert.
+- **Vollbild unterhalb Auflösung** – zeigt den Dialog unterhalb dieser Bildschirmbreite im Vollbild.
+- **eingebettete View** (`contains_view`) – die im Dialog gezeigte VIS-2-Ansicht (View-Variante).
+
+Die Variante **iFrame** ersetzt die eingebettete View durch eine Webseite:
+
+<img src="../../media/vis2_dialog_editor_2.png" width="340" alt="iFrame-Dialog Einstellungen">
+
+- **URL** – im iFrame angezeigte Seite.
+- **keine Sandbox** – deaktiviert die iFrame-Sandbox; nur für vertrauenswürdige Inhalte.
+- **Scroll X / Y / seamless** – Scroll- und nahtlose Einbettungsoptionen.
+
+Text/Stil des Auslöse-Buttons, Dialoggröße, Kopfzeile, Fußzeile und
+Aktionsbuttons haben eigene Layoutgruppen.
 
 Für dauerhaft eingebettete Inhalte ohne Dialog siehe
 [Advanced View in Widget](html-widgets.md).

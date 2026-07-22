@@ -19,7 +19,22 @@ historic values through the selected history adapter instance.
 
 ## Shared settings
 
-<table>
-<tr><td><img src="../../media/vis2_charts_editor_overview.png" width="300"></td>
-<td><ul><li><b>Card layout:</b> places the chart and an optional HTML title in a Material Design card.</li><li><b>Color scheme:</b> distributes a palette across datasets without an individual color.</li><li><b>Legend position:</b> top and bottom arrange entries horizontally; left and right arrange them vertically.</li><li><b>Tooltip:</b> shows values when a chart element is touched or hovered.</li></ul></td></tr>
-</table>
+All four charts share these groups. The screenshot has the **Chart layout** and
+**Legend** groups expanded. The editor UI follows the ioBroker system language,
+so the screenshots are German.
+
+<img src="../../media/vis2_charts_editor_overview.png" width="340" alt="Shared chart layout and legend options">
+
+**Chart layout** – general appearance: background colors, value-axis defaults
+(min / max, decimals) and animation duration.
+
+**Card background** – optionally wraps the chart and an HTML title in a Material
+Design card.
+
+**Legend** – whether the legend is shown and its **position**: top / bottom
+arrange entries horizontally, left / right vertically.
+
+**Tooltip** – shows values when a chart element is touched or hovered.
+
+A **color scheme** distributes a palette across datasets that have no individual
+color.

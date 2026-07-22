@@ -12,14 +12,32 @@ Template ids: `tplVis2-materialdesign-Button-Navigation`, `-Link`, `-State`,
 
 ## Editor settings
 
-Choose the variant in the **Material Design** widget set, select it and open the
-**WIDGET** tab.
+Pick the variant in the **Material Design** widget set, select it and open the
+**WIDGET** tab. The screenshots use the *State* and *Multi State* variants; the
+editor UI follows the ioBroker system language, so they are German. Settings not
+listed below are self-explanatory.
 
-<table>
-<tr><td><img src="../../media/vis2_buttons_editor_overview.png" width="300"></td>
-<td><ul><li><b>Navigation:</b> select the target VIS 2 view.</li><li><b>Link:</b> enter a URL and choose whether it opens in a new window.</li><li><b>State:</b> select an object id and value.</li><li><b>Multi State:</b> configure the indexed object/value entries.</li><li><b>Addition:</b> set the increment and optional min/max limits.</li><li><b>Toggle:</b> use boolean or custom off/on values.</li></ul></td></tr>
-</table>
+<img src="../../media/vis2_buttons_editor_overview.png" width="340" alt="Button general and label options">
 
-The **Label**, **Image / Icon**, **Colors**, **Feedback** and **Locking** groups
-control appearance and interaction. Icons accept Material Design icon names or
-image sources. Locking requires an unlock click before the action runs.
+**General** – the action fields depend on the chosen variant:
+
+- **Navigation** – target VIS 2 view to open.
+- **Link** – URL and *open in new window*.
+- **State** – object id and the value written on click.
+- **Addition** – increment (`+`/`-` step) with optional min / max clamp.
+- **Toggle** – *toggle type* (`boolean` or custom off / on value) and *push button* (write on press and release).
+
+**Label**
+
+- **button text / label true** – caption; a second text can be shown in the on state.
+- **alignment** – icon/text arrangement inside the button.
+
+The **Multi State** variant replaces the single value with indexed object/value
+rows, each with its own delay:
+
+<img src="../../media/vis2_buttons_editor_2.png" width="340" alt="Multi State indexed object/value entry">
+
+The **Image / Icon** group takes a Material Design icon name or image source (with
+a separate on-state color), **Colors** overrides the theme, **Feedback** adds
+haptics and a click sound, and **Locking** requires an unlock click before the
+action runs.

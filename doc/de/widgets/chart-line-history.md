@@ -16,6 +16,11 @@ jeden verwendeten State aktivierte Aufzeichnung.
 - **Aktualisierung:** in Echtzeit, in festem Intervall oder über ein Triggerobjekt.
 - **Chart-Timeout:** maximale Wartezeit der History-Abfrage in Sekunden.
 
+Diese Optionen liegen in der Gruppe **Allgemein**. Die Editor-Sprache folgt der
+ioBroker-Systemsprache, daher sind die Screenshots deutsch.
+
+<img src="../../media/vis2_chart_line_history_editor.png" width="340" alt="Linienverlauf Allgemein">
+
 Der State unter „Zeitraum über Objekt“ unterstützt zwei Arten von Werten:
 
 - String: eine angebotene Intervallbezeichnung wie `30 seconds`, `10 minutes`, `1 day` oder `1 year`.
@@ -30,6 +35,9 @@ Sekunde, auch wenn ein kleinerer Wert konfiguriert wird.
 Jede indizierte Gruppe beschreibt einen aufgezeichneten State und seine
 Abfrage. Darstellungsoptionen derselben Indexnummer gehören zu dieser
 Zeitreihe. Ohne eigenen Legendentext wird die Objekt-ID angezeigt.
+
+<img src="../../media/vis2_chart_line_history_editor_2.png" width="340" alt="Linienverlauf Datensatz und Linien">
+
 
 | Einstellung | Wirkung |
 | --- | --- |

@@ -9,10 +9,25 @@ off/on values. Template id: `tplVis2-materialdesign-Switch`.
 
 ## Editor settings
 
-<table>
-<tr><td><img src="../../media/vis2_switch_editor_overview.png" width="300"></td>
-<td><ul><li><b>type of toggle:</b> boolean writes true/false; value uses custom off/on values.</li><li><b>label position:</b> left, right or off.</li><li><b>read only:</b> displays the state without writing it.</li></ul></td></tr>
-</table>
+The screenshot shows the relevant groups (**General** and **Label**) expanded.
+Settings not listed below are self-explanatory. The editor UI follows the
+ioBroker system language, so the screenshots are German.
+
+<img src="../../media/vis2_switch_editor_overview.png" width="340" alt="Switch editor options">
+
+**General**
+
+- **type of toggle** – `boolean` writes `true`/`false`; `value` writes the custom **off value** / **on value** instead.
+- **state if value unequal to on** – which state (on/off) is shown when the read value matches neither the off nor the on value.
+- **vibrate on mobile devices [s]** – haptic feedback duration on press (mobile only).
+- **click sound volume** – volume of the click sound when *play click sound* is enabled.
+- **read only** – shows the state but never writes it.
+
+**Label**
+
+- **label False / label True** – text shown next to the switch in the off / on state.
+- **label position** – left, right or off.
+- **enable label click** – lets a click on the label toggle the value, not only the switch.
 
 The optional **Colors** group controls thumb, track, active and hover colors.
-**Locking** adds an unlock overlay and automatic re-lock delay.
+**Locking** adds an unlock overlay and an automatic re-lock delay.

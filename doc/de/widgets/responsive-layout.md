@@ -13,10 +13,26 @@ und `tplVis2-materialdesign-view-in-widget8`.
 
 ## Editor-Einstellungen
 
-<table>
-<tr><td><img src="../../media/vis2_responsive_layout_editor_overview.png" width="300"></td>
-<td><ul><li><b>Auflösungen:</b> Layout-Breakpoints festlegen.</li><li><b>Ansichten:</b> indizierte eingebettete VIS-2-Views konfigurieren.</li><li><b>Masonry:</b> fließende Spalten; <b>Grid:</b> feste Rasterspannen.</li><li><b>Advanced View:</b> wählt per State eine eingebettete Ansicht.</li></ul></td></tr>
-</table>
+Der Screenshot zeigt die Gruppe **Allgemein** und einen indizierten
+**View**-Eintrag des Masonry-Containers. Nicht aufgeführte Einstellungen sind
+selbsterklärend.
+
+<img src="../../media/vis2_responsive_layout_editor_overview.png" width="340" alt="Responsives Layout Allgemein und View">
+
+**Allgemein**
+
+- **Anzahl der Spalten / Abstand zwischen Views** – das Grundraster auf dem Desktop.
+- **Anzahl der Views** – wie viele indizierte Gruppen **View [n]** existieren.
+- Die Gruppen **Handy Einstellungen** und **Tablet Einstellungen** überschreiben die Spaltenzahl je Bildschirmgröße.
+
+**View [n]**
+
+- **View** (`Seite`) – die eingebettete VIS-2-Ansicht.
+- **Höhe / Breite / Sortierung** – Größe und Position im Raster (Grid nutzt feste Zeilen-/Spaltenspannen).
+- **Sichtbarkeits-Objekt / -Bedingung / -Wert** – diese View nur zeigen, wenn ein State passt.
+
+**Advanced View** wählt per State eine einzelne eingebettete Ansicht; siehe
+[Advanced View in Widget](html-widgets.md).
 
 Die native VIS-2-Child-View-Funktion bettet Inhalte ein, ohne die aktive
 Hauptansicht zu wechseln.

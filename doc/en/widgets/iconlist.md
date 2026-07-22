@@ -10,10 +10,33 @@ entered in the editor or read from JSON. Template id:
 
 ## Editor settings
 
-<table>
-<tr><td><img src="../../media/vis2_iconlist_editor_overview.png" width="300"></td>
-<td><ul><li><b>data method:</b> indexed editor entries or JSON state.</li><li>Each entry selects object id, off/on icon and colors, label and click action.</li><li>Layout settings control columns, spacing, alignment and icon size.</li></ul></td></tr>
-</table>
+The screenshots show the data groups and the grid layout. Settings not listed
+below are self-explanatory. The editor UI follows the ioBroker system language,
+so the screenshots are German.
+
+<img src="../../media/vis2_iconlist_editor_overview.png" width="340" alt="IconList data and item options">
+
+**Data of the list**
+
+- **data method** – indexed editor entries or a JSON state.
+- **number of entries** – how many indexed item groups exist.
+
+Each cell is configured in its own indexed **List item [n]** group:
+
+- **object id** – state that drives the cell.
+- **icon color / active color** – off-state and on-state color of the icon.
+- **label / subLabel / value** – texts under the icon; **value appendix** adds a unit.
+- **visibility condition** – hides the cell unless a state matches.
+
+The grid arrangement lives in the **General** group:
+
+<img src="../../media/vis2_iconlist_editor_2.png" width="340" alt="IconList grid layout options">
+
+- **wrap items / max items per row** – how cells flow into rows.
+- **item gaps** – spacing between cells.
+
+Cell and icon dimensions (icon height, item min width / height) live in the
+optional **Item layout** group.
 
 Icons accept Material Design icon names and image sources. Use the active icon
 fields for a separate on-state appearance.

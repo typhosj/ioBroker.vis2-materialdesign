@@ -15,6 +15,24 @@ With editor input, each dataset group contains an Object ID, axis label,
 optional color, replacement value text and tooltip texts. Without fixed axis
 limits, the widget scales automatically and includes zero.
 
+## Editor settings
+
+The editor UI follows the ioBroker system language, so the screenshots are
+German. Settings not listed below are self-explanatory.
+
+<img src="../../media/vis2_chart_bar_editor.png" width="340" alt="Bar chart general and bar layout options">
+
+- **General** – data source (editor datasets or one JSON state), dataset count, object id and **chart type** (vertical or horizontal). Per editor dataset, an indexed group adds its object id, axis label, color and tooltip texts.
+- **Bar chart layout** – bar thickness and spacing.
+
+<img src="../../media/vis2_chart_bar_editor_2.png" width="340" alt="Bar chart axis and tooltip options">
+
+- **Y axis** – axis title, position (left / right), gridlines and axis/label visibility. The value-axis **minimum / maximum** live in the Chart layout group (empty = automatic scaling).
+- **Tooltip** – enable the tooltip and set its colors; a per-dataset `tooltipText` overrides the generated text.
+
+The shared **Chart layout**, **Legend** and color-scheme groups from
+[Charts](charts.md) apply here too.
+
 ## JSON format
 
 The state must contain an array. Missing presentation values fall back to the

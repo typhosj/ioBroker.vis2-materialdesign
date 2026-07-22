@@ -16,6 +16,11 @@ for every state used by the widget.
 - **Refresh:** in real time, at a fixed interval or through a trigger object.
 - **Chart timeout:** maximum wait for the history request in seconds.
 
+These options live in the **General** group. The editor UI follows the ioBroker
+system language, so the screenshots are German.
+
+<img src="../../media/vis2_chart_line_history_editor.png" width="340" alt="Line history general options">
+
 The state under “Control interval with object” accepts two value types:
 
 - String: an offered interval label such as `30 seconds`, `10 minutes`, `1 day` or `1 year`.
@@ -30,6 +35,9 @@ configured.
 Each indexed group describes one recorded state and its query. Presentation
 options with the same index belong to that time series. Without custom legend
 text, the Object ID is displayed.
+
+<img src="../../media/vis2_chart_line_history_editor_2.png" width="340" alt="Line history dataset and line options">
+
 
 | Setting | Effect |
 | --- | --- |

@@ -12,10 +12,21 @@ Template ids: `tplVis2-materialdesign-view-in-widget` and
 
 ## Editor settings
 
-<table>
-<tr><td><img src="../../media/vis2_html_widgets_editor_overview.png" width="300"></td>
-<td><ul><li>Select the controlling object id and embedded views.</li><li>Configure fade-in/out and optional pre-rendering.</li><li>The `8` variant provides indexed state-to-view entries and persistence settings.</li></ul></td></tr>
-</table>
+The screenshot shows the **General** group. Settings not listed below are
+self-explanatory. The editor UI follows the ioBroker system language, so the
+screenshots are German.
+
+<img src="../../media/vis2_html_widgets_editor_overview.png" width="340" alt="Advanced view in widget general options">
+
+**General**
+
+- **object id** – the state whose value selects the embedded view.
+- **views** – the VIS 2 views that can be shown.
+- **fade in / out** – transition when switching between views.
+- **pre-render** – optionally keep views mounted so switching is instant.
+
+The `8` variant adds indexed state-value-to-view entries and persistence
+settings for up to eight mappings.
 
 Use [Responsive Layout](responsive-layout.md) instead when multiple child views
 must be arranged at the same time.
