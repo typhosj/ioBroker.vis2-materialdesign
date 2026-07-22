@@ -4,6 +4,8 @@ import { describe, expect, it, vi } from 'vitest';
 
 import MaterialDesignTopAppBar from './MaterialDesignTopAppBar';
 
+function fixture<T>(value: unknown): T { return value as T; }
+
 function collectByClass(node: React.ReactNode, className: string): Array<React.ReactElement<Record<string, unknown>>> {
     if (Array.isArray(node)) return node.flatMap(child => collectByClass(child, className));
     if (!React.isValidElement(node)) return [];
@@ -15,8 +17,8 @@ function collectByClass(node: React.ReactNode, className: string): Array<React.R
 describe('top app bar dynamic items', () => {
     it('hides empty editor rows while preserving their persisted action index', () => {
         const setValue = vi.fn();
-        const widget = new MaterialDesignTopAppBar({ context: { setValue } } as never);
-        widget.state = {
+        const widget = new MaterialDesignTopAppBar(fixture<ConstructorParameters<typeof MaterialDesignTopAppBar>[0]>({ context: { setValue } }));
+        widget.state = fixture<typeof widget.state>({
             rxData: {
                 drawerLayout: 'permanent',
                 navItemCount: 2,
@@ -28,8 +30,8 @@ describe('top app bar dynamic items', () => {
                 menuId2: 'gamma',
             },
             values: {},
-        } as never;
-        const tree = widget.renderWidgetBody({} as never);
+        });
+        const tree = widget.renderWidgetBody(fixture<Parameters<MaterialDesignTopAppBar['renderWidgetBody']>[0]>({}));
         const html = renderToStaticMarkup(tree);
         expect(html).toContain('Alpha');
         expect(html).toContain('Gamma');
@@ -45,11 +47,11 @@ describe('top app bar dynamic items', () => {
     });
 
     it('bounds JSON input and renders a visible error item for malformed data', () => {
-        const widget = new MaterialDesignTopAppBar({ context: {} } as never);
-        widget.state = {
+        const widget = new MaterialDesignTopAppBar(fixture<ConstructorParameters<typeof MaterialDesignTopAppBar>[0]>({ context: {} }));
+        widget.state = fixture<typeof widget.state>({
             rxData: { drawerLayout: 'permanent', drawerItemsDataMethod: 'jsonStringObject', drawerItemsJsonString: '{broken' },
             values: {},
-        } as never;
-        expect(renderToStaticMarkup(widget.renderWidgetBody({} as never))).toContain('Error in JSON string');
+        });
+        expect(renderToStaticMarkup(widget.renderWidgetBody(fixture<Parameters<MaterialDesignTopAppBar['renderWidgetBody']>[0]>({})))).toContain('Error in JSON string');
     });
 });

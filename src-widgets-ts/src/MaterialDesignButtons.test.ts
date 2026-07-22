@@ -17,10 +17,10 @@ function widget(kind: Parameters<typeof definition>[0]) {
     const setValue = vi.fn();
     const changeView = vi.fn();
     const Button = createButtonClass(definition(kind));
-    const instance = new Button(fixture<ConstructorParameters<typeof Button>[0]>({ context: { setValue, changeView } })) as unknown as {
+    const instance = fixture<{
         activate: (data: Record<string, unknown>, current: ioBroker.StateValue | undefined) => void;
         componentWillUnmount: () => void;
-    };
+    }>(new Button(fixture<ConstructorParameters<typeof Button>[0]>({ context: { setValue, changeView } })));
     return { changeView, instance, setValue };
 }
 

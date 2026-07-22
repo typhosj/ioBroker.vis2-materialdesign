@@ -17,9 +17,9 @@ describe('widget lifecycle cleanup', () => {
     it('cancels delayed multi-state writes on unmount', () => {
         vi.useFakeTimers();
         const writes: Array<[string, ioBroker.StateValue]> = [];
-        const props = { context: { setValue: (id: string, value: ioBroker.StateValue): void => { writes.push([id, value]); } } } as never;
         const Button = createButtonClass({ id: 'test', name: 'Test', kind: 'multiState', layout: 'default', label: 'Test', icon: 'plus' });
-        const widget = new Button(props) as unknown as { activate: (data: Record<string, unknown>, current: undefined) => void; componentWillUnmount: () => void };
+        const props = fixture<ConstructorParameters<typeof Button>[0]>({ context: { setValue: (id: string, value: ioBroker.StateValue): void => { writes.push([id, value]); } } });
+        const widget = fixture<{ activate: (data: Record<string, unknown>, current: undefined) => void; componentWillUnmount: () => void }>(new Button(props));
 
         widget.activate({ countOids: 100_000, oid0: 'test.0.value', value0: '1', delayInMs0: 100 }, undefined);
         expect(vi.getTimerCount()).toBe(1);
@@ -32,7 +32,7 @@ describe('widget lifecycle cleanup', () => {
 
     it('stops recursive view measurement on unmount', () => {
         vi.useFakeTimers();
-        const widget = new MaterialDesignViews({}, 'grid') as unknown as { startMeasure: () => void; componentWillUnmount: () => void };
+        const widget = fixture<{ startMeasure: () => void; componentWillUnmount: () => void }>(new MaterialDesignViews({}, 'grid'));
 
         widget.startMeasure();
         expect(vi.getTimerCount()).toBe(1);
@@ -44,11 +44,11 @@ describe('widget lifecycle cleanup', () => {
 
     it('stops dialog measurement and select filter timers on unmount', () => {
         vi.useFakeTimers();
-        const dialog = new MaterialDesignDialog({}, 'view') as unknown as { viewRef: { current: { scrollHeight: number } | null }; startMeasure: () => void; componentWillUnmount: () => void };
+        const dialog = fixture<{ viewRef: { current: { scrollHeight: number } | null }; startMeasure: () => void; componentWillUnmount: () => void }>(new MaterialDesignDialog({}, 'view'));
         dialog.viewRef.current = { scrollHeight: 100 };
         dialog.startMeasure();
 
-        const select = new MaterialDesignSelect(fixture<ConstructorParameters<typeof MaterialDesignSelect>[0]>({})) as unknown as { scheduleFilterReset: () => void; componentWillUnmount: () => void };
+        const select = fixture<{ scheduleFilterReset: () => void; componentWillUnmount: () => void }>(new MaterialDesignSelect(fixture<ConstructorParameters<typeof MaterialDesignSelect>[0]>({})));
         select.scheduleFilterReset();
         expect(vi.getTimerCount()).toBe(2);
 
@@ -60,11 +60,11 @@ describe('widget lifecycle cleanup', () => {
 
     it('cancels card refresh work on unmount', () => {
         vi.useFakeTimers();
-        const props = { id: 'card', context: {} } as never;
+        const props = fixture<ConstructorParameters<typeof MaterialDesignCard>[0] & Parameters<MaterialDesignCard['renderWidgetBody']>[0]>({ id: 'card', context: {} });
         const card = new MaterialDesignCard(props);
-        card.state = { rxData: { refresh_oid: 'test.0.refresh', refresh_oid_delay: 100 }, values: { 'test.0.refresh.val': 1 } } as never;
+        card.state = fixture<typeof card.state>({ rxData: { refresh_oid: 'test.0.refresh', refresh_oid_delay: 100 }, values: { 'test.0.refresh.val': 1 } });
         card.renderWidgetBody(props);
-        card.state = { rxData: { refresh_oid: 'test.0.refresh', refresh_oid_delay: 100 }, values: { 'test.0.refresh.val': 2 } } as never;
+        card.state = fixture<typeof card.state>({ rxData: { refresh_oid: 'test.0.refresh', refresh_oid_delay: 100 }, values: { 'test.0.refresh.val': 2 } });
         card.renderWidgetBody(props);
         expect(vi.getTimerCount()).toBe(1);
 
@@ -76,10 +76,10 @@ describe('widget lifecycle cleanup', () => {
     it('cancels icon-list auto-relock work on unmount', () => {
         vi.useFakeTimers();
         const setValue = vi.fn();
-        const iconList = new MaterialDesignIconList(fixture<ConstructorParameters<typeof MaterialDesignIconList>[0]>({ context: { setValue } })) as unknown as {
+        const iconList = fixture<{
             actionProps: (item: Record<string, unknown>, index: number, current: unknown, data: Record<string, unknown>) => { onClick: () => void };
             componentWillUnmount: () => void;
-        };
+        }>(new MaterialDesignIconList(fixture<ConstructorParameters<typeof MaterialDesignIconList>[0]>({ context: { setValue } })));
         const action = iconList.actionProps({
             listType: 'buttonToggle', objectId: 'test.0.value', lockEnabled: true, text: 'Toggle',
         }, 0, false, { autoLockAfter: 1 });

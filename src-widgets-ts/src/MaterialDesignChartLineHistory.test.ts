@@ -16,8 +16,8 @@ describe('line history loading', () => {
             { ts: 300, val: null },
         ]);
         const widget = new MaterialDesignChartLineHistory(fixture<ConstructorParameters<typeof MaterialDesignChartLineHistory>[0]>({ context: { socket: { getHistory } } }));
-        const inspection = widget as unknown as HistoryInspection;
-        widget.state = {
+        const inspection = fixture<HistoryInspection>(widget);
+        widget.state = fixture<typeof widget.state>({
             rxData: {
                 historyAdapterInstance: 'history.0',
                 refreshMethod: 'byObject',
@@ -30,7 +30,7 @@ describe('line history loading', () => {
                 chartTimeout: 3,
             },
             values: {},
-        } as never;
+        });
 
         widget.componentDidMount();
         await vi.waitFor(() => expect(inspection.series).toHaveLength(1));
@@ -48,11 +48,11 @@ describe('line history loading', () => {
         let resolve: (value: Array<{ ts: number; val: number }>) => void = () => undefined;
         const getHistory = vi.fn(() => new Promise<Array<{ ts: number; val: number }>>(done => { resolve = done; }));
         const widget = new MaterialDesignChartLineHistory(fixture<ConstructorParameters<typeof MaterialDesignChartLineHistory>[0]>({ context: { socket: { getHistory } } }));
-        const inspection = widget as unknown as HistoryInspection;
-        widget.state = {
+        const inspection = fixture<HistoryInspection>(widget);
+        widget.state = fixture<typeof widget.state>({
             rxData: { historyAdapterInstance: 'history.0', refreshMethod: 'byObject', dataCount: 0, oid: 'test.0.value' },
             values: {},
-        } as never;
+        });
         widget.componentDidMount();
         widget.componentWillUnmount();
         resolve([{ ts: 100, val: 2 }]);

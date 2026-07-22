@@ -10,7 +10,7 @@ import MaterialDesignTable from './MaterialDesignTable';
 
 function fixture<T>(value: unknown): T { return value as T; }
 
-const props = { id: 'test', context: { setValue: vi.fn() } } as never;
+const props = fixture<ConstructorParameters<typeof MaterialDesignCard>[0] & Parameters<MaterialDesignCard['renderWidgetBody']>[0] & { context: { setValue: ReturnType<typeof vi.fn> } }>({ id: 'test', context: { setValue: vi.fn() } });
 
 beforeEach(() => vi.clearAllMocks());
 
@@ -38,7 +38,7 @@ describe('widget accessibility', () => {
         const preventDefault = vi.fn();
         (findByClass(tree, 'materialdesign-html-card-container')?.props.onKeyDown as (event: unknown) => void)({ key: 'Enter', preventDefault });
         expect(preventDefault).toHaveBeenCalledOnce();
-        expect((props as { context: { setValue: ReturnType<typeof vi.fn> } }).context.setValue).toHaveBeenCalledWith('test.0.action', true);
+        expect(props.context.setValue).toHaveBeenCalledWith('test.0.action', true);
     });
 
     it('names alert close buttons', () => {
@@ -64,7 +64,7 @@ describe('widget accessibility', () => {
 
     it('exposes icon-list actions as keyboard buttons', () => {
         const changeView = vi.fn();
-        const widget = new MaterialDesignIconList(fixture<ConstructorParameters<typeof MaterialDesignIconList>[0]>({ context: { changeView } })) as unknown as { actionProps: (...args: unknown[]) => Record<string, unknown> };
+        const widget = fixture<{ actionProps: (...args: unknown[]) => Record<string, unknown> }>(new MaterialDesignIconList(fixture<ConstructorParameters<typeof MaterialDesignIconList>[0]>({ context: { changeView } })));
         const action = widget.actionProps({ listType: 'buttonNav', buttonNavView: 'details', text: 'Open view', readOnly: false }, 0, undefined, {});
         expect(action).toMatchObject({ 'aria-disabled': false, 'aria-label': 'Open view', role: 'button', tabIndex: 0 });
         (action.onKeyDown as (event: unknown) => void)({ key: 'Enter', preventDefault: vi.fn() });
@@ -73,7 +73,7 @@ describe('widget accessibility', () => {
 
     it('gives actionable list rows keyboard button semantics', () => {
         const changeView = vi.fn();
-        const listProps = { id: 'list', context: { changeView } } as never;
+        const listProps = fixture<ConstructorParameters<typeof MaterialDesignList>[0] & Parameters<MaterialDesignList['renderWidgetBody']>[0]>({ id: 'list', context: { changeView } });
         const widget = new MaterialDesignList(listProps);
         setData(widget, { countListItems: 1, label0: '<b>Open view</b>', listType: 'buttonNav', listTypeButtonNav0: 'details' });
         const tree = widget.renderWidgetBody(listProps);

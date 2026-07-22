@@ -28,13 +28,13 @@ function open(select: MaterialDesignSelect): React.ReactNode {
 describe('select data sources and writes', () => {
     it('renders valid JSON items and safely ignores malformed JSON', () => {
         const select = new MaterialDesignSelect(fixture<ConstructorParameters<typeof MaterialDesignSelect>[0]>({ context: {} }));
-        select.state = {
+        select.state = fixture<typeof select.state>({
             rxData: { listDataMethod: 'jsonStringObject', jsonStringObject: '[{"value":1,"text":"One"}]' },
             values: {},
-        } as never;
+        });
         expect(renderToStaticMarkup(open(select))).toContain('One');
 
-        select.state = { rxData: { listDataMethod: 'jsonStringObject', jsonStringObject: '{broken' }, values: {} } as never;
+        select.state = fixture<typeof select.state>({ rxData: { listDataMethod: 'jsonStringObject', jsonStringObject: '{broken' }, values: {} });
         expect(renderToStaticMarkup(open(select))).not.toContain('One');
     });
 
@@ -42,18 +42,18 @@ describe('select data sources and writes', () => {
         const select = new MaterialDesignSelect(fixture<ConstructorParameters<typeof MaterialDesignSelect>[0]>({
             context: { objects: { 'test.0.mode': { common: { states: { off: 'Off', on: 'On' } } } } },
         }));
-        select.state = {
+        select.state = fixture<typeof select.state>({
             rxData: { oid: 'test.0.mode', listDataMethod: 'multistatesObject' },
             values: {},
-        } as never;
+        });
         const statesHtml = renderToStaticMarkup(open(select));
         expect(statesHtml).toContain('Off');
         expect(statesHtml).toContain('On');
 
-        select.state = {
+        select.state = fixture<typeof select.state>({
             rxData: { listDataMethod: 'valueList', valueList: '1;2', valueListLabels: 'One;Two' },
             values: {},
-        } as never;
+        });
         const valueListHtml = renderToStaticMarkup(open(select));
         expect(valueListHtml).toContain('One');
         expect(valueListHtml).toContain('Two');
@@ -61,8 +61,8 @@ describe('select data sources and writes', () => {
 
     it('autocomplete commits a matching item or a free write-mode value', () => {
         const setValue = vi.fn();
-        const autocomplete = new MaterialDesignAutocomplete({ context: { setValue } } as never);
-        autocomplete.state = {
+        const autocomplete = new MaterialDesignAutocomplete(fixture<ConstructorParameters<typeof MaterialDesignAutocomplete>[0]>({ context: { setValue } }));
+        autocomplete.state = fixture<typeof autocomplete.state>({
             rxData: {
                 oid: 'test.0.choice',
                 listDataMethod: 'valueList',
@@ -71,14 +71,14 @@ describe('select data sources and writes', () => {
                 inputMode: 'select',
             },
             values: {},
-        } as never;
+        });
 
-        let input = findElement(autocomplete.renderWidgetBody({} as never), element => element.type === 'input');
+        let input = findElement(autocomplete.renderWidgetBody(fixture<Parameters<MaterialDesignAutocomplete['renderWidgetBody']>[0]>({})), element => element.type === 'input');
         (input?.props.onChange as (event: { target: { value: string } }) => void)({ target: { value: 'Tw' } });
         (input?.props.onKeyDown as (event: { key: string }) => void)({ key: 'Enter' });
         expect(setValue).toHaveBeenCalledWith('test.0.choice', '2');
 
-        autocomplete.state = {
+        autocomplete.state = fixture<typeof autocomplete.state>({
             rxData: {
                 oid: 'test.0.choice',
                 listDataMethod: 'valueList',
@@ -87,8 +87,8 @@ describe('select data sources and writes', () => {
                 inputMode: 'write',
             },
             values: {},
-        } as never;
-        input = findElement(autocomplete.renderWidgetBody({} as never), element => element.type === 'input');
+        });
+        input = findElement(autocomplete.renderWidgetBody(fixture<Parameters<MaterialDesignAutocomplete['renderWidgetBody']>[0]>({})), element => element.type === 'input');
         (input?.props.onChange as (event: { target: { value: string } }) => void)({ target: { value: 'custom' } });
         (input?.props.onKeyDown as (event: { key: string }) => void)({ key: 'Enter' });
         expect(setValue).toHaveBeenLastCalledWith('test.0.choice', 'custom');

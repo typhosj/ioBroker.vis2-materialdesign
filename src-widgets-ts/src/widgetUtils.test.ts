@@ -3,6 +3,8 @@ import type { VisRxWidgetState } from '@iobroker/types-vis-2';
 import { pickerValueName } from './IconFilePicker';
 import { MAX_DYNAMIC_ITEMS, accessibleText, applyThemeVariables, boundedCount, createInfo, editorDialogPalette, formatDurationTokens, formatMoment, humanizeDuration, iconFieldDataKey, parseActionValue, safeWidgetUrl, sanitizeHtml, setStateValue, stateValue, stringValue } from './widgetUtils';
 
+function fixture<T>(value: unknown): T { return value as T; }
+
 describe('widget utilities', () => {
     it('keeps legacy action values typed', () => {
         expect(parseActionValue('true')).toBe(true);
@@ -13,12 +15,12 @@ describe('widget utilities', () => {
     });
 
     it('reads and writes VIS2 states only for configured IDs', () => {
-        const state = { values: { 'test.0.value.val': 42 } } as unknown as VisRxWidgetState;
+        const state = fixture<VisRxWidgetState>({ values: { 'test.0.value.val': 42 } });
         expect(stateValue(state, 'test.0.value')).toBe(42);
         expect(stateValue(state, '')).toBeUndefined();
 
         const writes: Array<[string, ioBroker.StateValue]> = [];
-        const props = { context: { setValue: (id: string, value: ioBroker.StateValue): void => { writes.push([id, value]); } } } as never;
+        const props = fixture<Parameters<typeof setStateValue>[0]>({ context: { setValue: (id: string, value: ioBroker.StateValue): void => { writes.push([id, value]); } } });
         setStateValue(props, 'test.0.value', true);
         setStateValue(props, '', false);
         expect(writes).toEqual([['test.0.value', true]]);
