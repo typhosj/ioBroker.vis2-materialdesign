@@ -1,6 +1,6 @@
 {
   "name": "iobroker.vis2-materialdesign",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Native VIS 2 Material Design widgets based on the original work by Scrounger",
   "author": {
     "name": "typhosj",

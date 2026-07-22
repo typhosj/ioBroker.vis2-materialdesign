@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "vis2-materialdesign",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "news": {
+      "0.3.0": {
+        "en": "Removed VIS 1 legacy and made the widgets self-contained, reworked the widget documentation with per-option editor screenshots, and fixed untranslated editor group headers.",
+        "de": "VIS-1-Altlasten entfernt und Widgets eigenständig gemacht, die Widget-Dokumentation mit Editor-Optionen-Screenshots überarbeitet und nicht übersetzte Editor-Gruppenüberschriften korrigiert.",
+        "ru": "see changelog",
+        "pt": "see changelog",
+        "nl": "see changelog",
+        "fr": "see changelog",
+        "it": "see changelog",
+        "es": "see changelog",
+        "pl": "see changelog",
+        "zh-cn": "see changelog",
+        "uk": "see changelog"
+      },
       "0.2.0": {
         "en": "Ported the remaining Material Design widgets to VIS 2, added the React configuration UI and restored theme application in the VIS 2 editor.",
         "de": "Verbleibende Material-Design-Widgets nach VIS 2 portiert, React-Konfiguration ergänzt und Themenübernahme im VIS-2-Editor wiederhergestellt.",
@@ -56,15 +69,25 @@
       "zh-cn": "Material Design Widgets基于Google的Material Design准则。适配器使用不同的库（材料组件Web库，vuetify，chartjs等）。",
       "uk": "Native VIS 2 Material Design widgets based on the original work by Scrounger."
     },
-    "authors": ["typhosj <typhosj@gmx.de>", "Scrounger <scrounger@gmx.net>"],
-    "keywords": ["vis-2", "material", "GUI", "vis2-materialdesign"],
+    "authors": [
+      "typhosj <typhosj@gmx.de>",
+      "Scrounger <scrounger@gmx.net>"
+    ],
+    "keywords": [
+      "vis-2",
+      "material",
+      "GUI",
+      "vis2-materialdesign"
+    ],
     "platform": "Javascript/Node.js",
     "icon": "vis-materialdesign.png",
     "enabled": true,
     "extIcon": "https://raw.githubusercontent.com/typhosj/ioBroker.vis2-materialdesign/master/admin/vis-materialdesign.png",
     "readme": "https://github.com/typhosj/ioBroker.vis2-materialdesign/blob/master/README.md",
     "loglevel": "info",
-    "restartAdapters": ["vis-2"],
+    "restartAdapters": [
+      "vis-2"
+    ],
     "onlyWWW": true,
     "singleton": true,
     "type": "visualization-widgets",
@@ -162,7 +185,9 @@
     "defaultfonts": [],
     "fontSizes": [],
     "defaultfontSizes": [],
-    "dependencies": ["basic"]
+    "dependencies": [
+      "basic"
+    ]
   },
   "objects": [],
   "instanceObjects": [

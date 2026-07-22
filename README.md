@@ -71,8 +71,7 @@ These examples are not installation instructions for this adapter and are not
 supported as VIS 2 projects.
 
 ## Changelog
-
-### **WORK IN PROGRESS**
+### 0.3.0 (2026-07-22)
 
 - (typhosj) Removed all VIS 1 legacy: the bundled `materialdesign` VIS 1 widget set and `materialdesign.html` are gone; the adapter no longer ships or depends on any VIS 1 files
 - (typhosj) Made all widgets self-contained by vendoring the Material Design Icons webfont and the required Material Components base CSS into the widget bundle, so icons and styling render without the legacy stylesheet
