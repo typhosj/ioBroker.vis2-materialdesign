@@ -80,6 +80,8 @@ supported as VIS 2 projects.
 - (typhosj) Roughly halved the published package size (woff2-only fonts, dead-code removal, smaller preview image)
 - (typhosj) Added text input masking and custom calendar date/time formats
 - (typhosj) Restored full visual parity of the ported widgets against the original VIS 1 versions and migrated the widget documentation to VIS 2
+- (typhosj) Reworked the widget documentation with per-widget editor screenshots that expand the relevant option groups and describe every non-obvious setting (English and German)
+- (typhosj) Fixed six widget editor group headers (title, text, card action, linked value, striped, list header) that showed untranslated keys
 
 ### 0.2.0 (2026-07-13)
 
