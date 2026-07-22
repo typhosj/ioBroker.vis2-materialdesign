@@ -6,7 +6,7 @@ import { squarePreview ,
   setStateValue,
   sizeCss,
   stateValue, sanitizeHtml, iconField } from './widgetUtils';
-import type { RxWidgetInfo, VisRxWidgetState } from "@iobroker/types-vis-2";
+import type { RxWidgetInfo } from "@iobroker/types-vis-2";
 import { renderIcon } from "./MaterialDesignButtons";
 
 type Kind = "view" | "iframe";
@@ -17,7 +17,7 @@ type Data = Record<string, unknown> & {
   src?: string;
 };
 const s = (v: unknown, d = ""): string =>
-  v === undefined || v === null || v === "" || v === "null" ? d : String(v);
+  v === undefined || v === null || v === "" || v === "null" ? d : typeof v === "string" ? v : typeof v === "number" || typeof v === "boolean" || typeof v === "bigint" ? String(v) : d;
 const n = (v: unknown, d = 0): number =>
   v === undefined || v === null || v === "" || !Number.isFinite(Number(v))
     ? d
@@ -284,6 +284,7 @@ export class MaterialDesignDialog extends VisWidget {
   private readonly viewRef = React.createRef<HTMLDivElement>();
   private measuredH = 0;
   private polling = false;
+  private measureTimer?: number;
   getWidgetInfo(): RxWidgetInfo {
     return dialogInfo(this.kind);
   }
@@ -293,6 +294,12 @@ export class MaterialDesignDialog extends VisWidget {
   }
   componentDidUpdate(): void {
     this.startMeasure();
+  }
+  componentWillUnmount(): void {
+    if (this.measureTimer !== undefined) window.clearTimeout(this.measureTimer);
+    this.measureTimer = undefined;
+    this.polling = false;
+    super.componentWillUnmount?.();
   }
   // VIS2 views use absolutely-positioned widgets, so the embedded view has no
   // intrinsic height, and its content loads asynchronously. Poll the container's
@@ -311,6 +318,7 @@ export class MaterialDesignDialog extends VisWidget {
     const tick = (): void => {
       const el = this.viewRef.current;
       if (!el) {
+        this.measureTimer = undefined;
         this.polling = false;
         return;
       }
@@ -320,8 +328,9 @@ export class MaterialDesignDialog extends VisWidget {
         this.forceUpdate();
       }
       if (++ticks < 14) {
-        setTimeout(tick, 120);
+        this.measureTimer = window.setTimeout(tick, 120);
       } else {
+        this.measureTimer = undefined;
         this.polling = false;
       }
     };
@@ -343,7 +352,7 @@ export class MaterialDesignDialog extends VisWidget {
     const d = this.state.rxData as unknown as Data;
     const byState = s(d.showDialogMethod) === "datapoint";
     const stateOpen = b(
-      stateValue(this.state as VisRxWidgetState, s(d.showDialogOid)),
+      stateValue(this.state, s(d.showDialogOid)),
     );
     const visible = byState ? stateOpen : this.open;
     const close = () => {

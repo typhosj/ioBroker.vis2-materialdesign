@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { RxWidgetInfo, VisRxWidgetProps, VisRxWidgetState } from '@iobroker/types-vis-2';
+import type { RxWidgetInfo, VisRxWidgetProps } from '@iobroker/types-vis-2';
 
 import { squarePreview, RenderProps, VisWidget, createInfo, sizeCss, stateValue, sanitizeHtml } from './widgetUtils';
 import { ProgressData, cleanColor, num, progressState } from './MaterialDesignProgress';
@@ -72,7 +72,7 @@ export default class MaterialDesignProgressCircular extends VisWidget {
     renderWidgetBody(props: RenderProps): React.JSX.Element {
         super.renderWidgetBody(props);
         const data = this.state.rxData as ProgressData;
-        const value = stateValue(this.state as VisRxWidgetState, data.oid);
+        const value = stateValue(this.state, data.oid);
         const progress = progressState(value, data);
         const size = num(data.progressCircularSize, 0) || Math.min(num((this.props as unknown as { style?: { width?: number; height?: number } }).style?.width, 70), num((this.props as unknown as { style?: { width?: number; height?: number } }).style?.height, 70));
         const stroke = num(data.progressCircularWidth, 4);

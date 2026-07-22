@@ -64,27 +64,27 @@ export default class MaterialDesignButton extends VisWidget {
                     transform: pressState.active ? 'translateY(1px)' : 'none',
                     transition: 'background 120ms ease, transform 80ms ease',
                 }}
-                onMouseEnter={() => this.setState({ hovered: true } as PressState)}
-                onMouseLeave={() => this.setState({ active: false, hovered: false } as PressState)}
-                onMouseDown={() => this.setState({ active: true } as PressState)}
+                onMouseEnter={() => this.setState({ hovered: true })}
+                onMouseLeave={() => this.setState({ active: false, hovered: false })}
+                onMouseDown={() => this.setState({ active: true })}
                 onMouseUp={() => {
-                    this.setState({ active: false } as PressState);
+                    this.setState({ active: false });
                     writeValue();
                 }}
                 onKeyDown={event => {
                     if (event.key === 'Enter' || event.key === ' ') {
-                        this.setState({ active: true } as PressState);
+                        this.setState({ active: true });
                     }
                 }}
                 onKeyUp={event => {
                     if (event.key === 'Enter' || event.key === ' ') {
-                        this.setState({ active: false } as PressState);
+                        this.setState({ active: false });
                         writeValue();
                     }
                 }}
-                onTouchStart={() => this.setState({ active: true } as PressState)}
+                onTouchStart={() => this.setState({ active: true })}
                 onTouchEnd={() => {
-                    this.setState({ active: false } as PressState);
+                    this.setState({ active: false });
                     writeValue();
                 }}
             >

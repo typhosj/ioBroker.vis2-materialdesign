@@ -18,7 +18,7 @@ export function MaterialDesignChartCanvas({ type, data, options }: Props): React
   useEffect(() => {
     if (!canvas.current) return;
     chart.current?.destroy();
-    chart.current = new Chart(canvas.current, { type, data, options, plugins: [ChartDataLabels] } as unknown as Chart.ChartConfiguration);
+    chart.current = new Chart(canvas.current, { type, data, options, plugins: [ChartDataLabels] });
     return () => {
       chart.current?.destroy();
     };

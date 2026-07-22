@@ -1,5 +1,5 @@
 import React from 'react';
-import type { RxWidgetInfo, VisRxWidgetState } from '@iobroker/types-vis-2';
+import type { RxWidgetInfo } from '@iobroker/types-vis-2';
 import { squarePreview, RenderProps, VisWidget, createInfo, sizeCss, stateValue, formatMoment } from './widgetUtils';
 
 // Re-exported for existing importers/tests; the implementation now lives in widgetUtils (shared with Value).
@@ -8,7 +8,7 @@ export { formatMoment };
 type Data = Record<string, unknown> & { oid?: string };
 type Event = { start?: string; end?: string; name?: string; color?: string; colorText?: string };
 const s = (v: unknown, d = ''): string => {
-    const value = v === undefined || v === null || v === '' || v === 'null' ? d : String(v);
+    const value = v === undefined || v === null || v === '' || v === 'null' ? d : typeof v === "string" ? v : typeof v === "number" || typeof v === "boolean" || typeof v === "bigint" ? String(v) : d;
     return value.startsWith('var(') && value.endsWith(')') ? `${value.slice(0, -1)}, ${d})` : value;
 };
 const b = (v: unknown, d = false): boolean => v === undefined || v === null || v === '' ? d : v === true || v === 'true' || v === 1 || v === '1';
@@ -66,7 +66,7 @@ export default class MaterialDesignCalendar extends VisWidget {
         const d = this.state.rxData as unknown as Data;
         const isDark = this.state.values?.[`${s(d.__mdwThemeDark)}.val`] === true || this.state.values?.[`${s(d.__mdwThemeDark)}.val`] === 'true';
         const view: string = this.view || s(d.calendarView, 'month');
-        const source = events(stateValue(this.state as VisRxWidgetState, s(d.oid)));
+        const source = events(stateValue(this.state, s(d.oid)));
         const weekdays = s(d.calendarWeekdays, '1,2,3,4,5,6,0').split(',').map(Number).filter(day => day >= 0 && day < 7);
         const order = weekdays.length === 7 ? weekdays : [1, 2, 3, 4, 5, 6, 0];
         const start = new Date(this.date); start.setHours(0, 0, 0, 0);

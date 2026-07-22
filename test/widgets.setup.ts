@@ -1,7 +1,20 @@
 class TestVisRxWidget {
+    props: Record<string, unknown>;
+    state: { rxData: Record<string, unknown>; values: Record<string, unknown> } = { rxData: {}, values: {} };
+
+    constructor(props: Record<string, unknown> = {}) {
+        this.props = props;
+    }
+
     static t(value: string): string {
         return value;
     }
+
+    componentDidMount(): void {}
+    componentWillUnmount(): void {}
+    forceUpdate(): void {}
+    renderWidgetBody(): null { return null; }
+    setState(value: Record<string, unknown>): void { Object.assign(this.state, value); }
 
     render(): null {
         return null;

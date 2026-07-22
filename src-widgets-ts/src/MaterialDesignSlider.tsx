@@ -1,9 +1,9 @@
 import React from 'react';
 
-import type { RxWidgetInfo, VisRxWidgetProps, VisRxWidgetState } from '@iobroker/types-vis-2';
+import type { RxWidgetInfo, VisRxWidgetProps } from '@iobroker/types-vis-2';
 
 import { cleanColor, num, snapToStep } from './MaterialDesignProgress';
-import { squarePreview, RenderProps, VisWidget, createInfo, setStateValue, sizeCss, stateValue, sanitizeHtml } from './widgetUtils';
+import { squarePreview, RenderProps, VisWidget, boundedCount, createInfo, setStateValue, sizeCss, stateValue, sanitizeHtml } from './widgetUtils';
 
 // Self-contained layout for the Vuetify-style slider DOM. The old widget relied on ambient
 // legacy Vuetify CSS (v-slider*) for track/thumb geometry and for hiding the raw value <input>;
@@ -280,7 +280,7 @@ export default class MaterialDesignSlider extends VisWidget {
         super.renderWidgetBody(props);
         const data = this.state.rxData as SliderData;
         const { min, max, step } = range(data);
-        const rawState = stateValue(this.state as VisRxWidgetState, data.oid || '');
+        const rawState = stateValue(this.state, data.oid || '');
         if (rawState !== this.seenStateValue) {
             this.seenStateValue = rawState;
             this.optimisticValue = undefined;
@@ -291,10 +291,10 @@ export default class MaterialDesignSlider extends VisWidget {
         const before = cleanColor(data.colorBeforeThumb, '#44739e');
         const thumb = cleanColor(data.colorThumb, before);
         const after = cleanColor(data.colorAfterThumb, 'rgba(161, 161, 161, 0.26)');
-        const disabled = !!data.readOnly || isWorking(stateValue(this.state as VisRxWidgetState, data['oid-working'] || ''));
+        const disabled = !!data.readOnly || isWorking(stateValue(this.state, data['oid-working'] || ''));
         const showThumbLabel = data.showThumbLabel === 'yes' || data.showThumbLabel === 'always';
         const tickLabels = (data.tickLabels || '').split(',').map(label => label.trim());
-        const tickCount = tickLabels.filter(Boolean).length || Math.floor((max - min) / step) + 1;
+        const tickCount = Math.max(2, boundedCount(tickLabels.filter(Boolean).length || Math.floor((max - min) / step) + 1, 2));
         const showTicks = data.showTicks === 'yes' || data.showTicks === 'always';
         const thumbClass = data.knobSize === 'knobMedium' ? ' medium-size' : data.knobSize === 'knobBig' ? ' big-size' : '';
         const valueLabel = labelFor(current.raw, current.percent, data, true);
@@ -342,8 +342,8 @@ export default class MaterialDesignSlider extends VisWidget {
                                         </div>
                                         {showTicks ? (
                                             <div className="v-slider__ticks-container">
-                                                {Array.from({ length: Math.max(2, tickCount) }, (_, index) => {
-                                                    const pos = (index * 100) / (Math.max(2, tickCount) - 1);
+                                                {Array.from({ length: tickCount }, (_, index) => {
+                                                    const pos = (index * 100) / (tickCount - 1);
                                                     const filled = data.reverseSlider ? pos >= visualPercent : pos <= visualPercent;
                                                     return (
                                                         <div

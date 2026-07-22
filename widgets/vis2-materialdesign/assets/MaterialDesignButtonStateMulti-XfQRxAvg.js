@@ -1,0 +1,1 @@
+import{t as e}from"./MaterialDesignButtons-DwQoLC5y.js";var t=e({id:`tplVis2-materialdesign-Button-State-Multi`,name:`Button State Multi`,kind:`multiState`,layout:`default`,label:`&nbsp;Multi State`,icon:`pencil-box-multiple`});export{t as default};

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { RxWidgetInfo, RxWidgetInfoAttributesField, VisRxWidgetProps, VisRxWidgetState } from '@iobroker/types-vis-2';
+import type { RxWidgetInfo, RxWidgetInfoAttributesField, VisRxWidgetProps } from '@iobroker/types-vis-2';
 
 import { squarePreview, BaseRxData, RenderProps, VisWidget, createInfo, sizeCss, stateValue, sanitizeHtml } from './widgetUtils';
 
@@ -172,7 +172,7 @@ export default class MaterialDesignProgress extends VisWidget {
     renderWidgetBody(props: RenderProps): React.JSX.Element {
         super.renderWidgetBody(props);
         const data = this.state.rxData as ProgressData;
-        const value = stateValue(this.state as VisRxWidgetState, data.oid);
+        const value = stateValue(this.state, data.oid);
         const progress = progressState(value, data);
         const background = cleanColor(data.colorProgressBackground, 'rgba(161, 161, 161, 0.26)');
         const striped = data.progressStriped;

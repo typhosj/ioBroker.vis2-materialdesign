@@ -1,8 +1,8 @@
 import React from 'react';
 
-import type { RxWidgetInfo, VisRxWidgetProps, VisRxWidgetState } from '@iobroker/types-vis-2';
+import type { RxWidgetInfo, VisRxWidgetProps } from '@iobroker/types-vis-2';
 
-import { squarePreview, BaseRxData, RenderProps, VisWidget, createInfo, iconField, sizeCss, stateValue, formatMoment, formatDurationTokens, humanizeDuration, visLocale, sanitizeHtml } from './widgetUtils';
+import { squarePreview, BaseRxData, RenderProps, VisWidget, createInfo, iconField, sizeCss, stateValue, formatMoment, formatDurationTokens, humanizeDuration, visLocale, sanitizeHtml, stringValue } from './widgetUtils';
 import { renderIcon } from './MaterialDesignButtons';
 
 interface ValueData extends BaseRxData {
@@ -118,7 +118,7 @@ function number(value: unknown, fallback = 0): number {
 }
 
 function text(value: unknown, fallback = ''): string {
-    return value === undefined || value === null ? fallback : String(value);
+    return stringValue(value, fallback);
 }
 
 function color(value: unknown, fallback = ''): string {
@@ -228,7 +228,7 @@ export default class MaterialDesignValue extends VisWidget {
     renderWidgetBody(props: RenderProps): React.JSX.Element {
         super.renderWidgetBody(props);
         const data = this.state.rxData as ValueData;
-        const value = stateValue(this.state as VisRxWidgetState, data.oid);
+        const value = stateValue(this.state, data.oid);
         const icon = renderIcon(text(data.image, 'information'), color(evalMaybe(data.imageColor, value), '#44739e'), number(data.iconHeight, 24));
         const iconFirst = data.iconPosition !== 'right';
         const gap = number(data.valueLabelWidth, 4);

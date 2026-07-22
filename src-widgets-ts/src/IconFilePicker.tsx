@@ -172,7 +172,7 @@ export function IconFilePicker({ value, onChange, socket, label, texts, theme }:
                 if (!cancelled) {
                     setEntries([]);
                     setLoading(false);
-                    setErr(String(e?.message || e));
+                    setErr(e?.message || 'Unable to load files');
                 }
             });
         return () => {

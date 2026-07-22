@@ -66,6 +66,31 @@ export interface WidgetState extends VisRxWidgetState {
 }
 
 export const setColor = '#ffc107';
+export const MAX_DYNAMIC_ITEMS = 100;
+
+export function stringValue(value: unknown, fallback = ''): string {
+    return typeof value === 'string'
+        ? value
+        : typeof value === 'number' || typeof value === 'boolean' || typeof value === 'bigint'
+          ? String(value)
+          : fallback;
+}
+
+export function boundedCount(value: unknown, fallback = 0, max = MAX_DYNAMIC_ITEMS): number {
+    const parsed = Number(value);
+    return Math.min(max, Math.max(0, Math.floor(Number.isFinite(parsed) ? parsed : fallback)));
+}
+
+const SAFE_WIDGET_PROTOCOLS = new Set(['http:', 'https:', 'mailto:', 'tel:']);
+
+export function safeWidgetUrl(value: unknown): string | undefined {
+    if (typeof value !== 'string') return undefined;
+    const url = value.trim();
+    // eslint-disable-next-line no-control-regex -- browser URL parsing ignores these obfuscating controls
+    if (!url || /[\u0000-\u001f\u007f]/.test(url) || /^[\\/]{2}/.test(url)) return undefined;
+    const scheme = url.match(/^([a-z][a-z\d+.-]*):/i)?.[1];
+    return !scheme || SAFE_WIDGET_PROTOCOLS.has(`${scheme.toLowerCase()}:`) ? url : undefined;
+}
 
 export const commonAttrs = [
     {
@@ -202,7 +227,7 @@ const UNSAFE_ELEMENTS = 'script,iframe,object,embed,base,meta,link,form,noscript
 const URL_ATTRS = new Set(['href', 'src', 'xlink:href', 'action', 'formaction', 'background', 'poster', 'data']);
 export function sanitizeHtml(input: unknown): string {
     if (input === null || input === undefined) return '';
-    const html = String(input);
+    const html = stringValue(input);
     if (!html || typeof document === 'undefined') return html;
     const template = document.createElement('template');
     template.innerHTML = html;
@@ -227,6 +252,14 @@ export function sanitizeHtml(input: unknown): string {
 // Convenience for JSX HTML sinks: <div {...html(value)} /> instead of a raw dangerouslySetInnerHTML.
 export function html(input: unknown): { dangerouslySetInnerHTML: { __html: string } } {
     return { dangerouslySetInnerHTML: { __html: sanitizeHtml(input) } };
+}
+
+export function accessibleText(input: unknown, fallback: string): string {
+    const html = sanitizeHtml(input);
+    if (typeof document === 'undefined') return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() || fallback;
+    const template = document.createElement('template');
+    template.innerHTML = html;
+    return template.content.textContent?.trim() || fallback;
 }
 
 // CSS font-size that survives a theme `var(--…)` (or any string with a unit): return it as-is, otherwise numeric → `${n}px`.
@@ -336,11 +369,11 @@ export function iconField(name: string, label: string, def?: string): RxWidgetIn
                     socket={ctx?.socket}
                     texts={pickerTexts}
                     theme={ctx?.theme}
-                    value={String(rec[key] ?? '')}
+                    value={stringValue(rec[key])}
                 />
             );
         },
-    } as RxWidgetInfoAttributesField;
+    };
 }
 
 type ThemeEntry = { id: string; desc: string; widget: string };
@@ -444,7 +477,7 @@ function themeFields(widgetName: string): RxWidgetInfo['visAttrs'][number]['fiel
             type: 'custom',
             name: 'useTheme',
             label: 'useTheme',
-            component: (_field, data, onDataChange) => <UseThemeButton entries={entries} data={data as Record<string, unknown>} onDataChange={onDataChange as (data: Record<string, unknown>) => void} />,
+            component: (_field, data, onDataChange) => <UseThemeButton entries={entries} data={data} onDataChange={onDataChange} />,
         },
         {
             name: '__mdwThemeDark',
@@ -467,7 +500,7 @@ export function applyThemeVariables(data: Record<string, unknown>, values: Recor
     // would throw ("cannot call visUtils: Cannot convert undefined or null to object" for the
     // unguarded Object.keys(null)). Skip entirely when we cannot / need not touch the DOM.
     if (typeof document === 'undefined' || !data || !values) return;
-    const dark = data.__mdwThemeDark;
+    const dark = stringValue(data.__mdwThemeDark);
     const isDark = values[`${dark}.val`] === true || values[`${dark}.val`] === 'true';
     Object.keys(data).filter(key => key.startsWith('__mdwTheme_') && !key.endsWith('_dark')).forEach(key => {
         const stateId = data[isDark && data[`${key}_dark`] ? `${key}_dark` : key];

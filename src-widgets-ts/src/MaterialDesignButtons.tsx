@@ -2,7 +2,7 @@ import React from 'react';
 
 import type { RxWidgetInfo, VisRxWidgetProps } from '@iobroker/types-vis-2';
 
-import { squarePreview, PressState, RenderProps, VisWidget, createInfo, parseActionValue, setStateValue, sizeCss, stateValue, sanitizeHtml } from './widgetUtils';
+import { MAX_DYNAMIC_ITEMS, squarePreview, PressState, RenderProps, VisWidget, boundedCount, createInfo, parseActionValue, safeWidgetUrl, setStateValue, sizeCss, stateValue, sanitizeHtml, stringValue } from './widgetUtils';
 
 type ButtonKind = 'navigation' | 'link' | 'state' | 'multiState' | 'addition' | 'toggle' | 'slider';
 type ButtonLayout = 'default' | 'vertical' | 'icon';
@@ -368,17 +368,17 @@ function indexedValue(data: ButtonData, name: string, index: number): unknown {
     return undefined;
 }
 
-function writeMultiState(props: VisRxWidgetProps, data: ButtonData): void {
-    const count = Math.max(0, Math.floor(numeric(data.countOids, 1)));
+function writeMultiState(props: VisRxWidgetProps, data: ButtonData, schedule: (callback: () => void, delay: number) => void): void {
+    const count = boundedCount(data.countOids, 1, MAX_DYNAMIC_ITEMS - 1);
     for (let index = 0; index <= count; index++) {
-        const oid = String(indexedValue(data, 'oid', index) ?? '');
-        const value = parseActionValue(String(indexedValue(data, 'value', index) ?? ''));
-        const delay = Math.max(0, numeric(indexedValue(data, 'delayInMs', index), 0));
+        const oid = stringValue(indexedValue(data, 'oid', index));
+        const value = parseActionValue(stringValue(indexedValue(data, 'value', index)));
+        const delay = Math.min(2_147_483_647, Math.max(0, numeric(indexedValue(data, 'delayInMs', index), 0)));
         if (!oid) {
             continue;
         }
         if (delay) {
-            window.setTimeout(() => setStateValue(props, oid, value), delay);
+            schedule(() => setStateValue(props, oid, value), delay);
         } else {
             setStateValue(props, oid, value);
         }
@@ -405,19 +405,21 @@ function preview(def: ButtonDefinition): string {
     return squarePreview(previewGlyph[def.kind] ?? iconGlyphs[def.icon] ?? iconGlyphs.plus);
 }
 
-function execute(def: ButtonDefinition, props: VisRxWidgetProps, data: ButtonData, current: ioBroker.StateValue | undefined): void {
+function execute(def: ButtonDefinition, props: VisRxWidgetProps, data: ButtonData, current: ioBroker.StateValue | undefined, schedule: (callback: () => void, delay: number) => void): void {
     if (def.kind === 'navigation' && data.nav_view) {
         props.context.changeView(data.nav_view);
     } else if (def.kind === 'link' && data.href) {
+        const href = safeWidgetUrl(data.href);
+        if (!href) return;
         if (data.openNewWindow) {
-            window.open(data.href, '_blank', 'noopener,noreferrer');
+            window.open(href, '_blank', 'noopener,noreferrer');
         } else {
-            window.location.href = data.href;
+            window.location.href = href;
         }
     } else if (def.kind === 'state') {
         setStateValue(props, data.oid || '', parseActionValue(String(data.value ?? '')));
     } else if (def.kind === 'multiState') {
-        writeMultiState(props, data);
+        writeMultiState(props, data, schedule);
     } else if (def.kind === 'addition') {
         const nextValue = numeric(current, 0) + numeric(data.value, 0);
         setStateValue(props, data.oid || '', clampByMinMax(nextValue, data.minmax));
@@ -426,7 +428,7 @@ function execute(def: ButtonDefinition, props: VisRxWidgetProps, data: ButtonDat
         const offValue = def.kind === 'slider' ? numeric(data.valueOff, 0) : data.toggleType === 'value' ? parseActionValue(String(data.valueOff ?? false)) : false;
         setStateValue(props, data.oid || '', isOn(current, data) ? offValue : onValue);
         if (data.pushButton) {
-            window.setTimeout(() => setStateValue(props, data.oid || '', offValue), 250);
+            schedule(() => setStateValue(props, data.oid || '', offValue), 250);
         }
     }
 }
@@ -434,6 +436,7 @@ function execute(def: ButtonDefinition, props: VisRxWidgetProps, data: ButtonDat
 export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
     return class MaterialDesignButtonVariant extends VisWidget {
         private lockTimer: number | undefined;
+        private readonly actionTimers = new Set<number>();
         private lastTouchAt = 0;
         private lastSliderAt = 0;
 
@@ -462,20 +465,32 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
             if (this.lockTimer) {
                 window.clearTimeout(this.lockTimer);
             }
+            this.actionTimers.forEach(timer => window.clearTimeout(timer));
+            this.actionTimers.clear();
+            super.componentWillUnmount?.();
         }
+
+        private readonly schedule = (callback: () => void, delay: number): void => {
+            let timer = 0;
+            timer = window.setTimeout(() => {
+                this.actionTimers.delete(timer);
+                callback();
+            }, delay);
+            this.actionTimers.add(timer);
+        };
 
         isLocked(data: ButtonData): boolean {
             return Boolean(data.lockEnabled) && !(this.state as PressState & { unlocked?: boolean }).unlocked;
         }
 
         unlock(data: ButtonData): void {
-            this.setState({ unlocked: true } as PressState & { unlocked: boolean });
+            this.setState({ unlocked: true });
             if (this.lockTimer) {
                 window.clearTimeout(this.lockTimer);
             }
             this.lockTimer = window.setTimeout(
-                () => this.setState({ unlocked: false } as PressState & { unlocked: boolean }),
-                Math.max(1, numeric(data.autoLockAfter, 10)) * 1000,
+                () => { this.lockTimer = undefined; this.setState({ unlocked: false }); },
+                Math.min(86_400, Math.max(1, numeric(data.autoLockAfter, 10))) * 1000,
             );
         }
 
@@ -488,7 +503,7 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
             if (def.kind === 'slider' && data.sliderOnly) {
                 return;
             }
-            execute(def, this.props, data, current);
+            execute(def, this.props, data, current, this.schedule);
         }
 
         pushDown(data: ButtonData): void {
@@ -613,25 +628,25 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
                             transition: 'background 120ms ease, transform 80ms ease',
                             position: 'relative',
                         }}
-                        onMouseEnter={() => this.setState({ hovered: true } as PressState)}
+                        onMouseEnter={() => this.setState({ hovered: true })}
                         onMouseLeave={() => {
                             if (data.pushButton) {
                                 this.pushUp(data);
                             }
-                            this.setState({ active: false, hovered: false } as PressState);
+                            this.setState({ active: false, hovered: false });
                         }}
                         onMouseDown={() => {
                             if (Date.now() - this.lastTouchAt < 700 || Date.now() - this.lastSliderAt < 700) {
                                 return;
                             }
-                            this.setState({ active: true } as PressState);
+                            this.setState({ active: true });
                             this.pushDown(data);
                         }}
                         onMouseUp={() => {
                             if (Date.now() - this.lastTouchAt < 700 || Date.now() - this.lastSliderAt < 700) {
                                 return;
                             }
-                            this.setState({ active: false } as PressState);
+                            this.setState({ active: false });
                             if (data.pushButton) {
                                 this.pushUp(data);
                             } else {
@@ -641,7 +656,7 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
                         onKeyDown={event => {
                             if (event.key === 'Enter' || event.key === ' ') {
                                 event.preventDefault();
-                                this.setState({ active: true } as PressState);
+                                this.setState({ active: true });
                                 if (data.pushButton && !event.repeat) {
                                     this.pushDown(data);
                                 }
@@ -650,7 +665,7 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
                         onKeyUp={event => {
                             if (event.key === 'Enter' || event.key === ' ') {
                                 event.preventDefault();
-                                this.setState({ active: false } as PressState);
+                                this.setState({ active: false });
                                 if (data.pushButton) {
                                     this.pushUp(data);
                                 } else {
@@ -660,12 +675,12 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
                         }}
                         onTouchStart={() => {
                             this.lastTouchAt = Date.now();
-                            this.setState({ active: true } as PressState);
+                            this.setState({ active: true });
                             this.pushDown(data);
                         }}
                         onTouchEnd={() => {
                             this.lastTouchAt = Date.now();
-                            this.setState({ active: false } as PressState);
+                            this.setState({ active: false });
                             if (data.pushButton) {
                                 this.pushUp(data);
                             } else {
@@ -677,7 +692,7 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
                             if (data.pushButton) {
                                 this.pushUp(data);
                             }
-                            this.setState({ active: false } as PressState);
+                            this.setState({ active: false });
                         }}
                     >
                         <span

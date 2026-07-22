@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { RxWidgetInfo, VisRxWidgetProps, VisRxWidgetState } from '@iobroker/types-vis-2';
+import type { RxWidgetInfo, VisRxWidgetProps } from '@iobroker/types-vis-2';
 
 import { cleanColor, num, snapToStep } from './MaterialDesignProgress';
 import { squarePreview, RenderProps, VisWidget, createInfo, setStateValue, sizeCss, stateValue, sanitizeHtml } from './widgetUtils';
@@ -200,13 +200,13 @@ export default class MaterialDesignRoundSlider extends VisWidget {
         super.renderWidgetBody(props);
         const data = this.state.rxData as RoundSliderData;
         const { min, max } = range(data);
-        const rawState = stateValue(this.state as VisRxWidgetState, data.oid || '');
+        const rawState = stateValue(this.state, data.oid || '');
         if (rawState !== this.seenStateValue) {
             this.seenStateValue = rawState;
             this.optimisticValue = undefined;
         }
         const value = current(this.optimisticValue ?? rawState, data);
-        const disabled = !!data.readOnly || working(stateValue(this.state as VisRxWidgetState, data['oid-working'] || ''));
+        const disabled = !!data.readOnly || working(stateValue(this.state, data['oid-working'] || ''));
         const start = num(data.startAngle, 135);
         const arc = num(data.arcLength, 270);
         const sliderWidth = num(data.sliderWidth, 3);

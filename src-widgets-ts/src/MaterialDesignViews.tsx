@@ -1,11 +1,11 @@
 import React from "react";
-import { squarePreview , createInfo, RenderProps, stateValue, VisWidget } from './widgetUtils';
-import type { RxWidgetInfo, VisRxWidgetState } from "@iobroker/types-vis-2";
+import { MAX_DYNAMIC_ITEMS, squarePreview, boundedCount, createInfo, RenderProps, stateValue, VisWidget } from './widgetUtils';
+import type { RxWidgetInfo } from "@iobroker/types-vis-2";
 
 type Kind = "masonry" | "grid";
 type Data = Record<string, unknown> & { countViews?: number };
 const s = (v: unknown, d = ""): string =>
-  v === undefined || v === null || v === "" || v === "null" ? d : String(v);
+  v === undefined || v === null || v === "" || v === "null" ? d : typeof v === "string" ? v : typeof v === "number" || typeof v === "boolean" || typeof v === "bigint" ? String(v) : d;
 const n = (v: unknown, d = 0): number =>
   v === undefined || v === null || v === "" || !Number.isFinite(Number(v))
     ? d
@@ -400,6 +400,7 @@ export class MaterialDesignViews extends VisWidget {
   private width = 0;
   private widgetId = "materialdesign-views";
   private observer?: ResizeObserver;
+  private measureTimer?: number;
   constructor(
     props: any,
     private readonly kind: Kind,
@@ -426,6 +427,9 @@ export class MaterialDesignViews extends VisWidget {
   }
   componentWillUnmount(): void {
     this.observer?.disconnect();
+    if (this.measureTimer !== undefined) window.clearTimeout(this.measureTimer);
+    this.measureTimer = undefined;
+    this.polling = false;
     super.componentWillUnmount?.();
   }
   // Native VIS2 child-view embed. The embedded view has no intrinsic height
@@ -456,8 +460,9 @@ export class MaterialDesignViews extends VisWidget {
       });
       if (changed) this.forceUpdate();
       if (++ticks < 14) {
-        setTimeout(tick, 120);
+        this.measureTimer = window.setTimeout(tick, 120);
       } else {
+        this.measureTimer = undefined;
         this.polling = false;
       }
     };
@@ -465,32 +470,33 @@ export class MaterialDesignViews extends VisWidget {
   }
   private layout(d: Data): { cols: number; gaps: number; key: string } {
     const width = this.width || this.root.current?.clientWidth || 1025;
+    const columns = (value: unknown, fallback: number): number => Math.max(1, boundedCount(value, fallback, 12));
     if (width <= n(d.handyPortraitWidth, 393))
       return {
-        cols: n(d.handyPortraitCols, 1),
+        cols: columns(d.handyPortraitCols, 1),
         gaps: n(d.handyPortraitGaps, n(d.desktopGaps)),
         key: "handyGridPortraitColSpan",
       };
     if (width <= n(d.handyLandscapeWidth, 754))
       return {
-        cols: n(d.handyLandscapeCols, 2),
+        cols: columns(d.handyLandscapeCols, 2),
         gaps: n(d.handyLandscapeGaps, n(d.desktopGaps)),
         key: "handyGridLandscapeColSpan",
       };
     if (width <= n(d.tabletPortraitWidth, 768))
       return {
-        cols: n(d.tabletPortraitCols, 2),
+        cols: columns(d.tabletPortraitCols, 2),
         gaps: n(d.tabletPortraitGaps, n(d.desktopGaps)),
         key: "tabletGridPortraitColSpan",
       };
     if (width <= n(d.tabletLandscapeWidth, 1024))
       return {
-        cols: n(d.tabletLandscapeCols, 3),
+        cols: columns(d.tabletLandscapeCols, 3),
         gaps: n(d.tabletLandscapeGaps, n(d.desktopGaps)),
         key: "tabletGridLandscapeColSpan",
       };
     return {
-      cols: n(d.countCols, 3),
+      cols: columns(d.countCols, 3),
       gaps: n(d.desktopGaps),
       key: "viewColSpan",
     };
@@ -500,7 +506,7 @@ export class MaterialDesignViews extends VisWidget {
     this.widgetId = props.id;
     const d = this.state.rxData as unknown as Data;
     const layout = this.layout(d);
-    const count = Math.max(0, Math.floor(n(d.countViews, 3)));
+    const count = boundedCount(d.countViews, 3, MAX_DYNAMIC_ITEMS - 1);
     const items = Array.from({ length: count + 1 }, (_, index) => ({
       index,
       sort: n(d[`viewSortOrder${index}`], index),
@@ -527,7 +533,7 @@ export class MaterialDesignViews extends VisWidget {
             !s(d[`visibilityOid${index}`]) ||
             !visible(
               stateValue(
-                this.state as VisRxWidgetState,
+                this.state,
                 s(d[`visibilityOid${index}`]),
               ),
               s(d[`visibilityCondition${index}`], "=="),

@@ -1,6 +1,6 @@
 import React from "react";
-import { squarePreview , RenderProps, VisWidget, createInfo, stateValue, sanitizeHtml } from './widgetUtils';
-import type { RxWidgetInfo, VisRxWidgetState } from "@iobroker/types-vis-2";
+import { MAX_DYNAMIC_ITEMS, squarePreview, boundedCount, RenderProps, VisWidget, createInfo, stateValue, sanitizeHtml } from './widgetUtils';
+import type { RxWidgetInfo } from "@iobroker/types-vis-2";
 import { colorSchemes, scheme } from "./MaterialDesignColorScheme";
 import { MaterialDesignChartCanvas } from "./MaterialDesignChartCanvas";
 import { chartAxis } from "./chartAxis";
@@ -21,7 +21,7 @@ type Bar = {
   tooltipText: string;
 };
 const s = (v: unknown, d = ""): string =>
-  v === undefined || v === null || v === "" || v === "null" ? d : String(v);
+  v === undefined || v === null || v === "" || v === "null" ? d : typeof v === "string" ? v : typeof v === "number" || typeof v === "boolean" || typeof v === "bigint" ? String(v) : d;
 const n = (v: unknown, d = 0): number =>
   v === undefined || v === null || v === "" || !Number.isFinite(Number(v))
     ? d
@@ -464,11 +464,11 @@ export default class MaterialDesignChartBar extends VisWidget {
     const data = this.state.rxData as unknown as Data;
     const fromJson = s(data.chartDataMethod) === "jsonStringObject";
     const source = fromJson
-      ? json(stateValue(this.state as VisRxWidgetState, s(data.oid)))
+      ? json(stateValue(this.state, s(data.oid)))
       : null;
     const count = source
-      ? source.length
-      : Math.max(1, Math.floor(n(data.dataCount, 1)) + 1);
+      ? Math.min(source.length, MAX_DYNAMIC_ITEMS)
+      : boundedCount(data.dataCount, 1, MAX_DYNAMIC_ITEMS - 1) + 1;
     const colors = s(data.colorScheme)
       ? scheme(s(data.colorScheme), count)
       : [];
@@ -478,7 +478,7 @@ export default class MaterialDesignChartBar extends VisWidget {
         row?.value,
         n(
           stateValue(
-            this.state as VisRxWidgetState,
+            this.state,
             s(indexed(data, "oid", i)),
           ),
         ),
@@ -547,7 +547,7 @@ export default class MaterialDesignChartBar extends VisWidget {
     });
     // value axis (numeric) carries the computed min/max; the other axis holds category labels.
     const valueAxis = axisOf(horizontal ? "x" : "y");
-    valueAxis.ticks = { ...((valueAxis.ticks as Record<string, unknown>) || {}), min, max };
+    valueAxis.ticks = { ...((valueAxis.ticks) || {}), min, max };
     const catAxis = axisOf(horizontal ? "y" : "x");
     const scales = horizontal ? { xAxes: [valueAxis], yAxes: [catAxis] } : { yAxes: [valueAxis], xAxes: [catAxis] };
     const chartjs = <MaterialDesignChartCanvas type={horizontal ? "horizontalBar" : "bar"} data={{ labels: bars.map(bar => bar.label), datasets: [{ data: bars.map(bar => bar.value), backgroundColor: bars.map(bar => bar.color), borderColor: s(data.hoverBorderColor), borderWidth: n(data.hoverBorderWidth) }] }} options={{ responsive: true, maintainAspectRatio: false, animation: { duration: n(data.animationDuration, 1000) }, legend: { display: false }, scales, tooltips: { enabled: b(data.showTooltip, true), callbacks: {

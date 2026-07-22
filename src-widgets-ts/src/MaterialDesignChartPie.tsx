@@ -1,6 +1,6 @@
 import React from "react";
-import { squarePreview , RenderProps, VisWidget, createInfo, stateValue, sanitizeHtml } from './widgetUtils';
-import type { RxWidgetInfo, VisRxWidgetState } from "@iobroker/types-vis-2";
+import { MAX_DYNAMIC_ITEMS, squarePreview, boundedCount, RenderProps, VisWidget, createInfo, stateValue, sanitizeHtml } from './widgetUtils';
+import type { RxWidgetInfo } from "@iobroker/types-vis-2";
 import { colorSchemes, scheme } from "./MaterialDesignColorScheme";
 import { MaterialDesignChartCanvas } from "./MaterialDesignChartCanvas";
 
@@ -10,7 +10,7 @@ type Data = Record<string, unknown> & {
   chartDataMethod?: string;
 };
 const s = (v: unknown, d = ""): string =>
-  v === undefined || v === null || v === "" || v === "null" ? d : String(v);
+  v === undefined || v === null || v === "" || v === "null" ? d : typeof v === "string" ? v : typeof v === "number" || typeof v === "boolean" || typeof v === "bigint" ? String(v) : d;
 const n = (v: unknown, d = 0): number =>
   v === undefined || v === null || v === "" || !Number.isFinite(Number(v))
     ? d
@@ -284,11 +284,11 @@ export default class MaterialDesignChartPie extends VisWidget {
     const data = this.state.rxData as unknown as Data;
     const json =
       s(data.chartDataMethod) === "jsonStringObject"
-        ? readJson(stateValue(this.state as VisRxWidgetState, s(data.oid)))
+        ? readJson(stateValue(this.state, s(data.oid)))
         : null;
     const count = json
-      ? json.length
-      : Math.max(1, Math.floor(n(data.dataCount, 1)) + 1);
+      ? Math.min(json.length, MAX_DYNAMIC_ITEMS)
+      : boundedCount(data.dataCount, 1, MAX_DYNAMIC_ITEMS - 1) + 1;
     const colors = s(data.colorScheme)
       ? scheme(s(data.colorScheme), count)
       : [];
@@ -296,7 +296,7 @@ export default class MaterialDesignChartPie extends VisWidget {
       const item = json?.[i];
       const value = n(
         item?.value,
-        n(stateValue(this.state as VisRxWidgetState, s(data[`oid${i}`]))),
+        n(stateValue(this.state, s(data[`oid${i}`]))),
       );
       return {
         label: s(item?.label, s(data[`label${i}`])),

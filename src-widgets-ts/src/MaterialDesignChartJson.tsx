@@ -1,6 +1,6 @@
 import React from "react";
 import { squarePreview , RenderProps, VisWidget, createInfo, stateValue, sanitizeHtml } from './widgetUtils';
-import type { RxWidgetInfo, VisRxWidgetState } from "@iobroker/types-vis-2";
+import type { RxWidgetInfo } from "@iobroker/types-vis-2";
 import { colorSchemes, scheme } from "./MaterialDesignColorScheme";
 import { MaterialDesignChartCanvas } from "./MaterialDesignChartCanvas";
 import { chartAxis } from "./chartAxis";
@@ -31,7 +31,7 @@ type Graph = {
 };
 type Data = Record<string, unknown> & { oid?: string };
 const s = (v: unknown, d = "") =>
-  v === undefined || v === null || v === "" || v === "null" ? d : String(v);
+  v === undefined || v === null || v === "" || v === "null" ? d : typeof v === "string" ? v : typeof v === "number" || typeof v === "boolean" || typeof v === "bigint" ? String(v) : d;
 const n = (v: unknown, d = 0) =>
   v === undefined || v === null || v === "" || !Number.isFinite(Number(v))
     ? d
@@ -293,7 +293,7 @@ export default class MaterialDesignChartJson extends VisWidget {
     let input: { axisLabels?: string[]; graphs?: Graph[] } | null = null;
     try {
       input = JSON.parse(
-        s(stateValue(this.state as VisRxWidgetState, s(data.oid))),
+        s(stateValue(this.state, s(data.oid))),
       );
     } catch {
       /* render error below */

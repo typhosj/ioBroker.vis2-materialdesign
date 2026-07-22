@@ -132,7 +132,7 @@ class MaterialDesignAdmin extends GenericApp<GenericAppProps, GenericAppState> {
         const type = typeof value === 'number' ? 'number' : 'string';
         const existing = await this.socket.getObject(id);
         if (!existing) {
-            await this.socket.setObject(id, { type: 'state', common: { name, desc: name, type, read: true, write: false, role: 'value' }, native: {} } as never);
+            await this.socket.setObject(id, { type: 'state', common: { name, desc: name, type, read: true, write: false, role: 'value' }, native: {} });
         } else if (existing.common.name !== name) {
             await this.socket.setObject(id, { ...existing, common: { ...existing.common, name, desc: name } } as never);
         }
@@ -178,7 +178,7 @@ class MaterialDesignAdmin extends GenericApp<GenericAppProps, GenericAppState> {
             lines.push(`${path}.getValue = function () { return getState("${id}").val; };`);
         });
         const id = `script.js.global.MaterialDesignWidgets.${namespace.replace('.', '')}`;
-        await this.socket.setObject(id, { type: 'script', common: { name: String(config.scriptName ?? 'Theme'), expert: true, engineType: 'Javascript/js', engine: `system.adapter.${javascriptInstance}`, source: lines.join('\n'), debug: false, verbose: false, enabled: true } } as never);
+        await this.socket.setObject(id, { type: 'script', common: { name: String(config.scriptName ?? 'Theme'), expert: true, engineType: 'Javascript/js', engine: `system.adapter.${javascriptInstance}`, source: lines.join('\n'), debug: false, verbose: false, enabled: true } });
         this.showAlert(t('generate script'), 'success');
     }
     onSave(isClose?: boolean): void {

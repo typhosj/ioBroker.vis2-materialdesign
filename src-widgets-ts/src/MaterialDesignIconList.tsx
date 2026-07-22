@@ -1,9 +1,9 @@
 import React from 'react';
 
-import type { RxWidgetInfo, VisRxWidgetState, WidgetData } from '@iobroker/types-vis-2';
+import type { RxWidgetInfo, WidgetData } from '@iobroker/types-vis-2';
 
 import { renderIcon } from './MaterialDesignButtons';
-import { squarePreview, RenderProps, VisWidget, createInfo, iconField, parseActionValue, setStateValue, stateValue, sanitizeHtml } from './widgetUtils';
+import { MAX_DYNAMIC_ITEMS, squarePreview, RenderProps, VisWidget, accessibleText, boundedCount, createInfo, iconField, parseActionValue, safeWidgetUrl, setStateValue, stateValue, sanitizeHtml, stringValue } from './widgetUtils';
 
 type Data = Record<string, unknown> & {
     listItemDataMethod?: string;
@@ -164,11 +164,11 @@ const css = `
 .materialdesign-icon-list-item-layout-vertical-status-line,.materialdesign-icon-list-item-layout-horizontal-status-line{background:transparent;width:100%;align-self:flex-end}.materialdesign-icon-list-item-layout-vertical-status-line-card,.materialdesign-icon-list-item-layout-horizontal-status-line-card{background:transparent;width:100%;border-radius:0 0 4px 4px;align-self:flex-end}
 .materialdesign-icon-list-item-layout-horizontal-image-container{position:relative;text-align:center;display:flex;justify-content:center;align-items:center;height:100%;width:var(--materialdesign-icon-list-item-layout-horizontal-image-container-width)}.materialdesign-icon-list-item-layout-horizontal-text-container{display:flex;flex-direction:column;flex-wrap:wrap;flex:1 1;margin-left:4px;justify-content:center}
 .materialdesign-icon-list .materialdesign-html-card.mdc-card{border-radius:4px;background-color:var(--materialdesign-color-card-background);box-shadow:0 2px 1px -1px rgba(0,0,0,.2),0 1px 1px 0 rgba(0,0,0,.14),0 1px 3px 0 rgba(0,0,0,.12);display:flex;flex-direction:column;box-sizing:border-box;color:#000}.materialdesign-icon-list .card-title-section{box-sizing:border-box;width:100%;padding:16px 16px 0;background-color:var(--materialdesign-color-card-title-section-background)}.materialdesign-icon-list .card-text-section.iconlist{box-sizing:border-box;padding:1px;background-color:var(--materialdesign-color-card-text-section-background)}.materialdesign-icon-list .card-title{color:var(--materialdesign-color-card-title);font-family:var(--materialdesign-font-card-title)}
-.materialdesign-icon-list .materialdesign-button{font-family:var(--materialdesign-font-button);font-size:var(--materialdesign-font-size-button);font-weight:500;text-decoration:none;padding:0 8px;align-items:center;justify-content:center;box-sizing:border-box;height:36px;border:0;outline:0;line-height:inherit;user-select:none;overflow:hidden;vertical-align:middle;border-radius:4px}.materialdesign-icon-list .materialdesign-icon-button{border-radius:100%;width:48px;height:48px;font-size:24px;display:inline-block;box-sizing:border-box;border:0;outline:0;background-color:transparent;fill:currentColor;color:inherit;text-decoration:none;cursor:pointer;user-select:none}.materialdesign-icon-list .materialdesign-button,.materialdesign-icon-list .materialdesign-icon-button{-webkit-tap-highlight-color:transparent}.materialdesign-icon-list .materialdesign-iconList-button:active{box-shadow:inset 0 0 0 999px color-mix(in srgb,var(--materialdesign-color-icon-button-hover) 12%,transparent)}
+.materialdesign-icon-list .materialdesign-button{font-family:var(--materialdesign-font-button);font-size:var(--materialdesign-font-size-button);font-weight:500;text-decoration:none;padding:0 8px;align-items:center;justify-content:center;box-sizing:border-box;height:36px;border:0;outline:0;line-height:inherit;user-select:none;overflow:hidden;vertical-align:middle;border-radius:4px}.materialdesign-icon-list .materialdesign-icon-button{border-radius:100%;width:48px;height:48px;font-size:24px;display:inline-block;box-sizing:border-box;border:0;outline:0;background-color:transparent;fill:currentColor;color:inherit;text-decoration:none;cursor:pointer;user-select:none}.materialdesign-icon-list .materialdesign-button,.materialdesign-icon-list .materialdesign-icon-button{-webkit-tap-highlight-color:transparent}.materialdesign-icon-list .materialdesign-iconList-button:active{box-shadow:inset 0 0 0 999px color-mix(in srgb,var(--materialdesign-color-icon-button-hover) 12%,transparent)}.materialdesign-icon-list .materialdesign-iconList-button:focus-visible{outline:2px solid #44739e;outline-offset:2px}
 `;
 
 const n = (value: unknown, fallback = 0): number => value === '' || value === undefined || value === null || !Number.isFinite(Number(value)) ? fallback : Number(value);
-const s = (value: unknown, fallback = ''): string => value === '' || value === undefined || value === null || value === 'null' ? fallback : String(value);
+const s = (value: unknown, fallback = ''): string => value === '' || value === undefined || value === null || value === 'null' ? fallback : typeof value === "string" ? value : typeof value === "number" || typeof value === "boolean" || typeof value === "bigint" ? String(value) : fallback;
 const b = (value: unknown, fallback = false): boolean => value === undefined || value === null || value === '' ? fallback : value === true || value === 'true' || value === 1 || value === '1';
 function getItem(data: Data, index: number, json?: Record<string, unknown>): Item {
     const get = (editorName: string, jsonName = editorName): unknown => json ? json[jsonName] : data[`${editorName}${index}`];
@@ -191,9 +191,9 @@ function getItem(data: Data, index: number, json?: Record<string, unknown>): Ite
 
 function isActive(item: Item, value: unknown): boolean {
     if (value !== undefined && value !== null && value !== '') {
-        if (item.listType === 'buttonState') return String(value) === String(item.buttonStateValue);
-        if (item.listType === 'buttonToggleValueTrue') return String(value) === String(item.buttonToggleValueTrue);
-        if (item.listType === 'buttonToggleValueFalse') return String(value) !== String(item.buttonToggleValueFalse);
+        if (item.listType === 'buttonState') return stringValue(value) === stringValue(item.buttonStateValue);
+        if (item.listType === 'buttonToggleValueTrue') return stringValue(value) === stringValue(item.buttonToggleValueTrue);
+        if (item.listType === 'buttonToggleValueFalse') return stringValue(value) !== stringValue(item.buttonToggleValueFalse);
     }
     return value === true || value === 'true';
 }
@@ -232,6 +232,7 @@ export default class MaterialDesignIconList extends VisWidget {
 
     componentWillUnmount(): void {
         for (const timer of this.relockTimers.values()) window.clearTimeout(timer);
+        this.relockTimers.clear();
         super.componentWillUnmount();
     }
 
@@ -248,7 +249,7 @@ export default class MaterialDesignIconList extends VisWidget {
     private unlock(index: number, data: Data): void {
         this.unlocked.add(index);
         window.clearTimeout(this.relockTimers.get(index));
-        this.relockTimers.set(index, window.setTimeout(() => { this.unlocked.delete(index); this.forceUpdate(); }, n(data.autoLockAfter, 10) * 1000));
+        this.relockTimers.set(index, window.setTimeout(() => { this.relockTimers.delete(index); this.unlocked.delete(index); this.forceUpdate(); }, Math.min(86_400, Math.max(1, n(data.autoLockAfter, 10))) * 1000));
         this.forceUpdate();
     }
 
@@ -258,11 +259,24 @@ export default class MaterialDesignIconList extends VisWidget {
         const locked = item.lockEnabled && !this.unlocked.has(index);
         if (['buttonToggle', 'buttonState', 'buttonToggleValueTrue', 'buttonToggleValueFalse'].includes(item.listType) && locked) { this.unlock(index, data); return; }
         if (item.listType === 'buttonToggle') setStateValue(this.props, item.objectId, !current);
-        else if (item.listType === 'buttonState') setStateValue(this.props, item.objectId, parseActionValue(String(item.buttonStateValue ?? '')));
+        else if (item.listType === 'buttonState') setStateValue(this.props, item.objectId, parseActionValue(stringValue(item.buttonStateValue)));
         else if (item.listType === 'buttonToggleValueTrue') setStateValue(this.props, item.objectId, parseActionValue(String(String(current) === String(item.buttonToggleValueTrue) ? item.buttonToggleValueFalse : item.buttonToggleValueTrue)));
         else if (item.listType === 'buttonToggleValueFalse') setStateValue(this.props, item.objectId, parseActionValue(String(String(current) === String(item.buttonToggleValueFalse) ? item.buttonToggleValueTrue : item.buttonToggleValueFalse)));
         else if (item.listType === 'buttonNav') this.props.context?.changeView?.(item.buttonNavView);
-        else if (item.listType === 'buttonLink') window.open(item.buttonLink, '_blank', 'noopener,noreferrer');
+        else if (item.listType === 'buttonLink') { const href = safeWidgetUrl(item.buttonLink); if (href) window.open(href, '_blank', 'noopener,noreferrer'); }
+    }
+
+    private actionProps(item: Item, index: number, current: unknown, data: Data): React.HTMLAttributes<HTMLDivElement> {
+        const activate = (): void => this.activate(item, index, current, data);
+        return {
+            'aria-disabled': item.readOnly,
+            'aria-label': accessibleText(item.text, 'List item action'),
+            onClick: activate,
+            onKeyDown: event => { if (!item.readOnly && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); activate(); } },
+            onPointerDown: () => this.feedback(data, true),
+            role: 'button',
+            tabIndex: item.readOnly ? -1 : 0,
+        };
     }
 
     private renderLock(data: Data, locked: boolean): React.JSX.Element | null {
@@ -275,7 +289,7 @@ export default class MaterialDesignIconList extends VisWidget {
         const height = n(data.iconHeight, 24);
         const image = active ? item.imageActive : item.image;
         const color = active ? item.imageActiveColor : item.imageColor;
-        const action = { onClick: () => this.activate(item, index, current, data), onPointerDown: () => this.feedback(data, true) };
+        const action = this.actionProps(item, index, current, data);
         const filter = locked && b(data.lockApplyOnlyOnImage, true) ? `grayscale(${n(data.lockFilterGrayscale, 30)}%)` : undefined;
         if (s(data.buttonLayout, 'round') === 'round') {
             const buttonHeight = n(data.buttonHeight, height * 1.5);
@@ -286,9 +300,9 @@ export default class MaterialDesignIconList extends VisWidget {
     }
 
     private renderItem(item: Item, index: number, data: Data): React.JSX.Element | null {
-        const current = stateValue(this.state as VisRxWidgetState, item.objectId);
+        const current = stateValue(this.state, item.objectId);
         if (item.listType !== 'text' && current === 'null') return null;
-        if (!isVisible(item, stateValue(this.state as VisRxWidgetState, item.visibilityOid))) return null;
+        if (!isVisible(item, stateValue(this.state, item.visibilityOid))) return null;
         const active = isActive(item, current);
         const locked = item.lockEnabled && !this.unlocked.has(index);
         const full = s(data.buttonLayout, 'round') === 'full' && item.listType !== 'text';
@@ -307,13 +321,14 @@ export default class MaterialDesignIconList extends VisWidget {
         const labelStyle = { color: active ? s(data.labelFontColorSelected, s(data.labelFontColor)) : s(data.labelFontColor), cursor: !item.readOnly && full ? 'pointer' : undefined };
         const subStyle = { color: active ? s(data.subLabelFontColorSelected, s(data.subLabelFontColor)) : s(data.subLabelFontColor), cursor: !item.readOnly && full ? 'pointer' : undefined };
         const imageContent = item.listType === 'text' ? icon(image, color, n(data.iconHeight, 24)) : this.renderButtonIcon(item, index, data, active, locked, current);
+        const action = this.actionProps(item, index, current, data);
 
         if (s(data.itemLayout, 'vertical') === 'vertical') {
-            if (full) return <div className={`materialdesign-icon-list-item ${classes}`} data-oid={item.objectId} key={index} style={itemStyle}><div style={{ display: 'flex', flex: 1, flexDirection: 'column', height: '100%' }}><div style={{ alignItems: 'center', display: 'flex', height: '100%', justifyContent: 'center', width: '100%' }}><div className="materialdesign-button materialdesign-iconList-button" onClick={() => this.activate(item, index, current, data)} onPointerDown={() => this.feedback(data, true)} style={{ background: active ? item.buttonBackgroundActiveColor : item.buttonBackgroundColor, borderBottomLeftRadius: statusColor || statusText ? 0 : undefined, borderBottomRightRadius: statusColor || statusText ? 0 : undefined, cursor: item.readOnly ? 'default' : 'pointer', height: '100%', padding: 0, position: 'relative', width: '100%' }}><div className="materialdesign-button-body" style={{ alignItems: 'center', display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'center', width: '100%' }}>{item.text ? <label className="materialdesign-icon-list-item-text materialdesign-icon-list-item-text-vertical" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.text) }} style={labelStyle} /> : null}{image ? <div className="materialdesign-icon-list-item-layout-vertical-image-container">{icon(image, color, n(data.iconHeight, 24))}{this.renderLock(data, locked)}</div> : null}{showValue ? <label className="materialdesign-icon-list-item-value materialdesign-icon-list-item-text-vertical" dangerouslySetInnerHTML={{ __html: sanitizeHtml(value) }} /> : null}{item.subText ? <label className="materialdesign-icon-list-item-subText materialdesign-icon-list-item-text-vertical" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.subText) }} style={subStyle} /> : null}</div></div></div>{status}</div></div>;
+            if (full) return <div className={`materialdesign-icon-list-item ${classes}`} data-oid={item.objectId} key={index} style={itemStyle}><div style={{ display: 'flex', flex: 1, flexDirection: 'column', height: '100%' }}><div style={{ alignItems: 'center', display: 'flex', height: '100%', justifyContent: 'center', width: '100%' }}><div {...action} className="materialdesign-button materialdesign-iconList-button" style={{ background: active ? item.buttonBackgroundActiveColor : item.buttonBackgroundColor, borderBottomLeftRadius: statusColor || statusText ? 0 : undefined, borderBottomRightRadius: statusColor || statusText ? 0 : undefined, cursor: item.readOnly ? 'default' : 'pointer', height: '100%', padding: 0, position: 'relative', width: '100%' }}><div className="materialdesign-button-body" style={{ alignItems: 'center', display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'center', width: '100%' }}>{item.text ? <label className="materialdesign-icon-list-item-text materialdesign-icon-list-item-text-vertical" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.text) }} style={labelStyle} /> : null}{image ? <div className="materialdesign-icon-list-item-layout-vertical-image-container">{icon(image, color, n(data.iconHeight, 24))}{this.renderLock(data, locked)}</div> : null}{showValue ? <label className="materialdesign-icon-list-item-value materialdesign-icon-list-item-text-vertical" dangerouslySetInnerHTML={{ __html: sanitizeHtml(value) }} /> : null}{item.subText ? <label className="materialdesign-icon-list-item-subText materialdesign-icon-list-item-text-vertical" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.subText) }} style={subStyle} /> : null}</div></div></div>{status}</div></div>;
             return <div className={`materialdesign-icon-list-item ${classes}`} data-oid={item.objectId} key={index} style={itemStyle}>{item.text ? <label className="materialdesign-icon-list-item-text materialdesign-icon-list-item-text-vertical" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.text) }} style={labelStyle} /> : null}{imageContent ? <div className="materialdesign-icon-list-item-layout-vertical-image-container">{imageContent}{this.renderLock(data, locked)}</div> : null}{showValue ? <label className="materialdesign-icon-list-item-value materialdesign-icon-list-item-text-vertical" dangerouslySetInnerHTML={{ __html: sanitizeHtml(value) }} /> : null}{item.subText ? <label className="materialdesign-icon-list-item-subText materialdesign-icon-list-item-text-vertical" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.subText) }} style={subStyle} /> : null}{status}</div>;
         }
 
-        if (full) return <div className={`materialdesign-icon-list-item ${classes}`} data-oid={item.objectId} key={index} style={itemStyle}><div style={{ display: 'flex', flex: 1, flexDirection: 'column', height: '100%' }}><div style={{ alignItems: 'center', display: 'flex', height: '100%', justifyContent: 'center', width: '100%' }}><div className="materialdesign-button materialdesign-iconList-button" onClick={() => this.activate(item, index, current, data)} onPointerDown={() => this.feedback(data, true)} style={{ background: active ? item.buttonBackgroundActiveColor : item.buttonBackgroundColor, borderBottomLeftRadius: statusColor || statusText ? 0 : undefined, borderBottomRightRadius: statusColor || statusText ? 0 : undefined, cursor: item.readOnly ? 'default' : 'pointer', height: '100%', padding: 0, position: 'relative', width: '100%' }}><div className="materialdesign-button-body" style={{ alignItems: 'center', display: 'flex', height: '100%', justifyContent: 'center', width: '100%' }}>{image ? <div className="materialdesign-icon-list-item-layout-horizontal-image-container">{icon(image, color, n(data.iconHeight, 24))}{this.renderLock(data, locked)}</div> : null}<div className="materialdesign-icon-list-item-layout-horizontal-text-container" style={{ cursor: item.readOnly ? undefined : 'pointer' }}>{item.text ? <label className="materialdesign-icon-list-item-text" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.text) }} style={labelStyle} /> : null}{item.subText ? <label className="materialdesign-icon-list-item-subText" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.subText) }} style={subStyle} /> : null}{showValue ? <label className="materialdesign-icon-list-item-value" dangerouslySetInnerHTML={{ __html: sanitizeHtml(value) }} /> : null}</div></div></div></div>{status}</div></div>;
+        if (full) return <div className={`materialdesign-icon-list-item ${classes}`} data-oid={item.objectId} key={index} style={itemStyle}><div style={{ display: 'flex', flex: 1, flexDirection: 'column', height: '100%' }}><div style={{ alignItems: 'center', display: 'flex', height: '100%', justifyContent: 'center', width: '100%' }}><div {...action} className="materialdesign-button materialdesign-iconList-button" style={{ background: active ? item.buttonBackgroundActiveColor : item.buttonBackgroundColor, borderBottomLeftRadius: statusColor || statusText ? 0 : undefined, borderBottomRightRadius: statusColor || statusText ? 0 : undefined, cursor: item.readOnly ? 'default' : 'pointer', height: '100%', padding: 0, position: 'relative', width: '100%' }}><div className="materialdesign-button-body" style={{ alignItems: 'center', display: 'flex', height: '100%', justifyContent: 'center', width: '100%' }}>{image ? <div className="materialdesign-icon-list-item-layout-horizontal-image-container">{icon(image, color, n(data.iconHeight, 24))}{this.renderLock(data, locked)}</div> : null}<div className="materialdesign-icon-list-item-layout-horizontal-text-container" style={{ cursor: item.readOnly ? undefined : 'pointer' }}>{item.text ? <label className="materialdesign-icon-list-item-text" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.text) }} style={labelStyle} /> : null}{item.subText ? <label className="materialdesign-icon-list-item-subText" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.subText) }} style={subStyle} /> : null}{showValue ? <label className="materialdesign-icon-list-item-value" dangerouslySetInnerHTML={{ __html: sanitizeHtml(value) }} /> : null}</div></div></div></div>{status}</div></div>;
         return <div className={`materialdesign-icon-list-item ${classes}`} data-oid={item.objectId} key={index} style={itemStyle}><div style={{ display: 'flex', flex: 1, flexDirection: 'column', height: '100%' }}><div style={{ display: 'flex', flex: 1 }}>{imageContent ? <div className="materialdesign-icon-list-item-layout-horizontal-image-container">{imageContent}{this.renderLock(data, locked)}</div> : null}<div className="materialdesign-icon-list-item-layout-horizontal-text-container">{item.text ? <label className="materialdesign-icon-list-item-text" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.text) }} style={labelStyle} /> : null}{item.subText ? <label className="materialdesign-icon-list-item-subText" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.subText) }} style={subStyle} /> : null}{showValue ? <label className="materialdesign-icon-list-item-value" dangerouslySetInnerHTML={{ __html: sanitizeHtml(value) }} /> : null}</div></div>{status}</div></div>;
     }
 
@@ -322,10 +337,10 @@ export default class MaterialDesignIconList extends VisWidget {
         const data = this.state.rxData as unknown as Data;
         let parsed: Record<string, unknown>[] | undefined;
         if (data.listItemDataMethod === 'jsonStringObject') {
-            try { const value = JSON.parse(s(stateValue(this.state as VisRxWidgetState, s(data.json_string_oid)), '[]')); parsed = Array.isArray(value) ? value : []; }
+            try { const value = JSON.parse(s(stateValue(this.state, s(data.json_string_oid)), '[]')); parsed = Array.isArray(value) ? value : []; }
             catch (error) { parsed = [{ text: '<font color="red"><b>Error in JSON string</b></font>', subText: `<label style="word-wrap:break-word;white-space:normal">${error instanceof Error ? error.message : String(error)}</label>` }]; }
         }
-        const items = parsed ? parsed.map((value, index) => getItem(data, index, value)) : Array.from({ length: Math.max(0, n(data.countListItems, 1)) }, (_, index) => getItem(data, index));
+        const items = parsed ? parsed.slice(0, MAX_DYNAMIC_ITEMS).map((value, index) => getItem(data, index, value)) : Array.from({ length: boundedCount(data.countListItems, 1) }, (_, index) => getItem(data, index));
         const variables = {
             '--materialdesign-icon-list-header-font-color': s(data.headerTextColor, '#44739e'), '--materialdesign-icon-list-header-font-size': `${n(data.headerTextSize, 24)}px`, '--materialdesign-icon-list-header-font-family': s(data.headerFontFamily, 'inherit'), '--materialdesign-icon-list-background': s(data.containerBackgroundColor, 'transparent'),
             '--materialdesign-icon-list-items-per-row': n(data.maxItemsperRow, 1), '--materialdesign-icon-list-items-min-width': `${n(data.iconItemMinWidth, 50)}px`, '--materialdesign-icon-list-items-min-height': `${n(data.iconItemMinHeight, 0)}px`, '--materialdesign-icon-list-items-gaps': `${n(data.itemGaps, 4)}px`,

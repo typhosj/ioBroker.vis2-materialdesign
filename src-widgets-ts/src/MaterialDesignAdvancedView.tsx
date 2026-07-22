@@ -1,11 +1,11 @@
 import React from "react";
-import { squarePreview , createInfo, RenderProps, stateValue, VisWidget } from './widgetUtils';
-import type { RxWidgetInfo, VisRxWidgetState } from "@iobroker/types-vis-2";
+import { MAX_DYNAMIC_ITEMS, squarePreview, boundedCount, createInfo, RenderProps, stateValue, VisWidget } from './widgetUtils';
+import type { RxWidgetInfo } from "@iobroker/types-vis-2";
 
 type Kind = "state" | "state8";
 type Data = Record<string, unknown>;
 const s = (v: unknown, d = ""): string =>
-  v === undefined || v === null || v === "" || v === "null" ? d : String(v);
+  v === undefined || v === null || v === "" || v === "null" ? d : typeof v === "string" ? v : typeof v === "number" || typeof v === "boolean" || typeof v === "bigint" ? String(v) : d;
 const n = (v: unknown, d = 0): number =>
   v === undefined || v === null || v === "" || !Number.isFinite(Number(v))
     ? d
@@ -147,7 +147,7 @@ export class MaterialDesignAdvancedView extends VisWidget {
     ).getWidgetView(view, { style: { width: "100%", height: "100%" } });
   }
   private selected(data: Data): string {
-    const value = stateValue(this.state as VisRxWidgetState, s(data.oid));
+    const value = stateValue(this.state, s(data.oid));
     const index =
       value === true || value === "true"
         ? 1
@@ -163,7 +163,7 @@ export class MaterialDesignAdvancedView extends VisWidget {
       return Array.from(
         new Set(
           Array.from(
-            { length: Math.max(0, Math.floor(n(data.count, 1))) + 1 },
+            { length: boundedCount(data.count, 1, MAX_DYNAMIC_ITEMS - 1) + 1 },
             (_, index) => s(data[`contains_view_${index}`]),
           ).filter(Boolean),
         ),
@@ -175,8 +175,7 @@ export class MaterialDesignAdvancedView extends VisWidget {
           this.selected(data),
           ...Array.from(
             {
-              length:
-                Math.max(0, Math.floor(n(data.countRenderViewsOnLoad))) + 1,
+              length: boundedCount(data.countRenderViewsOnLoad, 0, MAX_DYNAMIC_ITEMS - 1) + 1,
             },
             (_, index) => s(data[`View${index}`]),
           ),

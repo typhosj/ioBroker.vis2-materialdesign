@@ -31,13 +31,9 @@ export default [
             curly: 'off',
             'brace-style': 'off',
             // Type-style opinions that do not indicate bugs; kept off to avoid churning
-            // the deliberately terse widget source. Bug-catching rules stay on.
+            // the deliberately terse widget source. Correctness rules stay inherited.
             '@typescript-eslint/consistent-type-imports': 'off',
             '@typescript-eslint/explicit-function-return-type': 'off',
-            '@typescript-eslint/no-redundant-type-constituents': 'off',
-            '@typescript-eslint/no-unnecessary-type-assertion': 'off',
-            '@typescript-eslint/no-base-to-string': 'off',
-            '@typescript-eslint/restrict-template-expressions': 'off',
         },
     },
 ];

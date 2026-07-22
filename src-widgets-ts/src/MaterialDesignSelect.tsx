@@ -1,10 +1,10 @@
 import React from 'react';
 
-import type { RxWidgetInfo, VisRxWidgetState } from '@iobroker/types-vis-2';
+import type { RxWidgetInfo } from '@iobroker/types-vis-2';
 
 import { renderIcon } from './MaterialDesignButtons';
 import { cleanColor, num } from './MaterialDesignProgress';
-import { squarePreview, RenderProps, VisWidget, createInfo, iconField, setStateValue, sizeCss, stateValue } from './widgetUtils';
+import { MAX_DYNAMIC_ITEMS, squarePreview, RenderProps, VisWidget, boundedCount, createInfo, iconField, setStateValue, sizeCss, stateValue, stringValue } from './widgetUtils';
 
 interface SelectData {
     oid?: string;
@@ -326,11 +326,11 @@ function itemFromData(
 ): SelectItem {
     return {
         value,
-        text: String(data[`label${index}`] || fallbackText),
-        subText: String(data[`subLabel${index}`] || ''),
-        icon: String(data[`listIcon${index}`] || ''),
-        imageColor: String(data[`listIconColor${index}`] || ''),
-        selectedImageColor: String(data[`imageColorSelectedTextField${index}`] || ''),
+        text: stringValue(data[`label${index}`], fallbackText) || fallbackText,
+        subText: stringValue(data[`subLabel${index}`]),
+        icon: stringValue(data[`listIcon${index}`]),
+        imageColor: stringValue(data[`listIconColor${index}`]),
+        selectedImageColor: stringValue(data[`imageColorSelectedTextField${index}`]),
     };
 }
 
@@ -342,11 +342,11 @@ function items(data: SelectData, objects: Record<string, ioBroker.Object>): Sele
                 .filter(item => item.value !== undefined && item.value !== null)
                 .map(item => ({
                     value: item.value as string | number | boolean,
-                    text: String(item.text ?? item.value),
-                    subText: item.subText ? String(item.subText) : '',
-                    icon: item.icon ? String(item.icon) : '',
-                    imageColor: item.iconColor ? String(item.iconColor) : '',
-                    selectedImageColor: item.iconColorSelectedTextField ? String(item.iconColorSelectedTextField) : '',
+                    text: stringValue(item.text ?? item.value),
+                    subText: stringValue(item.subText),
+                    icon: stringValue(item.icon),
+                    imageColor: stringValue(item.iconColor),
+                    selectedImageColor: stringValue(item.iconColorSelectedTextField),
                 }));
         } catch {
             return [];
@@ -362,8 +362,8 @@ function items(data: SelectData, objects: Record<string, ioBroker.Object>): Sele
             value,
             text: labels[index] || value,
             icon: icons[index] || '',
-            imageColor: String(data[`listIconColor${index}`] || ''),
-            selectedImageColor: String(data[`imageColorSelectedTextField${index}`] || ''),
+            imageColor: stringValue(data[`listIconColor${index}`]),
+            selectedImageColor: stringValue(data[`imageColorSelectedTextField${index}`]),
         }));
     }
     if (data.listDataMethod === 'multistatesObject') {
@@ -384,20 +384,27 @@ function items(data: SelectData, objects: Record<string, ioBroker.Object>): Sele
         }
         return [];
     }
-    const count = Math.max(0, num(data.countSelectItems, 1));
+    const count = boundedCount(data.countSelectItems, 1, MAX_DYNAMIC_ITEMS - 1);
     return Array.from({ length: count + 1 }, (_, index) => {
         const value = data[`value${index}`];
         return value === undefined || value === null
             ? null
-            : itemFromData(data, index, value as string | number | boolean, String(value));
+            : itemFromData(data, index, value as string | number | boolean, stringValue(value));
     }).filter((item): item is SelectItem => !!item);
 }
 
 export default class MaterialDesignSelect extends VisWidget {
     private open = false;
+    private filterTimer?: number;
     private localValue: ioBroker.StateValue | undefined;
     private seenStateValue: ioBroker.StateValue | undefined;
     private hoveredValue: string | undefined;
+
+    componentWillUnmount(): void {
+        if (this.filterTimer !== undefined) window.clearTimeout(this.filterTimer);
+        this.filterTimer = undefined;
+        super.componentWillUnmount?.();
+    }
     private readonly rootRef = React.createRef<HTMLDivElement>();
     // Autocomplete subclass sets this true to render a typeable filter input.
     protected isAutocomplete = false;
@@ -409,6 +416,17 @@ export default class MaterialDesignSelect extends VisWidget {
         this.filterText = undefined;
         this.open = false;
         this.forceUpdate();
+    }
+
+    private scheduleFilterReset(): void {
+        if (this.filterTimer !== undefined) window.clearTimeout(this.filterTimer);
+        this.filterTimer = window.setTimeout(() => {
+            this.filterTimer = undefined;
+            if (this.filterText !== undefined) {
+                this.filterText = undefined;
+                this.forceUpdate();
+            }
+        }, 150);
     }
 
     private onAutocompleteKey(event: React.KeyboardEvent, list: SelectItem[], data: SelectData): void {
@@ -463,7 +481,7 @@ export default class MaterialDesignSelect extends VisWidget {
         super.renderWidgetBody(props);
         const data = this.state.rxData as unknown as SelectData;
         const list = items(data, (this.props.context as unknown as { objects?: Record<string, ioBroker.Object> })?.objects || {});
-        const state = stateValue(this.state as VisRxWidgetState, data.oid || '');
+        const state = stateValue(this.state, data.oid || '');
         if (state !== this.seenStateValue) {
             this.seenStateValue = state;
             this.localValue = undefined;
@@ -666,14 +684,7 @@ export default class MaterialDesignSelect extends VisWidget {
                             ) : null}
                             {this.isAutocomplete ? (
                                 <input
-                                    onBlur={() => {
-                                        window.setTimeout(() => {
-                                            if (this.filterText !== undefined) {
-                                                this.filterText = undefined;
-                                                this.forceUpdate();
-                                            }
-                                        }, 150);
-                                    }}
+                                    onBlur={() => this.scheduleFilterReset()}
                                     onChange={event => {
                                         this.filterText = event.target.value;
                                         this.open = true;

@@ -1,8 +1,8 @@
 import React from 'react';
 
-import type { RxWidgetInfo, VisRxWidgetProps, VisRxWidgetState } from '@iobroker/types-vis-2';
+import type { RxWidgetInfo, VisRxWidgetProps } from '@iobroker/types-vis-2';
 
-import { squarePreview, RenderProps, VisWidget, createInfo, parseActionValue, setStateValue, sizeCss, stateValue } from './widgetUtils';
+import { squarePreview, RenderProps, VisWidget, createInfo, parseActionValue, setStateValue, sizeCss, stateValue, stringValue } from './widgetUtils';
 
 export interface ToggleControlData {
     oid?: string;
@@ -122,7 +122,7 @@ function isSameValue(a: ioBroker.StateValue | undefined, b: unknown): boolean {
     if (a !== '' && b !== '' && !Number.isNaN(Number(a)) && !Number.isNaN(Number(b))) {
         return Number(a) === Number(b);
     }
-    return a === b || a === parseActionValue(String(b ?? ''));
+    return a === b || a === parseActionValue(stringValue(b));
 }
 
 function isOn(value: ioBroker.StateValue | undefined, data: ToggleControlData): boolean {
@@ -199,16 +199,17 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
                 window.clearTimeout(this.lockTimer);
             }
             this.lockTimer = window.setTimeout(() => {
+                this.lockTimer = undefined;
                 this.unlocked = false;
                 this.forceUpdate();
-            }, asNumber(data.autoLockAfter, 10) * 1000);
+            }, Math.min(86_400, Math.max(1, asNumber(data.autoLockAfter, 10))) * 1000);
             this.forceUpdate();
         }
 
         renderWidgetBody(props: RenderProps): React.JSX.Element {
             super.renderWidgetBody(props);
             const data = this.state.rxData as ToggleControlData;
-            const on = isOn(stateValue(this.state as VisRxWidgetState, data.oid || ''), data);
+            const on = isOn(stateValue(this.state, data.oid || ''), data);
             const locked = !!data.lockEnabled && !this.unlocked;
             const label = on ? data.labelTrue || data.labelFalse || '' : data.labelFalse || '';
             const labelPosition = data.labelPosition || 'right';

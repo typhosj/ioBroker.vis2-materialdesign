@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { RxWidgetInfo, VisRxWidgetProps, VisRxWidgetState } from '@iobroker/types-vis-2';
+import type { RxWidgetInfo, VisRxWidgetProps } from '@iobroker/types-vis-2';
 
 import { renderIcon } from './MaterialDesignButtons';
 import { cleanColor, num } from './MaterialDesignProgress';
@@ -417,7 +417,7 @@ export default class MaterialDesignInput extends VisWidget {
     renderWidgetBody(props: RenderProps): React.JSX.Element {
         super.renderWidgetBody(props);
         const data = this.state.rxData as InputData;
-        const state = stateValue(this.state as VisRxWidgetState, data.oid || '');
+        const state = stateValue(this.state, data.oid || '');
         if (state !== this.seenStateValue) {
             this.seenStateValue = state;
             this.localValue = undefined;

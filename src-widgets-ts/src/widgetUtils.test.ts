@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { pickerValueName } from './IconFilePicker';
-import { applyThemeVariables, createInfo, editorDialogPalette, formatDurationTokens, formatMoment, humanizeDuration, iconFieldDataKey, parseActionValue, sanitizeHtml, setStateValue, stateValue } from './widgetUtils';
+import { MAX_DYNAMIC_ITEMS, accessibleText, applyThemeVariables, boundedCount, createInfo, editorDialogPalette, formatDurationTokens, formatMoment, humanizeDuration, iconFieldDataKey, parseActionValue, safeWidgetUrl, sanitizeHtml, setStateValue, stateValue, stringValue } from './widgetUtils';
 
 describe('widget utilities', () => {
     it('keeps legacy action values typed', () => {
@@ -109,5 +109,35 @@ describe('widget utilities', () => {
         // empty / non-string inputs are safe
         expect(sanitizeHtml(undefined)).toBe('');
         expect(sanitizeHtml(42)).toBe('42');
+    });
+
+    it('allows supported widget links and rejects active or ambiguous URLs', () => {
+        expect(safeWidgetUrl('https://example.com/path')).toBe('https://example.com/path');
+        expect(safeWidgetUrl('mailto:user@example.com')).toBe('mailto:user@example.com');
+        expect(safeWidgetUrl('/vis-2/index.html#/main')).toBe('/vis-2/index.html#/main');
+        expect(safeWidgetUrl('../relative/view')).toBe('../relative/view');
+        expect(safeWidgetUrl('javascript:alert(1)')).toBeUndefined();
+        expect(safeWidgetUrl('java\nscript:alert(1)')).toBeUndefined();
+        expect(safeWidgetUrl('data:text/html,<script>alert(1)</script>')).toBeUndefined();
+        expect(safeWidgetUrl('//example.com')).toBeUndefined();
+    });
+
+    it('bounds user-controlled dynamic item counts', () => {
+        expect(boundedCount(-1, 3)).toBe(0);
+        expect(boundedCount('4.9')).toBe(4);
+        expect(boundedCount('invalid', 3)).toBe(3);
+        expect(boundedCount(Infinity, 3)).toBe(3);
+        expect(boundedCount(MAX_DYNAMIC_ITEMS + 1)).toBe(MAX_DYNAMIC_ITEMS);
+    });
+
+    it('stringifies primitives without leaking object default strings', () => {
+        expect(stringValue(12)).toBe('12');
+        expect(stringValue(true)).toBe('true');
+        expect(stringValue({ unsafe: true }, 'fallback')).toBe('fallback');
+    });
+
+    it('derives accessible names from configured rich text', () => {
+        expect(accessibleText('<b>Open</b> &amp; close', 'Action')).toBe('Open & close');
+        expect(accessibleText('', 'Action')).toBe('Action');
     });
 });
