@@ -494,13 +494,25 @@ function themeFields(widgetName: string): RxWidgetInfo['visAttrs'][number]['fiel
     ];
 }
 
+export const DEFAULT_DARK_THEME_OID = 'vis2-materialdesign.0.colors.darkTheme';
+
+// `__mdwThemeDark`'s `default:` in themeFields() is a schema-only value: VIS2 derives which
+// states to subscribe from the keys actually present in a widget's SAVED data (see
+// getUsedObjectIDsInWidget in vis-2 core), never from unset visAttrs defaults — and the
+// hidden-only `theme` group (no visible field besides `useTheme` for widgets without color
+// entries, e.g. Calendar) gives the editor no occasion to ever write that key. So the default
+// here has to be applied by our own reader, same as every other field's fallback.
+export function darkThemeOid(data: Record<string, unknown> | null | undefined): string {
+    return stringValue(data?.__mdwThemeDark, DEFAULT_DARK_THEME_OID);
+}
+
 export function applyThemeVariables(data: Record<string, unknown>, values: Record<string, ioBroker.StateValue> | undefined): void {
     // Client-only: this writes CSS custom properties onto document.documentElement. During the
     // vis-2 server-side prerender there is no document, and the widget data may be null — either
     // would throw ("cannot call visUtils: Cannot convert undefined or null to object" for the
     // unguarded Object.keys(null)). Skip entirely when we cannot / need not touch the DOM.
     if (typeof document === 'undefined' || !data || !values) return;
-    const dark = stringValue(data.__mdwThemeDark);
+    const dark = darkThemeOid(data);
     const isDark = values[`${dark}.val`] === true || values[`${dark}.val`] === 'true';
     Object.keys(data).filter(key => key.startsWith('__mdwTheme_') && !key.endsWith('_dark')).forEach(key => {
         const stateId = data[isDark && data[`${key}_dark`] ? `${key}_dark` : key];
@@ -516,8 +528,44 @@ export function applyThemeVariables(data: Record<string, unknown>, values: Recor
 const BaseVisWidget: typeof VisRxWidget<BaseRxData, WidgetState> = window.visRxWidget;
 
 export class VisWidget extends BaseVisWidget {
+    // Actively subscribed instead of relying on VIS2's own per-widget subscription discovery,
+    // which only ever looks at keys present in the widget's saved data (see darkThemeOid above) —
+    // this makes the dark flag work for every widget regardless of whether its `theme` attribute
+    // group was ever touched in the editor.
+    private darkThemeSubscribedOid?: string;
+    private darkThemeValue = false;
+
+    private onDarkThemeChanged = (_id: string, state: ioBroker.State | null | undefined): void => {
+        const next = state?.val === true || state?.val === 'true';
+        if (next !== this.darkThemeValue) {
+            this.darkThemeValue = next;
+            this.forceUpdate();
+        }
+    };
+
+    componentDidMount(): void {
+        super.componentDidMount();
+        const oid = darkThemeOid(this.state?.rxData as unknown as Record<string, unknown> | undefined);
+        if (oid) {
+            this.darkThemeSubscribedOid = oid;
+            this.props.context.socket.subscribeState(oid, this.onDarkThemeChanged).catch((e: unknown) => console.error(`Cannot subscribe on ${oid}: ${String(e)}`));
+        }
+    }
+
+    componentWillUnmount(): void {
+        if (this.darkThemeSubscribedOid) {
+            this.props.context.socket.unsubscribeState(this.darkThemeSubscribedOid, this.onDarkThemeChanged);
+        }
+        super.componentWillUnmount?.();
+    }
+
+    protected isDarkTheme(): boolean {
+        return this.darkThemeValue;
+    }
+
     render(): React.JSX.Element | null {
-        applyThemeVariables({ ...this.state.rxData }, { ...this.state.values });
+        const rxData = { ...this.state.rxData };
+        applyThemeVariables(rxData, { ...this.state.values, [`${darkThemeOid(rxData)}.val`]: this.darkThemeValue });
         return super.render();
     }
 }

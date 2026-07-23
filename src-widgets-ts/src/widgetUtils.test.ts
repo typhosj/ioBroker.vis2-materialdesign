@@ -1,7 +1,7 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import type { VisRxWidgetState } from '@iobroker/types-vis-2';
 import { pickerValueName } from './IconFilePicker';
-import { MAX_DYNAMIC_ITEMS, accessibleText, applyThemeVariables, boundedCount, createInfo, editorDialogPalette, formatDurationTokens, formatMoment, humanizeDuration, iconFieldDataKey, parseActionValue, safeWidgetUrl, sanitizeHtml, setStateValue, stateValue, stringValue } from './widgetUtils';
+import { DEFAULT_DARK_THEME_OID, MAX_DYNAMIC_ITEMS, VisWidget, accessibleText, applyThemeVariables, boundedCount, createInfo, darkThemeOid, editorDialogPalette, formatDurationTokens, formatMoment, humanizeDuration, iconFieldDataKey, parseActionValue, safeWidgetUrl, sanitizeHtml, setStateValue, stateValue, stringValue } from './widgetUtils';
 
 function fixture<T>(value: unknown): T { return value as T; }
 
@@ -51,6 +51,53 @@ describe('widget utilities', () => {
             [`${data[`${light!.name}_dark`]}.val`]: '#445566',
         });
         expect(document.documentElement.style.getPropertyValue('--materialdesign-widget-theme-color-calendar-border')).toBe('#445566');
+    });
+
+    it('resolves the dark-theme oid, falling back to the shared default', () => {
+        expect(darkThemeOid(undefined)).toBe(DEFAULT_DARK_THEME_OID);
+        expect(darkThemeOid({})).toBe(DEFAULT_DARK_THEME_OID);
+        expect(darkThemeOid({ __mdwThemeDark: 'custom.0.dark' })).toBe('custom.0.dark');
+    });
+
+    it('VisWidget self-subscribes to the dark-theme oid instead of relying on VIS2 discovery', () => {
+        // Regression test for the bug documented in ../../BUGS.md: VIS2 only ever subscribes to
+        // ids actually present in a widget's saved data, never to an unset visAttrs `default`, so
+        // a widget whose `theme` group was never touched in the editor (no visible fields besides
+        // `useTheme`, e.g. Calendar) would never receive the shared dark-theme state at all.
+        type Handler = (id: string, state: { val: unknown } | null) => void;
+        const handlers: Record<string, Handler> = {};
+        const subscribeState = vi.fn((id: string, cb: Handler) => { handlers[id] = cb; return Promise.resolve(); });
+        const unsubscribeState = vi.fn();
+        type Inspection = { isDarkTheme: () => boolean };
+
+        const widget = fixture<Inspection & VisWidget>(new VisWidget(fixture<ConstructorParameters<typeof VisWidget>[0]>({ context: { socket: { subscribeState, unsubscribeState } } })));
+        widget.state = fixture<typeof widget.state>({ rxData: {}, values: {} });
+
+        widget.componentDidMount();
+        expect(subscribeState).toHaveBeenCalledWith(DEFAULT_DARK_THEME_OID, expect.any(Function));
+        expect(widget.isDarkTheme()).toBe(false);
+
+        let forceUpdateCalls = 0;
+        widget.forceUpdate = () => { forceUpdateCalls += 1; };
+        handlers[DEFAULT_DARK_THEME_OID](DEFAULT_DARK_THEME_OID, { val: true });
+        expect(widget.isDarkTheme()).toBe(true);
+        expect(forceUpdateCalls).toBe(1);
+
+        // no re-render for a state change that doesn't flip the boolean
+        handlers[DEFAULT_DARK_THEME_OID](DEFAULT_DARK_THEME_OID, { val: true });
+        expect(forceUpdateCalls).toBe(1);
+
+        widget.componentWillUnmount();
+        expect(unsubscribeState).toHaveBeenCalledWith(DEFAULT_DARK_THEME_OID, expect.any(Function));
+    });
+
+    it('VisWidget subscribes to an explicit override oid instead of the shared default', () => {
+        const subscribeState = vi.fn().mockResolvedValue(undefined);
+        const widget = new VisWidget(fixture<ConstructorParameters<typeof VisWidget>[0]>({ context: { socket: { subscribeState, unsubscribeState: vi.fn() } } }));
+        widget.state = fixture<typeof widget.state>({ rxData: { __mdwThemeDark: 'custom.0.dark' }, values: {} });
+
+        widget.componentDidMount();
+        expect(subscribeState).toHaveBeenCalledWith('custom.0.dark', expect.any(Function));
     });
 
     it('derives editor dialog colors from the surrounding VIS2 surface', () => {

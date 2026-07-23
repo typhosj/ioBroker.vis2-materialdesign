@@ -15,7 +15,7 @@ describe('line history loading', () => {
             { ts: 200, val: 'invalid' },
             { ts: 300, val: null },
         ]);
-        const widget = new MaterialDesignChartLineHistory(fixture<ConstructorParameters<typeof MaterialDesignChartLineHistory>[0]>({ context: { socket: { getHistory } } }));
+        const widget = new MaterialDesignChartLineHistory(fixture<ConstructorParameters<typeof MaterialDesignChartLineHistory>[0]>({ context: { socket: { getHistory, subscribeState: vi.fn().mockResolvedValue(undefined), unsubscribeState: vi.fn() } } }));
         const inspection = fixture<HistoryInspection>(widget);
         widget.state = fixture<typeof widget.state>({
             rxData: {
@@ -47,7 +47,7 @@ describe('line history loading', () => {
     it('contains socket failures and ignores results after unmount', async () => {
         let resolve: (value: Array<{ ts: number; val: number }>) => void = () => undefined;
         const getHistory = vi.fn(() => new Promise<Array<{ ts: number; val: number }>>(done => { resolve = done; }));
-        const widget = new MaterialDesignChartLineHistory(fixture<ConstructorParameters<typeof MaterialDesignChartLineHistory>[0]>({ context: { socket: { getHistory } } }));
+        const widget = new MaterialDesignChartLineHistory(fixture<ConstructorParameters<typeof MaterialDesignChartLineHistory>[0]>({ context: { socket: { getHistory, subscribeState: vi.fn().mockResolvedValue(undefined), unsubscribeState: vi.fn() } } }));
         const inspection = fixture<HistoryInspection>(widget);
         widget.state = fixture<typeof widget.state>({
             rxData: { historyAdapterInstance: 'history.0', refreshMethod: 'byObject', dataCount: 0, oid: 'test.0.value' },

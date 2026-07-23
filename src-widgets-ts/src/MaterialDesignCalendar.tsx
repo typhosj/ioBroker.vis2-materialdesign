@@ -97,7 +97,7 @@ export default class MaterialDesignCalendar extends VisWidget {
     renderWidgetBody(props: RenderProps): React.JSX.Element {
         super.renderWidgetBody(props);
         const d = this.state.rxData as unknown as Data;
-        const isDark = this.state.values?.[`${s(d.__mdwThemeDark)}.val`] === true || this.state.values?.[`${s(d.__mdwThemeDark)}.val`] === 'true';
+        const isDark = this.isDarkTheme();
         const view: string = this.view || s(d.calendarView, 'month');
         const source = events(stateValue(this.state, s(d.oid)));
         const weekdays = s(d.calendarWeekdays, '1,2,3,4,5,6,0').split(',').map(Number).filter(day => day >= 0 && day < 7);
