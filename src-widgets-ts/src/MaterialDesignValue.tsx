@@ -5,7 +5,7 @@ import type { RxWidgetInfo, VisRxWidgetProps } from '@iobroker/types-vis-2';
 import { squarePreview, BaseRxData, RenderProps, VisWidget, createInfo, iconField, sizeCss, stateValue, formatMoment, formatDurationTokens, humanizeDuration, visLocale, sanitizeHtml, stringValue } from './widgetUtils';
 import { renderIcon } from './MaterialDesignButtons';
 
-interface ValueData extends BaseRxData {
+export interface ValueData extends BaseRxData {
     targetType?: 'auto' | 'number' | 'string' | 'boolean' | 'linked';
     overrideText?: string;
     textAlign?: 'start' | 'center' | 'end';
@@ -126,7 +126,7 @@ function color(value: unknown, fallback = ''): string {
     return raw.startsWith('#mdwTheme:') ? fallback : raw || fallback;
 }
 
-function replaceValue(expression: string, value: unknown): string {
+export function replaceValue(expression: string, value: unknown): string {
     const parsed = Number(value);
     return expression.replace(/#value/g, Number.isFinite(parsed) ? String(parsed) : text(value));
 }
@@ -157,7 +157,7 @@ function formatTimestamp(seconds: number, template: string): string {
     return template ? formatMoment(date, template, visLocale()) : date.toLocaleString();
 }
 
-function formatNumber(value: unknown, data: ValueData): string {
+export function formatNumber(value: unknown, data: ValueData): string {
     let current = value;
     if (data.calculate?.includes('#value')) {
         current = evalMaybe(data.calculate, current);
@@ -181,7 +181,7 @@ function formatNumber(value: unknown, data: ValueData): string {
     return `${formatted}${data.valueLabelUnit ? ` ${data.valueLabelUnit}` : ''}`;
 }
 
-function formatBoolean(value: unknown, data: ValueData): string {
+export function formatBoolean(value: unknown, data: ValueData): string {
     let current = value;
     if (data.condition?.includes('#value')) {
         current = evalMaybe(data.condition, current);
@@ -190,7 +190,7 @@ function formatBoolean(value: unknown, data: ValueData): string {
     return on ? text(data.textOnTrue, text(current)) : text(data.textOnFalse, text(current));
 }
 
-function formattedValue(value: unknown, data: ValueData): string {
+export function formattedValue(value: unknown, data: ValueData): string {
     if (value === undefined || value === null) {
         return '';
     }

@@ -96,19 +96,19 @@ const attrs: RxWidgetInfo['visAttrs'] = [
     },
 ];
 
-function range(data: RoundSliderData): { min: number; max: number; step: number } {
+export function range(data: RoundSliderData): { min: number; max: number; step: number } {
     const min = num(data.min, 0);
     const max = num(data.max, 100);
     return { min, max: max === min ? min + 100 : max, step: num(data.step, 1) || 1 };
 }
 
-function current(value: ioBroker.StateValue | undefined, data: RoundSliderData): { raw: number; percent: number } {
+export function current(value: ioBroker.StateValue | undefined, data: RoundSliderData): { raw: number; percent: number } {
     const { min, max } = range(data);
     const raw = Math.min(max, Math.max(min, num(value, min)));
     return { raw, percent: ((raw - min) * 100) / (max - min) };
 }
 
-function label(raw: number, percent: number, data: RoundSliderData): string {
+export function label(raw: number, percent: number, data: RoundSliderData): string {
     const { min, max } = range(data);
     if (raw <= min && data.valueLabelMin) {
         return data.valueLabelMin;
@@ -125,18 +125,18 @@ function label(raw: number, percent: number, data: RoundSliderData): string {
     return data.valueLabelStyle === 'sliderPercent' ? `${Math.floor(percent)} %` : `${raw} ${data.valueLabelUnit || ''}`;
 }
 
-function working(value: ioBroker.StateValue | undefined): boolean {
+export function working(value: ioBroker.StateValue | undefined): boolean {
     return !(value === undefined || value === null || value === '' || value === false || value === 'false');
 }
 
-function polar(angle: number, radius: number): { x: number; y: number } {
+export function polar(angle: number, radius: number): { x: number; y: number } {
     // Angle measured clockwise from 3 o'clock (positive x), matching the old round-slider webcomponent
     // (`_angle2xy = {x: cos, y: sin}`) so startAngle/arcLength orient identically (default 135/270 → gap at bottom).
     const rad = (angle * Math.PI) / 180;
     return { x: 50 + radius * Math.cos(rad), y: 50 + radius * Math.sin(rad) };
 }
 
-function arcPath(start: number, length: number, radius: number): string {
+export function arcPath(start: number, length: number, radius: number): string {
     const end = start + length;
     const from = polar(start, radius);
     const to = polar(end, radius);

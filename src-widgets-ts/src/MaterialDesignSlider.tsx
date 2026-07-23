@@ -168,19 +168,19 @@ const attrs: RxWidgetInfo['visAttrs'] = [
     },
 ];
 
-function range(data: SliderData): { min: number; max: number; step: number } {
+export function range(data: SliderData): { min: number; max: number; step: number } {
     const min = num(data.min, 0);
     const max = num(data.max, 100);
     return { min, max: max === min ? min + 100 : max, step: num(data.step, 1) || 1 };
 }
 
-function sliderValue(value: ioBroker.StateValue | undefined, data: SliderData): { raw: number; percent: number } {
+export function sliderValue(value: ioBroker.StateValue | undefined, data: SliderData): { raw: number; percent: number } {
     const { min, max } = range(data);
     const raw = Math.min(max, Math.max(min, num(value, min)));
     return { raw, percent: ((raw - min) * 100) / (max - min) };
 }
 
-function labelFor(raw: number, percent: number, data: SliderData, applyRules: boolean): string {
+export function labelFor(raw: number, percent: number, data: SliderData, applyRules: boolean): string {
     const { min, max } = range(data);
     if (applyRules) {
         if (raw === min && data.valueLabelMin) {
@@ -227,7 +227,7 @@ function cssVars(data: SliderData): React.CSSProperties {
     } as React.CSSProperties;
 }
 
-function isWorking(value: ioBroker.StateValue | undefined): boolean {
+export function isWorking(value: ioBroker.StateValue | undefined): boolean {
     return !(value === undefined || value === null || value === '' || value === false || value === 'false');
 }
 
