@@ -1,6 +1,6 @@
 {
   "name": "iobroker.vis2-materialdesign",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Native VIS 2 Material Design widgets based on the original work by Scrounger",
   "author": {
     "name": "typhosj",
@@ -8,6 +8,12 @@
   },
   "homepage": "https://github.com/typhosj/ioBroker.vis2-materialdesign",
   "license": "MIT",
+  "overrides": {
+    "esbuild": "0.25.12",
+    "tsconfck": {
+      "typescript": "$typescript"
+    }
+  },
   "engines": {
     "node": ">=22"
   },
@@ -54,9 +60,13 @@
     "@fontsource/roboto-condensed": "^5.2.8",
     "@iobroker/adapter-react-v5": "^8.2.13",
     "@iobroker/eslint-config": "^2.3.4",
+    "@iobroker/types": "^7.2.2",
+    "@iobroker/types-vis-2": "^2.14.4",
     "@mdi/font": "^6.7.96",
     "@mui/icons-material": "^6.5.0",
     "@mui/material": "^6.5.0",
+    "@types/chart.js": "^2.9.41",
+    "@types/node": "^26.1.1",
     "@types/react": "^18.3.31",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^6.0.3",

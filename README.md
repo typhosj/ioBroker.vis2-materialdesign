@@ -66,6 +66,12 @@ Report current VIS 2 problems in the
 [GitHub issue tracker](https://github.com/typhosj/ioBroker.vis2-materialdesign/issues).
 
 ## Changelog
+### 0.3.1 (2026-07-23)
+
+- (typhosj) Added the combined icon/image picker to the remaining widgets (checkbox, input, select, switch)
+- (typhosj) Removed the legacy VIS 1 example scripts (`examples/`) from the repository
+- (typhosj) Expanded test coverage for the slider, round slider and value widgets
+
 ### 0.3.0 (2026-07-22)
 
 - (typhosj) Removed all VIS 1 legacy: the bundled `materialdesign` VIS 1 widget set and `materialdesign.html` are gone; the adapter no longer ships or depends on any VIS 1 files
