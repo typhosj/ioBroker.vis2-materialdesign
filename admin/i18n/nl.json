@@ -1061,6 +1061,7 @@
     "z_index": "z-index",
     "group_style": "Stijl",
     "designStyle": "ontwerpstijl",
+    "md3ButtonVariant": "Material 3-knopvariant",
     "material3SeedColors": "Material 3 basiskleuren (optioneel)",
     "material3SeedColorsInfo": "Overschrijft de primaire/secundaire/tertiaire/foutkleur van Material 3 voor het hele project (alleen lichte modus). Leeg laten om het standaardpalet te gebruiken.",
     "material3Seed_primary": "primair",

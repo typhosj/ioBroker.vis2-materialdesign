@@ -1061,6 +1061,7 @@
     "z_index": "z-Index",
     "group_style": "Stil",
     "designStyle": "Gestaltungsstil",
+    "md3ButtonVariant": "Material-3-Schaltflächenvariante",
     "material3SeedColors": "Material 3 Startfarben (optional)",
     "material3SeedColorsInfo": "Überschreibt die primäre/sekundäre/tertiäre/Fehlerfarbe von Material 3 projektweit (nur im hellen Modus). Leer lassen, um die Standardpalette zu verwenden.",
     "material3Seed_primary": "primär",

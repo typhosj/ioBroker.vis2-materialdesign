@@ -1061,6 +1061,7 @@
     "z_index": "z-Index",
     "group_style": "Style",
     "designStyle": "design style",
+    "md3ButtonVariant": "Material 3 button variant",
     "material3SeedColors": "Material 3 seed colors (optional)",
     "material3SeedColorsInfo": "Override the Material 3 primary/secondary/tertiary/error colors project-wide (light mode only). Leave blank to use the default Material 3 palette.",
     "material3Seed_primary": "primary",

@@ -2,7 +2,7 @@ import React from 'react';
 
 import type { RxWidgetInfo, VisRxWidgetProps } from '@iobroker/types-vis-2';
 
-import { MAX_DYNAMIC_ITEMS, squarePreview, PressState, RenderProps, VisWidget, boundedCount, createInfo, iconField, parseActionValue, safeWidgetUrl, setStateValue, sizeCss, stateValue, sanitizeHtml, stringValue } from './widgetUtils';
+import { MAX_DYNAMIC_ITEMS, squarePreview, PressState, RenderProps, VisWidget, boundedCount, createInfo, designStyle, designStyleClasses, iconField, parseActionValue, safeWidgetUrl, setStateValue, sizeCss, stateValue, sanitizeHtml, stringValue } from './widgetUtils';
 
 type ButtonKind = 'navigation' | 'link' | 'state' | 'multiState' | 'addition' | 'toggle' | 'slider';
 type ButtonLayout = 'default' | 'vertical' | 'icon';
@@ -101,8 +101,12 @@ const previewGlyph: Partial<Record<ButtonKind, string>> = {
 const imageIconField = (name: string, defaultValue?: string): Record<string, unknown> =>
     iconField(name, name, defaultValue);
 
+// Legacy `buttonStyle` and the M3 `md3ButtonVariant` are mutually exclusive by mode: each is hidden
+// in the other's style so the editor only ever shows the one that applies (compat: buttonStyle's
+// persisted values/indices are untouched — it is only hidden, never changed, in M3 mode).
 const styleFields = [
-    { name: 'buttonStyle', label: 'buttonStyle', type: 'select', options: ['text', 'raised', 'unelevated', 'outlined'], default: 'raised' },
+    { name: 'buttonStyle', label: 'buttonStyle', type: 'select', options: ['text', 'raised', 'unelevated', 'outlined'], default: 'raised', hidden: (data: Record<string, unknown>) => designStyle(data) === 'material3' },
+    { name: 'md3ButtonVariant', label: 'md3ButtonVariant', type: 'select', options: ['filled', 'tonal', 'elevated', 'outlined', 'text'], default: 'filled', hidden: (data: Record<string, unknown>) => designStyle(data) !== 'material3' },
 ];
 
 const feedbackFields = [
@@ -241,6 +245,14 @@ function attrs(def: ButtonDefinition): RxWidgetInfo['visAttrs'] {
             ],
         },
     ] as RxWidgetInfo['visAttrs'];
+}
+
+// True when a saved color option is an explicit, usable CSS color (not empty, not an unresolvable
+// legacy `#mdwTheme:` token — mirrors color()'s reasoning). Drives M3 token precedence: an explicit
+// saved color is emitted inline and wins; otherwise the widget omits the color so the scoped M3 CSS
+// token applies (../../MATERIAL3_PLAN.md token-precedence rule).
+export function m3ColorExplicit(value: unknown): boolean {
+    return typeof value === 'string' && !!value && !value.startsWith('#mdwTheme:');
 }
 
 function color(value: unknown, fallback: string): string {
@@ -586,13 +598,25 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
             const sliderDash = `${sliderArcLength * sliderRatio} ${sliderCircumference}`;
             const sliderTrackDash = `${sliderArcLength} ${sliderCircumference}`;
             const sliderRotation = numeric(data.angleOffset, 0) - 90;
+            // Material 3 presentation (Phase 2, ../../MATERIAL3_PLAN.md) — applies to the common
+            // (non-icon) button layouts here; icon buttons/sliders keep the legacy path for now.
+            // Behavior (handlers, push, slider, lock) is untouched: only presentational style is
+            // gated. Per the token-precedence rule an explicit saved color still wins (emitted
+            // inline below); when none is set, the color is left off so the scoped M3 CSS drives it.
+            const isM3 = designStyle(data) === 'material3';
+            const m3Standard = isM3 && !isIcon;
+            const m3Variant = stringValue(data.md3ButtonVariant) || 'filled';
+            const bgExplicit = on ? m3ColorExplicit(data.colorBgTrue) : m3ColorExplicit(data.mdwButtonPrimaryColor) || m3ColorExplicit(data.colorBgFalse);
+            const fgExplicit = on ? m3ColorExplicit(data.imageTrueColor) || m3ColorExplicit(data.mdwButtonSecondaryColor) : m3ColorExplicit(data.mdwButtonSecondaryColor) || m3ColorExplicit(data.imageColor);
+            const labelExplicit = m3ColorExplicit(on ? data.labelColorTrue : data.labelColorFalse);
+            const iconColor = m3Standard && !fgExplicit ? 'currentColor' : secondary;
             const content = (
                 <>
-                    {renderIcon(image, secondary, iconSize, imageColorSet)}
+                    {renderIcon(image, iconColor, iconSize, imageColorSet)}
                     {!isIcon ? (
                         <span
                             style={{
-                                color: labelColor,
+                                color: m3Standard && !labelExplicit && !fgExplicit ? undefined : labelColor,
                                 fontFamily: data.textFontFamily || undefined,
                                 fontSize: data.textFontSize ? sizeCss(data.textFontSize, 14) : undefined,
                                 width: !isVertical && numeric(data.labelWidth, 0) > 0 ? `${numeric(data.labelWidth)}%` : undefined,
@@ -604,17 +628,18 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
             );
 
             return (
-                <div style={{ boxSizing: 'border-box', width: '100%', height: '100%', padding: 0 }}>
+                <div className={isM3 ? `materialdesign-widget ${designStyleClasses(data, this.isDarkTheme())}` : undefined} style={{ boxSizing: 'border-box', width: '100%', height: '100%', padding: 0 }}>
                     <button
                         type="button"
                         aria-pressed={on}
+                        className={m3Standard ? `mdw-md3-button mdw-md3-button--${m3Variant} mdw-state-layer` : undefined}
                         style={{
                             width: '100%',
                             height: '100%',
-                            border: data.buttonStyle === 'outlined' ? `1px solid ${secondary}` : 0,
-                            borderRadius: isIcon ? '50%' : 4,
-                            background: data.buttonStyle === 'text' || data.buttonStyle === 'outlined' ? 'transparent' : background,
-                            color: secondary,
+                            border: m3Standard ? (fgExplicit && m3Variant === 'outlined' ? `1px solid ${secondary}` : undefined) : data.buttonStyle === 'outlined' ? `1px solid ${secondary}` : 0,
+                            borderRadius: m3Standard ? undefined : isIcon ? '50%' : 4,
+                            background: m3Standard ? (bgExplicit ? primary : undefined) : data.buttonStyle === 'text' || data.buttonStyle === 'outlined' ? 'transparent' : background,
+                            color: m3Standard ? (fgExplicit ? secondary : undefined) : secondary,
                             cursor: data.readOnly ? 'default' : 'pointer',
                             padding: isIcon ? 0 : '0 8px',
                             display: 'flex',
@@ -622,8 +647,8 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
                             alignItems: isVertical ? data.alignment || 'center' : 'center',
                             justifyContent: 'center',
                             gap,
-                            transform: pressState.active ? 'translateY(1px)' : 'none',
-                            transition: 'background 120ms ease, transform 80ms ease',
+                            transform: m3Standard ? undefined : pressState.active ? 'translateY(1px)' : 'none',
+                            transition: m3Standard ? undefined : 'background 120ms ease, transform 80ms ease',
                             position: 'relative',
                         }}
                         onMouseEnter={() => this.setState({ hovered: true })}

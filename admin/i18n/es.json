@@ -1061,6 +1061,7 @@
     "z_index": "Índice z",
     "group_style": "Estilo",
     "designStyle": "estilo de diseño",
+    "md3ButtonVariant": "Variante de botón Material 3",
     "material3SeedColors": "Colores base de Material 3 (opcional)",
     "material3SeedColorsInfo": "Sobrescribe los colores primario/secundario/terciario/error de Material 3 en todo el proyecto (solo modo claro). Déjelo en blanco para usar la paleta predeterminada.",
     "material3Seed_primary": "primario",

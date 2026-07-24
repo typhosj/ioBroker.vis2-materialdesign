@@ -69,3 +69,49 @@
         transition-duration: 0ms;
     }
 }
+
+/*
+ * M3 common (non-icon) button variants (Phase 2, ../../MATERIAL3_PLAN.md). Presentation only:
+ * shape (full pill), label-large type, and the five container/label color pairings — driven purely
+ * by the semantic tokens so an untouched widget is coherent, while an explicit saved widget color
+ * still wins because the widget emits it as an inline style (token-precedence rule). The button
+ * also carries `mdw-state-layer` for hover/focus/pressed. `currentColor` in the state layer resolves
+ * to each variant's label color (e.g. on-primary for filled), which is the M3 spec state-layer color.
+ */
+.materialdesign-widget.mdw-style-material3 .mdw-md3-button {
+    background: transparent;
+    border: 0;
+    border-radius: var(--md-sys-shape-corner-full);
+    color: var(--md-sys-color-primary);
+    font-family: var(--md-sys-typescale-label-large-font);
+    font-size: var(--md-sys-typescale-label-large-size);
+    font-weight: var(--md-sys-typescale-label-large-weight);
+    letter-spacing: var(--md-sys-typescale-label-large-tracking);
+}
+
+.materialdesign-widget.mdw-style-material3 .mdw-md3-button--filled {
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+}
+
+.materialdesign-widget.mdw-style-material3 .mdw-md3-button--tonal {
+    background: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+}
+
+.materialdesign-widget.mdw-style-material3 .mdw-md3-button--elevated {
+    background: var(--md-sys-color-surface-container-low);
+    box-shadow: var(--md-sys-elevation-level1);
+    color: var(--md-sys-color-primary);
+}
+
+.materialdesign-widget.mdw-style-material3 .mdw-md3-button--outlined {
+    background: transparent;
+    border: 1px solid var(--md-sys-color-outline);
+    color: var(--md-sys-color-primary);
+}
+
+.materialdesign-widget.mdw-style-material3 .mdw-md3-button--text {
+    background: transparent;
+    color: var(--md-sys-color-primary);
+}

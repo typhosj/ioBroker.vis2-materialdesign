@@ -1061,6 +1061,7 @@
     "z_index": "Z-индекс",
     "group_style": "Стиль",
     "designStyle": "стиль оформления",
+    "md3ButtonVariant": "Вариант кнопки Material 3",
     "material3SeedColors": "Базовые цвета Material 3 (необязательно)",
     "material3SeedColorsInfo": "Переопределяет основной/вторичный/третичный цвет и цвет ошибки Material 3 для всего проекта (только светлый режим). Оставьте пустым, чтобы использовать палитру по умолчанию.",
     "material3Seed_primary": "основной",

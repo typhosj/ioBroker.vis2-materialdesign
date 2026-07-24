@@ -1,8 +1,21 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { createButtonClass } from './MaterialDesignButtons';
+import { createButtonClass, m3ColorExplicit } from './MaterialDesignButtons';
 
 function fixture<T>(value: unknown): T { return value as T; }
+
+describe('m3ColorExplicit (M3 token precedence)', () => {
+    it('treats a usable saved color as explicit', () => {
+        expect(m3ColorExplicit('#ffffff')).toBe(true);
+        expect(m3ColorExplicit('rgb(1,2,3)')).toBe(true);
+    });
+    it('treats empty, non-string, or unresolvable legacy tokens as unset', () => {
+        expect(m3ColorExplicit('')).toBe(false);
+        expect(m3ColorExplicit(undefined)).toBe(false);
+        expect(m3ColorExplicit(123)).toBe(false);
+        expect(m3ColorExplicit('#mdwTheme:vis-materialdesign.0.foo')).toBe(false);
+    });
+});
 
 const definition = (kind: 'navigation' | 'state' | 'multiState' | 'addition' | 'toggle') => ({
     id: `test-${kind}`,
