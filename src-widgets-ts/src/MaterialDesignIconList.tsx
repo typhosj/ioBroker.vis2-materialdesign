@@ -3,7 +3,7 @@ import React from 'react';
 import type { RxWidgetInfo, WidgetData } from '@iobroker/types-vis-2';
 
 import { renderIcon } from './MaterialDesignButtons';
-import { MAX_DYNAMIC_ITEMS, squarePreview, RenderProps, VisWidget, accessibleText, boundedCount, createInfo, iconField, parseActionValue, safeWidgetUrl, setStateValue, stateValue, sanitizeHtml, stringValue } from './widgetUtils';
+import { MAX_DYNAMIC_ITEMS, squarePreview, RenderProps, VisWidget, accessibleText, boundedCount, createInfo, designStyle, designStyleClasses, iconField, parseActionValue, safeWidgetUrl, setStateValue, stateValue, sanitizeHtml, stringValue } from './widgetUtils';
 
 type Data = Record<string, unknown> & {
     listItemDataMethod?: string;
@@ -167,6 +167,16 @@ const css = `
 .materialdesign-icon-list .materialdesign-button{font-family:var(--materialdesign-font-button);font-size:var(--materialdesign-font-size-button);font-weight:500;text-decoration:none;padding:0 8px;align-items:center;justify-content:center;box-sizing:border-box;height:36px;border:0;outline:0;line-height:inherit;user-select:none;overflow:hidden;vertical-align:middle;border-radius:4px}.materialdesign-icon-list .materialdesign-icon-button{border-radius:100%;width:48px;height:48px;font-size:24px;display:inline-block;box-sizing:border-box;border:0;outline:0;background-color:transparent;fill:currentColor;color:inherit;text-decoration:none;cursor:pointer;user-select:none}.materialdesign-icon-list .materialdesign-button,.materialdesign-icon-list .materialdesign-icon-button{-webkit-tap-highlight-color:transparent}.materialdesign-icon-list .materialdesign-iconList-button:active{box-shadow:inset 0 0 0 999px color-mix(in srgb,var(--materialdesign-color-icon-button-hover) 12%,transparent)}.materialdesign-icon-list .materialdesign-iconList-button:focus-visible{outline:2px solid #44739e;outline-offset:2px}
 `;
 
+// Material 3 (Phase 4, ../../MATERIAL3_PLAN.md): scoped overrides for the static surface colors the
+// css block above hardcodes (#fff item/card backgrounds, #000 card text, #e0e0e0 outline). The
+// color-driven CSS vars are switched to tokens in renderWidgetBody; behavior/geometry unchanged.
+const m3Css = `
+.materialdesign-icon-list.mdw-style-material3 .materialdesign-icon-list-item-standard{background:transparent}
+.materialdesign-icon-list.mdw-style-material3 .materialdesign-icon-list-item-card,.materialdesign-icon-list.mdw-style-material3 .materialdesign-icon-list-item-card-layout-full{background:var(--md-sys-color-surface-container-low);color:var(--md-sys-color-on-surface)}
+.materialdesign-icon-list.mdw-style-material3 .materialdesign-icon-list-item-card--outlined{border-color:var(--md-sys-color-outline-variant)}
+.materialdesign-icon-list.mdw-style-material3 .materialdesign-html-card.mdc-card{color:var(--md-sys-color-on-surface)}
+`;
+
 const n = (value: unknown, fallback = 0): number => value === '' || value === undefined || value === null || !Number.isFinite(Number(value)) ? fallback : Number(value);
 const s = (value: unknown, fallback = ''): string => value === '' || value === undefined || value === null || value === 'null' ? fallback : typeof value === "string" ? value : typeof value === "number" || typeof value === "boolean" || typeof value === "bigint" ? String(value) : fallback;
 const b = (value: unknown, fallback = false): boolean => value === undefined || value === null || value === '' ? fallback : value === true || value === 'true' || value === 1 || value === '1';
@@ -223,6 +233,10 @@ function icon(value: string, color: string, height: number): React.JSX.Element |
 export default class MaterialDesignIconList extends VisWidget {
     private readonly unlocked = new Set<number>();
     private readonly relockTimers = new Map<number, number>();
+
+    private isM3(data: Data): boolean { return designStyle(data) === 'material3'; }
+    // Legacy blue icon default -> primary token in M3; an explicit saved color still wins.
+    private m3IconColor(data: Data, color: string): string { return this.isM3(data) && color === '#44739e' ? 'var(--md-sys-color-primary)' : color; }
 
     static getWidgetInfo(): RxWidgetInfo {
         return { ...createInfo('tplVis2-materialdesign-Icon-List', 'Icon List', attrs), visPrev: squarePreview('F0572'), visDefaultStyle: { width: 400, height: 270 } };
@@ -288,7 +302,7 @@ export default class MaterialDesignIconList extends VisWidget {
     private renderButtonIcon(item: Item, index: number, data: Data, active: boolean, locked: boolean, current: unknown): React.JSX.Element {
         const height = n(data.iconHeight, 24);
         const image = active ? item.imageActive : item.image;
-        const color = active ? item.imageActiveColor : item.imageColor;
+        const color = this.m3IconColor(data, active ? item.imageActiveColor : item.imageColor);
         const action = this.actionProps(item, index, current, data);
         const filter = locked && b(data.lockApplyOnlyOnImage, true) ? `grayscale(${n(data.lockFilterGrayscale, 30)}%)` : undefined;
         if (s(data.buttonLayout, 'round') === 'round') {
@@ -311,7 +325,7 @@ export default class MaterialDesignIconList extends VisWidget {
         const percent = item.usePercentOfRow ? `calc(${item.usePercentOfRow}% - (${n(data.itemGaps, 4)}px + 6px) - (${n(data.maxItemsperRow, 1)} - 1) * ${n(data.itemGaps, 4)}px)` : undefined;
         const itemStyle: React.CSSProperties = { background: item.background || undefined, display: 'flex', filter: locked && !b(data.lockApplyOnlyOnImage, true) ? `grayscale(${n(data.lockFilterGrayscale, 30)}%)` : undefined, flexBasis: percent, minWidth: item.minWidth || undefined };
         const image = active ? item.imageActive : item.image;
-        const color = active ? item.imageActiveColor : item.imageColor;
+        const color = this.m3IconColor(data, active ? item.imageActiveColor : item.imageColor);
         const statusColor = active ? item.statusBarColorActive : item.statusBarColor;
         const statusText = active ? item.statusBarTextActive : item.statusBarText;
         const statusClass = `materialdesign-icon-list-item-layout-${s(data.itemLayout, 'vertical')}-status-line${card ? '-card' : ''}`;
@@ -335,6 +349,8 @@ export default class MaterialDesignIconList extends VisWidget {
     renderWidgetBody(props: RenderProps): React.JSX.Element {
         super.renderWidgetBody(props);
         const data = this.state.rxData as unknown as Data;
+        const isM3 = this.isM3(data);
+        const m3f = (v: unknown, token: string, fb: string): string => s(v) || (isM3 ? token : fb);
         let parsed: Record<string, unknown>[] | undefined;
         if (data.listItemDataMethod === 'jsonStringObject') {
             try { const value = JSON.parse(s(stateValue(this.state, s(data.json_string_oid)), '[]')); parsed = Array.isArray(value) ? value : []; }
@@ -342,16 +358,16 @@ export default class MaterialDesignIconList extends VisWidget {
         }
         const items = parsed ? parsed.slice(0, MAX_DYNAMIC_ITEMS).map((value, index) => getItem(data, index, value)) : Array.from({ length: boundedCount(data.countListItems, 1) }, (_, index) => getItem(data, index));
         const variables = {
-            '--materialdesign-icon-list-header-font-color': s(data.headerTextColor, '#44739e'), '--materialdesign-icon-list-header-font-size': `${n(data.headerTextSize, 24)}px`, '--materialdesign-icon-list-header-font-family': s(data.headerFontFamily, 'inherit'), '--materialdesign-icon-list-background': s(data.containerBackgroundColor, 'transparent'),
+            '--materialdesign-icon-list-header-font-color': m3f(data.headerTextColor, 'var(--md-sys-color-on-surface)', '#44739e'), '--materialdesign-icon-list-header-font-size': `${n(data.headerTextSize, 24)}px`, '--materialdesign-icon-list-header-font-family': s(data.headerFontFamily, 'inherit'), '--materialdesign-icon-list-background': s(data.containerBackgroundColor, 'transparent'),
             '--materialdesign-icon-list-items-per-row': n(data.maxItemsperRow, 1), '--materialdesign-icon-list-items-min-width': `${n(data.iconItemMinWidth, 50)}px`, '--materialdesign-icon-list-items-min-height': `${n(data.iconItemMinHeight, 0)}px`, '--materialdesign-icon-list-items-gaps': `${n(data.itemGaps, 4)}px`,
-            '--materialdesign-icon-list-items-text-font-size': `${n(data.labelFontSize, 14)}px`, '--materialdesign-icon-list-items-text-font-family': s(data.labelFontFamily, 'inherit'), '--materialdesign-icon-list-items-text-font-color': s(data.labelFontColor, '#44739e'), '--materialdesign-icon-list-items-subText-font-size': `${n(data.subLabelFontSize, 12)}px`, '--materialdesign-icon-list-items-subText-font-family': s(data.subLabelFontFamily, 'inherit'), '--materialdesign-icon-list-items-subText-font-color': s(data.subLabelFontColor, 'rgba(0,0,0,.54)'),
-            '--materialdesign-icon-list-items-value-font-size': `${n(data.valueFontSize, 12)}px`, '--materialdesign-icon-list-items-value-font-family': s(data.valueFontFamily, 'inherit'), '--materialdesign-icon-list-items-value-font-color': s(data.valueFontColor, '#44739e'), '--materialdesign-icon-list-item-layout-horizontal-image-container-width': n(data.horizontalIconContainerWidth) ? `${n(data.horizontalIconContainerWidth)}px` : 'auto', '--materialdesign-icon-list-item-layout-vertical-image-container-height': n(data.verticalIconContainerHeight) ? `${n(data.verticalIconContainerHeight)}px` : 'auto',
-            '--materialdesign-font-card-title': s(data.titleFontFamily, 'inherit'), '--materialdesign-color-card-background': s(data.colorBackground, '#fff'), '--materialdesign-color-card-title-section-background': s(data.colorTitleSectionBackground, 'transparent'), '--materialdesign-color-card-text-section-background': s(data.colorTextSectionBackground, 'transparent'), '--materialdesign-color-card-title': s(data.colorTitle, '#44739e'),
+            '--materialdesign-icon-list-items-text-font-size': `${n(data.labelFontSize, 14)}px`, '--materialdesign-icon-list-items-text-font-family': s(data.labelFontFamily, 'inherit'), '--materialdesign-icon-list-items-text-font-color': m3f(data.labelFontColor, 'var(--md-sys-color-on-surface)', '#44739e'), '--materialdesign-icon-list-items-subText-font-size': `${n(data.subLabelFontSize, 12)}px`, '--materialdesign-icon-list-items-subText-font-family': s(data.subLabelFontFamily, 'inherit'), '--materialdesign-icon-list-items-subText-font-color': m3f(data.subLabelFontColor, 'var(--md-sys-color-on-surface-variant)', 'rgba(0,0,0,.54)'),
+            '--materialdesign-icon-list-items-value-font-size': `${n(data.valueFontSize, 12)}px`, '--materialdesign-icon-list-items-value-font-family': s(data.valueFontFamily, 'inherit'), '--materialdesign-icon-list-items-value-font-color': m3f(data.valueFontColor, 'var(--md-sys-color-on-surface-variant)', '#44739e'), '--materialdesign-icon-list-item-layout-horizontal-image-container-width': n(data.horizontalIconContainerWidth) ? `${n(data.horizontalIconContainerWidth)}px` : 'auto', '--materialdesign-icon-list-item-layout-vertical-image-container-height': n(data.verticalIconContainerHeight) ? `${n(data.verticalIconContainerHeight)}px` : 'auto',
+            '--materialdesign-font-card-title': s(data.titleFontFamily, 'inherit'), '--materialdesign-color-card-background': m3f(data.colorBackground, 'var(--md-sys-color-surface-container-low)', '#fff'), '--materialdesign-color-card-title-section-background': s(data.colorTitleSectionBackground, 'transparent'), '--materialdesign-color-card-text-section-background': s(data.colorTextSectionBackground, 'transparent'), '--materialdesign-color-card-title': m3f(data.colorTitle, 'var(--md-sys-color-on-surface)', '#44739e'),
         } as React.CSSProperties;
         const headerHeight = n(data.header_height, 60);
-        const header = s(data.headers) ? <div className="materialdesign-widget materialdesign-html-card" style={{ height: headerHeight, marginBottom: -5, overflow: 'hidden', position: 'relative' }}><div className="materialdesign-html-card-container mdc-card" style={{ alignItems: 'center', background: 'transparent', display: 'flex', flexDirection: 'row', height: headerHeight + 5, margin: '8px 3px 3px', padding: `${n(data.header_padding_top, 6)}px ${n(data.header_padding_right, 16)}px ${n(data.header_padding_bottom, 20)}px ${n(data.header_padding_left, 16)}px`, textAlign: s(data.alignment, 'flex-start').replace('flex-', '') as React.CSSProperties['textAlign'], width: 'calc(100% - 6px)' }}>{icon(s(data.headerImage), s(data.headerImageColor), n(data.headerImageHeight, 24))}<div className="materialdesign-icon-list-header" dangerouslySetInnerHTML={{ __html: sanitizeHtml(s(data.headers)) }} /></div></div> : null;
+        const header = s(data.headers) ? <div className="materialdesign-widget materialdesign-html-card" style={{ height: headerHeight, marginBottom: -5, overflow: 'hidden', position: 'relative' }}><div className="materialdesign-html-card-container mdc-card" style={{ alignItems: 'center', background: 'transparent', display: 'flex', flexDirection: 'row', height: headerHeight + 5, margin: '8px 3px 3px', padding: `${n(data.header_padding_top, 6)}px ${n(data.header_padding_right, 16)}px ${n(data.header_padding_bottom, 20)}px ${n(data.header_padding_left, 16)}px`, textAlign: s(data.alignment, 'flex-start').replace('flex-', '') as React.CSSProperties['textAlign'], width: 'calc(100% - 6px)' }}>{icon(s(data.headerImage), m3f(data.headerImageColor, 'var(--md-sys-color-on-surface-variant)', ''), n(data.headerImageHeight, 24))}<div className="materialdesign-icon-list-header" dangerouslySetInnerHTML={{ __html: sanitizeHtml(s(data.headers)) }} /></div></div> : null;
         const container = <div className="materialdesign-icon-list-container" style={{ flexWrap: b(data.wrapItems, true) ? 'wrap' : undefined, height: b(data.wrapItems, true) ? 'auto' : undefined }}>{items.map((value, index) => this.renderItem(value, index, data))}</div>;
         const titleSize = n(data.titleLayout) ? `${n(data.titleLayout)}px` : undefined;
-        return <div className="materialdesign-widget materialdesign-icon-list" style={{ ...variables, boxSizing: 'border-box', height: '100%', overflow: 'hidden', width: '100%' }}><style>{css}</style>{header}{b(data.cardUse) ? <div className="materialdesign-html-card mdc-card" style={{ height: 'calc(100% - 6px)', margin: '3px 0 3px 3px', width: 'calc(100% - 6px)' }}>{data.title !== undefined && data.title !== null ? <div className="materialdesign-html-card card-title-section"><div className={`materialdesign-html-card card-title ${s(data.titleLayout).match(/^(headline|subtitle|body|caption|button|overline)/) ? `mdc-typography--${s(data.titleLayout)}` : ''}`} dangerouslySetInnerHTML={{ __html: sanitizeHtml(s(data.title)) }} style={{ fontSize: titleSize }} /></div> : null}<div className="materialdesign-html-card card-text-section iconlist" style={{ height: '100%', margin: n(data.borderDistance), overflowX: b(data.showScrollbar, true) ? 'hidden' : undefined, overflowY: b(data.showScrollbar, true) ? 'auto' : undefined }}><div className="materialdesign-html-card">{container}</div></div></div> : <div className="materialdesign-icon-list-scroll" style={{ boxSizing: 'border-box', maxHeight: '100%', overflowX: 'hidden', overflowY: b(data.showScrollbar, true) ? 'auto' : 'hidden' }}>{container}</div>}</div>;
+        return <div className={`materialdesign-widget materialdesign-icon-list${isM3 ? ` ${designStyleClasses(data, this.isDarkTheme())}` : ''}`} style={{ ...variables, boxSizing: 'border-box', height: '100%', overflow: 'hidden', width: '100%' }}><style>{css}{isM3 ? m3Css : ''}</style>{header}{b(data.cardUse) ? <div className="materialdesign-html-card mdc-card" style={{ height: 'calc(100% - 6px)', margin: '3px 0 3px 3px', width: 'calc(100% - 6px)' }}>{data.title !== undefined && data.title !== null ? <div className="materialdesign-html-card card-title-section"><div className={`materialdesign-html-card card-title ${s(data.titleLayout).match(/^(headline|subtitle|body|caption|button|overline)/) ? `mdc-typography--${s(data.titleLayout)}` : ''}`} dangerouslySetInnerHTML={{ __html: sanitizeHtml(s(data.title)) }} style={{ fontSize: titleSize }} /></div> : null}<div className="materialdesign-html-card card-text-section iconlist" style={{ height: '100%', margin: n(data.borderDistance), overflowX: b(data.showScrollbar, true) ? 'hidden' : undefined, overflowY: b(data.showScrollbar, true) ? 'auto' : undefined }}><div className="materialdesign-html-card">{container}</div></div></div> : <div className="materialdesign-icon-list-scroll" style={{ boxSizing: 'border-box', maxHeight: '100%', overflowX: 'hidden', overflowY: b(data.showScrollbar, true) ? 'auto' : 'hidden' }}>{container}</div>}</div>;
     }
 }
