@@ -1,0 +1,1 @@
+import{n as e,t}from"./MaterialDesignViews-Dm9TWxQZ.js";var n=class n extends t{constructor(e){super(e,`grid`)}static getWidgetInfo(){return e(`grid`)}getWidgetInfo(){return n.getWidgetInfo()}};export{n as default};

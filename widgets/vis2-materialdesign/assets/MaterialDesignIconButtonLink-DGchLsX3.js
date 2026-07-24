@@ -1,0 +1,1 @@
+import{t as e}from"./MaterialDesignButtons-wxDc7FP-.js";var t=e({id:`tplVis2-materialdesign-Icon-Button-Link`,name:`Icon Button Link`,kind:`link`,layout:`icon`,label:``,icon:`link`});export{t as default};
