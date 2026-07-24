@@ -66,9 +66,9 @@ Report current VIS 2 problems in the
 [GitHub issue tracker](https://github.com/typhosj/ioBroker.vis2-materialdesign/issues).
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 0.3.2 (2026-07-24)
 
-- (typhosj) Fixed the "npm run test:package" check to run the standard `@iobroker/testing` package-file validation again (test:package was shadowed by a project-specific script)
+- (typhosj) Fixed the "npm run test:package" CI check to run the standard `@iobroker/testing` package-file validation again (it was shadowed by a project-specific script of the same name)
 - (typhosj) Removed the unused `axios` devDependency
 
 ### 0.3.1 (2026-07-23)
