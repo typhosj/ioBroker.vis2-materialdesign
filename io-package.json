@@ -1,8 +1,34 @@
 {
   "common": {
     "name": "vis2-materialdesign",
-    "version": "0.3.1",
+    "version": "0.3.3",
     "news": {
+      "0.3.3": {
+        "en": "Fixed the Theme Editor's runtime object sync: missing intermediate channel objects, a number-only role used on string values, and a stale type mismatch on font-size states.",
+        "de": "Die Laufzeit-Objektsynchronisierung des Theme-Editors wurde repariert: fehlende Zwischen-Channel-Objekte, eine nur für Zahlen gedachte Rolle bei String-Werten, und ein veralteter Typ-Konflikt bei Schriftgrößen-States.",
+        "ru": "see changelog",
+        "pt": "see changelog",
+        "nl": "see changelog",
+        "fr": "see changelog",
+        "it": "see changelog",
+        "es": "see changelog",
+        "pl": "see changelog",
+        "zh-cn": "see changelog",
+        "uk": "see changelog"
+      },
+      "0.3.2": {
+        "en": "Fixed the \"npm run test:package\" CI check to run the standard package-file validation again, and removed the unused axios devDependency.",
+        "de": "Die \"npm run test:package\"-CI-Prüfung wurde repariert, damit sie wieder die Standard-Paketdateiprüfung ausführt, und die unbenutzte axios-devDependency wurde entfernt.",
+        "ru": "see changelog",
+        "pt": "see changelog",
+        "nl": "see changelog",
+        "fr": "see changelog",
+        "it": "see changelog",
+        "es": "see changelog",
+        "pl": "see changelog",
+        "zh-cn": "see changelog",
+        "uk": "see changelog"
+      },
       "0.3.1": {
         "en": "Added the combined icon/image picker to the remaining widgets (checkbox, input, select, switch), removed the legacy VIS 1 example scripts, and expanded test coverage.",
         "de": "Kombinierten Icon-/Bild-Picker auch für die restlichen Widgets (Checkbox, Input, Select, Switch) ergänzt, veraltete VIS-1-Beispielskripte entfernt und Testabdeckung erweitert.",

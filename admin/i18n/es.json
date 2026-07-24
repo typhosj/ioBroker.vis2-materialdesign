@@ -343,6 +343,7 @@
     "fullscreenResolutionLower": "muestra el diálogo de pantalla completa si la resolución es inferior a",
     "Generate global script": "Generar script global",
     "generate script": "generar script",
+    "theme states synced": "estados del tema sincronizados",
     "globalColor": "color global",
     "group_alertLayout": "diseño",
     "group_autoCompleteListLayout": "diseño del menú",

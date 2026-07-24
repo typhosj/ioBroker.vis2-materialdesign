@@ -343,6 +343,7 @@
     "fullscreenResolutionLower": "afficher la boîte de dialogue plein écran si la résolution est inférieure à",
     "Generate global script": "Générer un script global",
     "generate script": "générer un script",
+    "theme states synced": "états du thème synchronisés",
     "globalColor": "couleur globale",
     "group_alertLayout": "disposition",
     "group_autoCompleteListLayout": "disposition des menus",

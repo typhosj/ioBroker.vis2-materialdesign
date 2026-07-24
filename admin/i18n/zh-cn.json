@@ -343,6 +343,7 @@
     "fullscreenResolutionLower": "如果分辨率低于则显示全屏对话框",
     "Generate global script": "生成全局脚本",
     "generate script": "生成脚本",
+    "theme states synced": "主题状态已同步",
     "globalColor": "全球色彩",
     "group_alertLayout": "布局",
     "group_autoCompleteListLayout": "菜单布局",

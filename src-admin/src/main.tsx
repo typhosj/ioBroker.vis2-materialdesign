@@ -63,8 +63,9 @@ function defaultsKey(theme: ThemeName): string {
 function readDefaults(config: NativeConfig, theme: ThemeName): Array<string | number> {
     const fallback = themeDefinitions[theme].defaults;
     const saved = config[defaultsKey(theme)];
-    if (!Array.isArray(saved)) return [...fallback];
-    return fallback.map((value, index) => saved[index] ?? value) as Array<string | number>;
+    const values = !Array.isArray(saved) ? [...fallback] : fallback.map((value, index) => saved[index] ?? value) as Array<string | number>;
+    // fontSizes must stay numeric even if an older config (or state) left a numeric string behind.
+    return theme === 'fontSizes' ? values.map(value => Number(value)) : values;
 }
 
 function readEntries(config: NativeConfig, theme: ThemeName, defaults: Array<string | number>): ThemeEntry[] {
@@ -74,7 +75,8 @@ function readEntries(config: NativeConfig, theme: ThemeName, defaults: Array<str
         const rawDefault = old?.defaultValue as unknown;
         const savedDefault = rawDefault === '' ? Number.NaN : Number(rawDefault);
         const defaultValue = Number.isInteger(savedDefault) && savedDefault >= 0 && savedDefault < defaults.length ? savedDefault : old ? undefined : entry.defaultValue;
-        return { ...entry, ...old, defaultValue, value: old?.value ?? entry.value ?? defaults[defaultValue ?? 0] };
+        const value = old?.value ?? entry.value ?? defaults[defaultValue ?? 0];
+        return { ...entry, ...old, defaultValue, value: theme === 'fontSizes' ? Number(value) : value };
     });
 }
 
@@ -136,19 +138,36 @@ class MaterialDesignAdmin extends GenericApp<GenericAppProps, GenericAppState> {
             settings[theme] = readEntries(settings, theme, defaults);
         });
     }
+    private async ensureAncestorChannels(id: string, namespace: string, ensured: Set<string>): Promise<void> {
+        const parts = id.substring(namespace.length + 1).split('.');
+        parts.pop(); // the leaf state itself doesn't need a channel
+        let current = namespace;
+        for (const part of parts) {
+            current = `${current}.${part}`;
+            if (ensured.has(current)) continue;
+            ensured.add(current);
+            if (!(await this.socket.getObject(current))) {
+                await this.socket.setObject(current, { type: 'channel', common: { name: part }, native: {} });
+            }
+        }
+    }
     private async setThemeState(id: string, name: string, value: string | number): Promise<void> {
         const type = typeof value === 'number' ? 'number' : 'string';
+        // role "value" is restricted to type "number" by the ioBroker role catalogue;
+        // color hex codes and font names are strings, so they need the generic "text" role.
+        const role = type === 'number' ? 'value' : 'text';
         const existing = await this.socket.getObject(id);
         if (!existing) {
-            await this.socket.setObject(id, { type: 'state', common: { name, desc: name, type, read: true, write: false, role: 'value' }, native: {} });
-        } else if (existing.common.name !== name) {
-            await this.socket.setObject(id, { ...existing, common: { ...existing.common, name, desc: name } } as never);
+            await this.socket.setObject(id, { type: 'state', common: { name, desc: name, type, read: true, write: false, role }, native: {} });
+        } else if (existing.common.name !== name || existing.common.type !== type || existing.common.role !== role) {
+            await this.socket.setObject(id, { ...existing, common: { ...existing.common, name, desc: name, type, role } } as never);
         }
         await this.socket.setState(id, value, true);
     }
     private async syncRuntimeStates(): Promise<void> {
         const config = this.state.native as NativeConfig;
         const namespace = `${this.adapterName}.${this.instance}`;
+        const ensuredChannels = new Set<string>();
         await this.socket.setState(`${namespace}.sentry`, config.sentryReport === true, true);
         for (const role of M3_SEED_ROLES) {
             await this.socket.setState(`${namespace}.colors.${md3Key(role)}`, str(config[md3Key(role)]), true);
@@ -158,10 +177,12 @@ class MaterialDesignAdmin extends GenericApp<GenericAppProps, GenericAppState> {
             const entries = readEntries(config, theme, defaults);
             for (const [index, value] of defaults.entries()) {
                 const id = theme === 'colors' ? `${namespace}.colors.light.default_${index}` : theme === 'colorsDark' ? `${namespace}.colors.dark.default_${index}` : `${namespace}.${theme}.default_${index}`;
+                await this.ensureAncestorChannels(id, namespace, ensuredChannels);
                 await this.setThemeState(id, `${t(`${theme}Default`)} ${index}`, value);
             }
             for (const entry of entries) {
                 const id = theme.startsWith('colors') ? `${namespace}.colors.${entry.id}` : `${namespace}.${theme}.${entry.id}`;
+                await this.ensureAncestorChannels(id, namespace, ensuredChannels);
                 await this.setThemeState(id, t(entry.desc), entry.value ?? '');
             }
         }
@@ -193,8 +214,23 @@ class MaterialDesignAdmin extends GenericApp<GenericAppProps, GenericAppState> {
         this.showAlert(t('generate script'), 'success');
     }
     onSave(isClose?: boolean): void {
-        super.onSave(isClose);
-        void this.syncRuntimeStates().catch(error => this.showAlert(String(error), 'error'));
+        // Never let the base class close immediately: it would tear down this component (and the
+        // socket) while syncRuntimeStates() is still working through hundreds of sequential state
+        // writes, leaving the object tree half migrated. Close ourselves once our sync is done.
+        super.onSave(false);
+        this.syncRuntimeStates()
+            .then(() => {
+                if (!isClose) {
+                    // Dialog stays open: signal completion so the user knows it's safe to navigate away.
+                    this.showAlert(t('theme states synced'), 'success');
+                }
+            })
+            .catch(error => this.showAlert(String(error), 'error'))
+            .finally(() => {
+                if (isClose) {
+                    GenericApp.onClose();
+                }
+            });
     }
     // The active language comes from the socket after connect and can differ from the UI language we
     // preloaded (admin-UI language ≠ ioBroker system language). If its dictionary isn't loaded yet,

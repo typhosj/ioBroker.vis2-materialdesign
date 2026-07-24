@@ -343,6 +343,7 @@
     "fullscreenResolutionLower": "показывать полноэкранный диалог, если разрешение ниже",
     "Generate global script": "Создать глобальный скрипт",
     "generate script": "Создать скрипт",
+    "theme states synced": "состояния темы синхронизированы",
     "globalColor": "глобальный цвет",
     "group_alertLayout": "расположение",
     "group_autoCompleteListLayout": "макет меню",
