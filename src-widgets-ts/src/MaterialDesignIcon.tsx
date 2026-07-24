@@ -2,8 +2,8 @@ import React from 'react';
 
 import type { RxWidgetInfo, VisRxWidgetProps } from '@iobroker/types-vis-2';
 
-import { squarePreview, BaseRxData, RenderProps, VisWidget, createInfo, iconField } from './widgetUtils';
-import { renderIcon } from './MaterialDesignButtons';
+import { squarePreview, BaseRxData, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, iconField } from './widgetUtils';
+import { m3ColorExplicit, renderIcon } from './MaterialDesignButtons';
 
 interface IconData extends BaseRxData {
     mdwIcon?: string;
@@ -46,11 +46,15 @@ export default class MaterialDesignIcon extends VisWidget {
     renderWidgetBody(props: RenderProps): React.JSX.Element {
         super.renderWidgetBody(props);
         const data = this.state.rxData as IconData;
-        const icon = renderIcon(data.mdwIcon || 'material-design', data.mdwIconColor || '#44739e', Number(data.mdwIconSize) || 50);
+        // Material 3 (Phase 4, ../../MATERIAL3_PLAN.md): default icon color from the primary token;
+        // an explicit saved color still wins per the token-precedence rule (m3ColorExplicit).
+        const isM3 = designStyle(data as unknown as Record<string, unknown>) === 'material3';
+        const iconColor = isM3 && !m3ColorExplicit(data.mdwIconColor) ? 'var(--md-sys-color-primary)' : data.mdwIconColor || '#44739e';
+        const icon = renderIcon(data.mdwIcon || 'material-design', iconColor, Number(data.mdwIconSize) || 50);
 
         return (
             <div
-                className="materialdesign-widget materialdesign-icon"
+                className={`materialdesign-widget materialdesign-icon${isM3 ? ` ${designStyleClasses(data as unknown as Record<string, unknown>, this.isDarkTheme())}` : ''}`}
                 style={{
                     alignItems: 'center',
                     display: 'flex',

@@ -2,7 +2,7 @@ import React from 'react';
 
 import type { RxWidgetInfo, VisRxWidgetProps } from '@iobroker/types-vis-2';
 
-import { squarePreview, BaseRxData, RenderProps, VisWidget, createInfo, iconField, sizeCss, stateValue, formatMoment, formatDurationTokens, humanizeDuration, visLocale, sanitizeHtml, stringValue } from './widgetUtils';
+import { squarePreview, BaseRxData, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, iconField, sizeCss, stateValue, formatMoment, formatDurationTokens, humanizeDuration, visLocale, sanitizeHtml, stringValue } from './widgetUtils';
 import { renderIcon } from './MaterialDesignButtons';
 
 export interface ValueData extends BaseRxData {
@@ -229,11 +229,21 @@ export default class MaterialDesignValue extends VisWidget {
         super.renderWidgetBody(props);
         const data = this.state.rxData as ValueData;
         const value = stateValue(this.state, data.oid);
-        const icon = renderIcon(text(data.image, 'information'), color(evalMaybe(data.imageColor, value), '#44739e'), number(data.iconHeight, 24));
+        // Material 3 (Phase 4, ../../MATERIAL3_PLAN.md): unset value/prepend/append text falls back to
+        // on-surface, unset icon to primary; an explicit saved color still wins (empty result = unset).
+        const isM3 = designStyle(data as unknown as Record<string, unknown>) === 'material3';
+        const m3Text = (resolved: string, token: string): string | undefined =>
+            resolved || (isM3 ? token : undefined);
+        const iconColor = color(evalMaybe(data.imageColor, value), '#44739e');
+        const icon = renderIcon(
+            text(data.image, 'information'),
+            isM3 && !text(data.imageColor) ? 'var(--md-sys-color-primary)' : iconColor,
+            number(data.iconHeight, 24),
+        );
         const iconFirst = data.iconPosition !== 'right';
         const gap = number(data.valueLabelWidth, 4);
         const valueStyle: React.CSSProperties = {
-            color: color(evalMaybe(data.valuesFontColor, value)),
+            color: m3Text(color(evalMaybe(data.valuesFontColor, value)), 'var(--md-sys-color-on-surface)'),
             flex: 1,
             fontFamily: text(data.valuesFontFamily) || undefined,
             fontSize: data.valuesFontSize ? sizeCss(data.valuesFontSize, 14) : undefined,
@@ -241,19 +251,19 @@ export default class MaterialDesignValue extends VisWidget {
             textAlign: data.textAlign || 'start',
         };
         const prependStyle: React.CSSProperties = {
-            color: color(evalMaybe(data.prepandTextColor, value)),
+            color: m3Text(color(evalMaybe(data.prepandTextColor, value)), 'var(--md-sys-color-on-surface-variant)'),
             fontFamily: text(data.prepandTextFontFamily) || undefined,
             fontSize: data.prepandTextFontSize ? sizeCss(data.prepandTextFontSize, 14) : undefined,
         };
         const appendStyle: React.CSSProperties = {
-            color: color(evalMaybe(data.appendTextColor, value)),
+            color: m3Text(color(evalMaybe(data.appendTextColor, value)), 'var(--md-sys-color-on-surface-variant)'),
             fontFamily: text(data.appendTextFontFamily) || undefined,
             fontSize: data.appendTextFontSize ? sizeCss(data.appendTextFontSize, 14) : undefined,
         };
 
         return (
             <div
-                className="materialdesign-widget materialdesign-value"
+                className={`materialdesign-widget materialdesign-value${isM3 ? ` ${designStyleClasses(data as unknown as Record<string, unknown>, this.isDarkTheme())}` : ''}`}
                 style={{ alignItems: 'center', boxSizing: 'border-box', display: 'flex', height: '100%', padding: 0, width: '100%' }}
             >
                 {iconFirst ? <div className="materialdesign-value-icon">{icon}</div> : null}
