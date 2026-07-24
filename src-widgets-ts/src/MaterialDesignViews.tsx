@@ -1,5 +1,5 @@
 import React from "react";
-import { MAX_DYNAMIC_ITEMS, squarePreview, boundedCount, createInfo, RenderProps, stateValue, VisWidget } from './widgetUtils';
+import { MAX_DYNAMIC_ITEMS, squarePreview, boundedCount, createInfo, designStyle, designStyleClasses, RenderProps, stateValue, VisWidget } from './widgetUtils';
 import type { RxWidgetInfo } from "@iobroker/types-vis-2";
 
 type Kind = "masonry" | "grid";
@@ -505,6 +505,10 @@ export class MaterialDesignViews extends VisWidget {
     super.renderWidgetBody(props);
     this.widgetId = props.id;
     const d = this.state.rxData as unknown as Data;
+    // Material 3 (Phase 4, ../../MATERIAL3_PLAN.md): a masonry/grid container has no surface of its own —
+    // it only embeds child views, each carrying its own designStyle. The single M3 touch is the
+    // empty-cell placeholder outline (editor hint) and the root style class; behavior unchanged.
+    const isM3 = designStyle(d) === "material3";
     const layout = this.layout(d);
     const count = boundedCount(d.countViews, 3, MAX_DYNAMIC_ITEMS - 1);
     const items = Array.from({ length: count + 1 }, (_, index) => ({
@@ -514,6 +518,7 @@ export class MaterialDesignViews extends VisWidget {
     return (
       <div
         ref={this.root}
+        className={isM3 ? `materialdesign-widget ${designStyleClasses(d, this.isDarkTheme())}` : undefined}
         style={{
           width: "100%",
           height: "100%",
@@ -573,7 +578,7 @@ export class MaterialDesignViews extends VisWidget {
                   width: "100%",
                   overflow: "hidden",
                   position: "relative",
-                  border: view ? undefined : "2px dashed #44739e",
+                  border: view ? undefined : `2px dashed ${isM3 ? "var(--md-sys-color-outline)" : "#44739e"}`,
                 }}
               >
                 {view ? this.embed(view) : null}
