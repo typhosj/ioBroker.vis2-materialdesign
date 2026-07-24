@@ -7,7 +7,7 @@ describe('chartAxis', () => {
         expect(chartAxis({})).toEqual({});
     });
 
-    it('maps configured axis, tick, grid and title options', () => {
+    it('maps configured axis, tick, grid and title options to the v4 scale shape', () => {
         expect(chartAxis({
             id: 'temperature',
             type: 'linear',
@@ -31,23 +31,20 @@ describe('chartAxis', () => {
             gridWidth: 2,
             drawTicks: false,
             tickLength: 0,
-            zeroLineColor: '#444',
-            zeroLineWidth: 3,
             time: { tooltipFormat: 'lll' },
         })).toEqual({
-            id: 'temperature', type: 'linear', position: 'right', display: false, stacked: true,
+            // id is not emitted in v4 (the scales object key carries it); min/max moved to scale level.
+            type: 'linear', position: 'right', display: false, stacked: true, min: 0, max: 100,
             time: { tooltipFormat: 'lll' },
             ticks: {
-                display: false, fontColor: '#111', fontFamily: 'Roboto', fontSize: 12,
-                padding: 0, min: 0, max: 100, stepSize: 5,
+                display: false, color: '#111', font: { family: 'Roboto', size: 12 },
+                padding: 0, stepSize: 5,
             },
-            gridLines: {
-                display: false, color: '#333', lineWidth: 2, drawTicks: false,
-                tickMarkLength: 0, zeroLineColor: '#444', zeroLineWidth: 3,
+            grid: {
+                display: false, color: '#333', lineWidth: 2, drawTicks: false, tickLength: 0,
             },
-            scaleLabel: {
-                display: true, labelString: 'Temperature', fontColor: '#222',
-                fontFamily: 'Jura', fontSize: 14,
+            title: {
+                display: true, text: 'Temperature', color: '#222', font: { family: 'Jura', size: 14 },
             },
         });
     });

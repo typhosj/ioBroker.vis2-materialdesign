@@ -1,9 +1,9 @@
 import React from "react";
-import { MAX_DYNAMIC_ITEMS, squarePreview, boundedCount, RenderProps, VisWidget, createInfo, stateValue, sanitizeHtml } from './widgetUtils';
+import { MAX_DYNAMIC_ITEMS, squarePreview, boundedCount, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, stateValue, sanitizeHtml } from './widgetUtils';
 import type { RxWidgetInfo } from "@iobroker/types-vis-2";
 import { colorSchemes, scheme } from "./MaterialDesignColorScheme";
 import { MaterialDesignChartCanvas } from "./MaterialDesignChartCanvas";
-import { chartAxis } from "./chartAxis";
+import { chartAxis, m3ChartColors } from "./chartAxis";
 
 type Data = Record<string, unknown> & {
   oid?: string;
@@ -82,14 +82,17 @@ export function buildBars(data: Data, source: Record<string, unknown>[] | null, 
 }
 
 export function barAxisRange(data: Data, bars: Bar[]): { min: number; max: number } {
-  const min =
-    data.axisValueMin === "" || data.axisValueMin === undefined
-      ? Math.min(0, ...bars.map((bar) => bar.value))
-      : n(data.axisValueMin);
-  const max =
-    data.axisValueMax === "" || data.axisValueMax === undefined
-      ? Math.max(1, ...bars.map((bar) => bar.value))
-      : n(data.axisValueMax, 1);
+  // Treat an unset numeric field uniformly whether vis-2 stored it as "", undefined OR null: any of
+  // them means "auto-scale from the data". A stray null used to fall through to n(null, 1) = 1, which
+  // on chart.js v4 (where the axis min/max are actually honored, unlike the v2 build that ignored the
+  // scales object) collapsed the value axis to 0..1 and clipped every bar to the same height.
+  const unset = (v: unknown): boolean => v === "" || v === undefined || v === null;
+  const min = unset(data.axisValueMin)
+    ? Math.min(0, ...bars.map((bar) => bar.value))
+    : n(data.axisValueMin);
+  const max = unset(data.axisValueMax)
+    ? Math.max(1, ...bars.map((bar) => bar.value))
+    : n(data.axisValueMax, 1);
   return { min, max };
 }
 const chartFields = [
@@ -514,6 +517,10 @@ export default class MaterialDesignChartBar extends VisWidget {
   renderWidgetBody(props: RenderProps): React.JSX.Element {
     super.renderWidgetBody(props);
     const data = this.state.rxData as unknown as Data;
+    // Material 3 (Phase 7): chart-internal colors resolve to concrete M3 hex (canvas can't read CSS
+    // vars); DOM card surfaces use CSS-var tokens. An explicit saved color still wins.
+    const isM3 = designStyle(data) === "material3";
+    const m3 = m3ChartColors(this.isDarkTheme());
     const fromJson = s(data.chartDataMethod) === "jsonStringObject";
     const source = fromJson
       ? json(stateValue(this.state, s(data.oid)))
@@ -528,38 +535,38 @@ export default class MaterialDesignChartBar extends VisWidget {
     const title = s(data.title);
     const on = (v: unknown): number | undefined => (v === undefined || v === null || v === "" || !Number.isFinite(Number(v)) ? undefined : Number(v));
     const axisOf = (ax: "x" | "y"): Record<string, unknown> => chartAxis({
-      type: ax === "y" ? "linear" : undefined,
+      // type is set on the value axis below (linear); the category axis keeps chart.js' category default.
       position: s(data[`${ax}AxisPosition`]),
       display: b(data[`${ax}AxisShowAxis`], true),
       labelsDisplay: b(data[`${ax}AxisShowAxisLabels`], true),
-      labelColor: s(data[`${ax}AxisValueLabelColor`]),
+      labelColor: s(data[`${ax}AxisValueLabelColor`], isM3 ? m3.text : ""),
       labelFontFamily: s(data[`${ax}AxisValueFontFamily`]),
       labelFontSize: on(data[`${ax}AxisValueFontSize`]),
       labelPadding: on(data[`${ax}AxisValueDistanceToAxis`]),
       title: s(data[`${ax}AxisTitle`]),
-      titleColor: s(data[`${ax}AxisTitleColor`]),
+      titleColor: s(data[`${ax}AxisTitleColor`], isM3 ? m3.text : ""),
       titleFontFamily: s(data[`${ax}AxisTitleFontFamily`]),
       titleFontSize: on(data[`${ax}AxisTitleFontSize`]),
       gridDisplay: b(data[`${ax}AxisShowGridLines`], true),
-      gridColor: s(data[`${ax}AxisGridLinesColor`]),
+      gridColor: s(data[`${ax}AxisGridLinesColor`], isM3 ? m3.grid : ""),
       gridWidth: on(data[`${ax}AxisGridLinesWitdh`]),
       drawTicks: b(data[`${ax}AxisShowTicks`], true),
       tickLength: on(data[`${ax}AxisTickLength`]),
-      zeroLineColor: s(data[`${ax}AxisZeroLineColor`]),
-      zeroLineWidth: on(data[`${ax}AxisZeroLineWidth`]),
+      // zeroLine* has no chart.js v4 equivalent (dropped in the migration; editor fields remain inert).
     });
     // value axis (numeric) carries the computed min/max; the other axis holds category labels.
+    // v4: horizontalBar is gone -> type "bar" + indexAxis "y"; scales are a keyed object, not xAxes/yAxes arrays.
     const valueAxis = axisOf(horizontal ? "x" : "y");
-    valueAxis.ticks = { ...((valueAxis.ticks) || {}), min, max };
+    valueAxis.type = "linear"; valueAxis.min = min; valueAxis.max = max;
     const catAxis = axisOf(horizontal ? "y" : "x");
-    const scales = horizontal ? { xAxes: [valueAxis], yAxes: [catAxis] } : { yAxes: [valueAxis], xAxes: [catAxis] };
-    const chartjs = <MaterialDesignChartCanvas type={horizontal ? "horizontalBar" : "bar"} data={{ labels: bars.map(bar => bar.label), datasets: [{ data: bars.map(bar => bar.value), backgroundColor: bars.map(bar => bar.color), borderColor: s(data.hoverBorderColor), borderWidth: n(data.hoverBorderWidth) }] }} options={{ responsive: true, maintainAspectRatio: false, animation: { duration: n(data.animationDuration, 1000) }, legend: { display: false }, scales, tooltips: { enabled: b(data.showTooltip, true), callbacks: {
-      title: (items: { index?: number }[]) => { const bar = bars[n(items[0]?.index)]; return bar?.tooltipTitle ? bar.tooltipTitle.split("\\n") : s(bar?.label); },
-      label: (item: { index?: number }) => { const bar = bars[n(item.index)]; return bar?.tooltipText ? bar.tooltipText.split("\\n") : `${s(bar?.valueText)}${s(bar?.appendix)}`; },
-    } } }} />;
+    const scales = { [horizontal ? "x" : "y"]: valueAxis, [horizontal ? "y" : "x"]: catAxis };
+    const chartjs = <MaterialDesignChartCanvas type="bar" data={{ labels: bars.map(bar => bar.label), datasets: [{ data: bars.map(bar => bar.value), backgroundColor: bars.map(bar => isM3 && bar.color === "#44739e" ? m3.primary : bar.color), borderColor: s(data.hoverBorderColor), borderWidth: n(data.hoverBorderWidth) }] }} options={{ indexAxis: horizontal ? "y" : "x", responsive: true, maintainAspectRatio: false, animation: { duration: n(data.animationDuration, 1000) }, scales, plugins: { legend: { display: false }, tooltip: { enabled: b(data.showTooltip, true), callbacks: {
+      title: (items: { dataIndex?: number }[]) => { const bar = bars[n(items[0]?.dataIndex)]; return bar?.tooltipTitle ? bar.tooltipTitle.split("\\n") : s(bar?.label); },
+      label: (item: { dataIndex?: number }) => { const bar = bars[n(item.dataIndex)]; return bar?.tooltipText ? bar.tooltipText.split("\\n") : `${s(bar?.valueText)}${s(bar?.appendix)}`; },
+    } } } }} />;
     return (
       <div
-        className="materialdesign-widget materialdesign-chart"
+        className={`materialdesign-widget materialdesign-chart${isM3 ? ` ${designStyleClasses(data, this.isDarkTheme())}` : ""}`}
         style={{
           background: s(data.backgroundColor),
           height: "100%",
@@ -570,7 +577,7 @@ export default class MaterialDesignChartBar extends VisWidget {
           <div
             className="materialdesign-html-card-container mdc-card"
             style={{
-              background: s(data.colorBackground),
+              background: s(data.colorBackground) || (isM3 ? "var(--md-sys-color-surface-container-low)" : undefined),
               boxSizing: "border-box",
               height: "100%",
               padding: n(data.borderDistance, 8),
@@ -581,7 +588,7 @@ export default class MaterialDesignChartBar extends VisWidget {
               className="card-title-section"
               style={{
                 background: s(data.colorTitleSectionBackground),
-                color: s(data.colorTitle),
+                color: s(data.colorTitle) || (isM3 ? "var(--md-sys-color-on-surface)" : undefined),
                 fontFamily: s(data.titleFontFamily),
               }}
               dangerouslySetInnerHTML={{ __html: sanitizeHtml(title) }}

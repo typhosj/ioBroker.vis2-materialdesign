@@ -70,4 +70,8 @@ describe('barAxisRange', () => {
         const bars = buildBars({}, [{ value: 50 }], 1, [], () => 0);
         expect(barAxisRange({ axisValueMin: -100, axisValueMax: 100 }, bars)).toEqual({ min: -100, max: 100 });
     });
+    it('treats a null axisValueMax as unset (auto-scale), not as 1', () => {
+        const bars = buildBars({}, [{ value: 5 }, { value: 30 }], 2, [], () => 0);
+        expect(barAxisRange({ axisValueMin: null, axisValueMax: null }, bars)).toEqual({ min: 0, max: 30 });
+    });
 });

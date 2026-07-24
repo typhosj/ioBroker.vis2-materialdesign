@@ -1,9 +1,9 @@
 import React from "react";
-import { squarePreview , RenderProps, VisWidget, createInfo, stateValue, sanitizeHtml } from './widgetUtils';
+import { squarePreview , RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, stateValue, sanitizeHtml } from './widgetUtils';
 import type { RxWidgetInfo } from "@iobroker/types-vis-2";
 import { colorSchemes, scheme } from "./MaterialDesignColorScheme";
 import { MaterialDesignChartCanvas } from "./MaterialDesignChartCanvas";
-import { chartAxis } from "./chartAxis";
+import { chartAxis, m3ChartColors } from "./chartAxis";
 
 type Graph = {
   data?: unknown[];
@@ -301,6 +301,8 @@ export default class MaterialDesignChartJson extends VisWidget {
   renderWidgetBody(props: RenderProps): React.JSX.Element {
     super.renderWidgetBody(props);
     const data = this.state.rxData as unknown as Data;
+    const isM3 = designStyle(data) === "material3";
+    const m3 = m3ChartColors(this.isDarkTheme());
     let input: { axisLabels?: string[]; graphs?: Graph[] } | null = null;
     try {
       input = JSON.parse(
@@ -330,7 +332,7 @@ export default class MaterialDesignChartJson extends VisWidget {
         }}
       >
         {graphs.map((graph, i) => (
-          <span key={i} style={{ color: s(data.legendFontColor) }}>
+          <span key={i} style={{ color: s(data.legendFontColor) || (isM3 ? "var(--md-sys-color-on-surface)" : undefined) }}>
             <i
               style={{
                 background: graphColor(graph, i, palette, data.globalColor),
@@ -345,26 +347,30 @@ export default class MaterialDesignChartJson extends VisWidget {
         ))}
       </div>
     ) : null;
+    // v4: scales are a keyed object (x + one entry per distinct y-axis id), not xAxes/yAxes arrays.
     const axisId = graphAxisId;
-    const yAxes = distinctAxisGraphs(graphs)
-      .map(graph => chartAxis({
-        id: axisId(graph), type: "linear",
-        display: b(data.yAxisShowAxis, true),
-        position: s((graph as Record<string, unknown>).yAxis_position, s(data.yAxisPosition, "left")),
-        stacked: b(graph.barIsStacked),
-        title: s(data.yAxisTitle), titleColor: s(data.yAxisTitleColor),
-        labelColor: s(data.yAxisValueLabelColor),
-        min: optN((graph as Record<string, unknown>).yAxis_min), max: optN((graph as Record<string, unknown>).yAxis_max),
-      }));
-    const xAxes = [chartAxis({
+    const yEntries = distinctAxisGraphs(graphs).map((graph): [string, Record<string, unknown>] => [axisId(graph), chartAxis({
+      axis: "y",
+      type: "linear",
+      display: b(data.yAxisShowAxis, true),
+      position: s((graph as Record<string, unknown>).yAxis_position, s(data.yAxisPosition, "left")),
+      stacked: b(graph.barIsStacked),
+      title: s(data.yAxisTitle), titleColor: s(data.yAxisTitleColor, isM3 ? m3.text : ""),
+      labelColor: s(data.yAxisValueLabelColor, isM3 ? m3.text : ""),
+      gridColor: isM3 ? m3.grid : "",
+      min: optN((graph as Record<string, unknown>).yAxis_min), max: optN((graph as Record<string, unknown>).yAxis_max),
+    })]);
+    const xAxis = chartAxis({
+      axis: "x",
       display: b(data.xAxisShowAxis, true),
       position: s(data.xAxisPosition, "bottom"),
-      title: s(data.xAxisTitle), titleColor: s(data.xAxisTitleColor),
-      labelColor: s(data.xAxisValueLabelColor),
+      title: s(data.xAxisTitle), titleColor: s(data.xAxisTitleColor, isM3 ? m3.text : ""),
+      labelColor: s(data.xAxisValueLabelColor, isM3 ? m3.text : ""),
       gridDisplay: b(data.xAxisShowGridLines, true),
-      gridColor: s(data.xAxisGridLinesColor),
-    })];
-    const chartjs = <MaterialDesignChartCanvas type={s(data.chartType, "bar")} data={{ labels, datasets: graphs.map((graph, i) => { const color = graphColor(graph, i, palette, data.globalColor); return { type: s(graph.type, s(data.chartType, "bar")), label: s(graph.legendText), data: (graph.data || []).map(jsonChartValue), borderColor: color, backgroundColor: b(graph.line_UseFillColor) ? s(graph.line_FillColor, `${color}33`) : color, borderWidth: n(graph.line_Thickness, n(graph.barBorderWidth, 2)), steppedLine: b(graph.line_steppedLine), spanGaps: b(graph.line_spanGaps, true), fill: b(graph.line_UseFillColor), yAxisID: axisId(graph), stack: b(graph.barIsStacked) ? n((graph as Record<string, unknown>).barStackId, 0) : undefined }; }) }} options={{ responsive: true, maintainAspectRatio: false, animation: { duration: n(data.animationDuration, 1000) }, legend: { display: false }, tooltips: { enabled: b(data.showTooltip, true) }, scales: { xAxes, yAxes } }} />;
+      gridColor: s(data.xAxisGridLinesColor, isM3 ? m3.grid : ""),
+    });
+    const scales = { x: xAxis, ...Object.fromEntries(yEntries) };
+    const chartjs = <MaterialDesignChartCanvas type={s(data.chartType, "bar")} data={{ labels, datasets: graphs.map((graph, i) => { const color = graphColor(graph, i, palette, data.globalColor); const dsColor = isM3 && color === "#44739e" ? m3.primary : color; return { type: s(graph.type, s(data.chartType, "bar")), label: s(graph.legendText), data: (graph.data || []).map(jsonChartValue), borderColor: dsColor, backgroundColor: b(graph.line_UseFillColor) ? s(graph.line_FillColor, `${dsColor}33`) : dsColor, borderWidth: n(graph.line_Thickness, n(graph.barBorderWidth, 2)), stepped: b(graph.line_steppedLine), spanGaps: b(graph.line_spanGaps, true), fill: b(graph.line_UseFillColor), yAxisID: axisId(graph), stack: b(graph.barIsStacked) ? String(n((graph as Record<string, unknown>).barStackId, 0)) : undefined }; }) }} options={{ responsive: true, maintainAspectRatio: false, animation: { duration: n(data.animationDuration, 1000) }, scales, plugins: { legend: { display: false }, tooltip: { enabled: b(data.showTooltip, true) } } }} />;
     // keep the canvas from eating the whole flex box (else legend spills
     // outside the widget frame); shrink chart, keep legend natural size.
     const chartBox = (
@@ -379,7 +385,7 @@ export default class MaterialDesignChartJson extends VisWidget {
     );
     return (
       <div
-        className="materialdesign-widget materialdesign-chart"
+        className={`materialdesign-widget materialdesign-chart${isM3 ? ` ${designStyleClasses(data, this.isDarkTheme())}` : ""}`}
         style={{
           background: s(data.backgroundColor),
           display: "flex",
@@ -396,7 +402,7 @@ export default class MaterialDesignChartJson extends VisWidget {
           <div
             className="materialdesign-html-card-container mdc-card"
             style={{
-              background: s(data.colorBackground),
+              background: s(data.colorBackground) || (isM3 ? "var(--md-sys-color-surface-container-low)" : undefined),
               display: "flex",
               flexDirection: "column",
               height: "100%",
@@ -407,7 +413,7 @@ export default class MaterialDesignChartJson extends VisWidget {
             <div
               style={{
                 background: s(data.colorTitleSectionBackground),
-                color: s(data.colorTitle),
+                color: s(data.colorTitle) || (isM3 ? "var(--md-sys-color-on-surface)" : undefined),
                 fontFamily: s(data.titleFontFamily),
               }}
               dangerouslySetInnerHTML={{ __html: sanitizeHtml(s(data.title)) }}

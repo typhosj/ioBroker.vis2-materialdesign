@@ -1,9 +1,9 @@
 import React from "react";
-import { MAX_DYNAMIC_ITEMS, squarePreview, boundedCount, RenderProps, VisWidget, createInfo, stateValue, sanitizeHtml } from './widgetUtils';
+import { MAX_DYNAMIC_ITEMS, squarePreview, boundedCount, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, formatMoment, visLocale, stateValue, sanitizeHtml } from './widgetUtils';
 import type { RxWidgetInfo, VisRxWidgetState } from "@iobroker/types-vis-2";
 import { colorSchemes, scheme } from "./MaterialDesignColorScheme";
 import { MaterialDesignChartCanvas } from "./MaterialDesignChartCanvas";
-import { chartAxis } from "./chartAxis";
+import { chartAxis, m3ChartColors } from "./chartAxis";
 
 type Data = Record<string, unknown>;
 type Point = { ts: number; val: number | null };
@@ -398,39 +398,56 @@ export default class MaterialDesignChartLineHistory extends VisWidget {
       colors = s(d.colorScheme)
         ? scheme(s(d.colorScheme), this.series.length)
         : [];
+    const isM3 = designStyle(d) === "material3";
+    const m3 = m3ChartColors(this.isDarkTheme());
     // axes come from the configured data rows (dataCount+1), NOT the loaded
     // series -- otherwise an empty history range yields no axis config and
     // chart.js falls back to a default axis that ignores show/position/etc.
     const on = (v: unknown): number | undefined => (v === undefined || v === null || v === "" || !Number.isFinite(Number(v)) ? undefined : Number(v));
     const rowIdx = Array.from({ length: boundedCount(d.dataCount, 1, MAX_DYNAMIC_ITEMS - 1) + 1 }, (_v, i) => i);
     const yAxisIdOf = (i: number) => rowAxisId(d, i);
-    const yAxes = distinctAxisRows(rowIdx, d)
-      .map(i => chartAxis({
-        id: yAxisIdOf(i), type: "linear",
+    const yEntries = distinctAxisRows(rowIdx, d)
+      .map((i): [string, Record<string, unknown>] => [yAxisIdOf(i), chartAxis({
+        axis: "y",
+        type: "linear",
         position: s(item(d, "yAxisPosition", i), "left"),
         display: b(item(d, "showYAxis", i), true),
         title: s(item(d, "yAxisTitle", i)),
-        titleColor: s(d.yAxisTitleColor), titleFontFamily: s(d.yAxisTitleFontFamily), titleFontSize: on(d.yAxisTitleFontSize),
-        labelColor: s(d.yAxisValueLabelColor), labelFontFamily: s(d.yAxisValueFontFamily), labelFontSize: on(d.yAxisValueFontSize),
-        gridColor: s(item(d, "yAxisGridLinesColor", i)),
+        titleColor: s(d.yAxisTitleColor, isM3 ? m3.text : ""), titleFontFamily: s(d.yAxisTitleFontFamily), titleFontSize: on(d.yAxisTitleFontSize),
+        labelColor: s(d.yAxisValueLabelColor, isM3 ? m3.text : ""), labelFontFamily: s(d.yAxisValueFontFamily), labelFontSize: on(d.yAxisValueFontSize),
+        gridColor: s(item(d, "yAxisGridLinesColor", i), isM3 ? m3.grid : ""),
         min: on(item(d, "yAxisMinValue", i)), max: on(item(d, "yAxisMaxValue", i)), stepSize: on(item(d, "yAxisStep", i)),
-      }));
-    // moment format for the x-axis tick labels; without it chart.js defaults
-    // to 12h (e.g. "7AM"). Applied to the sub-day units so hour/minute ticks
-    // follow the chosen format (e.g. "HH:mm" for 24h).
+      })]);
+    // v4 dropped the built-in moment time scale (and we stay moment-free by design): use a linear x-axis
+    // over the raw timestamps and pre-format each tick with the native formatMoment(). The persisted
+    // xAxisTimeFormats moment tokens keep working; trade-off vs the old time scale is that automatic
+    // unit-based tick spacing is gone (../PORTING.md).
     const timeFmt = s(d.xAxisTimeFormats);
-    const xAxes = [chartAxis({
-      type: "time",
-      labelColor: s(d.xAxisValueLabelColor),
+    const locale = visLocale();
+    // Guard against non-finite tick/tooltip values: new Date(NaN) is an Invalid Date, and formatMoment's
+    // month/weekday tokens call Intl.DateTimeFormat().format(invalidDate) which throws RangeError.
+    const fmtTime = (value: unknown, token: string): string => {
+      const ms = Number(value);
+      return Number.isFinite(ms) ? formatMoment(new Date(ms), token, locale) : "";
+    };
+    const xAxis = chartAxis({
+      axis: "x",
+      type: "linear",
+      labelColor: s(d.xAxisValueLabelColor, isM3 ? m3.text : ""),
       gridDisplay: b(d.xAxisShowGridLines, true),
-      gridColor: s(d.xAxisGridLinesColor),
-      time: timeFmt ? { tooltipFormat: "lll", displayFormats: { second: timeFmt, minute: timeFmt, hour: timeFmt, day: timeFmt } } : { tooltipFormat: "lll" },
-    })];
-    const chartjs = <MaterialDesignChartCanvas type="line" data={{ datasets: this.series.map((series, i) => { const seriesColorValue = seriesColor(d, i, colors, d.globalColor); return { label: s(item(d, "legendText", i), series.oid), data: series.points.filter(point => point.val !== null).map(point => ({ t: point.ts, y: point.val })), borderColor: seriesColorValue, backgroundColor: b(item(d, "useFillColor", i)) ? s(item(d, "fillColor", i), `${seriesColorValue}33`) : "transparent", fill: b(item(d, "useFillColor", i)), borderWidth: n(item(d, "lineThikness", i), 2), steppedLine: b(item(d, "steppedLine", i)), lineTension: 0, pointBackgroundColor: s(item(d, "pointColor", i)), pointRadius: n(d.pointSize, 3), yAxisID: yAxisIdOf(i) }; }) }} options={{ responsive: true, maintainAspectRatio: false, animation: { duration: n(d.animationDuration, 1000) }, legend: { display: false }, plugins: { datalabels: { display: false } }, tooltips: { enabled: b(d.showTooltip, true) }, scales: { xAxes, yAxes } }} />;
+      gridColor: s(d.xAxisGridLinesColor, isM3 ? m3.grid : ""),
+      tickCallback: (value) => fmtTime(value, timeFmt || "HH:mm"),
+    });
+    const scales: Record<string, unknown> = { x: xAxis, ...Object.fromEntries(yEntries) };
+    // Safety net: chart.js v4 hard-crashes (vScale undefined -> getBasePixel) if a dataset references a
+    // y-axis id that has no scale. Series indices can diverge from configured rows (sparse oids), so
+    // backfill any referenced id that isn't already present with a default linear y-axis.
+    this.series.forEach((_series, i) => { const id = yAxisIdOf(i); if (!(id in scales)) scales[id] = { axis: "y", type: "linear", position: "left" }; });
+    const chartjs = <MaterialDesignChartCanvas type="line" data={{ datasets: this.series.map((series, i) => { const seriesColorValue = seriesColor(d, i, colors, d.globalColor); const dsColor = isM3 && seriesColorValue === "#44739e" ? m3.primary : seriesColorValue; return { label: s(item(d, "legendText", i), series.oid), data: series.points.filter(point => point.val !== null).map(point => ({ x: point.ts, y: point.val })), borderColor: dsColor, backgroundColor: b(item(d, "useFillColor", i)) ? s(item(d, "fillColor", i), `${dsColor}33`) : "transparent", fill: b(item(d, "useFillColor", i)), borderWidth: n(item(d, "lineThikness", i), 2), stepped: b(item(d, "steppedLine", i)), tension: 0, pointBackgroundColor: s(item(d, "pointColor", i)), pointRadius: n(d.pointSize, 3), yAxisID: yAxisIdOf(i) }; }) }} options={{ responsive: true, maintainAspectRatio: false, animation: { duration: n(d.animationDuration, 1000) }, scales, plugins: { legend: { display: false }, datalabels: { display: false }, tooltip: { enabled: b(d.showTooltip, true), callbacks: { title: (items: { parsed?: { x?: number } }[]) => fmtTime(items[0]?.parsed?.x, timeFmt || "lll") } } } }} />;
     const legend = b(d.showLegend, true) ? (
       <div
         style={{
-          color: s(d.legendFontColor),
+          color: s(d.legendFontColor) || (isM3 ? "var(--md-sys-color-on-surface)" : undefined),
           fontFamily: s(d.legendFontFamily),
           fontSize: n(d.legendFontSize, 14),
           flexShrink: 0,
@@ -453,8 +470,8 @@ export default class MaterialDesignChartLineHistory extends VisWidget {
       </div>
     ) : null;
     const chartMain = b(d.cardUse) ? (
-      <div className="materialdesign-html-card-container mdc-card" style={{ background: s(d.colorBackground), boxSizing: "border-box", display: "flex", flexDirection: "column", height: "100%", padding: n(d.borderDistance, 8), width: "100%" }}>
-        <div style={{ background: s(d.colorTitleSectionBackground), color: s(d.colorTitle), fontFamily: s(d.titleFontFamily) }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(s(d.title)) }} />
+      <div className="materialdesign-html-card-container mdc-card" style={{ background: s(d.colorBackground) || (isM3 ? "var(--md-sys-color-surface-container-low)" : undefined), boxSizing: "border-box", display: "flex", flexDirection: "column", height: "100%", padding: n(d.borderDistance, 8), width: "100%" }}>
+        <div style={{ background: s(d.colorTitleSectionBackground), color: s(d.colorTitle) || (isM3 ? "var(--md-sys-color-on-surface)" : undefined), fontFamily: s(d.titleFontFamily) }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(s(d.title)) }} />
         {chartjs}
       </div>
     ) : chartjs;
@@ -471,7 +488,7 @@ export default class MaterialDesignChartLineHistory extends VisWidget {
     );
     return (
       <div
-        className="materialdesign-widget materialdesign-chart"
+        className={`materialdesign-widget materialdesign-chart${isM3 ? ` ${designStyleClasses(d, this.isDarkTheme())}` : ""}`}
         style={{
           background: s(d.backgroundColor),
           display: "flex",

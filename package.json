@@ -66,14 +66,13 @@
     "@mdi/font": "^6.7.96",
     "@mui/icons-material": "^6.5.0",
     "@mui/material": "^6.5.0",
-    "@types/chart.js": "^2.9.41",
     "@types/node": "^26.1.1",
     "@types/react": "^18.3.31",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^6.0.3",
     "@vitest/coverage-v8": "^4.1.10",
-    "chart.js": "^2.9.4",
-    "chartjs-plugin-datalabels": "^0.7.0",
+    "chart.js": "^4.5.1",
+    "chartjs-plugin-datalabels": "^2.2.0",
     "chroma-js": "^3.2.0",
     "jsdom": "^29.1.1",
     "mathjs": "^15.2.0",
@@ -102,7 +101,6 @@
     "url": "https://github.com/typhosj/ioBroker.vis2-materialdesign/issues"
   },
   "readmeFilename": "README.md",
-  "dependencies": {},
   "contributors": [
     "Scrounger <scrounger@gmx.net>"
   ]
