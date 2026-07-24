@@ -2,8 +2,8 @@ import React from 'react';
 
 import type { RxWidgetInfo, VisRxWidgetProps } from '@iobroker/types-vis-2';
 
-import { renderIcon } from './MaterialDesignButtons';
-import { squarePreview, RenderProps, VisWidget, createInfo, iconField, parseActionValue, setStateValue, sizeCss, stateValue, stringValue } from './widgetUtils';
+import { renderIcon, m3ColorExplicit } from './MaterialDesignButtons';
+import { squarePreview, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, iconField, parseActionValue, setStateValue, sizeCss, stateValue, stringValue } from './widgetUtils';
 
 export interface ToggleControlData {
     oid?: string;
@@ -211,6 +211,13 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
             super.renderWidgetBody(props);
             const data = this.state.rxData as ToggleControlData;
             const on = isOn(stateValue(this.state, data.oid || ''), data);
+            // Material 3 presentation (Phase 2, ../../MATERIAL3_PLAN.md). Behavior/geometry unchanged:
+            // only the control's colors are re-sourced from semantic tokens (resolved against the
+            // mdw-style-material3 root), and a shared state layer is added. An explicit saved color
+            // still wins (token-precedence rule). The larger M3 switch track/handle geometry is
+            // deferred to a later polish — noted as a known approximation in ../PORTING.md.
+            const isM3 = designStyle(data as Record<string, unknown>) === 'material3';
+            const m3 = (explicitValue: unknown, token: string): string => (m3ColorExplicit(explicitValue) ? String(explicitValue) : token);
             const locked = !!data.lockEnabled && !this.unlocked;
             const label = on ? data.labelTrue || data.labelFalse || '' : data.labelFalse || '';
             const labelPosition = data.labelPosition || 'right';
@@ -221,7 +228,7 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
                     <span
                         style={{
                             alignItems: 'center',
-                            color: color(on ? data.labelColorTrue : data.labelColorFalse, '#44739e'),
+                            color: isM3 ? m3(on ? data.labelColorTrue : data.labelColorFalse, 'var(--md-sys-color-on-surface)') : color(on ? data.labelColorTrue : data.labelColorFalse, '#44739e'),
                             cursor: data.labelClickActive === false ? 'default' : 'pointer',
                             display: 'inline-flex',
                             // Grow to fill: VIS1 spreads label and control apart in a wide widget (label at the far
@@ -276,19 +283,29 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
                         <div
                             className="mdc-switch__track"
                             style={{
-                                background: on ? color(data.colorSwitchTrue, '#44739e') : color(data.colorSwitchTrack, '#000000'),
+                                background: isM3
+                                    ? on
+                                        ? m3(data.colorSwitchTrue, 'var(--md-sys-color-primary)')
+                                        : m3(data.colorSwitchTrack, 'var(--md-sys-color-surface-container-high)')
+                                    : on
+                                      ? color(data.colorSwitchTrue, '#44739e')
+                                      : color(data.colorSwitchTrack, '#000000'),
+                                border: isM3 && !on ? '2px solid var(--md-sys-color-outline)' : undefined,
                                 borderRadius: 7,
+                                boxSizing: isM3 ? 'border-box' : undefined,
                                 height: 14,
                                 left: 0,
-                                opacity: on ? 0.54 : 0.38,
+                                opacity: isM3 ? 1 : on ? 0.54 : 0.38,
                                 position: 'absolute',
                                 top: 3,
                                 width: 32,
                             }}
                         />
                         <div
-                            className="mdc-switch__thumb-underlay mdc-ripple-upgraded mdc-ripple-upgraded--unbounded"
+                            className={`mdc-switch__thumb-underlay mdc-ripple-upgraded mdc-ripple-upgraded--unbounded${isM3 ? ' mdw-state-layer' : ''}`}
                             style={{
+                                borderRadius: isM3 ? '50%' : undefined,
+                                color: isM3 ? (on ? 'var(--md-sys-color-primary)' : 'var(--md-sys-color-on-surface)') : undefined,
                                 height: 28,
                                 left: on ? 12 : -8,
                                 position: 'absolute',
@@ -303,7 +320,13 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
                             <div
                                 className="mdc-switch__thumb"
                                 style={{
-                                    background: on ? color(data.colorSwitchTrue, '#44739e') : color(data.colorSwitchThumb, '#FFFFFF'),
+                                    background: isM3
+                                        ? on
+                                            ? m3(data.colorSwitchTrue, 'var(--md-sys-color-on-primary)')
+                                            : m3(data.colorSwitchThumb, 'var(--md-sys-color-outline)')
+                                        : on
+                                          ? color(data.colorSwitchTrue, '#44739e')
+                                          : color(data.colorSwitchThumb, '#FFFFFF'),
                                     borderRadius: '50%',
                                     boxShadow: '0 1px 3px rgba(0, 0, 0, 0.4)',
                                     height: 20,
@@ -354,8 +377,22 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
                         <div
                             className="mdc-checkbox__background"
                             style={{
-                                background: on ? color(data.colorCheckBox, '#44739e') : 'transparent',
-                                border: `2px solid ${on ? color(data.colorCheckBox, '#44739e') : color(data.colorCheckBoxBorder, 'rgba(0, 0, 0, 0.54)')}`,
+                                background: isM3
+                                    ? on
+                                        ? m3(data.colorCheckBox, 'var(--md-sys-color-primary)')
+                                        : 'transparent'
+                                    : on
+                                      ? color(data.colorCheckBox, '#44739e')
+                                      : 'transparent',
+                                border: `2px solid ${
+                                    isM3
+                                        ? on
+                                            ? m3(data.colorCheckBox, 'var(--md-sys-color-primary)')
+                                            : m3(data.colorCheckBoxBorder, 'var(--md-sys-color-on-surface-variant)')
+                                        : on
+                                          ? color(data.colorCheckBox, '#44739e')
+                                          : color(data.colorCheckBoxBorder, 'rgba(0, 0, 0, 0.54)')
+                                }`,
                                 borderRadius: 2,
                                 boxSizing: 'border-box',
                                 height: 18,
@@ -370,17 +407,17 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
                                 style={{ height: '100%', inset: 0, opacity: on ? 1 : 0, position: 'absolute', width: '100%' }}
                                 viewBox="0 0 24 24"
                             >
-                                <path className="mdc-checkbox__checkmark-path" d="M1.73,12.91 8.1,19.28 22.79,4.59" fill="none" stroke="#fff" strokeWidth="3.12" />
+                                <path className="mdc-checkbox__checkmark-path" d="M1.73,12.91 8.1,19.28 22.79,4.59" fill="none" stroke={isM3 ? 'var(--md-sys-color-on-primary)' : '#fff'} strokeWidth="3.12" />
                             </svg>
                             <div className="mdc-checkbox__mixedmark" />
                         </div>
-                        <div className="mdc-checkbox__ripple" style={{ borderRadius: '50%', inset: 0, overflow: 'visible', position: 'absolute' }} />
+                        <div className={`mdc-checkbox__ripple${isM3 ? ' mdw-state-layer' : ''}`} style={{ borderRadius: '50%', color: isM3 ? (on ? 'var(--md-sys-color-primary)' : 'var(--md-sys-color-on-surface)') : undefined, inset: 0, overflow: 'visible', position: 'absolute' }} />
                     </div>
                 );
 
             return (
                 <div
-                    className={`materialdesign-widget mdc-form-field materialdesign-${def.kind}${labelPosition === 'left' ? ' mdc-form-field--align-end' : ''}`}
+                    className={`materialdesign-widget mdc-form-field materialdesign-${def.kind}${labelPosition === 'left' ? ' mdc-form-field--align-end' : ''}${isM3 ? ` ${designStyleClasses(data as Record<string, unknown>, this.isDarkTheme())}` : ''}`}
                     ref={element => {
                         // VIS2 wraps every widget in an overflow-hidden element; labels and MDC ripples may extend
                         // beyond it. Only lift the clipping — do NOT touch the wrapper width. Writing
