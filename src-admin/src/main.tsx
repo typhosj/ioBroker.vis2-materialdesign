@@ -203,8 +203,23 @@ class MaterialDesignAdmin extends GenericApp<GenericAppProps, GenericAppState> {
         this.showAlert(t('generate script'), 'success');
     }
     onSave(isClose?: boolean): void {
-        super.onSave(isClose);
-        void this.syncRuntimeStates().catch(error => this.showAlert(String(error), 'error'));
+        // Never let the base class close immediately: it would tear down this component (and the
+        // socket) while syncRuntimeStates() is still working through hundreds of sequential state
+        // writes, leaving the object tree half migrated. Close ourselves once our sync is done.
+        super.onSave(false);
+        this.syncRuntimeStates()
+            .then(() => {
+                if (!isClose) {
+                    // Dialog stays open: signal completion so the user knows it's safe to navigate away.
+                    this.showAlert(t('theme states synced'), 'success');
+                }
+            })
+            .catch(error => this.showAlert(String(error), 'error'))
+            .finally(() => {
+                if (isClose) {
+                    GenericApp.onClose();
+                }
+            });
     }
     // The active language comes from the socket after connect and can differ from the UI language we
     // preloaded (admin-UI language ≠ ioBroker system language). If its dictionary isn't loaded yet,
