@@ -66,6 +66,11 @@ Report current VIS 2 problems in the
 [GitHub issue tracker](https://github.com/typhosj/ioBroker.vis2-materialdesign/issues).
 
 ## Changelog
+### **WORK IN PROGRESS**
+
+- (typhosj) Fixed the "npm run test:package" check to run the standard `@iobroker/testing` package-file validation again (test:package was shadowed by a project-specific script)
+- (typhosj) Removed the unused `axios` devDependency
+
 ### 0.3.1 (2026-07-23)
 
 - (typhosj) Added the combined icon/image picker to the remaining widgets (checkbox, input, select, switch)
