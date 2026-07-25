@@ -3,7 +3,7 @@
     "build": "vite build"
   },
   "dependencies": {
-    "@iobroker/types-vis-2": "2.13.19",
+    "@iobroker/types-vis-2": "^2.14.4",
     "@module-federation/vite": "^1.16.13",
     "@vitejs/plugin-react": "^6.0.3",
     "chart.js": "^4.5.1",
@@ -17,6 +17,8 @@
     "vite-tsconfig-paths": "^6.1.1"
   },
   "devDependencies": {
-    "@types/node": "^26.1.1"
+    "@types/node": "^26.1.1",
+    "@types/react": "^18.3.31",
+    "@types/react-dom": "^18.3.1"
   }
 }

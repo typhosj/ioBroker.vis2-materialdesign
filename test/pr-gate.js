@@ -14,6 +14,29 @@ assert.strictEqual(pkg.name, `iobroker.${io.common.name}`, "package and io-packa
 assert.strictEqual(pkg.version, io.common.version, "package and io-package versions must match");
 assert.ok(io.common.authors?.length, "io-package common.authors must be set");
 assert.ok(Object.keys(io.common.news || {}).length <= 7, "common.news may contain at most seven entries");
+assert.ok(io.common.news?.[pkg.version], `common.news must contain an entry for current version ${pkg.version}`);
+
+// vite builds from src-widgets-ts/ and resolves deps from its OWN node_modules;
+// a version bumped only in one tree ships a stale bundle (chart.js v2/v4 incident).
+// Compare INSTALLED versions (what vite bundles vs what root tests against).
+const widgetPkg = readJson("src-widgets-ts/package.json");
+const rootDeps = { ...pkg.devDependencies, ...pkg.dependencies };
+const installedVersion = (base, dep) => {
+    try {
+        return readJson(path.join(base, "node_modules", dep, "package.json")).version;
+    } catch {
+        return null;
+    }
+};
+for (const dep of Object.keys(widgetPkg.dependencies || {})) {
+    if (!(dep in rootDeps)) continue;
+    const widgetVersion = installedVersion("src-widgets-ts", dep);
+    const rootVersion = installedVersion(".", dep);
+    if (!widgetVersion || !rootVersion) continue;
+    // ponytail: major-only comparison; patch/minor npm churn between the two lockfiles is noise,
+    // tighten to full equality if a minor-version API drift ever ships a broken bundle.
+    assert.strictEqual(widgetVersion.split(".")[0], rootVersion.split(".")[0], `${dep} installed major differs: src-widgets-ts has ${widgetVersion}, root has ${rootVersion} — bump BOTH package.json files and npm install in both`);
+}
 
 for (const object of objects) {
     assert.ok(object._id, "object needs _id");
