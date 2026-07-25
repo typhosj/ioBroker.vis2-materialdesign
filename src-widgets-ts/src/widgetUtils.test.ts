@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { VisRxWidgetState } from '@iobroker/types-vis-2';
 import { pickerValueName } from './IconFilePicker';
-import { DEFAULT_DARK_THEME_OID, M3_SEED_ROLES, MAX_DYNAMIC_ITEMS, VisWidget, accessibleText, applyM3SeedVariables, applyThemeVariables, boundedCount, createInfo, darkThemeOid, designStyle, designStyleClasses, editorDialogPalette, formatDurationTokens, formatMoment, humanizeDuration, iconFieldDataKey, m3SeedOid, parseActionValue, safeWidgetUrl, sanitizeHtml, setStateValue, stateValue, stringValue } from './widgetUtils';
+import { DEFAULT_DARK_THEME_OID, M3_SEED_ROLES, MAX_DYNAMIC_ITEMS, VisWidget, accessibleText, applyM3SeedVariables, applyThemeVariables, boundedCount, createInfo, darkThemeOid, designStyle, designStyleClasses, editorDialogPalette, formatDurationTokens, formatMoment, humanizeDuration, iconFieldDataKey, m3SeedOid, parseActionValue, safeWidgetUrl, sanitizeHtml, setStateValue, sliderKeyValue, stateValue, stringValue } from './widgetUtils';
 
 function fixture<T>(value: unknown): T { return value as T; }
 
@@ -250,5 +250,26 @@ describe('widget utilities', () => {
     it('derives accessible names from configured rich text', () => {
         expect(accessibleText('<b>Open</b> &amp; close', 'Action')).toBe('Open & close');
         expect(accessibleText('', 'Action')).toBe('Action');
+    });
+
+    it('moves slider values by keyboard within min/max and on the step grid', () => {
+        expect(sliderKeyValue('ArrowRight', 50, 0, 100, 5)).toBe(55);
+        expect(sliderKeyValue('ArrowUp', 50, 0, 100, 5)).toBe(55);
+        expect(sliderKeyValue('ArrowLeft', 50, 0, 100, 5)).toBe(45);
+        expect(sliderKeyValue('ArrowDown', 50, 0, 100, 5)).toBe(45);
+        expect(sliderKeyValue('PageUp', 50, 0, 100, 5)).toBe(100);
+        expect(sliderKeyValue('PageDown', 50, 0, 100, 1)).toBe(40);
+        expect(sliderKeyValue('Home', 50, 10, 100, 5)).toBe(10);
+        expect(sliderKeyValue('End', 50, 10, 90, 5)).toBe(90);
+        // clamped at the ends, and a no-op there reports "not handled" so the key stays free
+        expect(sliderKeyValue('ArrowRight', 100, 0, 100, 5)).toBeNull();
+        expect(sliderKeyValue('ArrowLeft', 0, 0, 100, 5)).toBeNull();
+        expect(sliderKeyValue('Enter', 50, 0, 100, 5)).toBeNull();
+        // off-grid state values snap onto the grid, fractional steps stay free of float noise
+        expect(sliderKeyValue('ArrowRight', 52, 0, 100, 5)).toBe(55);
+        expect(sliderKeyValue('ArrowRight', 0.3, 0, 1, 0.1)).toBe(0.4);
+        // min offsets the grid, an invalid step falls back to 1
+        expect(sliderKeyValue('ArrowRight', 12, 2, 100, 5)).toBe(12 + 5);
+        expect(sliderKeyValue('ArrowRight', 50, 0, 100, 0)).toBe(51);
     });
 });

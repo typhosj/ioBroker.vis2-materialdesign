@@ -397,7 +397,7 @@ export default class MaterialDesignChartJson extends VisWidget {
         }}
       >
         {!input ? (
-          <span style={{ color: "red" }}>Error in JSON string</span>
+          <span style={{ color: isM3 ? "var(--md-sys-color-error)" : "red" }}>Error in JSON string</span>
         ) : b(data.cardUse) ? (
           <div
             className="materialdesign-html-card-container mdc-card"

@@ -49,16 +49,19 @@ export default class MaterialDesignAlerts extends VisWidget {
         const data = this.state.rxData as unknown as Data;
         const raw = stateValue(this.state, s(data.oid));
         const parsed = parse(raw);
-        const alerts = parsed ?? (raw === undefined || raw === null || raw === '' ? [] : [{ text: 'Error in JSON string', borderColor: 'red', icon: 'alert-box', iconColor: 'red' }]);
+        // Material 3 (Phase 5, ../../MATERIAL3_PLAN.md): an alert with no payload color falls back to
+        // semantic tokens (surface-container fill, on-surface text, on-surface-variant icons); a
+        // per-alert or saved color still wins. Elevation/behavior/JSON handling unchanged.
+        const isM3 = designStyle(data) === 'material3';
+        // The parse-failure alert is the one genuinely semantic error state this widget has, so in M3
+        // it uses the error role instead of raw `red` (Phase 8 audit).
+        const errorColor = isM3 ? 'var(--md-sys-color-error)' : 'red';
+        const alerts = parsed ?? (raw === undefined || raw === null || raw === '' ? [] : [{ text: 'Error in JSON string', borderColor: errorColor, icon: 'alert-box', iconColor: errorColor }]);
         const shown = alerts.slice(0, boundedCount(data.showMaxAlerts, 3) || MAX_DYNAMIC_ITEMS);
         const close = (index: number): void => { if (!parsed) return; parsed.splice(index, 1); setStateValue(this.props, s(data.oid), JSON.stringify(parsed)); };
         const border = s(data.alertBorderLayout);
         const dense = b(data.alertDense, true);
         const stripe = 6; const padV = dense ? 8 : 16; const padH = 16;
-        // Material 3 (Phase 5, ../../MATERIAL3_PLAN.md): an alert with no payload color falls back to
-        // semantic tokens (surface-container fill, on-surface text, on-surface-variant icons); a
-        // per-alert or saved color still wins. Elevation/behavior/JSON handling unchanged.
-        const isM3 = designStyle(data) === 'material3';
         const outlined = s(data.alertLayouts) === 'outlined';
         return <div className={`materialdesign-widget materialdesign-alerts${isM3 ? ` ${designStyleClasses(data, this.isDarkTheme())}` : ''}`} style={{ height: '100%', overflow: 'visible', pointerEvents: 'none', width: '100%' }}><style>{`@media (max-width:${Math.max(0, n(data.minScreenResolution) - 1)}px){.materialdesign-alerts{display:none!important}}`}</style><div className="materialdesign-vuetify-alerts" style={{ pointerEvents: 'auto', width: '100%' }}>{shown.map((alert, index) => <div className={`v-alert ${s(data.alertLayouts, 'normal') === 'outlined' ? 'v-alert--outlined' : ''} ${s(data.alertLayouts) === 'tile' ? 'v-alert--tile' : ''}`} key={index} style={{ alignItems: 'center', background: s(alert.backgroundColor, isM3 ? 'var(--md-sys-color-surface-container)' : ''), border: isM3 && outlined ? '1px solid var(--md-sys-color-outline-variant)' : undefined, borderRadius: s(data.alertLayouts) === 'tile' ? 0 : 4, borderBottom: border === 'bottom' ? `${stripe}px solid ${s(alert.borderColor)}` : undefined, borderLeft: border === 'left' ? `${stripe}px solid ${s(alert.borderColor)}` : undefined, borderRight: border === 'right' ? `${stripe}px solid ${s(alert.borderColor)}` : undefined, borderTop: border === 'top' ? `${stripe}px solid ${s(alert.borderColor)}` : undefined, boxShadow: elevation(data.alertElevation), display: 'flex', fontFamily: s(data.alertFontFamily, 'inherit'), fontSize: sizeCss(data.alertFontSize, 16), marginBottom: n(data.alertMarginBottom, 16), minHeight: dense ? undefined : 48, paddingBottom: padV - (border === 'bottom' ? stripe : 0), paddingLeft: padH - (border === 'left' ? stripe : 0), paddingRight: padH - (border === 'right' ? stripe : 0), paddingTop: padV - (border === 'top' ? stripe : 0) }}><span className="materialdesign-v-alerts-prepend" style={{ display: 'inline-flex', marginRight: 12 }}>{alert.icon ? renderIcon(alert.icon, s(alert.iconColor, isM3 ? 'var(--md-sys-color-on-surface-variant)' : ''), n(data.alertIconSize, 24), !!alert.iconColor) : null}</span><label className="materialdesign-v-alert-text" style={{ color: s(alert.fontColor, isM3 ? 'var(--md-sys-color-on-surface)' : ''), flex: 1 }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(s(alert.text)) }} /><button aria-label="Close alert" className="materialdesign-icon-button v-alert-materialdesign-icon-button" onClick={() => close(index)} style={{ background: 'transparent', border: 0, cursor: 'pointer', height: 30, width: 30 }} type="button">{renderIcon(s(data.closeIcon, 'close-circle-outline'), s(data.closeIconColor, isM3 ? 'var(--md-sys-color-on-surface-variant)' : '#44739e'), 20, true)}</button></div>)}</div></div>;
     }

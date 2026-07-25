@@ -4,7 +4,7 @@ import type { RxWidgetInfo, VisRxWidgetProps } from '@iobroker/types-vis-2';
 
 import { cleanColor, num, snapToStep } from './MaterialDesignProgress';
 import { m3ColorExplicit } from './MaterialDesignButtons';
-import { squarePreview, RenderProps, VisWidget, boundedCount, createInfo, designStyle, designStyleClasses, setStateValue, sizeCss, stateValue, sanitizeHtml } from './widgetUtils';
+import { squarePreview, RenderProps, VisWidget, boundedCount, createInfo, designStyle, designStyleClasses, setStateValue, sizeCss, sliderKeyValue, stateValue, sanitizeHtml } from './widgetUtils';
 
 // Self-contained layout for the Vuetify-style slider DOM. The old widget relied on ambient
 // legacy Vuetify CSS (v-slider*) for track/thumb geometry and for hiding the raw value <input>;
@@ -277,6 +277,27 @@ export default class MaterialDesignSlider extends VisWidget {
         this.forceUpdate();
     }
 
+    // Keyboard operation of the thumb (Phase 8 audit): arrows/PageUp/PageDown/Home/End through the
+    // same optimistic write path as the pointer, so value shape, step snapping and click feedback
+    // stay identical. Non-slider keys are left untouched so Tab still moves focus.
+    private writeFromKey(event: React.KeyboardEvent<HTMLElement>, data: SliderData, disabled: boolean): void {
+        if (disabled) {
+            return;
+        }
+        const { min, max, step } = range(data);
+        const value = sliderValue(this.optimisticValue ?? stateValue(this.state, data.oid || ''), data).raw;
+        const next = sliderKeyValue(event.key, value, min, max, step);
+        if (next === null) {
+            return;
+        }
+        event.preventDefault();
+        event.stopPropagation();
+        feedback(data);
+        this.optimisticValue = next;
+        setStateValue(this.props, data.oid || '', next);
+        this.forceUpdate();
+    }
+
     renderWidgetBody(props: RenderProps): React.JSX.Element {
         super.renderWidgetBody(props);
         const data = this.state.rxData as SliderData;
@@ -374,6 +395,7 @@ export default class MaterialDesignSlider extends VisWidget {
                                             aria-valuemin={min}
                                             aria-valuenow={current.raw}
                                             className={`v-slider__thumb-container${showThumbLabel ? ' v-slider__thumb-container--show-label' : ''}`}
+                                            onKeyDown={event => this.writeFromKey(event, data, disabled)}
                                             role="slider"
                                             style={orientation === 'horizontal' ? { color: thumb, left: `${visualPercent}%` } : { bottom: `${visualPercent}%`, color: thumb }}
                                             tabIndex={disabled ? -1 : 0}

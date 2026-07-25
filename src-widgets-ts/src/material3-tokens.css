@@ -13,6 +13,12 @@
  * roles can be overridden per project via the optional admin-configured seed colors (see
  * `applyM3SeedVariables` in widgetUtils.tsx) or by any widget's own explicit saved option, per the
  * token-precedence rule in ../../MATERIAL3_PLAN.md.
+ *
+ * Only tokens with an actual consumer are defined (Phase 8: "remove any M3 CSS or helper that no
+ * registered widget uses") — the unused half of the M3 token set (shape small/medium/large, the
+ * body/title type scales, elevation 0/2..5, the extra motion durations, and the unpaired
+ * container/on-color error and tertiary roles) was dropped rather than shipped to every M3
+ * project. Add a token back together with the widget that consumes it, not ahead of it.
  */
 
 .materialdesign-widget.mdw-style-material3 {
@@ -21,17 +27,10 @@
     --md-sys-color-primary-container: #eaddff;
     --md-sys-color-on-primary-container: #21005d;
     --md-sys-color-secondary: #625b71;
-    --md-sys-color-on-secondary: #ffffff;
     --md-sys-color-secondary-container: #e8def8;
     --md-sys-color-on-secondary-container: #1d192b;
     --md-sys-color-tertiary: #7d5260;
-    --md-sys-color-on-tertiary: #ffffff;
-    --md-sys-color-tertiary-container: #ffd8e4;
-    --md-sys-color-on-tertiary-container: #31111d;
     --md-sys-color-error: #b3261e;
-    --md-sys-color-on-error: #ffffff;
-    --md-sys-color-error-container: #f9dedc;
-    --md-sys-color-on-error-container: #410e0b;
     --md-sys-color-surface: #fef7ff;
     --md-sys-color-surface-container-low: #f7f2fa;
     --md-sys-color-surface-container: #f3edf7;
@@ -43,44 +42,22 @@
     --md-sys-color-scrim: #000000;
 
     --md-sys-shape-corner-extra-small: 4px;
-    --md-sys-shape-corner-small: 8px;
-    --md-sys-shape-corner-medium: 12px;
-    --md-sys-shape-corner-large: 16px;
     --md-sys-shape-corner-full: 9999px;
 
     --md-sys-typescale-label-large-font: Roboto, sans-serif;
     --md-sys-typescale-label-large-size: .875rem;
     --md-sys-typescale-label-large-weight: 500;
     --md-sys-typescale-label-large-tracking: .00625em;
-    --md-sys-typescale-body-medium-font: Roboto, sans-serif;
-    --md-sys-typescale-body-medium-size: .875rem;
-    --md-sys-typescale-body-medium-weight: 400;
-    --md-sys-typescale-body-medium-tracking: .01429em;
-    --md-sys-typescale-title-medium-font: Roboto, sans-serif;
-    --md-sys-typescale-title-medium-size: 1rem;
-    --md-sys-typescale-title-medium-weight: 500;
-    --md-sys-typescale-title-medium-tracking: .00938em;
 
-    --md-sys-elevation-level0: none;
     --md-sys-elevation-level1: 0 1px 2px 0 rgba(0, 0, 0, .3), 0 1px 3px 1px rgba(0, 0, 0, .15);
-    --md-sys-elevation-level2: 0 1px 2px 0 rgba(0, 0, 0, .3), 0 2px 6px 2px rgba(0, 0, 0, .15);
-    --md-sys-elevation-level3: 0 1px 3px 0 rgba(0, 0, 0, .3), 0 4px 8px 3px rgba(0, 0, 0, .15);
-    --md-sys-elevation-level4: 0 2px 3px 0 rgba(0, 0, 0, .3), 0 6px 10px 4px rgba(0, 0, 0, .15);
-    --md-sys-elevation-level5: 0 4px 4px 0 rgba(0, 0, 0, .3), 0 8px 12px 6px rgba(0, 0, 0, .15);
 
     --md-sys-state-hover-opacity: .08;
     --md-sys-state-focus-opacity: .1;
     --md-sys-state-pressed-opacity: .1;
     --md-sys-state-dragged-opacity: .16;
 
-    --md-sys-motion-duration-short1: 50ms;
     --md-sys-motion-duration-short2: 100ms;
-    --md-sys-motion-duration-short3: 150ms;
-    --md-sys-motion-duration-short4: 200ms;
-    --md-sys-motion-duration-medium1: 250ms;
-    --md-sys-motion-duration-medium2: 300ms;
     --md-sys-motion-easing-standard: cubic-bezier(.2, 0, 0, 1);
-    --md-sys-motion-easing-emphasized: cubic-bezier(.3, 0, 0, 1);
 }
 
 .materialdesign-widget.mdw-style-material3.mdw-dark {
@@ -89,17 +66,10 @@
     --md-sys-color-primary-container: #4f378b;
     --md-sys-color-on-primary-container: #eaddff;
     --md-sys-color-secondary: #ccc2dc;
-    --md-sys-color-on-secondary: #332d41;
     --md-sys-color-secondary-container: #4a4458;
     --md-sys-color-on-secondary-container: #e8def8;
     --md-sys-color-tertiary: #efb8c8;
-    --md-sys-color-on-tertiary: #492532;
-    --md-sys-color-tertiary-container: #633b48;
-    --md-sys-color-on-tertiary-container: #ffd8e4;
     --md-sys-color-error: #f2b8b5;
-    --md-sys-color-on-error: #601410;
-    --md-sys-color-error-container: #8c1d18;
-    --md-sys-color-on-error-container: #f9dedc;
     --md-sys-color-surface: #141218;
     --md-sys-color-surface-container-low: #1d1b20;
     --md-sys-color-surface-container: #211f26;
@@ -111,16 +81,11 @@
     --md-sys-color-scrim: #000000;
 }
 
-/* Motion is opt-out, not opt-in: every duration collapses so state-layer/expand/collapse
-   transitions in material3-components.css become instant, without each of those rules having
-   to repeat this query itself. */
+/* Motion is opt-out, not opt-in: the duration collapses so state-layer/expand/collapse transitions
+   in material3-components.css become instant, without each of those rules having to repeat this
+   query itself. */
 @media (prefers-reduced-motion: reduce) {
     .materialdesign-widget.mdw-style-material3 {
-        --md-sys-motion-duration-short1: 0ms;
         --md-sys-motion-duration-short2: 0ms;
-        --md-sys-motion-duration-short3: 0ms;
-        --md-sys-motion-duration-short4: 0ms;
-        --md-sys-motion-duration-medium1: 0ms;
-        --md-sys-motion-duration-medium2: 0ms;
     }
 }

@@ -143,3 +143,21 @@
     border: 1px solid var(--md-sys-color-outline);
     color: var(--md-sys-color-on-surface-variant);
 }
+
+/*
+ * Forced colors / Windows high contrast (Phase 8 audit). The UA replaces every color here with the
+ * user's palette, which breaks the two things M3 leans on: the translucent `currentColor` state
+ * layer becomes an opaque sheet over the content, and filled/tonal buttons lose the fill that
+ * distinguishes them from a text button. So: drop the overlay, and give every M3 button a real
+ * border, which forced-colors keeps.
+ */
+@media (forced-colors: active) {
+    .materialdesign-widget.mdw-style-material3 .mdw-state-layer::before {
+        display: none;
+    }
+
+    .materialdesign-widget.mdw-style-material3 .mdw-md3-button,
+    .materialdesign-widget.mdw-style-material3 .mdw-md3-icon-button {
+        border: 1px solid ButtonBorder;
+    }
+}

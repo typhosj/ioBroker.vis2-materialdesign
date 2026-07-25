@@ -7,7 +7,7 @@ import { squarePreview ,
   designStyleClasses,
   setStateValue,
   sizeCss,
-  stateValue, sanitizeHtml, iconField } from './widgetUtils';
+  stateValue, accessibleText, sanitizeHtml, iconField } from './widgetUtils';
 import type { RxWidgetInfo } from "@iobroker/types-vis-2";
 import { renderIcon } from "./MaterialDesignButtons";
 
@@ -284,6 +284,9 @@ export class MaterialDesignDialog extends VisWidget {
   private open = false;
   private pressClose = false;
   private readonly viewRef = React.createRef<HTMLDivElement>();
+  private readonly cardRef = React.createRef<HTMLDivElement>();
+  private trigger: HTMLElement | null = null;
+  private trapped = false;
   private measuredH = 0;
   private polling = false;
   private measureTimer?: number;
@@ -293,9 +296,11 @@ export class MaterialDesignDialog extends VisWidget {
   componentDidMount(): void {
     super.componentDidMount();
     this.startMeasure();
+    this.syncModalFocus();
   }
   componentDidUpdate(): void {
     this.startMeasure();
+    this.syncModalFocus();
   }
   componentWillUnmount(): void {
     if (this.measureTimer !== undefined) window.clearTimeout(this.measureTimer);
@@ -337,6 +342,54 @@ export class MaterialDesignDialog extends VisWidget {
       }
     };
     tick();
+  }
+  // Modal focus behavior (Phase 8 audit — the widget dialog is a plain overlay div, not the native
+  // <dialog> the editor confirmation uses, so none of this comes for free): moving focus into the
+  // card when it opens, restoring it to whatever opened it on close, and the Tab wrap in
+  // `trapFocus()` below. Focus inside an embedded iframe stays the browser's business — the trap
+  // can only see this document.
+  private focusable(root: HTMLElement): HTMLElement[] {
+    return Array.from(
+      root.querySelectorAll<HTMLElement>(
+        'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),iframe,[tabindex]:not([tabindex="-1"])',
+      ),
+    ).filter(element => element.offsetParent !== null || element.tagName === "IFRAME");
+  }
+  private syncModalFocus(): void {
+    if (typeof document === "undefined") return;
+    const card = this.cardRef.current;
+    if (card && !this.trapped) {
+      this.trapped = true;
+      this.trigger = document.activeElement as HTMLElement | null;
+      (this.focusable(card)[0] ?? card).focus();
+    } else if (!card && this.trapped) {
+      this.trapped = false;
+      this.trigger?.focus?.();
+      this.trigger = null;
+    }
+  }
+  private trapFocus(event: React.KeyboardEvent<HTMLDivElement>, close: () => void): void {
+    if (event.key === "Escape") {
+      event.stopPropagation();
+      close();
+      return;
+    }
+    if (event.key !== "Tab") return;
+    const items = this.focusable(event.currentTarget);
+    if (!items.length) {
+      event.preventDefault();
+      return;
+    }
+    const first = items[0];
+    const last = items[items.length - 1];
+    const active = document.activeElement;
+    if (event.shiftKey && (active === first || active === event.currentTarget)) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && active === last) {
+      event.preventDefault();
+      first.focus();
+    }
   }
   private feedback(d: Data): void {
     if (n(d.vibrateOnMobilDevices) > 0)
@@ -478,8 +531,14 @@ export class MaterialDesignDialog extends VisWidget {
             }}
           >
             <div
+              aria-label={accessibleText(title, "Dialog")}
+              aria-modal="true"
               className="v-dialog v-card"
               onClick={(e) => e.stopPropagation()}
+              onKeyDown={(event) => this.trapFocus(event, close)}
+              ref={this.cardRef}
+              role="dialog"
+              tabIndex={-1}
               style={{
                 background: s(d.backgroundColor, isM3 ? "var(--md-sys-color-surface-container-high)" : "#fff"),
                 borderRadius: 4,

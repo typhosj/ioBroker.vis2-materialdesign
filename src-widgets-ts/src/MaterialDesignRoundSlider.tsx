@@ -4,7 +4,7 @@ import type { RxWidgetInfo, VisRxWidgetProps } from '@iobroker/types-vis-2';
 
 import { cleanColor, num, snapToStep } from './MaterialDesignProgress';
 import { m3ColorExplicit } from './MaterialDesignButtons';
-import { squarePreview, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, setStateValue, sizeCss, stateValue, sanitizeHtml } from './widgetUtils';
+import { squarePreview, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, setStateValue, sizeCss, sliderKeyValue, stateValue, sanitizeHtml } from './widgetUtils';
 
 export interface RoundSliderData {
     oid?: string;
@@ -234,12 +234,35 @@ export default class MaterialDesignRoundSlider extends VisWidget {
             }
         };
 
+        // Keyboard operation and slider semantics (Phase 8 audit): the arc was pointer-only and had
+        // no role/value at all. Arrows/PageUp/PageDown/Home/End commit through the same optimistic
+        // write path as the pointer; non-slider keys are left alone so Tab still moves focus.
+        const writeFromKey = (event: React.KeyboardEvent<SVGSVGElement>): void => {
+            if (disabled) return;
+            const next = sliderKeyValue(event.key, value.raw, min, max, range(data).step);
+            if (next === null) return;
+            event.preventDefault();
+            event.stopPropagation();
+            feedback(data);
+            this.optimisticValue = next;
+            setStateValue(this.props, data.oid || '', next);
+            this.forceUpdate();
+        };
+
         return (
             <div className={`materialdesign-widget materialdesign-slider-round${isM3 ? ` ${designStyleClasses(data as Record<string, unknown>, this.isDarkTheme())}` : ''}`} style={{ height: '100%', position: 'relative', width: '100%' }}>
                 <svg
+                    aria-label="Round Slider"
+                    aria-readonly={disabled}
+                    aria-valuemax={max}
+                    aria-valuemin={min}
+                    aria-valuenow={value.raw}
                     className="materialdesign-round-slider-element"
                     max={max}
                     min={min}
+                    onKeyDown={writeFromKey}
+                    role="slider"
+                    tabIndex={disabled ? -1 : 0}
                     onPointerDown={event => {
                         feedback(data);
                         event.currentTarget.setPointerCapture(event.pointerId);

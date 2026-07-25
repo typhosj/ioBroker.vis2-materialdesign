@@ -359,6 +359,29 @@ export function designStyleClasses(data: Record<string, unknown> | null | undefi
     return isDark ? 'mdw-style-material3 mdw-dark' : 'mdw-style-material3';
 }
 
+// Keyboard value change for the slider widgets (WCAG 2.2 AA / 2.1.1 Keyboard, Phase 8 audit): the
+// sliders were focusable and exposed `role="slider"` with valuemin/max/now, but only pointer input
+// ever changed the value. Shared here so Slider and Round Slider commit through their own existing
+// write path (optimistic value + setStateValue) instead of duplicating key handling per widget.
+// Returns null when the key is not a slider key or the value would not change — the caller then
+// leaves the event alone (no preventDefault, no state write).
+export function sliderKeyValue(key: string, value: number, min: number, max: number, step: number): number | null {
+    const unit = Number.isFinite(step) && step > 0 ? step : 1;
+    const target = key === 'ArrowRight' || key === 'ArrowUp' ? value + unit
+        : key === 'ArrowLeft' || key === 'ArrowDown' ? value - unit
+            : key === 'PageUp' ? value + unit * 10
+                : key === 'PageDown' ? value - unit * 10
+                    : key === 'Home' ? min
+                        : key === 'End' ? max
+                            : null;
+    if (target === null) return null;
+    // Snap to the step grid measured from `min` (a state value off the grid otherwise stays off it),
+    // then round away binary-float noise from fractional steps like 0.1.
+    const snapped = key === 'Home' || key === 'End' ? target : min + Math.round((target - min) / unit) * unit;
+    const next = Math.round(Math.min(max, Math.max(min, snapped)) * 1e6) / 1e6;
+    return next === value ? null : next;
+}
+
 // Combined icon+file picker as a `type:'custom'` field (replaces plain `type:'icon'`): lets the
 // user pick an MDI font icon OR browse an ioBroker file, both stored in the same data key. In counted
 // groups VIS2 normally suffixes `field.name` with the row index (e.g. `listImage0`). Older editor

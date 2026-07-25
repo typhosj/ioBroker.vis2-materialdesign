@@ -21,9 +21,34 @@ VIS Material Design widget work by Scrounger.
 
 ## Design status
 
-Existing widgets currently keep their established Material Design 2-era look,
-component IDs and settings. An opt-in Material 3 presentation is planned. It
-will not silently change existing VIS 2 projects.
+Every widget ships two presentations, selected per widget in the editor under
+**Style → Design style**:
+
+- **Legacy** (default): the established Material Design 2-era look. Unchanged,
+  and what every existing and every newly inserted widget uses.
+- **Material 3**: Material 3 color roles, shape, type and state layers.
+
+Material 3 changes presentation only. Component IDs, option names, object IDs,
+state values, write behaviour, timers and navigation are identical in both
+modes, so switching a widget back and forth never changes what it does.
+
+### Switching an existing project
+
+1. Select a widget, open **Style → Design style** and pick `material3`.
+2. Any color, font or size you explicitly configured still wins — Material 3
+   only fills in the values you left empty. To let a widget follow the Material 3
+   palette, clear those fields.
+3. Switch widget by widget and check the result; there is deliberately no
+   project-wide conversion, and a saved project is never converted implicitly.
+4. Setting the style back to `legacy` restores the old look exactly.
+
+Dark mode follows the same `vis2-materialdesign.0.colors.darkTheme` state the
+legacy widgets already use. The adapter's admin settings ("Material 3 seed
+colors") can override the `primary`, `secondary`, `tertiary` and `error` roles
+project-wide — today the widgets read `primary` (the accent used across all
+Material 3 widgets) and `error` (JSON error states); `secondary` and `tertiary`
+are reserved for upcoming widgets. Everything else uses Google's
+contrast-verified Material 3 baseline palette.
 
 ## Requirements
 

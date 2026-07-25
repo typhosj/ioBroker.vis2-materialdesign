@@ -3,7 +3,11 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import MaterialDesignAlerts from './MaterialDesignAlerts';
+import MaterialDesignCalendar from './MaterialDesignCalendar';
 import MaterialDesignCard from './MaterialDesignCard';
+import MaterialDesignDialogView from './MaterialDesignDialogView';
+import MaterialDesignRoundSlider from './MaterialDesignRoundSlider';
+import MaterialDesignSlider from './MaterialDesignSlider';
 import MaterialDesignIconList from './MaterialDesignIconList';
 import MaterialDesignList from './MaterialDesignList';
 import MaterialDesignTable from './MaterialDesignTable';
@@ -85,5 +89,48 @@ describe('widget accessibility', () => {
         expect(html).toContain('tabindex="0"');
         (findByClass(tree, 'mdc-list-item')?.props.onKeyDown as (event: unknown) => void)({ key: 'Enter', preventDefault: vi.fn() });
         expect(changeView).toHaveBeenCalledWith('details');
+    });
+
+    it('lets the slider thumb be operated from the keyboard', () => {
+        const widget = new MaterialDesignSlider(fixture<ConstructorParameters<typeof MaterialDesignSlider>[0]>(props));
+        setData(widget, { oid: 'test.0.dimmer', min: 0, max: 100, step: 5 }, { 'test.0.dimmer.val': 40 });
+        const tree = widget.renderWidgetBody(fixture<Parameters<MaterialDesignSlider['renderWidgetBody']>[0]>(props));
+        expect(renderToStaticMarkup(tree)).toContain('role="slider"');
+        const event = { key: 'ArrowRight', preventDefault: vi.fn(), stopPropagation: vi.fn() };
+        (findByClass(tree, 'v-slider__thumb-container')?.props.onKeyDown as (event: unknown) => void)(event);
+        expect(event.preventDefault).toHaveBeenCalledOnce();
+        expect(props.context.setValue).toHaveBeenCalledWith('test.0.dimmer', 45);
+    });
+
+    it('gives the round slider slider semantics and keyboard operation', () => {
+        const widget = new MaterialDesignRoundSlider(fixture<ConstructorParameters<typeof MaterialDesignRoundSlider>[0]>(props));
+        setData(widget, { oid: 'test.0.dimmer', min: 0, max: 100, step: 10 }, { 'test.0.dimmer.val': 30 });
+        const tree = widget.renderWidgetBody(fixture<Parameters<MaterialDesignRoundSlider['renderWidgetBody']>[0]>(props));
+        const html = renderToStaticMarkup(tree);
+        expect(html).toContain('role="slider"');
+        expect(html).toContain('aria-valuenow="30"');
+        expect(html).toContain('tabindex="0"');
+        const event = { key: 'End', preventDefault: vi.fn(), stopPropagation: vi.fn() };
+        (findByClass(tree, 'materialdesign-round-slider-element')?.props.onKeyDown as (event: unknown) => void)(event);
+        expect(props.context.setValue).toHaveBeenCalledWith('test.0.dimmer', 100);
+    });
+
+    it('exposes the widget dialog as a modal and closes it with Escape', () => {
+        const widget = new MaterialDesignDialogView(fixture<ConstructorParameters<typeof MaterialDesignDialogView>[0]>(props));
+        setData(widget, { showDialogMethod: 'datapoint', showDialogOid: 'test.0.dialog', title: '<b>Details</b>' }, { 'test.0.dialog.val': true });
+        const tree = widget.renderWidgetBody(fixture<Parameters<MaterialDesignDialogView['renderWidgetBody']>[0]>(props));
+        const html = renderToStaticMarkup(tree);
+        expect(html).toContain('role="dialog"');
+        expect(html).toContain('aria-modal="true"');
+        expect(html).toContain('aria-label="Details"');
+        (findByClass(tree, 'v-dialog')?.props.onKeyDown as (event: unknown) => void)({ key: 'Escape', stopPropagation: vi.fn() });
+        expect(props.context.setValue).toHaveBeenCalledWith('test.0.dialog', false);
+    });
+
+    it('marks the calendar today cell with more than colour', () => {
+        const widget = new MaterialDesignCalendar(fixture<ConstructorParameters<typeof MaterialDesignCalendar>[0]>(props));
+        setData(widget, { calendarView: 'month' }, {});
+        const html = renderToStaticMarkup(widget.renderWidgetBody(fixture<Parameters<MaterialDesignCalendar['renderWidgetBody']>[0]>(props)));
+        expect(html).toContain('aria-current="date"');
     });
 });
