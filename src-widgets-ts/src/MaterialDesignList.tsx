@@ -57,7 +57,10 @@ function listToggle(kind: 'switch' | 'checkbox', on: boolean, readonly: boolean,
             className={kind === 'switch' ? 'mdc-switch__native-control' : 'mdc-checkbox__native-control'}
             disabled={readonly}
             onChange={e => onChange(e.target.checked)}
-            style={{ cursor: readonly ? 'default' : 'pointer', margin: 0, opacity: 0, position: 'absolute', inset: 0, width: '100%', height: '100%' }}
+            // The switch wrapper is 32×20 (legacy MDC geometry, must not change). 20 px is under the
+            // WCAG 2.5.8 24 px minimum, so in M3 the invisible input — the element that actually takes
+            // the click — is grown 2 px past the wrapper vertically. Visuals stay identical.
+            style={{ cursor: readonly ? 'default' : 'pointer', margin: 0, opacity: 0, position: 'absolute', inset: isM3 && kind === 'switch' ? '-2px 0' : 0, width: '100%', height: 'auto' }}
             type="checkbox"
             {...(kind === 'switch' ? { role: 'switch' } : {})}
         />

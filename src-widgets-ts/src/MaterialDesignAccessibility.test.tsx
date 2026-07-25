@@ -1,6 +1,9 @@
+import { readFileSync } from 'node:fs';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { contrastRatio, m3OnColor, parseColor } from './widgetUtils';
 
 import MaterialDesignAlerts from './MaterialDesignAlerts';
 import MaterialDesignCalendar from './MaterialDesignCalendar';
@@ -132,5 +135,51 @@ describe('widget accessibility', () => {
         setData(widget, { calendarView: 'month' }, {});
         const html = renderToStaticMarkup(widget.renderWidgetBody(fixture<Parameters<MaterialDesignCalendar['renderWidgetBody']>[0]>(props)));
         expect(html).toContain('aria-current="date"');
+    });
+
+    // WCAG 2.5.8: the calendar day number and the list switch are the two M3 targets that fall under
+    // 24 px on their own; both are grown in the M3 path only (legacy geometry is frozen by parity).
+    it('keeps M3 day-number and list-switch targets at 24 px', () => {
+        const calendar = new MaterialDesignCalendar(fixture<ConstructorParameters<typeof MaterialDesignCalendar>[0]>(props));
+        setData(calendar, { calendarView: 'month', designStyle: 'material3' }, {});
+        const day = renderToStaticMarkup(calendar.renderWidgetBody(fixture<Parameters<MaterialDesignCalendar['renderWidgetBody']>[0]>(props)));
+        expect(day).toContain('min-height:24px');
+        setData(calendar, { calendarView: 'month' }, {});
+        expect(renderToStaticMarkup(calendar.renderWidgetBody(fixture<Parameters<MaterialDesignCalendar['renderWidgetBody']>[0]>(props)))).not.toContain('min-height:24px');
+
+        const listProps = { id: 'list', context: { setValue: vi.fn() } };
+        const list = new MaterialDesignList(fixture<ConstructorParameters<typeof MaterialDesignList>[0]>(listProps));
+        setData(list, { countListItems: 1, designStyle: 'material3', listType: 'switch', label0: 'Lamp' });
+        expect(renderToStaticMarkup(list.renderWidgetBody(fixture<Parameters<MaterialDesignList['renderWidgetBody']>[0]>(listProps)))).toContain('inset:-2px 0');
+    });
+});
+
+// WCAG 1.4.3 / 1.4.11 for the shipped M3 palette. The baseline scheme is Google's, but the pairs the
+// widgets actually combine are ours, and an admin seed override can replace `primary` with anything.
+describe('material 3 colour contrast', () => {
+    const css = readFileSync('src-widgets-ts/src/material3-tokens.css', 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+    const roles = (block: string): Record<string, string> => Object.fromEntries([...block.matchAll(/--md-sys-color-([a-z-]+):\s*(#[0-9a-f]{6})/g)].map(match => [match[1], match[2]]));
+    const [, lightBlock, darkBlock] = css.split('.materialdesign-widget.mdw-style-material3');
+    const light = roles(lightBlock);
+    const dark = { ...light, ...roles(darkBlock) };
+    const ratio = (a: string, b: string): number => contrastRatio(parseColor(a)!, parseColor(b)!);
+    const surfaces = ['surface', 'surface-container', 'surface-container-low', 'surface-container-high'];
+
+    it.each([['light', light], ['dark', dark]] as const)('keeps text pairs above 4.5:1 (%s)', (_name, scheme) => {
+        const pairs: [string, string][] = [['on-primary', 'primary'], ['on-primary-container', 'primary-container'], ['on-secondary-container', 'secondary-container'],
+            ...surfaces.flatMap(surface => (['on-surface', 'on-surface-variant', 'primary', 'error'] as const).map(role => [role, surface] as [string, string]))];
+        expect(pairs.filter(([front, back]) => ratio(scheme[front], scheme[back]) < 4.5).map(([front, back]) => `${front} on ${back}`)).toEqual([]);
+    });
+
+    it.each([['light', light], ['dark', dark]] as const)('keeps the outline above 3:1 on every surface (%s)', (_name, scheme) => {
+        surfaces.forEach(surface => expect(ratio(scheme.outline, scheme[surface])).toBeGreaterThanOrEqual(3));
+    });
+
+    it('repairs the on-colour when an admin seed overrides primary', () => {
+        expect(m3OnColor('#ffee00')).toBe('#1d1b20'); // light seed: white label would be ~1.1:1
+        expect(m3OnColor('#6750a4')).toBe('#ffffff');
+        expect(m3OnColor('rgb(255, 238, 0)')).toBe('#1d1b20');
+        expect(m3OnColor('rebeccapurple')).toBeUndefined(); // unparseable: keep the baseline pair
+        [...'#ffee00 #6750a4 #b3261e #003366'.split(' ')].forEach(seed => expect(contrastRatio(parseColor(seed)!, parseColor(m3OnColor(seed)!)!)).toBeGreaterThanOrEqual(4.5));
     });
 });

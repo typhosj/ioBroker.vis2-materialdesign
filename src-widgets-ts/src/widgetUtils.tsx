@@ -594,13 +594,54 @@ export function m3SeedOid(role: M3SeedRole): string {
     return `vis2-materialdesign.0.colors.md3${role.charAt(0).toUpperCase()}${role.slice(1)}`;
 }
 
+// WCAG 1.4.3 for seed overrides (Phase 8). An override replaces `--md-sys-color-primary` but not its
+// paired `--md-sys-color-on-primary`, which stays the baseline white — a light seed (yellow, cyan…)
+// then leaves every filled button/label below 4.5:1, which no amount of "Google verified the baseline
+// pairs" covers. So repair the pair: pick whichever of M3's two extreme on-colors contrasts better
+// with the chosen seed. Still not a tonal-palette derivation (no HCT dependency); contrast only
+// depends on the on-color, and only `on-primary` has a consumer today.
+const ON_LIGHT = '#ffffff';
+const ON_DARK = '#1d1b20'; // = --md-sys-color-on-surface, M3's darkest baseline on-color
+
+export function parseColor(color: string): [number, number, number] | undefined {
+    const hex = color.trim().match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i)?.[1];
+    if (hex) {
+        const full = hex.length === 3 ? hex.replace(/./g, char => char + char) : hex;
+        return [0, 2, 4].map(index => parseInt(full.substr(index, 2), 16)) as [number, number, number];
+    }
+    const rgb = color.trim().match(/^rgba?\(\s*(\d+)[\s,]+(\d+)[\s,]+(\d+)/i);
+    return rgb ? [Number(rgb[1]), Number(rgb[2]), Number(rgb[3])] : undefined;
+}
+
+export function contrastRatio(a: [number, number, number], b: [number, number, number]): number {
+    const luminance = (rgb: [number, number, number]): number => {
+        const [r, g, blue] = rgb.map(part => { const value = part / 255; return value <= 0.03928 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4; });
+        return 0.2126 * r + 0.7152 * g + 0.0722 * blue;
+    };
+    const [high, low] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+    return (high + 0.05) / (low + 0.05);
+}
+
+export function m3OnColor(color: string): string | undefined {
+    const rgb = parseColor(color);
+    if (!rgb) return undefined; // named colors / gradients: leave the baseline pair alone rather than guess
+    return contrastRatio(rgb, parseColor(ON_LIGHT)!) >= contrastRatio(rgb, parseColor(ON_DARK)!) ? ON_LIGHT : ON_DARK;
+}
+
 export function applyM3SeedVariables(values: Record<string, ioBroker.StateValue | undefined> | undefined): void {
     if (typeof document === 'undefined' || !values) return;
     M3_SEED_ROLES.forEach(role => {
         const value = values[`${m3SeedOid(role)}.val`];
         const variable = `--md-sys-color-${role}`;
-        if (typeof value === 'string' && value) document.documentElement.style.setProperty(variable, value);
-        else document.documentElement.style.removeProperty(variable);
+        const on = role === 'primary' ? `--md-sys-color-on-${role}` : undefined;
+        if (typeof value === 'string' && value) {
+            document.documentElement.style.setProperty(variable, value);
+            const onColor = on && m3OnColor(value);
+            if (on) { if (onColor) document.documentElement.style.setProperty(on, onColor); else document.documentElement.style.removeProperty(on); }
+        } else {
+            document.documentElement.style.removeProperty(variable);
+            if (on) document.documentElement.style.removeProperty(on);
+        }
     });
 }
 
