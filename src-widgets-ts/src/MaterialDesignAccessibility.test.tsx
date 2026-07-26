@@ -147,10 +147,22 @@ describe('widget accessibility', () => {
         setData(calendar, { calendarView: 'month' }, {});
         expect(renderToStaticMarkup(calendar.renderWidgetBody(fixture<Parameters<MaterialDesignCalendar['renderWidgetBody']>[0]>(props)))).not.toContain('min-height:24px');
 
+        // The list row switch is the shared 52×32 M3 control (m3Switch), with the input stretched over
+        // it — both the visual and the target come from that, no per-widget inset correction.
         const listProps = { id: 'list', context: { setValue: vi.fn() } };
         const list = new MaterialDesignList(fixture<ConstructorParameters<typeof MaterialDesignList>[0]>(listProps));
         setData(list, { countListItems: 1, designStyle: 'material3', listType: 'switch', label0: 'Lamp' });
-        expect(renderToStaticMarkup(list.renderWidgetBody(fixture<Parameters<MaterialDesignList['renderWidgetBody']>[0]>(listProps)))).toContain('inset:-2px 0');
+        const m3List = renderToStaticMarkup(list.renderWidgetBody(fixture<Parameters<MaterialDesignList['renderWidgetBody']>[0]>(listProps)));
+        expect(m3List).toContain('materialdesign-md3-switch');
+        expect(m3List).toContain('height:32px');
+        expect(m3List).toContain('width:52px');
+        expect(m3List).toContain('width:100%;height:100%');
+
+        // Legacy keeps the 32×20 MDC geometry unchanged.
+        setData(list, { countListItems: 1, listType: 'switch', label0: 'Lamp' });
+        const legacyList = renderToStaticMarkup(list.renderWidgetBody(fixture<Parameters<MaterialDesignList['renderWidgetBody']>[0]>(listProps)));
+        expect(legacyList).not.toContain('materialdesign-md3-switch');
+        expect(legacyList).toContain('class="mdc-switch"');
     });
 });
 

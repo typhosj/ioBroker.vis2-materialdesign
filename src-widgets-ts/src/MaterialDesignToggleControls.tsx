@@ -3,7 +3,7 @@ import React from 'react';
 import type { RxWidgetInfo, VisRxWidgetProps } from '@iobroker/types-vis-2';
 
 import { renderIcon, m3ColorExplicit } from './MaterialDesignButtons';
-import { squarePreview, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, iconField, parseActionValue, setStateValue, sizeCss, stateValue, stringValue } from './widgetUtils';
+import { squarePreview, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, iconField, m3Switch, parseActionValue, setStateValue, sizeCss, stateValue, stringValue } from './widgetUtils';
 
 export interface ToggleControlData {
     oid?: string;
@@ -261,70 +261,31 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
             const control =
                 def.kind === 'switch' ? (
                     isM3 ? (
-                        // Material 3 switch geometry: 52x32 full-radius track, handle that grows
-                        // 16 -> 24 on selection, 40px state layer around the handle. Same toggle
-                        // behavior and on-state as legacy; only shape/tokens differ. An explicit
-                        // saved color still wins per token precedence.
-                        <div
-                            aria-checked={on}
-                            className="materialdesign-md3-switch"
-                            role="switch"
-                            style={{
-                                filter: controlFilter,
-                                flex: '0 0 auto',
-                                height: 32,
-                                marginLeft: switchMargin,
-                                marginRight: switchMargin,
-                                opacity: data.readOnly ? 0.38 : undefined,
-                                overflow: 'visible',
-                                position: 'relative',
-                                width: 52,
-                            }}
-                        >
-                            <div
-                                style={{
-                                    background: on ? m3(data.colorSwitchTrue, 'var(--md-sys-color-primary)') : m3(data.colorSwitchTrack, 'var(--md-sys-color-surface-container-high)'),
-                                    border: on ? undefined : '2px solid var(--md-sys-color-outline)',
-                                    borderRadius: 16,
-                                    boxSizing: 'border-box',
-                                    inset: 0,
-                                    position: 'absolute',
-                                }}
-                            />
-                            <div
-                                className="mdw-state-layer"
-                                style={{
-                                    borderRadius: '50%',
-                                    color: on ? 'var(--md-sys-color-primary)' : 'var(--md-sys-color-on-surface)',
-                                    height: 40,
-                                    left: on ? 16 : -4,
-                                    position: 'absolute',
-                                    top: -4,
-                                    width: 40,
-                                }}
-                            />
-                            <div
-                                style={{
-                                    background: on ? m3(data.colorSwitchTrue, 'var(--md-sys-color-on-primary)') : m3(data.colorSwitchThumb, 'var(--md-sys-color-outline)'),
-                                    borderRadius: '50%',
-                                    height: on ? 24 : 16,
-                                    left: on ? 24 : 8,
-                                    position: 'absolute',
-                                    top: on ? 4 : 8,
-                                    transition: 'left var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard), width var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard), height var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard)',
-                                    width: on ? 24 : 16,
-                                }}
-                            >
+                        // Same toggle behavior and on-state as legacy; only shape/tokens differ. The
+                        // geometry itself lives in m3Switch() because List renders the same control.
+                        m3Switch({
+                            disabled: !!data.readOnly,
+                            filter: controlFilter,
+                            input: (
                                 <input
                                     checked={on}
                                     disabled={!!data.readOnly}
                                     onChange={() => undefined}
                                     role="switch"
-                                    style={{ inset: 0, margin: 0, opacity: 0, position: 'absolute' }}
+                                    style={{ inset: 0, margin: 0, opacity: 0, position: 'absolute', width: '100%', height: '100%' }}
                                     type="checkbox"
                                 />
-                            </div>
-                        </div>
+                            ),
+                            margin: switchMargin,
+                            on,
+                            // The handle follows colorSwitchThumb in BOTH states — feeding it
+                            // colorSwitchTrue (the track's on-color) painted handle and track the same
+                            // color, so a switched-on control was a single filled oval.
+                            thumbOff: m3ColorExplicit(data.colorSwitchThumb) ? String(data.colorSwitchThumb) : undefined,
+                            thumbOn: m3ColorExplicit(data.colorSwitchThumb) ? String(data.colorSwitchThumb) : undefined,
+                            trackOff: m3ColorExplicit(data.colorSwitchTrack) ? String(data.colorSwitchTrack) : undefined,
+                            trackOn: m3ColorExplicit(data.colorSwitchTrue) ? String(data.colorSwitchTrue) : undefined,
+                        })
                     ) : (
                         <div
                             aria-checked={on}

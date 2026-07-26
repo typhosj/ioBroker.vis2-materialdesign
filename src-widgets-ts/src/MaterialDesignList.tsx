@@ -3,7 +3,7 @@ import React from 'react';
 import type { RxWidgetInfo, WidgetData } from '@iobroker/types-vis-2';
 
 import { renderIcon } from './MaterialDesignButtons';
-import { MAX_DYNAMIC_ITEMS, squarePreview, RenderProps, VisWidget, accessibleText, boundedCount, createInfo, designStyle, designStyleClasses, iconField, parseActionValue, safeWidgetUrl, setStateValue, sizeCss, stateValue, sanitizeHtml } from './widgetUtils';
+import { MAX_DYNAMIC_ITEMS, squarePreview, RenderProps, VisWidget, accessibleText, boundedCount, createInfo, designStyle, designStyleClasses, iconField, m3Switch, parseActionValue, safeWidgetUrl, setStateValue, sizeCss, stateValue, sanitizeHtml } from './widgetUtils';
 
 type Data = Record<string, unknown> & { listItemDataMethod?: string; countListItems?: number; json_string_oid?: string };
 type Item = { objectId: string; text: string; subText: string; rightText: string; rightSubText: string; image: string; imageColor: string; imageActive: string; imageActiveColor: string; header: string; divider: boolean; buttonStateValue: unknown; buttonNavView: string; buttonLink: string; overflow: boolean };
@@ -57,14 +57,27 @@ function listToggle(kind: 'switch' | 'checkbox', on: boolean, readonly: boolean,
             className={kind === 'switch' ? 'mdc-switch__native-control' : 'mdc-checkbox__native-control'}
             disabled={readonly}
             onChange={e => onChange(e.target.checked)}
-            // The switch wrapper is 32×20 (legacy MDC geometry, must not change). 20 px is under the
-            // WCAG 2.5.8 24 px minimum, so in M3 the invisible input — the element that actually takes
-            // the click — is grown 2 px past the wrapper vertically. Visuals stay identical.
-            style={{ cursor: readonly ? 'default' : 'pointer', margin: 0, opacity: 0, position: 'absolute', inset: isM3 && kind === 'switch' ? '-2px 0' : 0, width: '100%', height: 'auto' }}
+            style={{ cursor: readonly ? 'default' : 'pointer', margin: 0, opacity: 0, position: 'absolute', inset: 0, width: '100%', height: isM3 && kind === 'switch' ? '100%' : 'auto' }}
             type="checkbox"
             {...(kind === 'switch' ? { role: 'switch' } : {})}
         />
     );
+    // In M3 the row switch is the same 52×32 control as the Switch widget (shared m3Switch), not the
+    // 32×20 legacy MDC shape — which also puts the click target past the WCAG 2.5.8 24 px minimum that
+    // the legacy geometry misses on its own.
+    if (kind === 'switch' && isM3) {
+        return m3Switch({
+            disabled: readonly,
+            input,
+            on,
+            // the row's own <input> already carries role="switch" and its checked state
+            rootProps: { 'aria-checked': undefined, role: undefined },
+            thumbOff: s(data.colorSwitchThumb) || undefined,
+            thumbOn: s(data.colorSwitchThumb) || undefined,
+            trackOff: s(data.colorSwitchTrack) || undefined,
+            trackOn: s(data.colorSwitchTrue) || undefined,
+        });
+    }
     if (kind === 'switch') {
         const onColor = isM3 && !s(data.colorSwitchTrue) ? 'var(--md-sys-color-primary)' : s(data.colorSwitchTrue, '#44739e');
         return (

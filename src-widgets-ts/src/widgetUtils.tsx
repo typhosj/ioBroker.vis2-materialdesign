@@ -358,6 +358,84 @@ export function designStyleClasses(data: Record<string, unknown> | null | undefi
     return isDark ? 'mdw-style-material3 mdw-dark' : 'mdw-style-material3';
 }
 
+// Material 3 switch visual (../../MATERIAL3_PLAN.md Phase 2): 52×32 full-radius track, handle that
+// grows 16 → 24 px on selection, 40 px state layer around the handle. Shared so the Switch widget and
+// the switch inside List rows look the same in M3 — List otherwise kept the 32×20 legacy MDC shape.
+// Colors are passed in already resolved: an explicit saved color or `undefined` for the token.
+// The caller supplies its own `<input>` (its change handler, disabled and ARIA stay where they are);
+// it is stretched over the whole control, which is also what makes the target ≥ 24 px (WCAG 2.5.8).
+export function m3Switch(options: {
+    on: boolean;
+    input: React.ReactNode;
+    trackOn?: string;
+    trackOff?: string;
+    thumbOn?: string;
+    thumbOff?: string;
+    disabled?: boolean;
+    filter?: string;
+    margin?: number;
+    rootProps?: React.HTMLAttributes<HTMLDivElement>;
+}): React.JSX.Element {
+    const { on, input, trackOn, trackOff, thumbOn, thumbOff, disabled, filter, margin, rootProps } = options;
+    const motion = 'var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard)';
+    return (
+        <div
+            aria-checked={on}
+            className="materialdesign-md3-switch"
+            role="switch"
+            {...rootProps}
+            style={{
+                filter,
+                flex: '0 0 auto',
+                height: 32,
+                marginLeft: margin,
+                marginRight: margin,
+                opacity: disabled ? 0.38 : undefined,
+                overflow: 'visible',
+                position: 'relative',
+                width: 52,
+                ...rootProps?.style,
+            }}
+        >
+            <div
+                style={{
+                    background: on ? trackOn || 'var(--md-sys-color-primary)' : trackOff || 'var(--md-sys-color-surface-container-high)',
+                    border: on ? undefined : '2px solid var(--md-sys-color-outline)',
+                    borderRadius: 16,
+                    boxSizing: 'border-box',
+                    inset: 0,
+                    position: 'absolute',
+                }}
+            />
+            <div
+                className="mdw-state-layer"
+                style={{
+                    borderRadius: '50%',
+                    color: on ? 'var(--md-sys-color-primary)' : 'var(--md-sys-color-on-surface)',
+                    height: 40,
+                    left: on ? 16 : -4,
+                    position: 'absolute',
+                    top: -4,
+                    width: 40,
+                }}
+            />
+            <div
+                style={{
+                    background: on ? thumbOn || 'var(--md-sys-color-on-primary)' : thumbOff || 'var(--md-sys-color-outline)',
+                    borderRadius: '50%',
+                    height: on ? 24 : 16,
+                    left: on ? 24 : 8,
+                    position: 'absolute',
+                    top: on ? 4 : 8,
+                    transition: `left ${motion}, width ${motion}, height ${motion}`,
+                    width: on ? 24 : 16,
+                }}
+            />
+            <span style={{ inset: 0, position: 'absolute' }}>{input}</span>
+        </div>
+    );
+}
+
 // Keyboard value change for the slider widgets (WCAG 2.2 AA / 2.1.1 Keyboard, Phase 8 audit): the
 // sliders were focusable and exposed `role="slider"` with valuemin/max/now, but only pointer input
 // ever changed the value. Shared here so Slider and Round Slider commit through their own existing
