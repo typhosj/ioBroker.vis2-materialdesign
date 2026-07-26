@@ -158,6 +158,16 @@ describe('widget accessibility', () => {
         expect(m3List).toContain('width:52px');
         expect(m3List).toContain('width:100%;height:100%');
 
+        // Icon List: clearing the icon-button background is the documented way to let M3 fill it in,
+        // and it must not leave a saved (typically white) icon on a transparent button.
+        const iconListProps = { id: 'iconlist', context: { setValue: vi.fn() } };
+        const iconList = new MaterialDesignIconList(fixture<ConstructorParameters<typeof MaterialDesignIconList>[0]>(iconListProps));
+        setData(iconList, { countListItems: 1, designStyle: 'material3', listType0: 'buttonToggle', oid0: 'test.0.lamp', listImage0: 'lightbulb', listImageActiveColor0: '#ffffff' }, { 'test.0.lamp.val': true });
+        const activeIcons = renderToStaticMarkup(iconList.renderWidgetBody(fixture<Parameters<MaterialDesignIconList['renderWidgetBody']>[0]>(iconListProps)));
+        expect(activeIcons).toContain('background:var(--md-sys-color-primary)');
+        setData(iconList, { countListItems: 1, designStyle: 'material3', listType0: 'buttonToggle', oid0: 'test.0.lamp', listImage0: 'lightbulb' }, { 'test.0.lamp.val': false });
+        expect(renderToStaticMarkup(iconList.renderWidgetBody(fixture<Parameters<MaterialDesignIconList['renderWidgetBody']>[0]>(iconListProps)))).toContain('background:var(--md-sys-color-surface-container-high)');
+
         // Legacy keeps the 32×20 MDC geometry unchanged.
         setData(list, { countListItems: 1, listType: 'switch', label0: 'Lamp' });
         const legacyList = renderToStaticMarkup(list.renderWidgetBody(fixture<Parameters<MaterialDesignList['renderWidgetBody']>[0]>(listProps)));

@@ -302,15 +302,26 @@ export default class MaterialDesignIconList extends VisWidget {
     private renderButtonIcon(item: Item, index: number, data: Data, active: boolean, locked: boolean, current: unknown): React.JSX.Element {
         const height = n(data.iconHeight, 24);
         const image = active ? item.imageActive : item.image;
-        const color = this.m3IconColor(data, active ? item.imageActiveColor : item.imageColor);
+        const savedBackground = active ? item.buttonBackgroundActiveColor : item.buttonBackgroundColor;
+        // On a token-filled active button the surface IS primary, so the legacy-blue icon default has
+        // to become on-primary there rather than primary — otherwise icon and circle are one color.
+        const color = this.isM3(data) && active && !savedBackground && (active ? item.imageActiveColor : item.imageColor) === '#44739e'
+            ? 'var(--md-sys-color-on-primary)'
+            : this.m3IconColor(data, active ? item.imageActiveColor : item.imageColor);
+        // Clearing a color so M3 can fill it in is the documented workflow (README "Material 3"), but
+        // the icon-button background had no token fallback: it went transparent while the icon kept
+        // its saved color — and the common setup is a white icon on a colored circle, i.e. a white
+        // icon on the (white) view. The button surface now falls back to tokens like every other
+        // color here; an explicitly saved background still wins.
+        const buttonBackground = savedBackground || (this.isM3(data) ? (active ? 'var(--md-sys-color-primary)' : 'var(--md-sys-color-surface-container-high)') : undefined);
         const action = this.actionProps(item, index, current, data);
         const filter = locked && b(data.lockApplyOnlyOnImage, true) ? `grayscale(${n(data.lockFilterGrayscale, 30)}%)` : undefined;
         if (s(data.buttonLayout, 'round') === 'round') {
             const buttonHeight = n(data.buttonHeight, height * 1.5);
-            return <div style={{ textAlign: 'center', width: '100%' }}><div {...action} className="materialdesign-icon-button materialdesign-iconList-button" style={{ ['--materialdesign-color-icon-button-hover' as string]: item.readOnly ? 'transparent' : s(data.buttonColorPress), background: active ? item.buttonBackgroundActiveColor : item.buttonBackgroundColor, cursor: item.readOnly ? 'default' : 'pointer', filter, height: buttonHeight, position: 'relative', width: buttonHeight }}><div className="materialdesign-button-body" style={{ alignItems: 'center', display: 'flex', height: '100%', justifyContent: 'center', width: '100%' }}>{icon(image, color, height)}</div></div></div>;
+            return <div style={{ textAlign: 'center', width: '100%' }}><div {...action} className="materialdesign-icon-button materialdesign-iconList-button" style={{ ['--materialdesign-color-icon-button-hover' as string]: item.readOnly ? 'transparent' : s(data.buttonColorPress), background: buttonBackground, cursor: item.readOnly ? 'default' : 'pointer', filter, height: buttonHeight, position: 'relative', width: buttonHeight }}><div className="materialdesign-button-body" style={{ alignItems: 'center', display: 'flex', height: '100%', justifyContent: 'center', width: '100%' }}>{icon(image, color, height)}</div></div></div>;
         }
         const buttonHeight = n(data.buttonHeight) > 0 ? n(data.buttonHeight) : '100%';
-        return <div style={{ alignItems: 'center', display: 'flex', height: '100%', justifyContent: 'center', width: '100%' }}><div {...action} className="materialdesign-button materialdesign-iconList-button" style={{ ['--materialdesign-color-icon-button-hover' as string]: item.readOnly ? 'transparent' : s(data.buttonColorPress), background: active ? item.buttonBackgroundActiveColor : item.buttonBackgroundColor, cursor: item.readOnly ? 'default' : 'pointer', filter, height: buttonHeight, position: 'relative', width: '100%' }}><div className="materialdesign-button-body" style={{ alignItems: 'center', display: 'flex', height: '100%', justifyContent: 'center', width: '100%' }}>{icon(image, color, height)}</div></div></div>;
+        return <div style={{ alignItems: 'center', display: 'flex', height: '100%', justifyContent: 'center', width: '100%' }}><div {...action} className="materialdesign-button materialdesign-iconList-button" style={{ ['--materialdesign-color-icon-button-hover' as string]: item.readOnly ? 'transparent' : s(data.buttonColorPress), background: buttonBackground, cursor: item.readOnly ? 'default' : 'pointer', filter, height: buttonHeight, position: 'relative', width: '100%' }}><div className="materialdesign-button-body" style={{ alignItems: 'center', display: 'flex', height: '100%', justifyContent: 'center', width: '100%' }}>{icon(image, color, height)}</div></div></div>;
     }
 
     private renderItem(item: Item, index: number, data: Data): React.JSX.Element | null {
