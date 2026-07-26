@@ -8,6 +8,8 @@ import {
 } from "chart.js";
 import ChartDataLabels from "chartjs-plugin-datalabels";
 
+import { m3OnColor } from "./widgetUtils";
+
 // Chart.js 4 no longer auto-registers. Register only the pieces these 4 widgets use — bar/line/
 // pie/doughnut controllers, their elements, the linear + category scales (no time scale: the Line
 // History chart pre-formats its own tick labels, staying moment-free), and the legend/title/tooltip/
@@ -31,6 +33,28 @@ if (typeof (Chart as { register?: unknown }).register === "function") {
 // fields (and the M3 render paths) still override this. v4 renamed the global from
 // defaults.global.defaultFontColor to defaults.color.
 Chart.defaults.color = "#44739e";
+
+// Value labels sit ON the drawn element (pie slice, bar), so a single fixed color is unreadable on
+// half the palette — the plugin's own default is a mid grey, and a dark blue or violet slice swallows
+// it. Derive the label color from the color of the element it is drawn on instead: the same sRGB
+// contrast pick used for the M3 seed pairs and the calendar events. A chart that sets its own
+// `plugins.datalabels.color` still wins, since this is only the default.
+export function labelColorFor(context: { dataIndex: number; dataset?: { backgroundColor?: unknown }; chart?: { canvas?: HTMLCanvasElement } }): string {
+  const background = context.dataset?.backgroundColor;
+  let color = Array.isArray(background) ? background[context.dataIndex] : background;
+  // M3 paths pass tokens (`var(--md-sys-color-primary)`), which no color parser can read — resolve
+  // them off the canvas, where the widget root's custom properties are in scope.
+  const token = typeof color === "string" && color.match(/^var\((--[^),]+)/)?.[1];
+  if (token && context.chart?.canvas) color = getComputedStyle(context.chart.canvas).getPropertyValue(token).trim();
+  return (typeof color === "string" && m3OnColor(color)) || "#000";
+}
+
+if (Chart.defaults.plugins) {
+  (Chart.defaults.plugins as { datalabels?: { color?: unknown } }).datalabels = {
+    ...(Chart.defaults.plugins as { datalabels?: object }).datalabels,
+    color: labelColorFor,
+  };
+}
 
 // `data`/`options` are typed loosely: callers build chart.js configs whose runtime
 // shape (null data points for gaps, numeric stack ids) is wider than the strict

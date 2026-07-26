@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildPieValues, pieCount, readJson } from './MaterialDesignChartPie';
+import { labelColorFor } from './MaterialDesignChartCanvas';
 
 describe('readJson', () => {
     it('parses a JSON array', () => {
@@ -48,5 +49,25 @@ describe('buildPieValues', () => {
         expect(withScheme[0].color).toBe('#123456');
         const withGlobal = buildPieValues({ globalColor: '#abcdef' }, null, 1, [], () => 0);
         expect(withGlobal[0].color).toBe('#abcdef');
+    });
+});
+
+describe('labelColorFor', () => {
+    const context = (background: unknown, index = 0): Parameters<typeof labelColorFor>[0] => ({ dataIndex: index, dataset: { backgroundColor: background } });
+
+    it('picks a readable label color for the slice it is drawn on', () => {
+        // Value labels sit on the slice, so a fixed color is unreadable on half of any palette.
+        expect(labelColorFor(context(['#44739e', '#ffeb3b'], 0))).toBe('#ffffff');
+        expect(labelColorFor(context(['#44739e', '#ffeb3b'], 1))).toBe('#1d1b20');
+        expect(labelColorFor(context('#2e7d32'))).toBe('#ffffff');
+    });
+
+    it('resolves M3 tokens off the canvas and falls back when it cannot parse a color', () => {
+        const canvas = document.createElement('canvas');
+        canvas.style.setProperty('--md-sys-color-primary', '#6750a4');
+        document.body.appendChild(canvas);
+        expect(labelColorFor({ dataIndex: 0, dataset: { backgroundColor: 'var(--md-sys-color-primary)' }, chart: { canvas } })).toBe('#ffffff');
+        expect(labelColorFor(context('rebeccapurple'))).toBe('#000');
+        canvas.remove();
     });
 });
