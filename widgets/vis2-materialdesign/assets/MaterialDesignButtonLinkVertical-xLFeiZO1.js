@@ -1,0 +1,1 @@
+import{t as e}from"./MaterialDesignButtons-Ce0ph05U.js";var t=e({id:`tplVis2-materialdesign-Button-Link-vertical`,name:`Button Link vertical`,kind:`link`,layout:`vertical`,label:`Link`,icon:`link`});export{t as default};
