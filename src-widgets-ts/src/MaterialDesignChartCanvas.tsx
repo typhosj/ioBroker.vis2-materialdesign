@@ -56,6 +56,38 @@ if (Chart.defaults.plugins) {
   };
 }
 
+type LabelContext = Parameters<typeof labelColorFor>[0];
+
+// The value-label option group (`showValues`, decimals, appendix, font, anchor/align/offset/rotation)
+// exists on Bar and Pie with identical field names but was never wired to the plugin — the labels
+// rendered with plugin defaults and every setting in the group was inert. Both charts build their
+// per-item text/color themselves (they differ in how: Bar precomputes `valueText`, Pie formats the
+// slice value), so they pass that in as `label` and share everything else here.
+// `valuesSteps` thins the labels out (every n-th item), which is what keeps a bar chart with many
+// bars readable; 0/1 shows all.
+export function datalabelsConfig(
+  data: Record<string, unknown>,
+  label: (index: number) => { text: string; color?: string },
+  defaults: { align: string; anchor: string },
+): object {
+  const num = (value: unknown, fallback = 0): number => (value === "" || value === null || value === undefined || !Number.isFinite(Number(value)) ? fallback : Number(value));
+  const str = (value: unknown, fallback = ""): string => (typeof value === "string" && value ? value : fallback);
+  const show = str(data.showValues, "showValuesOn");
+  const steps = Math.max(1, num(data.valuesSteps, 1));
+  const visible = show === "showValuesAuto" ? "auto" : true;
+  return {
+    align: str(data.valuesPositionAlign, defaults.align),
+    anchor: str(data.valuesPositionAnchor, defaults.anchor),
+    color: (context: LabelContext): string => label(context.dataIndex).color || labelColorFor(context),
+    display: show === "showValuesOff" ? false : (context: LabelContext): boolean | string => (context.dataIndex % steps === 0 ? visible : false),
+    font: { family: str(data.valuesFontFamily) || undefined, size: num(data.valuesFontSize, 12) },
+    formatter: (_value: unknown, context: LabelContext): string => label(context.dataIndex).text,
+    offset: num(data.valuesPositionOffset, 4),
+    rotation: num(data.valuesRotation),
+    textAlign: str(data.valuesTextAlign, "center"),
+  };
+}
+
 // `data`/`options` are typed loosely: callers build chart.js configs whose runtime
 // shape (null data points for gaps, numeric stack ids) is wider than the strict
 // types allow. The strict typing is re-applied at the `new Chart` call.

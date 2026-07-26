@@ -2,7 +2,7 @@ import React from "react";
 import { MAX_DYNAMIC_ITEMS, squarePreview, boundedCount, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, stateValue, sanitizeHtml } from './widgetUtils';
 import type { RxWidgetInfo } from "@iobroker/types-vis-2";
 import { colorSchemes, scheme } from "./MaterialDesignColorScheme";
-import { MaterialDesignChartCanvas } from "./MaterialDesignChartCanvas";
+import { MaterialDesignChartCanvas, datalabelsConfig } from "./MaterialDesignChartCanvas";
 import { chartAxis, m3ChartColors } from "./chartAxis";
 
 type Data = Record<string, unknown> & {
@@ -64,11 +64,13 @@ export function buildBars(data: Data, source: Record<string, unknown>[] | null, 
         row?.valueText,
         s(indexed(data, "valueText", i), value.toLocaleString(undefined, { minimumFractionDigits: Math.max(0, n(data.valuesMinDecimals)), maximumFractionDigits: decimals })),
       ),
+      // Empty means "not configured": the label color is then derived from the bar color it is drawn
+      // on (datalabelsConfig/labelColorFor), which a fixed default cannot get right.
       valueColor: s(
         row?.valueColor,
         s(
           indexed(data, "valueTextColor", i),
-          s(data.valuesFontColor, "#000"),
+          s(data.valuesFontColor),
         ),
       ),
       appendix: s(
@@ -560,7 +562,7 @@ export default class MaterialDesignChartBar extends VisWidget {
     valueAxis.type = "linear"; valueAxis.min = min; valueAxis.max = max;
     const catAxis = axisOf(horizontal ? "y" : "x");
     const scales = { [horizontal ? "x" : "y"]: valueAxis, [horizontal ? "y" : "x"]: catAxis };
-    const chartjs = <MaterialDesignChartCanvas type="bar" data={{ labels: bars.map(bar => bar.label), datasets: [{ data: bars.map(bar => bar.value), backgroundColor: bars.map(bar => isM3 && bar.color === "#44739e" ? m3.primary : bar.color), borderColor: s(data.hoverBorderColor), borderWidth: n(data.hoverBorderWidth) }] }} options={{ indexAxis: horizontal ? "y" : "x", responsive: true, maintainAspectRatio: false, animation: { duration: n(data.animationDuration, 1000) }, scales, plugins: { legend: { display: false }, tooltip: { enabled: b(data.showTooltip, true), callbacks: {
+    const chartjs = <MaterialDesignChartCanvas type="bar" data={{ labels: bars.map(bar => bar.label), datasets: [{ data: bars.map(bar => bar.value), backgroundColor: bars.map(bar => isM3 && bar.color === "#44739e" ? m3.primary : bar.color), borderColor: s(data.hoverBorderColor), borderWidth: n(data.hoverBorderWidth) }] }} options={{ indexAxis: horizontal ? "y" : "x", responsive: true, maintainAspectRatio: false, animation: { duration: n(data.animationDuration, 1000) }, scales, plugins: { datalabels: datalabelsConfig(data, index => { const bar = bars[index]; return { color: bar?.valueColor, text: `${s(bar?.valueText)}${s(bar?.appendix)}` }; }, { align: "top", anchor: "end" }), legend: { display: false }, tooltip: { enabled: b(data.showTooltip, true), callbacks: {
       title: (items: { dataIndex?: number }[]) => { const bar = bars[n(items[0]?.dataIndex)]; return bar?.tooltipTitle ? bar.tooltipTitle.split("\\n") : s(bar?.label); },
       label: (item: { dataIndex?: number }) => { const bar = bars[n(item.dataIndex)]; return bar?.tooltipText ? bar.tooltipText.split("\\n") : `${s(bar?.valueText)}${s(bar?.appendix)}`; },
     } } } }} />;

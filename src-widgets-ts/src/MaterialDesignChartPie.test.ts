@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildPieValues, pieCount, readJson } from './MaterialDesignChartPie';
-import { labelColorFor } from './MaterialDesignChartCanvas';
+import { datalabelsConfig, labelColorFor } from './MaterialDesignChartCanvas';
 
 describe('readJson', () => {
     it('parses a JSON array', () => {
@@ -69,5 +69,41 @@ describe('labelColorFor', () => {
         expect(labelColorFor({ dataIndex: 0, dataset: { backgroundColor: 'var(--md-sys-color-primary)' }, chart: { canvas } })).toBe('#ffffff');
         expect(labelColorFor(context('rebeccapurple'))).toBe('#000');
         canvas.remove();
+    });
+});
+
+describe('datalabelsConfig', () => {
+    type Cfg = {
+        align: string; anchor: string; offset: number; rotation: number; textAlign: string;
+        font: { family?: string; size: number };
+        color: (context: { dataIndex: number; dataset?: { backgroundColor?: unknown } }) => string;
+        display: boolean | ((context: { dataIndex: number }) => boolean | string);
+        formatter: (value: unknown, context: { dataIndex: number }) => string;
+    };
+    const label = (index: number): { text: string; color?: string } => [{ text: '10 kWh' }, { text: '20 kWh', color: '#123456' }][index];
+    const build = (data: Record<string, unknown>): Cfg => datalabelsConfig(data, label, { align: 'end', anchor: 'center' }) as Cfg;
+
+    it('takes position, font and rotation from the saved options', () => {
+        const cfg = build({ valuesPositionAlign: 'top', valuesPositionAnchor: 'end', valuesPositionOffset: 12, valuesRotation: 90, valuesTextAlign: 'left', valuesFontFamily: 'Jura', valuesFontSize: 20 });
+        expect(cfg).toMatchObject({ align: 'top', anchor: 'end', offset: 12, rotation: 90, textAlign: 'left' });
+        expect(cfg.font).toEqual({ family: 'Jura', size: 20 });
+        expect(build({}).anchor).toBe('center');
+    });
+
+    it('honours showValues, including the auto mode and the step thinning', () => {
+        expect(build({ showValues: 'showValuesOff' }).display).toBe(false);
+        const on = build({}).display as (context: { dataIndex: number }) => boolean | string;
+        expect(on({ dataIndex: 1 })).toBe(true);
+        const auto = build({ showValues: 'showValuesAuto' }).display as (context: { dataIndex: number }) => boolean | string;
+        expect(auto({ dataIndex: 0 })).toBe('auto');
+        const stepped = build({ valuesSteps: 2 }).display as (context: { dataIndex: number }) => boolean | string;
+        expect([stepped({ dataIndex: 0 }), stepped({ dataIndex: 1 }), stepped({ dataIndex: 2 })]).toEqual([true, false, true]);
+    });
+
+    it('renders the item text and prefers a saved color over the derived one', () => {
+        const cfg = build({});
+        expect(cfg.formatter(0, { dataIndex: 0 })).toBe('10 kWh');
+        expect(cfg.color({ dataIndex: 1, dataset: { backgroundColor: ['#44739e', '#44739e'] } })).toBe('#123456');
+        expect(cfg.color({ dataIndex: 0, dataset: { backgroundColor: ['#44739e', '#44739e'] } })).toBe('#ffffff');
     });
 });

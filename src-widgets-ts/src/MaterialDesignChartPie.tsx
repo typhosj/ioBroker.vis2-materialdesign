@@ -2,7 +2,7 @@ import React from "react";
 import { MAX_DYNAMIC_ITEMS, squarePreview, boundedCount, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, stateValue, sanitizeHtml } from './widgetUtils';
 import type { RxWidgetInfo } from "@iobroker/types-vis-2";
 import { colorSchemes, scheme } from "./MaterialDesignColorScheme";
-import { MaterialDesignChartCanvas } from "./MaterialDesignChartCanvas";
+import { MaterialDesignChartCanvas, datalabelsConfig } from "./MaterialDesignChartCanvas";
 import { m3ChartColors } from "./chartAxis";
 
 type Data = Record<string, unknown> & {
@@ -54,9 +54,11 @@ export function buildPieValues(data: Data, source: Record<string, unknown>[] | n
         item?.dataColor,
         s(data[`dataColor${i}`], colors[i] || s(data.globalColor, "#44739e")),
       ),
+      // Empty means "not configured": the label color is then derived from the slice color it is
+      // drawn on (datalabelsConfig/labelColorFor), which a fixed default cannot get right.
       textColor: s(
         item?.valueColor,
-        s(data[`valueTextColor${i}`], s(data.valuesFontColor, "#000")),
+        s(data[`valueTextColor${i}`], s(data.valuesFontColor)),
       ),
       appendix: s(
         item?.valueAppendix,
@@ -372,7 +374,7 @@ export default class MaterialDesignChartPie extends VisWidget {
         ))}
       </div>
     ) : null;
-    const chartjs = <MaterialDesignChartCanvas type={s(data.chartType, "pie")} data={{ labels: values.map(item => item.label), datasets: [{ data: values.map(item => item.value), backgroundColor: values.map(item => isM3 && item.color === "#44739e" ? m3.primary : item.color), borderColor: s(data.borderColor, "#fff"), borderWidth: n(data.borderWidth, 1) }] }} options={{ responsive: true, maintainAspectRatio: false, animation: { duration: n(data.animationDuration, 1000) }, cutout: s(data.chartType) === "doughnut" ? `${n(data.doughnutCutOut, 50)}%` : 0, plugins: { legend: { display: false }, tooltip: { enabled: b(data.showTooltip, true), callbacks: {
+    const chartjs = <MaterialDesignChartCanvas type={s(data.chartType, "pie")} data={{ labels: values.map(item => item.label), datasets: [{ data: values.map(item => item.value), backgroundColor: values.map(item => isM3 && item.color === "#44739e" ? m3.primary : item.color), borderColor: s(data.borderColor, "#fff"), borderWidth: n(data.borderWidth, 1) }] }} options={{ responsive: true, maintainAspectRatio: false, animation: { duration: n(data.animationDuration, 1000) }, cutout: s(data.chartType) === "doughnut" ? `${n(data.doughnutCutOut, 50)}%` : 0, plugins: { datalabels: datalabelsConfig(data, index => { const item = values[index]; return { color: item?.textColor, text: `${n(item?.value).toLocaleString(undefined, { minimumFractionDigits: Math.max(0, n(data.valuesMinDecimals)), maximumFractionDigits: Math.max(0, n(data.valuesMaxDecimals)) })}${s(item?.appendix)}` }; }, { align: "end", anchor: "center" }), legend: { display: false }, tooltip: { enabled: b(data.showTooltip, true), callbacks: {
       title: (items: { dataIndex?: number }[]) => { const item = values[n(items[0]?.dataIndex)]; return item?.tooltipTitle ? item.tooltipTitle.split("\\n") : ""; },
       label: (item: { dataIndex?: number }) => { const v = values[n(item.dataIndex)]; if (v?.tooltipText) return v.tooltipText.split("\\n"); const num = n(v?.value).toLocaleString(undefined, { minimumFractionDigits: Math.max(0, n(data.tooltipValueMinDecimals)), maximumFractionDigits: Math.max(0, n(data.tooltipValueMaxDecimals)) }); return `${s(v?.label)}: ${num}${s(v?.appendix)}`; },
     } } } }} />;
