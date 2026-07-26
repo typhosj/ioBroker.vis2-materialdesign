@@ -137,6 +137,37 @@ describe('widget accessibility', () => {
         expect(html).toContain('aria-current="date"');
     });
 
+    // An event's own background comes from the calendar source, so the M3 default text color (the
+    // partner of primary-container) can land on anything — dark violet on a green holiday entry.
+    it('derives readable event text from an event-supplied background in M3', () => {
+        const widget = new MaterialDesignCalendar(fixture<ConstructorParameters<typeof MaterialDesignCalendar>[0]>(props));
+        const iso = new Date().toISOString().slice(0, 10);
+        const events = JSON.stringify([{ name: 'Urlaub', start: `${iso}T09:00`, end: `${iso}T11:00`, color: '#2e7d32' }]);
+        const render = (): string => renderToStaticMarkup(widget.renderWidgetBody(fixture<Parameters<MaterialDesignCalendar['renderWidgetBody']>[0]>(props)));
+
+        setData(widget, { calendarView: 'week', designStyle: 'material3', oid: 'test.0.events' }, { 'test.0.events.val': events });
+        expect(render()).toContain('color:#ffffff');
+
+        // An explicit text color always wins, and an event without its own background keeps the token.
+        setData(widget, { calendarView: 'week', designStyle: 'material3', oid: 'test.0.events' }, { 'test.0.events.val': JSON.stringify([{ name: 'Urlaub', start: `${iso}T09:00`, end: `${iso}T11:00`, color: '#2e7d32', colorText: '#123456' }]) });
+        expect(render()).toContain('color:#123456');
+        setData(widget, { calendarView: 'week', designStyle: 'material3', oid: 'test.0.events' }, { 'test.0.events.val': JSON.stringify([{ name: 'Urlaub', start: `${iso}T09:00`, end: `${iso}T11:00` }]) });
+        expect(render()).toContain('color:var(--md-sys-color-on-primary-container)');
+
+        // Legacy keeps white on every event, parity-frozen.
+        setData(widget, { calendarView: 'week', oid: 'test.0.events' }, { 'test.0.events.val': events });
+        expect(render()).toContain('color:#fff');
+    });
+
+    // Day/week header and body are separate scroll-independent grids; without a reserved scrollbar
+    // gutter in both, the body's day columns come out narrower than the header's and the two drift.
+    it('reserves the same scrollbar gutter for the calendar header and body', () => {
+        const widget = new MaterialDesignCalendar(fixture<ConstructorParameters<typeof MaterialDesignCalendar>[0]>(props));
+        setData(widget, { calendarView: 'week' }, {});
+        const html = renderToStaticMarkup(widget.renderWidgetBody(fixture<Parameters<MaterialDesignCalendar['renderWidgetBody']>[0]>(props)));
+        expect(html.match(/scrollbar-gutter:stable/g)).toHaveLength(2);
+    });
+
     // WCAG 2.5.8: the calendar day number and the list switch are the two M3 targets that fall under
     // 24 px on their own; both are grown in the M3 path only (legacy geometry is frozen by parity).
     it('keeps M3 day-number and list-switch targets at 24 px', () => {
