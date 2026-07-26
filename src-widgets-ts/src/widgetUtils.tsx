@@ -316,6 +316,15 @@ export function squarePreview(glyph: string): string {
 }
 
 export function createInfo(id: string, name: string, attrs: RxWidgetInfo['visAttrs']): RxWidgetInfo {
+    // Style selector + "use theme" button lead the widget's own `common` group instead of sitting in
+    // two groups of their own: apart from those two controls the theme fields are all hidden, so the
+    // extra groups were mostly empty headers to scroll past. Group membership is editor-side only —
+    // saved data is keyed by field name — so this does not touch any persisted widget.
+    const shared: RxWidgetInfo['visAttrs'][number]['fields'] = [
+        { name: 'designStyle', type: 'select', label: 'designStyle', options: ['legacy', 'material3'], default: 'legacy' },
+        ...themeFields(name),
+    ];
+    const common = attrs.find(group => group.name === 'common');
     return {
         id,
         visSet: 'vis2-materialdesign',
@@ -324,19 +333,9 @@ export function createInfo(id: string, name: string, attrs: RxWidgetInfo['visAtt
         visName: name,
         // Placeholder; every caller overrides it via spread with a real preview.
         visPrev: '',
-        visAttrs: [
-            {
-                name: 'theme',
-                fields: themeFields(name),
-            },
-            {
-                name: 'style',
-                fields: [
-                    { name: 'designStyle', type: 'select', label: 'designStyle', options: ['legacy', 'material3'], default: 'legacy' },
-                ],
-            },
-            ...attrs,
-        ],
+        visAttrs: common
+            ? attrs.map(group => group === common ? { ...group, fields: [...shared, ...group.fields] } : group)
+            : [{ name: 'common', fields: shared }, ...attrs],
     };
 }
 

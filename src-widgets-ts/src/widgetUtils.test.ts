@@ -28,7 +28,7 @@ describe('widget utilities', () => {
 
     it('adds calendar theme selectors and applies light/dark values', () => {
         const info = createInfo('test-calendar', 'Calendar', []);
-        const fields = (info.visAttrs?.find(group => group.name === 'theme')?.fields || []) as ReadonlyArray<{ name?: string; default?: string }>;
+        const fields = (info.visAttrs?.find(group => group.name === 'common')?.fields || []) as ReadonlyArray<{ name?: string; default?: string }>;
         const light = fields.find(field => field.name?.includes('colors_light_d_calendar_d_border'));
         expect(light).toBeDefined();
         expect(fields.some(field => field.name === 'useTheme')).toBe(true);
@@ -102,11 +102,21 @@ describe('widget utilities', () => {
 
     it('every widget receives the same designStyle field via createInfo(), strictly defaulting to legacy', () => {
         const info = createInfo('test-widget', 'Calendar', []);
-        const styleGroup = info.visAttrs?.find(group => group.name === 'style');
-        const field = styleGroup?.fields.find(candidate => candidate.name === 'designStyle') as { options?: string[]; default?: string } | undefined;
+        // designStyle and useTheme lead the widget's `common` group, whether the widget brings one
+        // of its own or not — an existing group keeps its own fields after them.
+        const commonGroup = info.visAttrs?.find(group => group.name === 'common');
+        const field = commonGroup?.fields.find(candidate => candidate.name === 'designStyle') as { options?: string[]; default?: string } | undefined;
         expect(field).toBeDefined();
+        expect(commonGroup?.fields[0]?.name).toBe('designStyle');
+        expect(commonGroup?.fields[1]?.name).toBe('useTheme');
         expect(field?.options).toEqual(['legacy', 'material3']);
         expect(field?.default).toBe('legacy');
+
+        const withOwnCommon = createInfo('test-widget-2', 'Calendar', [{ name: 'common', fields: [{ name: 'oid', type: 'id' }] }]);
+        const merged = withOwnCommon.visAttrs?.find(group => group.name === 'common')?.fields || [];
+        expect(merged[0]?.name).toBe('designStyle');
+        expect(merged[merged.length - 1]?.name).toBe('oid');
+        expect(withOwnCommon.visAttrs?.filter(group => group.name === 'common')).toHaveLength(1);
 
         // Compat rule #4: missing/unknown value always means legacy, never an implicit opt-in.
         expect(designStyle(undefined)).toBe('legacy');
