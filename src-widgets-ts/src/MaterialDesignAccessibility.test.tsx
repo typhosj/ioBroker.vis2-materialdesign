@@ -211,7 +211,9 @@ describe('widget accessibility', () => {
 // widgets actually combine are ours, and an admin seed override can replace `primary` with anything.
 describe('material 3 colour contrast', () => {
     const css = readFileSync('src-widgets-ts/src/material3-tokens.css', 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
-    const roles = (block: string): Record<string, string> => Object.fromEntries([...block.matchAll(/--md-sys-color-([a-z-]+):\s*(#[0-9a-f]{6})/g)].map(match => [match[1], match[2]]));
+    // The admin-overridable roles read through `var(--mdw-seed-<role>, <baseline>)`; the baseline
+    // inside that fallback is what ships when nothing is overridden, so it is what gets checked.
+    const roles = (block: string): Record<string, string> => Object.fromEntries([...block.matchAll(/--md-sys-color-([a-z-]+):\s*(?:var\(--mdw-seed-[a-z-]+,\s*)?(#[0-9a-f]{6})/g)].map(match => [match[1], match[2]]));
     const [, lightBlock, darkBlock] = css.split('.materialdesign-widget.mdw-style-material3');
     const light = roles(lightBlock);
     const dark = { ...light, ...roles(darkBlock) };
@@ -226,6 +228,19 @@ describe('material 3 colour contrast', () => {
 
     it.each([['light', light], ['dark', dark]] as const)('keeps the outline above 3:1 on every surface (%s)', (_name, scheme) => {
         surfaces.forEach(surface => expect(ratio(scheme.outline, scheme[surface])).toBeGreaterThanOrEqual(3));
+    });
+
+    // Regression guard: a plain `--md-sys-color-primary: #6750a4` here is declared ON the widget
+    // root and beats the `--mdw-seed-*` layer applyM3SeedVariables() writes to <html>, so every
+    // admin seed override would silently do nothing again.
+    it('keeps every admin-overridable role behind its --mdw-seed-* fallback, light and dark', () => {
+        [lightBlock, darkBlock].forEach((block, index) => {
+            const suffix = index ? '-dark' : '';
+            ['primary', 'on-primary', 'secondary', 'tertiary', 'error'].forEach(role => {
+                expect(block).toContain(`--md-sys-color-${role}: var(--mdw-seed-${role}${suffix},`);
+            });
+        });
+        expect(lightBlock).toContain('font-family: var(--mdw-seed-font, inherit)');
     });
 
     it('repairs the on-colour when an admin seed overrides primary', () => {

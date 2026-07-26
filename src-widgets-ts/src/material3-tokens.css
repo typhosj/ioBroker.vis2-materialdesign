@@ -21,16 +21,29 @@
  * project. Add a token back together with the widget that consumes it, not ahead of it.
  */
 
+/*
+ * The four admin-configurable seed roles (plus the repaired `on-primary` and the optional font)
+ * read through a `var(--mdw-seed-*, <baseline>)` fallback instead of naming the baseline directly.
+ * That indirection is required, not cosmetic: `applyM3SeedVariables()` writes the override onto
+ * `document.documentElement`, but the baseline below is declared on the widget root ITSELF — a
+ * custom property declared on an element always beats the value inherited from an ancestor, so a
+ * plain `--md-sys-color-primary: #6750a4` here would silently swallow every admin override. The
+ * `--mdw-seed-*` names have no declaration on the widget root, so the root-level one is what
+ * inherits down, and an unset override falls back to the baseline for free.
+ */
 .materialdesign-widget.mdw-style-material3 {
-    --md-sys-color-primary: #6750a4;
-    --md-sys-color-on-primary: #ffffff;
+    /* Follows the view/parent font unless the admin sets one — no visual change while unset. */
+    font-family: var(--mdw-seed-font, inherit);
+
+    --md-sys-color-primary: var(--mdw-seed-primary, #6750a4);
+    --md-sys-color-on-primary: var(--mdw-seed-on-primary, #ffffff);
     --md-sys-color-primary-container: #eaddff;
     --md-sys-color-on-primary-container: #21005d;
-    --md-sys-color-secondary: #625b71;
+    --md-sys-color-secondary: var(--mdw-seed-secondary, #625b71);
     --md-sys-color-secondary-container: #e8def8;
     --md-sys-color-on-secondary-container: #1d192b;
-    --md-sys-color-tertiary: #7d5260;
-    --md-sys-color-error: #b3261e;
+    --md-sys-color-tertiary: var(--mdw-seed-tertiary, #7d5260);
+    --md-sys-color-error: var(--mdw-seed-error, #b3261e);
     --md-sys-color-surface: #fef7ff;
     --md-sys-color-surface-container-low: #f7f2fa;
     --md-sys-color-surface-container: #f3edf7;
@@ -44,7 +57,7 @@
     --md-sys-shape-corner-extra-small: 4px;
     --md-sys-shape-corner-full: 9999px;
 
-    --md-sys-typescale-label-large-font: Roboto, sans-serif;
+    --md-sys-typescale-label-large-font: var(--mdw-seed-font, Roboto, sans-serif);
     --md-sys-typescale-label-large-size: .875rem;
     --md-sys-typescale-label-large-weight: 500;
     --md-sys-typescale-label-large-tracking: .00625em;
@@ -60,16 +73,19 @@
     --md-sys-motion-easing-standard: cubic-bezier(.2, 0, 0, 1);
 }
 
+/* Dark reads its own `--mdw-seed-*-dark` overrides: a seed picked for a light background is not a
+   usable dark-mode color, so the two sets stay independent (same split the legacy theme editor has
+   had all along with its separate light/dark palettes). */
 .materialdesign-widget.mdw-style-material3.mdw-dark {
-    --md-sys-color-primary: #d0bcff;
-    --md-sys-color-on-primary: #381e72;
+    --md-sys-color-primary: var(--mdw-seed-primary-dark, #d0bcff);
+    --md-sys-color-on-primary: var(--mdw-seed-on-primary-dark, #381e72);
     --md-sys-color-primary-container: #4f378b;
     --md-sys-color-on-primary-container: #eaddff;
-    --md-sys-color-secondary: #ccc2dc;
+    --md-sys-color-secondary: var(--mdw-seed-secondary-dark, #ccc2dc);
     --md-sys-color-secondary-container: #4a4458;
     --md-sys-color-on-secondary-container: #e8def8;
-    --md-sys-color-tertiary: #efb8c8;
-    --md-sys-color-error: #f2b8b5;
+    --md-sys-color-tertiary: var(--mdw-seed-tertiary-dark, #efb8c8);
+    --md-sys-color-error: var(--mdw-seed-error-dark, #f2b8b5);
     --md-sys-color-surface: #141218;
     --md-sys-color-surface-container-low: #1d1b20;
     --md-sys-color-surface-container: #211f26;

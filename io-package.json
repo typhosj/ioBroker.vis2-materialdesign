@@ -220,6 +220,12 @@
     "md3Secondary": "",
     "md3Tertiary": "",
     "md3Error": "",
+    "md3PrimaryDark": "",
+    "md3SecondaryDark": "",
+    "md3TertiaryDark": "",
+    "md3ErrorDark": "",
+    "md3Font": "",
+    "defaultDesignStyle": "legacy",
     "colors": [],
     "defaultcolors": [],
     "colorsDark": [],
@@ -234,6 +240,35 @@
   },
   "objects": [],
   "instanceObjects": [
+    {
+      "_id": "designStyle",
+      "type": "state",
+      "common": {
+        "role": "text",
+        "name": "Default design style for widgets without an own style (legacy | material3)",
+        "type": "string",
+        "read": true,
+        "write": true,
+        "def": "legacy"
+      },
+      "native": {}
+    },
+    {
+      "_id": "colors",
+      "type": "channel",
+      "common": {
+        "name": "colors"
+      },
+      "native": {}
+    },
+    {
+      "_id": "fonts",
+      "type": "channel",
+      "common": {
+        "name": "fonts"
+      },
+      "native": {}
+    },
     {
       "_id": "colors.darkTheme",
       "type": "state",
@@ -252,7 +287,7 @@
       "type": "state",
       "common": {
         "role": "level.color.rgb",
-        "name": "Material 3 seed color: primary (optional, light mode only)",
+        "name": "Material 3 seed color: primary (optional, light)",
         "type": "string",
         "read": true,
         "write": true,
@@ -265,7 +300,7 @@
       "type": "state",
       "common": {
         "role": "level.color.rgb",
-        "name": "Material 3 seed color: secondary (optional, light mode only)",
+        "name": "Material 3 seed color: secondary (optional, light)",
         "type": "string",
         "read": true,
         "write": true,
@@ -278,7 +313,7 @@
       "type": "state",
       "common": {
         "role": "level.color.rgb",
-        "name": "Material 3 seed color: tertiary (optional, light mode only)",
+        "name": "Material 3 seed color: tertiary (optional, light)",
         "type": "string",
         "read": true,
         "write": true,
@@ -291,7 +326,72 @@
       "type": "state",
       "common": {
         "role": "level.color.rgb",
-        "name": "Material 3 seed color: error (optional, light mode only)",
+        "name": "Material 3 seed color: error (optional, light)",
+        "type": "string",
+        "read": true,
+        "write": true,
+        "def": ""
+      },
+      "native": {}
+    },
+    {
+      "_id": "colors.md3PrimaryDark",
+      "type": "state",
+      "common": {
+        "role": "level.color.rgb",
+        "name": "Material 3 seed color: primary (optional, dark)",
+        "type": "string",
+        "read": true,
+        "write": true,
+        "def": ""
+      },
+      "native": {}
+    },
+    {
+      "_id": "colors.md3SecondaryDark",
+      "type": "state",
+      "common": {
+        "role": "level.color.rgb",
+        "name": "Material 3 seed color: secondary (optional, dark)",
+        "type": "string",
+        "read": true,
+        "write": true,
+        "def": ""
+      },
+      "native": {}
+    },
+    {
+      "_id": "colors.md3TertiaryDark",
+      "type": "state",
+      "common": {
+        "role": "level.color.rgb",
+        "name": "Material 3 seed color: tertiary (optional, dark)",
+        "type": "string",
+        "read": true,
+        "write": true,
+        "def": ""
+      },
+      "native": {}
+    },
+    {
+      "_id": "colors.md3ErrorDark",
+      "type": "state",
+      "common": {
+        "role": "level.color.rgb",
+        "name": "Material 3 seed color: error (optional, dark)",
+        "type": "string",
+        "read": true,
+        "write": true,
+        "def": ""
+      },
+      "native": {}
+    },
+    {
+      "_id": "fonts.md3Font",
+      "type": "state",
+      "common": {
+        "role": "text",
+        "name": "Material 3 font family (optional, inherits from the view when empty)",
         "type": "string",
         "read": true,
         "write": true,

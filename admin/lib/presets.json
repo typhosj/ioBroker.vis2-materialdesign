@@ -1,0 +1,71 @@
+{
+    "legacyColors": [
+        {
+            "label": "Standard (blue)",
+            "light": ["#44739e", "#808080", "#44739e", "rgba(0, 0, 0, 0.54)", "rgba(161, 161, 161, 0.26)", "#FFFFFF", "#000000", "rgba(0, 0, 0, 0)", "#008000", "#FFD700", "#B22222", "#FFA500", "#303030", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF"],
+            "dark": ["#44739e", "#FFFFFF9C", "#FFFFFF", "rgba(0, 0, 0, 0.54)", "#9E9E9E", "#303030", "#BDBDBD", "rgba(0, 0, 0, 0)", "#008000", "#FFD700", "#B22222", "#FFA500", "#303030", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF"]
+        },
+        {
+            "label": "Teal",
+            "light": ["#00897b", "#808080", "#00897b", "rgba(0, 0, 0, 0.54)", "rgba(161, 161, 161, 0.26)", "#FFFFFF", "#000000", "rgba(0, 0, 0, 0)", "#008000", "#FFD700", "#B22222", "#FFA500", "#303030", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF"],
+            "dark": ["#4db6ac", "#FFFFFF9C", "#FFFFFF", "rgba(0, 0, 0, 0.54)", "#9E9E9E", "#303030", "#BDBDBD", "rgba(0, 0, 0, 0)", "#008000", "#FFD700", "#B22222", "#FFA500", "#303030", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF"]
+        },
+        {
+            "label": "Purple (Material 3)",
+            "light": ["#6750a4", "#808080", "#6750a4", "rgba(0, 0, 0, 0.54)", "rgba(161, 161, 161, 0.26)", "#FFFFFF", "#000000", "rgba(0, 0, 0, 0)", "#008000", "#FFD700", "#B22222", "#FFA500", "#303030", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF"],
+            "dark": ["#d0bcff", "#FFFFFF9C", "#FFFFFF", "rgba(0, 0, 0, 0.54)", "#9E9E9E", "#303030", "#BDBDBD", "rgba(0, 0, 0, 0)", "#008000", "#FFD700", "#B22222", "#FFA500", "#303030", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF"]
+        }
+    ],
+    "legacyFonts": [
+        {
+            "label": "Roboto Condensed",
+            "fonts": ["RobotoCondensed-Regular", "RobotoCondensed-Italic", "RobotoCondensed-Light", "RobotoCondensed-LightItalic", "RobotoCondensed-Bold", "RobotoCondensed-BoldItalic", "Arial", "Verdana", "Times New Roman", "Jura-Regular", "Jura-Medium", "Jura-Light"]
+        },
+        {
+            "label": "Jura",
+            "fonts": ["Jura-Regular", "Jura-Regular", "Jura-Light", "Jura-Light", "Jura-Medium", "Jura-Medium", "Arial", "Verdana", "Times New Roman", "RobotoCondensed-Regular", "RobotoCondensed-Light", "RobotoCondensed-Bold"]
+        },
+        {
+            "label": "System",
+            "fonts": ["Arial", "Arial", "Arial", "Arial", "Arial", "Arial", "Verdana", "Tahoma", "Georgia", "Times New Roman", "Courier New", "system-ui"]
+        }
+    ],
+    "legacyFontSizes": [
+        { "label": "Standard", "fontSizes": [10, 12, 14, 16, 20, 22, 24, 30, 32, 36, 40, 60] },
+        { "label": "Compact", "fontSizes": [9, 10, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48] },
+        { "label": "Large", "fontSizes": [12, 14, 16, 18, 22, 24, 28, 34, 38, 42, 48, 68] }
+    ],
+    "material3Colors": [
+        {
+            "label": "Baseline (purple)",
+            "light": { "primary": "", "secondary": "", "tertiary": "", "error": "" },
+            "dark": { "primary": "", "secondary": "", "tertiary": "", "error": "" }
+        },
+        {
+            "label": "Blue",
+            "light": { "primary": "#0061a4", "secondary": "#535f70", "tertiary": "#6b5778", "error": "#ba1a1a" },
+            "dark": { "primary": "#9ecaff", "secondary": "#bbc7db", "tertiary": "#d7bee4", "error": "#ffb4ab" }
+        },
+        {
+            "label": "Green",
+            "light": { "primary": "#006e1c", "secondary": "#52634f", "tertiary": "#386569", "error": "#ba1a1a" },
+            "dark": { "primary": "#78dc77", "secondary": "#b9ccb4", "tertiary": "#a0cfd4", "error": "#ffb4ab" }
+        },
+        {
+            "label": "Teal",
+            "light": { "primary": "#006a60", "secondary": "#4a635f", "tertiary": "#456179", "error": "#ba1a1a" },
+            "dark": { "primary": "#53dbc9", "secondary": "#b1ccc6", "tertiary": "#adcae6", "error": "#ffb4ab" }
+        },
+        {
+            "label": "Orange",
+            "light": { "primary": "#8b5000", "secondary": "#725b41", "tertiary": "#56643c", "error": "#ba1a1a" },
+            "dark": { "primary": "#ffb86d", "secondary": "#e1c2a4", "tertiary": "#bdcb99", "error": "#ffb4ab" }
+        }
+    ],
+    "material3Fonts": [
+        { "label": "Inherit from view", "font": "" },
+        { "label": "Roboto Condensed", "font": "RobotoCondensed-Regular, sans-serif" },
+        { "label": "Jura", "font": "Jura-Regular, sans-serif" },
+        { "label": "System", "font": "system-ui, sans-serif" }
+    ]
+}

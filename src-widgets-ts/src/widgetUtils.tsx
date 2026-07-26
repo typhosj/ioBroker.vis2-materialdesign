@@ -321,7 +321,7 @@ export function createInfo(id: string, name: string, attrs: RxWidgetInfo['visAtt
     // extra groups were mostly empty headers to scroll past. Group membership is editor-side only —
     // saved data is keyed by field name — so this does not touch any persisted widget.
     const shared: RxWidgetInfo['visAttrs'][number]['fields'] = [
-        { name: 'designStyle', type: 'select', label: 'designStyle', options: ['legacy', 'material3'], default: 'legacy' },
+        { name: 'designStyle', type: 'select', label: 'designStyle', options: [{ value: 'default', label: 'designStyle_default' }, { value: 'legacy', label: 'legacy' }, { value: 'material3', label: 'material3' }], default: 'default' },
         ...themeFields(name),
     ];
     const common = attrs.find(group => group.name === 'common');
@@ -345,8 +345,21 @@ export function createInfo(id: string, name: string, attrs: RxWidgetInfo['visAtt
 // own M3 render path exists (Phase 2 onward) — until then the field is present but inert.
 export type DesignStyle = 'legacy' | 'material3';
 
+// Project-wide default for every widget that did not pick a style itself, configured in the
+// adapter's admin UI. It stays `legacy` until an admin actively changes it, so compat rule #4 holds:
+// an untouched project never flips to M3 on its own. Module-level because it is exactly one global
+// value for the whole page — `designStyle(data)` is called from ~30 widgets and stays synchronous
+// rather than every call site having to thread a socket value through.
+export const DEFAULT_DESIGN_STYLE_OID = 'vis2-materialdesign.0.designStyle';
+let projectDesignStyle: DesignStyle = 'legacy';
+
+export function setProjectDesignStyle(value: ioBroker.StateValue | undefined): void {
+    projectDesignStyle = value === 'material3' ? 'material3' : 'legacy';
+}
+
 export function designStyle(data: Record<string, unknown> | null | undefined): DesignStyle {
-    return data?.designStyle === 'material3' ? 'material3' : 'legacy';
+    const value = data?.designStyle;
+    return value === 'material3' || value === 'legacy' ? value : projectDesignStyle;
 }
 
 // Ready-to-spread class string for a widget's root element once it adopts an M3 render path:
@@ -661,14 +674,24 @@ export function applyThemeVariables(data: Record<string, unknown>, values: Recor
 // not a full seed→tonal-palette derivation (that needs HCT/CAM16 color math — a new runtime
 // dependency and per-render computation, against the plan's "Performance priorities"). The
 // on-*/container roles stay at the contrast-verified baseline from material3-tokens.css; only the
-// 4 "seed" roles themselves are overridable, light mode only (dark keeps the safe baseline), via
-// fixed global states declared in ../../io-package.json `instanceObjects` and set from the
-// adapter's admin settings UI (src-admin/src/main.tsx) — never a per-widget editor field.
+// 4 "seed" roles themselves are overridable — each with its own light AND dark value, since a seed
+// chosen for a light background is not a usable dark-mode color — via fixed global states declared
+// in ../../io-package.json `instanceObjects` and set from the adapter's admin settings UI
+// (src-admin/src/main.tsx) — never a per-widget editor field.
 export const M3_SEED_ROLES = ['primary', 'secondary', 'tertiary', 'error'] as const;
 export type M3SeedRole = typeof M3_SEED_ROLES[number];
 
-export function m3SeedOid(role: M3SeedRole): string {
-    return `vis2-materialdesign.0.colors.md3${role.charAt(0).toUpperCase()}${role.slice(1)}`;
+export function m3SeedOid(role: M3SeedRole, dark = false): string {
+    return `vis2-materialdesign.0.colors.md3${role.charAt(0).toUpperCase()}${role.slice(1)}${dark ? 'Dark' : ''}`;
+}
+
+// Optional project-wide font for M3-style widgets. Unset means "inherit from the view", so an
+// existing project's typography does not move (see the `font-family` rule in material3-tokens.css).
+export const M3_FONT_OID = 'vis2-materialdesign.0.fonts.md3Font';
+
+// Every global state an M3-style widget subscribes to: both seed variants per role, plus the font.
+export function m3SeedOids(): string[] {
+    return [...M3_SEED_ROLES.flatMap(role => [m3SeedOid(role), m3SeedOid(role, true)]), M3_FONT_OID];
 }
 
 // WCAG 1.4.3 for seed overrides (Phase 8). An override replaces `--md-sys-color-primary` but not its
@@ -705,21 +728,28 @@ export function m3OnColor(color: string): string | undefined {
     return contrastRatio(rgb, parseColor(ON_LIGHT)!) >= contrastRatio(rgb, parseColor(ON_DARK)!) ? ON_LIGHT : ON_DARK;
 }
 
+// Writes the `--mdw-seed-*` override layer onto the document root. It deliberately does NOT write
+// the `--md-sys-*` tokens themselves: those are declared on the widget root by material3-tokens.css,
+// where an element-level declaration beats anything inherited from `html` (see the comment there).
 export function applyM3SeedVariables(values: Record<string, ioBroker.StateValue | undefined> | undefined): void {
     if (typeof document === 'undefined' || !values) return;
+    const set = (variable: string, value: string | undefined): void => {
+        // Unset (or explicitly cleared): remove, so the baseline in the `var()` fallback applies again.
+        if (value) document.documentElement.style.setProperty(variable, value);
+        else document.documentElement.style.removeProperty(variable);
+    };
     M3_SEED_ROLES.forEach(role => {
-        const value = values[`${m3SeedOid(role)}.val`];
-        const variable = `--md-sys-color-${role}`;
-        const on = role === 'primary' ? `--md-sys-color-on-${role}` : undefined;
-        if (typeof value === 'string' && value) {
-            document.documentElement.style.setProperty(variable, value);
-            const onColor = on && m3OnColor(value);
-            if (on) { if (onColor) document.documentElement.style.setProperty(on, onColor); else document.documentElement.style.removeProperty(on); }
-        } else {
-            document.documentElement.style.removeProperty(variable);
-            if (on) document.documentElement.style.removeProperty(on);
-        }
+        [false, true].forEach(dark => {
+            const raw = values[`${m3SeedOid(role, dark)}.val`];
+            const value = typeof raw === 'string' && raw ? raw : undefined;
+            const suffix = dark ? '-dark' : '';
+            set(`--mdw-seed-${role}${suffix}`, value);
+            // Only `on-primary` has a consumer today, so only that pair gets contrast-repaired.
+            if (role === 'primary') set(`--mdw-seed-on-primary${suffix}`, value && m3OnColor(value));
+        });
     });
+    const font = values[`${M3_FONT_OID}.val`];
+    set('--mdw-seed-font', typeof font === 'string' && font ? font : undefined);
 }
 
 const BaseVisWidget: typeof VisRxWidget<BaseRxData, WidgetState> = window.visRxWidget;
@@ -738,6 +768,31 @@ export class VisWidget extends BaseVisWidget {
     // "Performance priorities".
     private m3SeedSubscribed = false;
     private m3SeedValues: Record<string, ioBroker.StateValue | undefined> = {};
+
+    // The style this instance currently resolves to. Only needed to notice when the PROJECT default
+    // moves a widget without an own `designStyle` into (or out of) M3 after mount.
+    private resolvedStyle: DesignStyle = 'legacy';
+    private projectStyleSubscribed = false;
+
+    private subscribeM3Seeds(): void {
+        this.m3SeedSubscribed = true;
+        m3SeedOids().forEach(seedOid => {
+            this.props.context.socket.subscribeState(seedOid, this.onM3SeedChanged).catch((e: unknown) => console.error(`Cannot subscribe on ${seedOid}: ${String(e)}`));
+        });
+    }
+
+    private onProjectDesignStyleChanged = (_id: string, state: ioBroker.State | null | undefined): void => {
+        // Idempotent: every mounted widget subscribes on its own and gets this callback, so the
+        // module-level value is set unconditionally and only the per-instance effect is guarded.
+        setProjectDesignStyle(state?.val);
+        const resolved = designStyle(this.state?.rxData as unknown as Record<string, unknown> | undefined);
+        if (resolved === this.resolvedStyle) return;
+        this.resolvedStyle = resolved;
+        // A widget that just became M3 has no seed subscription yet; one that left M3 keeps its
+        // subscription (cheap, and it may come straight back) but stops applying the variables.
+        if (resolved === 'material3' && !this.m3SeedSubscribed) this.subscribeM3Seeds();
+        this.forceUpdate();
+    };
 
     private onDarkThemeChanged = (_id: string, state: ioBroker.State | null | undefined): void => {
         const next = state?.val === true || state?.val === 'true';
@@ -763,21 +818,25 @@ export class VisWidget extends BaseVisWidget {
             this.darkThemeSubscribedOid = oid;
             this.props.context.socket.subscribeState(oid, this.onDarkThemeChanged).catch((e: unknown) => console.error(`Cannot subscribe on ${oid}: ${String(e)}`));
         }
-        if (designStyle(rxData) === 'material3') {
-            this.m3SeedSubscribed = true;
-            M3_SEED_ROLES.forEach(role => {
-                const seedOid = m3SeedOid(role);
-                this.props.context.socket.subscribeState(seedOid, this.onM3SeedChanged).catch((e: unknown) => console.error(`Cannot subscribe on ${seedOid}: ${String(e)}`));
-            });
+        this.projectStyleSubscribed = true;
+        this.props.context.socket.subscribeState(DEFAULT_DESIGN_STYLE_OID, this.onProjectDesignStyleChanged).catch((e: unknown) => console.error(`Cannot subscribe on ${DEFAULT_DESIGN_STYLE_OID}: ${String(e)}`));
+        this.resolvedStyle = designStyle(rxData);
+        if (this.resolvedStyle === 'material3') {
+            this.subscribeM3Seeds();
         }
     }
 
     componentWillUnmount(): void {
+        // Guarded like every other subscription here: a widget can be unmounted without ever having
+        // reached componentDidMount (VIS2 tears down failed mounts, and the unit tests do the same).
+        if (this.projectStyleSubscribed) {
+            this.props.context.socket.unsubscribeState(DEFAULT_DESIGN_STYLE_OID, this.onProjectDesignStyleChanged);
+        }
         if (this.darkThemeSubscribedOid) {
             this.props.context.socket.unsubscribeState(this.darkThemeSubscribedOid, this.onDarkThemeChanged);
         }
         if (this.m3SeedSubscribed) {
-            M3_SEED_ROLES.forEach(role => this.props.context.socket.unsubscribeState(m3SeedOid(role), this.onM3SeedChanged));
+            m3SeedOids().forEach(seedOid => this.props.context.socket.unsubscribeState(seedOid, this.onM3SeedChanged));
         }
         super.componentWillUnmount?.();
     }
@@ -789,7 +848,7 @@ export class VisWidget extends BaseVisWidget {
     render(): React.JSX.Element | null {
         const rxData = { ...this.state.rxData };
         applyThemeVariables(rxData, { ...this.state.values, [`${darkThemeOid(rxData)}.val`]: this.darkThemeValue });
-        if (this.m3SeedSubscribed) applyM3SeedVariables(this.m3SeedValues);
+        if (this.m3SeedSubscribed && designStyle(rxData) === 'material3') applyM3SeedVariables(this.m3SeedValues);
         return super.render();
     }
 }

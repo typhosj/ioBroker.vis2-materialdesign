@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { VisRxWidgetState } from '@iobroker/types-vis-2';
 import { pickerValueName } from './IconFilePicker';
-import { DEFAULT_DARK_THEME_OID, M3_SEED_ROLES, MAX_DYNAMIC_ITEMS, VisWidget, accessibleText, applyM3SeedVariables, applyThemeVariables, boundedCount, createInfo, darkThemeOid, designStyle, designStyleClasses, editorDialogPalette, formatDurationTokens, formatMoment, humanizeDuration, iconFieldDataKey, m3SeedOid, parseActionValue, safeWidgetUrl, sanitizeHtml, setStateValue, sliderKeyValue, stateValue, stringValue } from './widgetUtils';
+import { DEFAULT_DARK_THEME_OID, M3_FONT_OID, M3_SEED_ROLES, MAX_DYNAMIC_ITEMS, VisWidget, accessibleText, applyM3SeedVariables, applyThemeVariables, boundedCount, createInfo, darkThemeOid, designStyle, designStyleClasses, editorDialogPalette, formatDurationTokens, formatMoment, humanizeDuration, iconFieldDataKey, m3SeedOid, m3SeedOids, parseActionValue, safeWidgetUrl, sanitizeHtml, setProjectDesignStyle, setStateValue, sliderKeyValue, stateValue, stringValue } from './widgetUtils';
 
 function fixture<T>(value: unknown): T { return value as T; }
 
@@ -105,12 +105,14 @@ describe('widget utilities', () => {
         // designStyle and useTheme lead the widget's `common` group, whether the widget brings one
         // of its own or not — an existing group keeps its own fields after them.
         const commonGroup = info.visAttrs?.find(group => group.name === 'common');
-        const field = commonGroup?.fields.find(candidate => candidate.name === 'designStyle') as { options?: string[]; default?: string } | undefined;
+        const field = commonGroup?.fields.find(candidate => candidate.name === 'designStyle') as { options?: Array<{ value: string }>; default?: string } | undefined;
         expect(field).toBeDefined();
         expect(commonGroup?.fields[0]?.name).toBe('designStyle');
         expect(commonGroup?.fields[1]?.name).toBe('useTheme');
-        expect(field?.options).toEqual(['legacy', 'material3']);
-        expect(field?.default).toBe('legacy');
+        // Default is the project default, so a widget the user never touched follows the adapter
+        // setting — which itself starts at legacy, keeping compat rule #4 intact.
+        expect(field?.options?.map(option => option.value)).toEqual(['default', 'legacy', 'material3']);
+        expect(field?.default).toBe('default');
 
         const withOwnCommon = createInfo('test-widget-2', 'Calendar', [{ name: 'common', fields: [{ name: 'oid', type: 'id' }] }]);
         const merged = withOwnCommon.visAttrs?.find(group => group.name === 'common')?.fields || [];
@@ -125,6 +127,26 @@ describe('widget utilities', () => {
         expect(designStyle({ designStyle: 'not-a-real-style' })).toBe('legacy');
     });
 
+    it('falls back to the project default style, which a widget\'s own choice always overrides', () => {
+        try {
+            setProjectDesignStyle('material3');
+            // No own style (and the "project default" option) follow the project setting ...
+            expect(designStyle(undefined)).toBe('material3');
+            expect(designStyle({ designStyle: 'default' })).toBe('material3');
+            // ... an explicit per-widget style never does.
+            expect(designStyle({ designStyle: 'legacy' })).toBe('legacy');
+
+            // Anything but 'material3' (unset state, empty string, garbage) stays legacy — an
+            // untouched project must never flip to M3 on its own.
+            setProjectDesignStyle(undefined);
+            expect(designStyle(undefined)).toBe('legacy');
+            setProjectDesignStyle('');
+            expect(designStyle({ designStyle: 'default' })).toBe('legacy');
+        } finally {
+            setProjectDesignStyle('legacy');
+        }
+    });
+
     it('designStyleClasses adds only a root class (plus the shared dark flag) in M3 mode', () => {
         expect(designStyleClasses(undefined, false)).toBe('mdw-style-legacy');
         expect(designStyleClasses({ designStyle: 'material3' }, false)).toBe('mdw-style-material3');
@@ -137,16 +159,29 @@ describe('widget utilities', () => {
         expect(M3_SEED_ROLES).toEqual(['primary', 'secondary', 'tertiary', 'error']);
         expect(m3SeedOid('primary')).toBe('vis2-materialdesign.0.colors.md3Primary');
         expect(m3SeedOid('error')).toBe('vis2-materialdesign.0.colors.md3Error');
+        expect(m3SeedOid('primary', true)).toBe('vis2-materialdesign.0.colors.md3PrimaryDark');
+        expect(m3SeedOids()).toHaveLength(M3_SEED_ROLES.length * 2 + 1);
+        expect(m3SeedOids()).toContain(M3_FONT_OID);
     });
 
-    it('applies optional M3 seed-color overrides as CSS variables, falling back to the token default when unset', () => {
-        applyM3SeedVariables({ [`${m3SeedOid('primary')}.val`]: '#123456' });
-        expect(document.documentElement.style.getPropertyValue('--md-sys-color-primary')).toBe('#123456');
+    it('applies optional M3 seed overrides as the --mdw-seed-* layer, falling back to the token default when unset', () => {
+        // The `--md-sys-*` tokens themselves are declared ON the widget root by material3-tokens.css
+        // and would beat anything set on `html`, so the override layer has its own variable names.
+        applyM3SeedVariables({ [`${m3SeedOid('primary')}.val`]: '#123456', [`${m3SeedOid('primary', true)}.val`]: '#ffe082', [`${M3_FONT_OID}.val`]: 'Jura-Regular' });
+        expect(document.documentElement.style.getPropertyValue('--mdw-seed-primary')).toBe('#123456');
+        expect(document.documentElement.style.getPropertyValue('--mdw-seed-primary-dark')).toBe('#ffe082');
+        expect(document.documentElement.style.getPropertyValue('--mdw-seed-font')).toBe('Jura-Regular');
+        // on-primary is repaired per variant: dark text on the light seed, light text on the dark one.
+        expect(document.documentElement.style.getPropertyValue('--mdw-seed-on-primary')).toBe('#ffffff');
+        expect(document.documentElement.style.getPropertyValue('--mdw-seed-on-primary-dark')).toBe('#1d1b20');
 
         // Unset (or explicitly cleared): the property is removed so the material3-tokens.css
-        // baseline value shows through the cascade again, instead of pinning a stale override.
+        // baseline value shows through the var() fallback again, instead of pinning a stale override.
         applyM3SeedVariables({ [`${m3SeedOid('primary')}.val`]: '' });
-        expect(document.documentElement.style.getPropertyValue('--md-sys-color-primary')).toBe('');
+        expect(document.documentElement.style.getPropertyValue('--mdw-seed-primary')).toBe('');
+        expect(document.documentElement.style.getPropertyValue('--mdw-seed-on-primary')).toBe('');
+        expect(document.documentElement.style.getPropertyValue('--mdw-seed-primary-dark')).toBe('');
+        expect(document.documentElement.style.getPropertyValue('--mdw-seed-font')).toBe('');
 
         applyM3SeedVariables(undefined);
         applyM3SeedVariables({});
@@ -164,10 +199,10 @@ describe('widget utilities', () => {
         const m3Widget = new VisWidget(fixture<ConstructorParameters<typeof VisWidget>[0]>({ context: { socket: { subscribeState, unsubscribeState } } }));
         m3Widget.state = fixture<typeof m3Widget.state>({ rxData: { designStyle: 'material3' }, values: {} });
         m3Widget.componentDidMount();
-        M3_SEED_ROLES.forEach(role => expect(subscribeState).toHaveBeenCalledWith(m3SeedOid(role), expect.any(Function)));
+        m3SeedOids().forEach(oid => expect(subscribeState).toHaveBeenCalledWith(oid, expect.any(Function)));
 
         m3Widget.componentWillUnmount();
-        M3_SEED_ROLES.forEach(role => expect(unsubscribeState).toHaveBeenCalledWith(m3SeedOid(role), expect.any(Function)));
+        m3SeedOids().forEach(oid => expect(unsubscribeState).toHaveBeenCalledWith(oid, expect.any(Function)));
     });
 
     it('derives editor dialog colors from the surrounding VIS2 surface', () => {
