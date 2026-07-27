@@ -1063,6 +1063,7 @@
     "designStyle": "设计风格",
     "md3ButtonVariant": "Material 3 按钮变体",
     "md3IconButtonVariant": "Material 3 图标按钮变体",
+    "md3SwitchIcon": "带对勾图标的 Material 3 开关",
     "material3SeedColors": "Material 3 基准色（浅色）",
     "material3SeedColorsInfo": "在整个项目中覆盖 Material 3 的主色/次色/第三色/错误色。留空则使用默认调色板。",
     "material3Seed_primary": "主色",

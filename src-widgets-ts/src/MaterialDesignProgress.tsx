@@ -119,6 +119,14 @@ export function snapToStep(value: number, step: number): number {
     return decimals ? Number(stepped.toFixed(decimals)) : stepped;
 }
 
+// Travelling fill for `progressIndeterminate`. Plain CSS (transform only, no layout work) and it
+// stops under `prefers-reduced-motion`, where a centered static bar is the honest fallback — per the
+// motion rules in ../../MATERIAL3_PLAN.md.
+const INDETERMINATE_CSS =
+    '@keyframes materialdesign-progress-indeterminate{0%{transform:translateX(-100%)}100%{transform:translateX(250%)}}'
+    + '.materialdesign-progress--indeterminate{animation:materialdesign-progress-indeterminate 1.8s cubic-bezier(.4,0,.2,1) infinite}'
+    + '@media (prefers-reduced-motion: reduce){.materialdesign-progress--indeterminate{animation:none;transform:translateX(75%)}}';
+
 export function cleanColor(value: unknown, fallback: string): string {
     const raw = typeof value === 'string' ? value : '';
     return raw && !raw.startsWith('#mdwTheme:') ? raw : fallback;
@@ -181,8 +189,13 @@ export default class MaterialDesignProgress extends VisWidget {
         const background = cleanColor(data.colorProgressBackground, isM3 ? 'var(--md-sys-color-surface-container-high)' : 'rgba(161, 161, 161, 0.26)');
         const striped = data.progressStriped;
         const stripeColor = cleanColor(data.progressStripedColor, 'rgba(255, 255, 255, 0.25)');
-        const displayedPercent = data.progressIndeterminate ? 100 : progress.percent;
-        const reverse = data.reverse && !data.progressIndeterminate;
+        // `progressIndeterminate` only widened the bar to 100% — a full bar, indistinguishable from a
+        // finished one, with the percentage still printed on it. Now the fill travels (the M3 linear
+        // indicator's behavior) and the value label goes away, because there is no value to show.
+        // Legacy renders the same animation: the old look was not a design, it was the missing piece.
+        const indeterminate = !!data.progressIndeterminate;
+        const displayedPercent = indeterminate ? 100 : progress.percent;
+        const reverse = data.reverse && !indeterminate;
 
         return (
             <div className={`materialdesign-widget materialdesign-progress${isM3 ? ` ${designStyleClasses(data as unknown as Record<string, unknown>, this.isDarkTheme())}` : ''}`} style={{ height: '100%', padding: 0, width: '100%' }}>
@@ -203,8 +216,9 @@ export default class MaterialDesignProgress extends VisWidget {
                             width: '100%',
                         }}
                     >
+                        {indeterminate ? <style>{INDETERMINATE_CSS}</style> : null}
                         <div
-                            className="v-progress-linear__determinate primary"
+                            className={`v-progress-linear__determinate primary${indeterminate ? ' materialdesign-progress--indeterminate' : ''}`}
                             style={{
                                 background: striped
                                     ? `repeating-linear-gradient(${num(data.stripAngle, 135)}deg, ${progress.color} 0 ${num(data.stipWidth1, 25)}%, ${stripeColor} ${num(data.stipWidth1, 25)}% ${num(data.stipWidth2, 50)}%, ${progress.color} ${num(data.stipWidth2, 50)}% ${num(data.stipWidth3, 75)}%)`
@@ -212,10 +226,10 @@ export default class MaterialDesignProgress extends VisWidget {
                                 height: '100%',
                                 insetInlineStart: reverse ? `${100 - displayedPercent}%` : 0,
                                 position: 'absolute',
-                                width: `${displayedPercent}%`,
+                                width: indeterminate ? '40%' : `${displayedPercent}%`,
                             }}
                         />
-                        {data.showValueLabel !== false ? (
+                        {data.showValueLabel !== false && !indeterminate ? (
                             <div
                                 className="v-progress-linear__content"
                                 style={{

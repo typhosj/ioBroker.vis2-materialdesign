@@ -572,7 +572,13 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
             const on = isActive(def, current, data);
             const locked = this.isLocked(data);
             const primary = color(on ? data.colorBgTrue : data.mdwButtonPrimaryColor || data.colorBgFalse, def.layout === 'icon' ? 'transparent' : '#44739e');
-            const secondary = color(on ? data.imageTrueColor || data.mdwButtonSecondaryColor : data.mdwButtonSecondaryColor || data.imageColor, def.layout === 'icon' ? '#44739e' : '#fff');
+            // Label/icon default: white sits on the filled ("raised") container, but `outlined` and
+            // `text` drop the container — white on the page background is invisible, which is what the
+            // legacy path rendered for every such button that had no explicit color saved. Those two
+            // styles fall back to the theme color instead. An explicit saved color still wins, so no
+            // configured widget moves (compat rule #5).
+            const flatLegacy = data.buttonStyle === 'outlined' || data.buttonStyle === 'text';
+            const secondary = color(on ? data.imageTrueColor || data.mdwButtonSecondaryColor : data.mdwButtonSecondaryColor || data.imageColor, def.layout === 'icon' || flatLegacy ? '#44739e' : '#fff');
             const labelColor = color(on ? data.labelColorTrue : data.labelColorFalse, secondary);
             const pressed = color(data.mdwButtonColorPress || data.colorPress, '#1565c0');
             const isVertical = def.layout === 'vertical';
@@ -593,8 +599,12 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
             const sliderMax = numeric(data.valueOn, 100);
             const sliderValue = Math.min(sliderMax, Math.max(sliderMin, numeric(current, sliderMin)));
             const sliderVisible = def.kind === 'slider' && (data.showAlways || pressState.hovered || pressState.active);
-            const sliderColor = color(data.foregroundColor, '#44739e');
-            const sliderTrackColor = color(data.backgroundColor, '#eeeeee');
+            // The icon-button slider's arc kept the legacy defaults (#44739e / #eeeeee) in M3 too, so a
+            // widget nobody colored drew a blue ring on a Material 3 button. Unset means token; an
+            // explicit saved color still wins, same rule as the button container below.
+            const isM3 = designStyle(data) === 'material3';
+            const sliderColor = isM3 && !m3ColorExplicit(data.foregroundColor) ? 'var(--md-sys-color-primary)' : color(data.foregroundColor, '#44739e');
+            const sliderTrackColor = isM3 && !m3ColorExplicit(data.backgroundColor) ? 'var(--md-sys-color-surface-container-high)' : color(data.backgroundColor, '#eeeeee');
             const sliderRatio = sliderMax === sliderMin ? 0 : Math.max(0, Math.min(1, (sliderValue - sliderMin) / (sliderMax - sliderMin)));
             const sliderSize = Math.max(32, Math.min(160, Math.max(48, numeric(data.sliderWidth, 54))));
             const sliderStroke = Math.max(2, numeric(data.sliderThikness, 4));
@@ -610,8 +620,7 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
             // md3IconButtonVariant. Behavior (handlers, push, slider, lock) is untouched: only
             // presentational style is gated. Per the token-precedence rule an explicit saved color
             // still wins (emitted inline below); when none is set the color is left off so the
-            // scoped M3 CSS drives it.
-            const isM3 = designStyle(data) === 'material3';
+            // scoped M3 CSS drives it. (`isM3` itself is resolved further up, with the slider colors.)
             const m3Standard = isM3 && !isIcon;
             const m3Variant = stringValue(data.md3ButtonVariant) || 'filled';
             const m3IconVariant = stringValue(data.md3IconButtonVariant) || 'standard';
@@ -642,6 +651,11 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
                     <button
                         type="button"
                         aria-pressed={on}
+                        // A read-only button writes nothing (execute() bails), but it announced itself as
+                        // operable and, in M3, rendered exactly like an enabled one. `aria-disabled` is
+                        // the honest state and makes the existing M3 disabled rule (38% opacity, no state
+                        // layer, no pointer events) apply. Legacy has no rule for it, so it stays as is.
+                        aria-disabled={data.readOnly ? true : undefined}
                         className={isM3 ? (isIcon ? `mdw-md3-icon-button mdw-md3-icon-button--${m3IconVariant} mdw-state-layer` : `mdw-md3-button mdw-md3-button--${m3Variant} mdw-state-layer`) : undefined}
                         style={{
                             width: '100%',

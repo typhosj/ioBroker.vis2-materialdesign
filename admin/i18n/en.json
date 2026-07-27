@@ -1063,6 +1063,7 @@
     "designStyle": "design style",
     "md3ButtonVariant": "Material 3 button variant",
     "md3IconButtonVariant": "Material 3 icon button variant",
+    "md3SwitchIcon": "Material 3 switch with check icon",
     "material3SeedColors": "Material 3 seed colors (light)",
     "material3SeedColorsInfo": "Overrides the Material 3 primary/secondary/tertiary/error color project-wide. Leave empty to use the baseline palette.",
     "material3Seed_primary": "primary",

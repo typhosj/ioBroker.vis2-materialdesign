@@ -1063,6 +1063,7 @@
     "designStyle": "стиль оформления",
     "md3ButtonVariant": "Вариант кнопки Material 3",
     "md3IconButtonVariant": "Вариант кнопки-иконки Material 3",
+    "md3SwitchIcon": "Переключатель Material 3 с галочкой",
     "material3SeedColors": "Базовые цвета Material 3 (светлая тема)",
     "material3SeedColorsInfo": "Переопределяет основной/вторичный/третичный цвет и цвет ошибки Material 3 для всего проекта. Оставьте пустым, чтобы использовать палитру по умолчанию.",
     "material3Seed_primary": "основной",

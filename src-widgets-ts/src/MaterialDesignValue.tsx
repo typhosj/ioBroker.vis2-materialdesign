@@ -173,7 +173,10 @@ export function formatNumber(value: unknown, data: ValueData): string {
         return text(current);
     }
     const min = data.minDecimals === undefined ? undefined : number(data.minDecimals);
-    const max = data.maxDecimals === undefined ? undefined : number(data.maxDecimals);
+    // `Intl.NumberFormat` throws a RangeError when max < min, and VIS2 renders widgets of a view in
+    // one tree without an error boundary — so that one editable combination (min 2, max 1) blanked
+    // the whole view, not just this widget. Widen max instead of throwing; min wins, as configured.
+    const max = data.maxDecimals === undefined ? undefined : Math.max(number(data.maxDecimals), min ?? 0);
     const formatted = new Intl.NumberFormat(undefined, {
         minimumFractionDigits: min,
         maximumFractionDigits: max,

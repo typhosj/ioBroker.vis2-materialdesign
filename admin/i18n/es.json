@@ -1063,6 +1063,7 @@
     "designStyle": "estilo de diseño",
     "md3ButtonVariant": "Variante de botón Material 3",
     "md3IconButtonVariant": "Variante de botón de icono Material 3",
+    "md3SwitchIcon": "Interruptor Material 3 con icono de marca",
     "material3SeedColors": "Colores base de Material 3 (claro)",
     "material3SeedColorsInfo": "Anula el color primario/secundario/terciario/de error de Material 3 en todo el proyecto. Déjalo vacío para usar la paleta predeterminada.",
     "material3Seed_primary": "primario",

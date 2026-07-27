@@ -1063,6 +1063,7 @@
     "designStyle": "styl projektu",
     "md3ButtonVariant": "Wariant przycisku Material 3",
     "md3IconButtonVariant": "Wariant przycisku ikony Material 3",
+    "md3SwitchIcon": "Przełącznik Material 3 ze znacznikiem",
     "material3SeedColors": "Kolory bazowe Material 3 (jasny)",
     "material3SeedColorsInfo": "Nadpisuje kolor podstawowy/drugorzędny/trzeciorzędny/błędu Material 3 w całym projekcie. Pozostaw puste, aby użyć domyślnej palety.",
     "material3Seed_primary": "podstawowy",

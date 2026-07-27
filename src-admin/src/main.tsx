@@ -160,8 +160,14 @@ function PresetCard(props: { children: React.ReactNode }): React.JSX.Element {
 }
 
 function Material3Editor(props: { config: NativeConfig; update: (key: string, value: unknown) => void }): React.JSX.Element {
+    // Reset only existed on the Classic side, where it clears that theme's slots. The M3 equivalent
+    // is emptying the overrides so the baseline from material3-tokens.css applies again — per card,
+    // so the light seeds, the dark seeds and the font can be reverted independently.
     const seedCard = (dark: boolean): React.JSX.Element => <Card sx={{ mt: 2 }}><CardContent>
-        <Typography variant="h6">{t(dark ? 'material3SeedColorsDark' : 'material3SeedColors')}</Typography>
+        <Box sx={{ alignItems: 'center', display: 'flex', gap: 2 }}>
+            <Typography variant="h6">{t(dark ? 'material3SeedColorsDark' : 'material3SeedColors')}</Typography>
+            <Button sx={{ ml: 'auto' }} onClick={() => M3_SEED_ROLES.forEach(role => props.update(md3Key(role, dark), ''))}>{t('reset')}</Button>
+        </Box>
         <FormHelperText sx={{ mb: 2 }}>{t('material3SeedColorsInfo')}</FormHelperText>
         <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 2 }}>{M3_SEED_ROLES.map(role => {
             const value = str(props.config[md3Key(role, dark)]);
@@ -188,7 +194,10 @@ function Material3Editor(props: { config: NativeConfig; update: (key: string, va
         {seedCard(false)}
         {seedCard(true)}
         <Card sx={{ mt: 2 }}><CardContent>
-            <Typography variant="h6">{t('material3Font')}</Typography>
+            <Box sx={{ alignItems: 'center', display: 'flex', gap: 2 }}>
+                <Typography variant="h6">{t('material3Font')}</Typography>
+                <Button sx={{ ml: 'auto' }} onClick={() => props.update(MD3_FONT_KEY, '')}>{t('reset')}</Button>
+            </Box>
             <FormHelperText sx={{ mb: 2 }}>{t('material3FontInfo')}</FormHelperText>
             <Box sx={{ alignItems: 'center', display: 'flex', gap: 1 }}>
                 <Typography sx={{ flex: '0 0 auto', fontFamily: font || 'inherit', fontSize: 22, minWidth: 32 }}>Aa</Typography>
@@ -284,6 +293,25 @@ class MaterialDesignAdmin extends GenericApp<GenericAppProps, GenericAppState> {
             settings[defaultsKey(theme)] = defaults;
             settings[theme] = readEntries(settings, theme, defaults);
         });
+    }
+    // GenericApp.updateNativeValue() snapshots this.state.native when it is CALLED, so several calls
+    // from one event handler — a preset writes up to eight keys — all start from the same pre-batch
+    // state and only the last one survives. A functional setState sees each previous update. Every
+    // key written here is top level, so the dotted-path walk of the base class is not needed.
+    private updateNative(key: string, value: unknown): void {
+        this.setState(
+            state => {
+                const native = { ...state.native, [key]: value };
+                return { native, changed: this.getIsChanged(native) };
+            },
+            () => {
+                try {
+                    window.parent.postMessage(this.state.changed ? 'change' : 'nochange', '*');
+                } catch {
+                    // not embedded in the admin iframe
+                }
+            },
+        );
     }
     private async ensureAncestorChannels(id: string, namespace: string, ensured: Set<string>): Promise<void> {
         const parts = id.substring(namespace.length + 1).split('.');
@@ -413,7 +441,7 @@ class MaterialDesignAdmin extends GenericApp<GenericAppProps, GenericAppState> {
             }
         }
     }
-    render(): React.JSX.Element { if (!this.state.loaded) return <Loader />; return <ThemeProvider theme={this.state.theme}><CssBaseline /><Config common={this.common as Record<string, unknown>} config={this.state.native as NativeConfig} instance={this.instance} onError={this.showError} onLoad={settings => this.setState({ native: settings })} update={(key, value) => this.updateNativeValue(key, value)} onGenerate={() => void this.generateGlobalScript().catch(error => this.showAlert(String(error), 'error'))} />{this.renderHelperDialogs()}</ThemeProvider>; }
+    render(): React.JSX.Element { if (!this.state.loaded) return <Loader />; return <ThemeProvider theme={this.state.theme}><CssBaseline /><Config common={this.common as Record<string, unknown>} config={this.state.native as NativeConfig} instance={this.instance} onError={this.showError} onLoad={settings => this.setState({ native: settings })} update={(key, value) => this.updateNative(key, value)} onGenerate={() => void this.generateGlobalScript().catch(error => this.showAlert(String(error), 'error'))} />{this.renderHelperDialogs()}</ThemeProvider>; }
 }
 
 async function bootstrap(): Promise<void> {

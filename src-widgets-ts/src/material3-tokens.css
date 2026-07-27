@@ -55,6 +55,9 @@
     --md-sys-color-scrim: #000000;
 
     --md-sys-shape-corner-extra-small: 4px;
+    /* Card corner, back in the set together with its consumer (List `listLayout: card`), per the
+       header rule above. */
+    --md-sys-shape-corner-medium: 12px;
     --md-sys-shape-corner-full: 9999px;
 
     --md-sys-typescale-label-large-font: var(--mdw-seed-font, Roboto, sans-serif);

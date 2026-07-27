@@ -8,7 +8,7 @@ import {
 } from "chart.js";
 import ChartDataLabels from "chartjs-plugin-datalabels";
 
-import { m3OnColor } from "./widgetUtils";
+import { designStyle, m3OnColor } from "./widgetUtils";
 
 // Chart.js 4 no longer auto-registers. Register only the pieces these 4 widgets use — bar/line/
 // pie/doughnut controllers, their elements, the linear + category scales (no time scale: the Line
@@ -25,6 +25,12 @@ if (typeof (Chart as { register?: unknown }).register === "function") {
     ArcElement, BarElement, LineElement, PointElement,
     CategoryScale, LinearScale,
     Filler, Legend, Title, Tooltip,
+    // The datalabels plugin was only handed to each chart through `config.plugins`, which runs it but
+    // never merges its defaults into `Chart.defaults.plugins.datalabels`. That key therefore did not
+    // exist when the color default below spread over it, so the whole default set (labels, padding,
+    // clamp, clip, opacity, text stroke …) was replaced by a lone `color` — and no value label was
+    // ever drawn on any chart. Registering it is the documented way and makes the spread meaningful.
+    ChartDataLabels,
   );
 }
 
@@ -75,10 +81,24 @@ export function datalabelsConfig(
   const show = str(data.showValues, "showValuesOn");
   const steps = Math.max(1, num(data.valuesSteps, 1));
   const visible = show === "showValuesAuto" ? "auto" : true;
+  const align = str(data.valuesPositionAlign, defaults.align);
+  const anchor = str(data.valuesPositionAnchor, defaults.anchor);
+  // `labelColorFor` picks a color that reads ON the bar/slice — right only while the label actually
+  // sits there. It does when it is centred on its anchor point (`align: center`) or anchored in the
+  // middle of the element (`anchor: center`, the pie default, where align just pushes it out along
+  // the radius). The bar default — anchor `end`, align `top` — parks it ABOVE the bar on the chart
+  // background, and there the contrast pick produced white text on a white chart: the labels were
+  // drawn all along, just invisible. Off the element the surface text color applies.
+  const onElement = align === "center" || anchor === "center";
+  const offElementColor = (context: LabelContext): string => {
+    const canvas = context.chart?.canvas;
+    const token = canvas && designStyle(data) === "material3" ? getComputedStyle(canvas).getPropertyValue("--md-sys-color-on-surface").trim() : "";
+    return token || str(Chart.defaults.color, "#44739e");
+  };
   return {
-    align: str(data.valuesPositionAlign, defaults.align),
-    anchor: str(data.valuesPositionAnchor, defaults.anchor),
-    color: (context: LabelContext): string => label(context.dataIndex).color || labelColorFor(context),
+    align,
+    anchor,
+    color: (context: LabelContext): string => label(context.dataIndex).color || (onElement ? labelColorFor(context) : offElementColor(context)),
     display: show === "showValuesOff" ? false : (context: LabelContext): boolean | string => (context.dataIndex % steps === 0 ? visible : false),
     font: { family: str(data.valuesFontFamily) || undefined, size: num(data.valuesFontSize, 12) },
     formatter: (_value: unknown, context: LabelContext): string => label(context.dataIndex).text,

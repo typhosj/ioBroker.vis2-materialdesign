@@ -1063,6 +1063,7 @@
     "designStyle": "Gestaltungsstil",
     "md3ButtonVariant": "Material-3-Schaltflächenvariante",
     "md3IconButtonVariant": "Material-3-Icon-Schaltflächenvariante",
+    "md3SwitchIcon": "Material-3-Schalter mit Häkchen",
     "material3SeedColors": "Material 3 Startfarben (hell)",
     "material3SeedColorsInfo": "Überschreibt die primäre/sekundäre/tertiäre/Fehlerfarbe von Material 3 projektweit. Leer lassen, um die Standardpalette zu verwenden.",
     "material3Seed_primary": "primär",

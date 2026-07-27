@@ -386,10 +386,12 @@ export function m3Switch(options: {
     thumbOff?: string;
     disabled?: boolean;
     filter?: string;
+    /** M3 "switch with icons": a check mark inside the selected handle. Off by default. */
+    icon?: boolean;
     margin?: number;
     rootProps?: React.HTMLAttributes<HTMLDivElement>;
 }): React.JSX.Element {
-    const { on, input, trackOn, trackOff, thumbOn, thumbOff, disabled, filter, margin, rootProps } = options;
+    const { on, input, trackOn, trackOff, thumbOn, thumbOff, disabled, filter, icon, margin, rootProps } = options;
     const motion = 'var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard)';
     return (
         <div
@@ -433,17 +435,31 @@ export function m3Switch(options: {
                 }}
             />
             <div
+                className="mdw-md3-switch-handle"
                 style={{
+                    alignItems: 'center',
                     background: on ? thumbOn || 'var(--md-sys-color-on-primary)' : thumbOff || 'var(--md-sys-color-outline)',
                     borderRadius: '50%',
+                    display: 'flex',
                     height: on ? 24 : 16,
+                    justifyContent: 'center',
                     left: on ? 24 : 8,
                     position: 'absolute',
                     top: on ? 4 : 8,
-                    transition: `left ${motion}, width ${motion}, height ${motion}`,
+                    transition: `left ${motion}, width ${motion}, height ${motion}, transform ${motion}`,
                     width: on ? 24 : 16,
+                    // M3 grows the handle to 28 px while pressed. Scaling keeps the circle centered on
+                    // the position the inline `left`/`top` already computed, so the pressed size needs
+                    // no second set of coordinates: 28/24 selected, 28/16 unselected.
+                    ['--mdw-switch-pressed-scale' as string]: on ? 28 / 24 : 28 / 16,
                 }}
-            />
+            >
+                {icon && on ? (
+                    <svg aria-hidden="true" height="16" viewBox="0 0 24 24" width="16">
+                        <path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z" fill="var(--md-sys-color-primary)" />
+                    </svg>
+                ) : null}
+            </div>
             <span style={{ inset: 0, position: 'absolute' }}>{input}</span>
         </div>
     );

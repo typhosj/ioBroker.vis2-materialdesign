@@ -26,6 +26,7 @@ export interface ToggleControlData {
     colorCheckBox?: string;
     colorCheckBoxBorder?: string;
     colorCheckBoxHover?: string;
+    md3SwitchIcon?: boolean;
     colorSwitchThumb?: string;
     colorSwitchTrack?: string;
     colorSwitchTrue?: string;
@@ -86,6 +87,9 @@ function attrs(kind: ControlKind): RxWidgetInfo['visAttrs'] {
     const colorFields =
         kind === 'switch'
             ? [
+                  // M3 "switch with icons" — hidden in legacy, like the button variants, because the
+                  // legacy MDC switch has no handle icon to show.
+                  { name: 'md3SwitchIcon', label: 'md3SwitchIcon', type: 'checkbox', hidden: (data: Record<string, unknown>) => designStyle(data) !== 'material3' },
                   { name: 'colorSwitchThumb', label: 'colorSwitchThumb', type: 'color' },
                   { name: 'colorSwitchTrack', label: 'colorSwitchTrack', type: 'color' },
                   { name: 'colorSwitchTrue', label: 'colorSwitchTrue', type: 'color' },
@@ -266,6 +270,7 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
                         m3Switch({
                             disabled: !!data.readOnly,
                             filter: controlFilter,
+                            icon: !!data.md3SwitchIcon,
                             input: (
                                 <input
                                     checked={on}
@@ -363,6 +368,7 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
                 ) : (
                     <div
                         aria-checked={on}
+                        aria-disabled={data.readOnly ? true : undefined}
                         className={`mdc-checkbox mdc-checkbox--upgraded${on ? ' mdc-checkbox--selected' : ''} mdc-ripple-upgraded mdc-ripple-upgraded--unbounded`}
                         role="checkbox"
                         style={{
@@ -370,6 +376,10 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
                             filter: controlFilter,
                             flex: '0 0 auto',
                             height: 40,
+                            // M3 renders a disabled control at 38% content opacity — the switch already
+                            // does (m3Switch `disabled`), the checkbox looked fully enabled. Legacy keeps
+                            // its own look, where read-only was never dimmed either.
+                            opacity: isM3 && data.readOnly ? .38 : undefined,
                             padding: 0,
                             position: 'relative',
                             width: 40,

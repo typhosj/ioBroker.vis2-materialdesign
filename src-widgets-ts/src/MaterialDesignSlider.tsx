@@ -320,7 +320,10 @@ export default class MaterialDesignSlider extends VisWidget {
         const after = isM3 && !m3ColorExplicit(data.colorAfterThumb) ? 'var(--md-sys-color-surface-container-high)' : cleanColor(data.colorAfterThumb, 'rgba(161, 161, 161, 0.26)');
         const disabled = !!data.readOnly || isWorking(stateValue(this.state, data['oid-working'] || ''));
         const showThumbLabel = data.showThumbLabel === 'yes' || data.showThumbLabel === 'always';
-        const tickLabels = (data.tickLabels || '').split(',').map(label => label.trim());
+        // Coerce: a saved project can hold a non-string here (a boolean from an older editor or a
+        // scripted write), and `.split` on it threw — which blanks the whole VIS2 view, since a view
+        // renders its widgets in one tree without an error boundary.
+        const tickLabels = String(data.tickLabels ?? '').split(',').map(label => label.trim());
         const tickCount = Math.max(2, boundedCount(tickLabels.filter(Boolean).length || Math.floor((max - min) / step) + 1, 2));
         const showTicks = data.showTicks === 'yes' || data.showTicks === 'always';
         const thumbClass = data.knobSize === 'knobMedium' ? ' medium-size' : data.knobSize === 'knobBig' ? ' big-size' : '';

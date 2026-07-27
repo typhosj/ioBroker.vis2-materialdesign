@@ -409,6 +409,13 @@ export class MaterialDesignDialog extends VisWidget {
     // tokens when unset (container = surface-container-high, scrim, primary trigger/close); an explicit
     // saved color still wins. Modality, measure/poll lifecycle, fullscreen and behavior unchanged.
     const isM3 = designStyle(d) === "material3";
+    // Trigger button shape from the saved `buttonStyle`. The two flat legacy styles map onto their M3
+    // namesakes; raised/unelevated are the filled container in both.
+    const triggerStyle = s(d.buttonStyle, "raised");
+    const triggerIsIcon = triggerStyle === "icon";
+    const triggerOutlined = triggerStyle === "outlined";
+    const triggerFlat = triggerOutlined || triggerStyle === "text" || triggerIsIcon;
+    const triggerM3Variant = triggerStyle === "text" ? "text" : triggerOutlined ? "outlined" : "filled";
     const byState = s(d.showDialogMethod) === "datapoint";
     const stateOpen = b(
       stateValue(this.state, s(d.showDialogOid)),
@@ -484,12 +491,17 @@ export class MaterialDesignDialog extends VisWidget {
       >
         {!byState ? (
           <button
-            className={`materialdesign-${s(d.buttonStyle) === "icon" ? "icon-" : ""}button`}
+            className={`materialdesign-${triggerIsIcon ? "icon-" : ""}button${isM3 ? (triggerIsIcon ? " mdw-md3-icon-button mdw-state-layer" : ` mdw-md3-button mdw-md3-button--${triggerM3Variant} mdw-state-layer`) : ""}`}
             onClick={show}
             style={{
-              background: s(d.mdwButtonPrimaryColor, isM3 ? "var(--md-sys-color-primary)" : "#44739e"),
-              border: 0,
-              color: s(d.mdwButtonSecondaryColor, isM3 ? "var(--md-sys-color-on-primary)" : "#fff"),
+              // `buttonStyle` selected the icon shape and was otherwise ignored: text, raised,
+              // unelevated and outlined all rendered the same filled button. Flat styles now drop the
+              // container (that is what makes them flat) and outlined gets its ring; in M3 the shared
+              // button classes above supply the colors, so they are only set here when saved.
+              background: triggerFlat ? "transparent" : s(d.mdwButtonPrimaryColor, isM3 ? undefined : "#44739e"),
+              border: triggerOutlined ? `1px solid ${s(d.mdwButtonSecondaryColor, isM3 ? "var(--md-sys-color-outline)" : "#44739e")}` : 0,
+              borderRadius: isM3 ? undefined : 4,
+              color: s(d.mdwButtonSecondaryColor, isM3 ? undefined : triggerFlat ? "#44739e" : "#fff"),
               fontFamily: s(d.textFontFamily),
               fontSize: d.textFontSize ? sizeCss(d.textFontSize, 14) : undefined,
               height: "100%",
@@ -499,7 +511,7 @@ export class MaterialDesignDialog extends VisWidget {
             {s(d.iconPosition, "left") === "left"
               ? renderIcon(
                   s(d.image),
-                  s(d.imageColor, isM3 ? "var(--md-sys-color-on-primary)" : ""),
+                  s(d.imageColor, isM3 ? "currentColor" : triggerFlat ? "#44739e" : ""),
                   n(d.iconHeight, 18),
                   !!d.imageColor,
                 )
@@ -508,7 +520,7 @@ export class MaterialDesignDialog extends VisWidget {
             {s(d.iconPosition) === "right"
               ? renderIcon(
                   s(d.image),
-                  s(d.imageColor, isM3 ? "var(--md-sys-color-on-primary)" : ""),
+                  s(d.imageColor, isM3 ? "currentColor" : triggerFlat ? "#44739e" : ""),
                   n(d.iconHeight, 18),
                   !!d.imageColor,
                 )

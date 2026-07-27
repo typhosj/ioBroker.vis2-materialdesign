@@ -64,8 +64,21 @@
     opacity: 0;
 }
 
+/*
+ * M3 switch handle (geometry in m3Switch(), ../src/widgetUtils.tsx): the handle grows to 28 px while
+ * pressed. Done as a scale so the inline left/top of the two resting sizes stay authoritative — the
+ * factor per state arrives as `--mdw-switch-pressed-scale`.
+ */
+.materialdesign-widget.mdw-style-material3 .materialdesign-md3-switch:active .mdw-md3-switch-handle {
+    transform: scale(var(--mdw-switch-pressed-scale, 1));
+}
+
 @media (prefers-reduced-motion: reduce) {
     .materialdesign-widget.mdw-style-material3 .mdw-state-layer::before {
+        transition-duration: 0ms;
+    }
+
+    .materialdesign-widget.mdw-style-material3 .mdw-md3-switch-handle {
         transition-duration: 0ms;
     }
 }

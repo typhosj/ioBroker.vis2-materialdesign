@@ -121,7 +121,16 @@ const listCss = '.materialdesign-list .mdc-list{list-style:none;margin:0;padding
     // Counter the legacy `min-height:40px!important` (if still present) with a CSS-var-driven row height,
     // and let the graphic size itself (legacy forced 24x24, clamping larger listImageHeight SVGs).
     + '.materialdesign-list.materialdesign-widget .mdc-list-item{min-height:var(--materialdesign-list-item-height,48px)!important;height:auto!important}'
-    + '.materialdesign-list .mdc-list-item__graphic{flex-shrink:0;display:inline-flex;align-items:center;width:auto!important;height:auto!important;overflow:visible}';
+    + '.materialdesign-list .mdc-list-item__graphic{flex-shrink:0;display:inline-flex;align-items:center;width:auto!important;height:auto!important;overflow:visible}'
+    // `listLayout: card`/`cardOutlined` set this class but nothing ever styled it — the geometry came
+    // from ambient legacy VIS1 CSS that is gone, so both card layouts rendered identical to `standard`.
+    // The background already arrives as `--materialdesign-color-card-background` (token in M3, #fff in
+    // legacy); shape and elevation belong with it.
+    + '.materialdesign-list .materialdesign-list-card{background:var(--materialdesign-color-card-background,#fff);border-radius:4px;box-shadow:0 2px 1px -1px rgba(0,0,0,.2),0 1px 1px 0 rgba(0,0,0,.14),0 1px 3px 0 rgba(0,0,0,.12);height:100%;overflow:hidden}'
+    + '.materialdesign-list .materialdesign-list-card--outlined{border:1px solid rgba(0,0,0,.12);box-shadow:none}'
+    // M3: the same two roles the spec gives a filled and an outlined card, plus the large corner.
+    + '.materialdesign-list.mdw-style-material3 .materialdesign-list-card{border-radius:var(--md-sys-shape-corner-medium);box-shadow:var(--md-sys-elevation-level1)}'
+    + '.materialdesign-list.mdw-style-material3 .materialdesign-list-card--outlined{background:var(--md-sys-color-surface);border:1px solid var(--md-sys-color-outline-variant);box-shadow:none}';
 
 export default class MaterialDesignList extends VisWidget {
     static getWidgetInfo(): RxWidgetInfo { return { ...createInfo('tplVis2-materialdesign-List', 'List', attrs), visPrev: squarePreview('F0279'), visDefaultStyle: { width: 400, height: 270 } }; }

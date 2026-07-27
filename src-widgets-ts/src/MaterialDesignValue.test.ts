@@ -25,6 +25,10 @@ describe('MaterialDesignValue formatting', () => {
         it('rounds to the configured maximum decimals', () => {
             expect(formatNumber(3.14159, data({ maxDecimals: 0 }))).toBe('3');
         });
+        // max < min made Intl.NumberFormat throw, which blanked the whole VIS2 view.
+        it('survives a maximum below the configured minimum', () => {
+            expect(formatNumber(21.4, data({ minDecimals: 2, maxDecimals: 1 }))).toMatch(/^21[.,]40$/);
+        });
     });
 
     describe('formatBoolean', () => {

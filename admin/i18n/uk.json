@@ -1063,6 +1063,7 @@
     "designStyle": "стиль оформлення",
     "md3ButtonVariant": "Варіант кнопки Material 3",
     "md3IconButtonVariant": "Варіант кнопки-піктограми Material 3",
+    "md3SwitchIcon": "Перемикач Material 3 з галочкою",
     "material3SeedColors": "Базові кольори Material 3 (світла тема)",
     "material3SeedColorsInfo": "Перевизначає основний/вторинний/третинний колір і колір помилки Material 3 для всього проєкту. Залиште порожнім, щоб використати стандартну палітру.",
     "material3Seed_primary": "основний",
