@@ -60,7 +60,11 @@
     --md-sys-shape-corner-medium: 12px;
     --md-sys-shape-corner-full: 9999px;
 
-    --md-sys-typescale-label-large-font: var(--mdw-seed-font, Roboto, sans-serif);
+    /* Same fallback as the widget root above: with `Roboto, sans-serif` here, clearing the admin's
+       M3 font left button labels on Roboto while the rest of the widget went back to inheriting the
+       view font. A `<button>` does not inherit the page font on its own, hence the explicit rule in
+       material3-components.css that reads this token. */
+    --md-sys-typescale-label-large-font: var(--mdw-seed-font, inherit);
     --md-sys-typescale-label-large-size: .875rem;
     --md-sys-typescale-label-large-weight: 500;
     --md-sys-typescale-label-large-tracking: .00625em;

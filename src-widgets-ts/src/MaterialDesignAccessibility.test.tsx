@@ -241,6 +241,10 @@ describe('material 3 colour contrast', () => {
             });
         });
         expect(lightBlock).toContain('font-family: var(--mdw-seed-font, inherit)');
+        // Button labels read the type-scale token instead of the root rule, so it needs the same
+        // fallback — with `Roboto, sans-serif` they stayed on Roboto after the admin font was cleared
+        // while every other text in the widget went back to the view font.
+        expect(lightBlock).toContain('--md-sys-typescale-label-large-font: var(--mdw-seed-font, inherit)');
     });
 
     it('repairs the on-colour when an admin seed overrides primary', () => {
