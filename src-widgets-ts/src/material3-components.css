@@ -244,6 +244,37 @@
 }
 
 /*
+ * M3 shape and component geometry (Phase 9.2). Same mechanism as the type scale above: rules on the
+ * element that carries the widget's own inline option, so a project that set a height or a corner
+ * keeps it (compat rule #5), and legacy roots never match.
+ *
+ * What is deliberately NOT here: the spec's outer dimensions for buttons (40 px) and text fields
+ * (56 px). Those widgets ARE the vis-2 widget box — the view positions and sizes them, `height:100%`
+ * is all the widget itself says — so a height here would either fight the editor or silently resize
+ * every existing project. Only geometry the widget owns internally is M3's to set: list items, table
+ * rows, menu items, the dialog surface.
+ */
+.materialdesign-widget.mdw-style-material3 .mdc-card {
+    border-radius: var(--md-sys-shape-corner-medium);
+}
+
+/* 56 px is the one-line M3 list item; the legacy default was MDC's 48. The variable is what the
+   `listItemHeight` option writes, so a project that set a height still wins — only the fallback
+   moves. `!important` matches the widget-local rule it overrides (which needs it against ambient
+   legacy CSS); at equal importance the extra class here decides. */
+.materialdesign-widget.mdw-style-material3.materialdesign-list .mdc-list-item {
+    min-height: var(--materialdesign-list-item-height, 56px) !important;
+}
+
+.materialdesign-widget.mdw-style-material3 .mdc-data-table__header-row {
+    height: 56px;
+}
+
+.materialdesign-widget.mdw-style-material3 .mdc-data-table__row {
+    height: 52px;
+}
+
+/*
  * Forced colors / Windows high contrast (Phase 8 audit). The UA replaces every color here with the
  * user's palette, which breaks the two things M3 leans on: the translucent `currentColor` state
  * layer becomes an opaque sheet over the content, and filled/tonal buttons lose the fill that

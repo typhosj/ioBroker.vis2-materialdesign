@@ -500,6 +500,9 @@ export default class MaterialDesignSelect extends VisWidget {
         const isM3 = designStyle(data) === 'material3';
         const m3c = (saved: unknown, token: string, legacyFallback: string): string =>
             isM3 && !m3ColorExplicit(saved) ? token : color(saved, legacyFallback);
+        // M3 menu item is 48 (Phase 9.2), the legacy default 40 — the saved option still wins, and the
+        // open-upwards calculation below has to measure the same height it renders.
+        const itemHeight = num(data.listItemHeight, 0) || (isM3 ? 48 : 40);
         const border = this.open
             ? m3c(data.inputLayoutBorderColorSelected, 'var(--md-sys-color-primary)', '#44739e')
             : m3c(data.inputLayoutBorderColor, 'var(--md-sys-color-outline)', 'rgba(0, 0, 0, 0.54)');
@@ -552,8 +555,7 @@ export default class MaterialDesignSelect extends VisWidget {
         let openUp = isTop;
         if (this.open && data.listPosition === 'auto' && typeof window !== 'undefined' && this.rootRef.current) {
             const rect = this.rootRef.current.getBoundingClientRect();
-            const itemH = num(data.listItemHeight, 40) || 40;
-            const menuH = Math.min(300, list.length * itemH + 8);
+            const menuH = Math.min(300, list.length * itemHeight + 8);
             const spaceBelow = window.innerHeight - rect.bottom;
             openUp = spaceBelow < menuH && rect.top > spaceBelow;
         }
@@ -812,8 +814,11 @@ export default class MaterialDesignSelect extends VisWidget {
                             className="v-menu__content v-select-list"
                             style={{
                                 background: m3c(data.listItemBackgroundColor, 'var(--md-sys-color-surface-container)', '#FFFFFF'),
+                                // M3 menu surface (Phase 9.2): extra-small corner and elevation
+                                // level 2. Legacy keeps its square panel and hand-rolled shadow.
+                                borderRadius: isM3 ? 'var(--md-sys-shape-corner-extra-small)' : undefined,
                                 bottom: openUp ? (data.listPositionOffset ? '100%' : 'calc(100% + 4px)') : undefined,
-                                boxShadow: '0 4px 6px rgba(32, 33, 36, 0.28)',
+                                boxShadow: isM3 ? 'var(--md-sys-elevation-level2)' : '0 4px 6px rgba(32, 33, 36, 0.28)',
                                 left: 0,
                                 maxHeight: 300,
                                 minWidth: '100%',
@@ -864,7 +869,7 @@ export default class MaterialDesignSelect extends VisWidget {
                                             boxSizing: 'border-box',
                                             cursor: 'pointer',
                                             display: 'flex',
-                                            minHeight: num(data.listItemHeight, 40) || 40,
+                                            minHeight: itemHeight,
                                             padding: '6px 12px',
                                             textAlign: 'left',
                                             width: '100%',

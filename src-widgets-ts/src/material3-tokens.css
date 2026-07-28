@@ -63,10 +63,12 @@
     --md-sys-color-outline-variant: var(--mdw-seed-outline-variant, #cac4cf);
     --md-sys-color-scrim: var(--mdw-seed-scrim, #000000);
 
+    /* Menu surface (Select's dropdown) and Calendar's event chips. */
     --md-sys-shape-corner-extra-small: 4px;
-    /* Card corner, back in the set together with its consumer (List `listLayout: card`), per the
-       header rule above. */
+    /* Every card: the Card widget, IconList's and Table's card layouts, List `listLayout: card`. */
     --md-sys-shape-corner-medium: 12px;
+    /* Dialog only — the one component the spec gives 28. */
+    --md-sys-shape-corner-extra-large: 28px;
     --md-sys-shape-corner-full: 9999px;
 
     /*
@@ -121,6 +123,9 @@
     --md-sys-typescale-label-large-tracking: .0071428571em;
 
     --md-sys-elevation-level1: 0 1px 2px 0 rgba(0, 0, 0, .3), 0 1px 3px 1px rgba(0, 0, 0, .15);
+    /* Level 2 is the menu surface: Select's dropdown drew a hand-rolled `0 4px 6px rgba(32,33,36,.28)`,
+       which is neither M3 nor anything else in this widget set. */
+    --md-sys-elevation-level2: 0 1px 2px 0 rgba(0, 0, 0, .3), 0 2px 6px 2px rgba(0, 0, 0, .15);
 
     --md-sys-state-hover-opacity: .08;
     --md-sys-state-focus-opacity: .1;

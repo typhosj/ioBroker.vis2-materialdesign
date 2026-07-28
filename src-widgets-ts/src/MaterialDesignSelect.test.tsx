@@ -94,3 +94,26 @@ describe('select data sources and writes', () => {
         expect(setValue).toHaveBeenLastCalledWith('test.0.choice', 'custom');
     });
 });
+
+// Phase 9.2: the menu surface is inline-styled, so the shape/elevation tokens can only be checked on
+// the rendered markup, not by parsing the stylesheet.
+describe('select material 3 menu geometry', () => {
+    const menu = (rxData: Record<string, unknown>): string => {
+        const select = new MaterialDesignSelect(fixture<ConstructorParameters<typeof MaterialDesignSelect>[0]>({ context: {} }));
+        select.state = fixture<typeof select.state>({ rxData: { listDataMethod: 'valueList', valueList: '1', valueListLabels: 'One', ...rxData }, values: {} });
+        return renderToStaticMarkup(open(select));
+    };
+
+    it('gives the dropdown the M3 menu surface and a 48px item', () => {
+        const html = menu({ designStyle: 'material3' });
+        expect(html).toContain('border-radius:var(--md-sys-shape-corner-extra-small)');
+        expect(html).toContain('box-shadow:var(--md-sys-elevation-level2)');
+        expect(html).toContain('min-height:48px');
+    });
+
+    it('keeps the legacy panel and honours a saved item height in both styles', () => {
+        expect(menu({})).toContain('box-shadow:0 4px 6px rgba(32, 33, 36, 0.28)');
+        expect(menu({})).toContain('min-height:40px');
+        expect(menu({ designStyle: 'material3', listItemHeight: 64 })).toContain('min-height:64px');
+    });
+});

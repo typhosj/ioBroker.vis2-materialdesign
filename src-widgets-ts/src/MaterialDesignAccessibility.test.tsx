@@ -297,4 +297,42 @@ describe('material 3 type scale', () => {
         const declaredRoles = new Set(Object.keys(declared).map(name => name.replace(/-(?:size|line-height|weight|tracking|font)$/, '')));
         expect([...declaredRoles].sort()).toEqual(Object.keys(published).sort());
     });
+
+    // Shape and the internal component dimensions (Phase 9.2 slice 2). The outer size of a widget is
+    // the vis-2 widget box, never CSS, so the spec's button/text-field heights are not checked here —
+    // only the geometry a widget owns inside itself.
+    it('matches the published shape scale', () => {
+        expect(Object.fromEntries([...tokens.matchAll(/--md-sys-shape-corner-([a-z-]+):\s*([^;]+);/g)].map(match => [match[1], match[2].trim()])))
+            .toEqual({ 'extra-small': '4px', medium: '12px', 'extra-large': '28px', full: '9999px' });
+    });
+
+    it.each([
+        ['.materialdesign-list .mdc-list-item', 'min-height: var(--materialdesign-list-item-height, 56px)'],
+        ['.mdc-data-table__header-row', 'height: 56px'],
+        ['.mdc-data-table__row', 'height: 52px'],
+        ['.mdc-card', 'border-radius: var(--md-sys-shape-corner-medium)'],
+    ])('gives %s its M3 geometry', (selector, declaration) => {
+        const rule = components.split('}').find(block => block.includes(selector) && block.includes(declaration));
+        // The M3 rules have to stay scoped: a legacy project must not pick up any of this.
+        expect(rule).toMatch(/\.materialdesign-widget\.mdw-style-material3/);
+    });
+
+    // The dialog surface is inline-styled, so its corner and headline can only be seen on the markup.
+    it('gives the dialog surface the 28px corner and the headline role', () => {
+        const widget = new MaterialDesignDialogView(fixture<ConstructorParameters<typeof MaterialDesignDialogView>[0]>(props));
+        const open = (rxData: Record<string, unknown>): string => {
+            setData(widget, { showDialogMethod: 'datapoint', showDialogOid: 'test.0.dialog', title: 'Details', ...rxData }, { 'test.0.dialog.val': true });
+            return renderToStaticMarkup(widget.renderWidgetBody(fixture<Parameters<MaterialDesignDialogView['renderWidgetBody']>[0]>(props)));
+        };
+        const m3 = open({ designStyle: 'material3' });
+        expect(m3).toContain('border-radius:var(--md-sys-shape-corner-extra-large)');
+        expect(m3).toContain('mdw-md3-dialog-headline');
+        // No inline size/weight/uppercase left to beat the stylesheet — that was the whole point.
+        expect(m3).not.toContain('text-transform:uppercase');
+        expect(m3).not.toContain('font-size:16px');
+        // A saved size still wins, and legacy is untouched.
+        expect(open({ designStyle: 'material3', titleFontSize: 21 })).toContain('font-size:21px');
+        expect(open({})).toContain('text-transform:uppercase');
+        expect(open({})).toContain('border-radius:4px');
+    });
 });

@@ -553,7 +553,8 @@ export class MaterialDesignDialog extends VisWidget {
               tabIndex={-1}
               style={{
                 background: s(d.backgroundColor, isM3 ? "var(--md-sys-color-surface-container-high)" : "#fff"),
-                borderRadius: 4,
+                // 28 is the corner the spec gives the dialog, and only the dialog (Phase 9.2).
+                borderRadius: isM3 ? "var(--md-sys-shape-corner-extra-large)" : 4,
                 boxShadow:
                   "0 11px 15px -7px rgba(0,0,0,.2),0 24px 38px 3px rgba(0,0,0,.14),0 9px 46px 8px rgba(0,0,0,.12)",
                 display: "flex",

@@ -29,7 +29,9 @@ const tableCss = '.materialdesign-table .mdc-data-table__header-cell,.materialde
     + '.materialdesign-table .mdc-data-table__cell{letter-spacing:.01786em}';
 // Material 3 (Phase 7, ../../MATERIAL3_PLAN.md): card-variant surface + outline from tokens; the
 // data-driven header/row/divider colors are tokenised inline in the render.
-const tableM3Css = '.materialdesign-table.mdw-style-material3 .materialdesign-table-card{background:var(--md-sys-color-surface-container-low)}'
+// Phase 9.2 adds the card corner: `roundBorder` writes an inline `border-radius: 0` on this same
+// element when the user turns it off, and inline wins, so the option keeps working.
+const tableM3Css = '.materialdesign-table.mdw-style-material3 .materialdesign-table-card{background:var(--md-sys-color-surface-container-low);border-radius:var(--md-sys-shape-corner-medium)}'
     + '.materialdesign-table.mdw-style-material3 .materialdesign-table-card--outlined{border-color:var(--md-sys-color-outline-variant)}';
 const attrs: RxWidgetInfo['visAttrs'] = [
     { name: 'common', fields: [{ name: 'oid', label: 'oid', type: 'id' }, { name: 'dataJson', label: 'dataJson', type: 'html' }, { name: 'countCols', label: 'countCols', type: 'number', default: 1 }, { name: 'debug', label: 'debug', type: 'checkbox' }] },
