@@ -10,46 +10,30 @@ import ChartDataLabels from "chartjs-plugin-datalabels";
 
 import { designStyle, m3OnColor } from "./widgetUtils";
 
-// Chart.js 4 no longer auto-registers. Register only the pieces these 4 widgets use — bar/line/
-// pie/doughnut controllers, their elements, the linear + category scales (no time scale: the Line
-// History chart pre-formats its own tick labels, staying moment-free), and the legend/title/tooltip/
-// fill plugins. This is deliberately NOT `chart.js/auto`, which would drag in the radar/polar/bubble/
-// scatter/time/radial engine we never draw (~2x the gzip). Datalabels stays a per-chart plugin.
-// Guard the call: the real bundler resolves chart.js' ESM entry correctly, but the vitest/jsdom
-// resolver loads a build where these named exports are absent (Chart.register is not a function).
-// Charts never render in the unit tests (they only exercise the pure data helpers), so skipping
-// registration there is harmless; the browser build always registers.
+// Deliberately not `chart.js/auto`, which drags in the radar/polar/bubble/scatter/time engine we
+// never draw (~2x the gzip). The guard is for vitest/jsdom, whose resolver loads a build without
+// these named exports; charts never render in the unit tests.
 if (typeof (Chart as { register?: unknown }).register === "function") {
   Chart.register(
     BarController, LineController, PieController, DoughnutController,
     ArcElement, BarElement, LineElement, PointElement,
     CategoryScale, LinearScale,
     Filler, Legend, Title, Tooltip,
-    // The datalabels plugin was only handed to each chart through `config.plugins`, which runs it but
-    // never merges its defaults into `Chart.defaults.plugins.datalabels`. That key therefore did not
-    // exist when the color default below spread over it, so the whole default set (labels, padding,
-    // clamp, clip, opacity, text stroke …) was replaced by a lone `color` — and no value label was
-    // ever drawn on any chart. Registering it is the documented way and makes the spread meaningful.
+    // Without registering the plugin, `Chart.defaults.plugins.datalabels` does not exist and the spread
+    // below replaces the whole default set with a lone `color` — no value label is ever drawn.
     ChartDataLabels,
   );
 }
 
-// Default all chart text (axis ticks + axis titles) to the Material Design blue
-// instead of chart.js' grey #666, matching the legacy widget theme. Per-axis color
-// fields (and the M3 render paths) still override this. v4 renamed the global from
-// defaults.global.defaultFontColor to defaults.color.
+// v4 renamed this global from defaults.global.defaultFontColor.
 Chart.defaults.color = "#44739e";
 
-// Value labels sit ON the drawn element (pie slice, bar), so a single fixed color is unreadable on
-// half the palette — the plugin's own default is a mid grey, and a dark blue or violet slice swallows
-// it. Derive the label color from the color of the element it is drawn on instead: the same sRGB
-// contrast pick used for the M3 seed pairs and the calendar events. A chart that sets its own
-// `plugins.datalabels.color` still wins, since this is only the default.
+// Value labels sit ON the drawn element, so a fixed color is unreadable on half the palette.
 export function labelColorFor(context: { dataIndex: number; dataset?: { backgroundColor?: unknown }; chart?: { canvas?: HTMLCanvasElement } }): string {
   const background = context.dataset?.backgroundColor;
   let color = Array.isArray(background) ? background[context.dataIndex] : background;
-  // M3 paths pass tokens (`var(--md-sys-color-primary)`), which no color parser can read — resolve
-  // them off the canvas, where the widget root's custom properties are in scope.
+  // M3 paths pass tokens, which no color parser reads — resolve them off the canvas, where the
+  // widget root's custom properties are in scope.
   const token = typeof color === "string" && color.match(/^var\((--[^),]+)/)?.[1];
   if (token && context.chart?.canvas) color = getComputedStyle(context.chart.canvas).getPropertyValue(token).trim();
   return (typeof color === "string" && m3OnColor(color)) || "#000";
@@ -64,13 +48,7 @@ if (Chart.defaults.plugins) {
 
 type LabelContext = Parameters<typeof labelColorFor>[0];
 
-// The value-label option group (`showValues`, decimals, appendix, font, anchor/align/offset/rotation)
-// exists on Bar and Pie with identical field names but was never wired to the plugin — the labels
-// rendered with plugin defaults and every setting in the group was inert. Both charts build their
-// per-item text/color themselves (they differ in how: Bar precomputes `valueText`, Pie formats the
-// slice value), so they pass that in as `label` and share everything else here.
-// `valuesSteps` thins the labels out (every n-th item), which is what keeps a bar chart with many
-// bars readable; 0/1 shows all.
+// `valuesSteps` thins the labels out (every n-th item); 0/1 shows all.
 export function datalabelsConfig(
   data: Record<string, unknown>,
   label: (index: number) => { text: string; color?: string },
@@ -83,12 +61,8 @@ export function datalabelsConfig(
   const visible = show === "showValuesAuto" ? "auto" : true;
   const align = str(data.valuesPositionAlign, defaults.align);
   const anchor = str(data.valuesPositionAnchor, defaults.anchor);
-  // `labelColorFor` picks a color that reads ON the bar/slice — right only while the label actually
-  // sits there. It does when it is centred on its anchor point (`align: center`) or anchored in the
-  // middle of the element (`anchor: center`, the pie default, where align just pushes it out along
-  // the radius). The bar default — anchor `end`, align `top` — parks it ABOVE the bar on the chart
-  // background, and there the contrast pick produced white text on a white chart: the labels were
-  // drawn all along, just invisible. Off the element the surface text color applies.
+  // `labelColorFor` only reads right while the label sits ON the element (align/anchor center). The
+  // bar default parks it above the bar, where the contrast pick produced white on white.
   const onElement = align === "center" || anchor === "center";
   const offElementColor = (context: LabelContext): string => {
     const canvas = context.chart?.canvas;
@@ -108,9 +82,8 @@ export function datalabelsConfig(
   };
 }
 
-// `data`/`options` are typed loosely: callers build chart.js configs whose runtime
-// shape (null data points for gaps, numeric stack ids) is wider than the strict
-// types allow. The strict typing is re-applied at the `new Chart` call.
+// Callers build chart.js configs whose runtime shape (null points for gaps, numeric stack ids) is
+// wider than the strict types; strict typing is re-applied at `new Chart`.
 type Props = { type: string; data: object; options: object };
 
 export function MaterialDesignChartCanvas({ type, data, options }: Props): React.JSX.Element {
@@ -127,10 +100,7 @@ export function MaterialDesignChartCanvas({ type, data, options }: Props): React
         plugins: [ChartDataLabels],
       });
     } catch (error) {
-      // A malformed config must not white-screen the whole vis view. Log the shape that failed
-      // (scale ids vs the axis ids the datasets reference) so the mismatch is visible, then render
-      // nothing. This turned the chart.js v4 migration's opaque "getBasePixel of undefined" into a
-      // named, diagnosable failure.
+      // A malformed config must not white-screen the whole vis view; log the shape that failed.
       chart.current = null;
       const opt = options as { scales?: Record<string, { type?: string }> };
       const dsAxes = ((data as { datasets?: { xAxisID?: string; yAxisID?: string }[] }).datasets || []).map(

@@ -19,18 +19,14 @@ function rows(input: unknown): Row[] {
 }
 function bound(text: string, row: Row): string { return text.replace(/#\[obj\.(.*?)\]/g, (_all, key: string) => s(valueFor(row, key))); }
 
-// Base MDC data-table typography came from the removed material-components-web.css bundle; only the
-// colour/height overrides lived in widgets.css. The widget sets geometry inline, but the header lost its
-// 500 weight and cells lost the .875rem/letter-spacing/vertical-align defaults. Re-vendor those here; they
-// only apply where the editor sets no explicit font-size (inline wins otherwise).
+// Base MDC data-table typography came from the removed material-components-web.css. These apply
+// only where the editor sets no explicit font-size (inline wins otherwise).
 const tableCss = '.materialdesign-table .mdc-data-table__header-cell,.materialdesign-table .mdc-data-table__cell{font-size:.875rem;vertical-align:middle}'
     + '.materialdesign-table .mdc-data-table__header-cell:focus-visible{outline:2px solid #44739e;outline-offset:-2px}'
     + '.materialdesign-table .mdc-data-table__header-cell{font-weight:500;letter-spacing:.00714em}'
     + '.materialdesign-table .mdc-data-table__cell{letter-spacing:.01786em}';
-// Material 3 (Phase 7, ../../MATERIAL3_PLAN.md): card-variant surface + outline from tokens; the
-// data-driven header/row/divider colors are tokenised inline in the render.
-// Phase 9.2 adds the card corner: `roundBorder` writes an inline `border-radius: 0` on this same
-// element when the user turns it off, and inline wins, so the option keeps working.
+// `roundBorder` writes an inline `border-radius: 0` on this same element when the user turns it
+// off, and inline wins, so the option keeps working.
 const tableM3Css = '.materialdesign-table.mdw-style-material3 .materialdesign-table-card{background:var(--md-sys-color-surface-container-low);border-radius:var(--md-sys-shape-corner-medium)}'
     + '.materialdesign-table.mdw-style-material3 .materialdesign-table-card--outlined{border-color:var(--md-sys-color-outline-variant)}';
 const attrs: RxWidgetInfo['visAttrs'] = [
@@ -47,8 +43,6 @@ export default class MaterialDesignTable extends VisWidget {
     renderWidgetBody(props: RenderProps): React.JSX.Element {
         super.renderWidgetBody(props);
         const data = this.state.rxData as unknown as Data;
-        // Material 3 (Phase 7): unset header/row/divider colors fall back to semantic tokens; an explicit
-        // saved color still wins (m3 = token when empty). Sorting, hover, data parsing unchanged.
         const isM3 = designStyle(data) === 'material3';
         const m3 = (v: unknown, token: string): string | undefined => s(v) || (isM3 ? token : undefined);
         const m3f = (v: unknown, token: string, fb: string): string => s(v) || (isM3 ? token : fb);

@@ -137,8 +137,8 @@ describe('widget accessibility', () => {
         expect(html).toContain('aria-current="date"');
     });
 
-    // An event's own background comes from the calendar source, so the M3 default text color (the
-    // partner of primary-container) can land on anything — dark violet on a green holiday entry.
+    // An event's own background comes from the calendar source, so the M3 default text colour can land
+    // on anything.
     it('derives readable event text from an event-supplied background in M3', () => {
         const widget = new MaterialDesignCalendar(fixture<ConstructorParameters<typeof MaterialDesignCalendar>[0]>(props));
         const iso = new Date().toISOString().slice(0, 10);
@@ -148,19 +148,17 @@ describe('widget accessibility', () => {
         setData(widget, { calendarView: 'week', designStyle: 'material3', oid: 'test.0.events' }, { 'test.0.events.val': events });
         expect(render()).toContain('color:#ffffff');
 
-        // An explicit text color always wins, and an event without its own background keeps the token.
         setData(widget, { calendarView: 'week', designStyle: 'material3', oid: 'test.0.events' }, { 'test.0.events.val': JSON.stringify([{ name: 'Urlaub', start: `${iso}T09:00`, end: `${iso}T11:00`, color: '#2e7d32', colorText: '#123456' }]) });
         expect(render()).toContain('color:#123456');
         setData(widget, { calendarView: 'week', designStyle: 'material3', oid: 'test.0.events' }, { 'test.0.events.val': JSON.stringify([{ name: 'Urlaub', start: `${iso}T09:00`, end: `${iso}T11:00` }]) });
         expect(render()).toContain('color:var(--md-sys-color-on-primary-container)');
 
-        // Legacy keeps white on every event, parity-frozen.
         setData(widget, { calendarView: 'week', oid: 'test.0.events' }, { 'test.0.events.val': events });
         expect(render()).toContain('color:#fff');
     });
 
-    // Day/week header and body are separate scroll-independent grids; without a reserved scrollbar
-    // gutter in both, the body's day columns come out narrower than the header's and the two drift.
+    // Header and body are separate scroll-independent grids; without a reserved gutter in both, their
+    // day columns drift apart.
     it('reserves the same scrollbar gutter for the calendar header and body', () => {
         const widget = new MaterialDesignCalendar(fixture<ConstructorParameters<typeof MaterialDesignCalendar>[0]>(props));
         setData(widget, { calendarView: 'week' }, {});
@@ -168,8 +166,7 @@ describe('widget accessibility', () => {
         expect(html.match(/scrollbar-gutter:stable/g)).toHaveLength(2);
     });
 
-    // WCAG 2.5.8: the calendar day number and the list switch are the two M3 targets that fall under
-    // 24 px on their own; both are grown in the M3 path only (legacy geometry is frozen by parity).
+    // WCAG 2.5.8: both targets fall under 24 px on their own and are grown in the M3 path only.
     it('keeps M3 day-number and list-switch targets at 24 px', () => {
         const calendar = new MaterialDesignCalendar(fixture<ConstructorParameters<typeof MaterialDesignCalendar>[0]>(props));
         setData(calendar, { calendarView: 'month', designStyle: 'material3' }, {});
@@ -178,8 +175,6 @@ describe('widget accessibility', () => {
         setData(calendar, { calendarView: 'month' }, {});
         expect(renderToStaticMarkup(calendar.renderWidgetBody(fixture<Parameters<MaterialDesignCalendar['renderWidgetBody']>[0]>(props)))).not.toContain('min-height:24px');
 
-        // The list row switch is the shared 52×32 M3 control (m3Switch), with the input stretched over
-        // it — both the visual and the target come from that, no per-widget inset correction.
         const listProps = { id: 'list', context: { setValue: vi.fn() } };
         const list = new MaterialDesignList(fixture<ConstructorParameters<typeof MaterialDesignList>[0]>(listProps));
         setData(list, { countListItems: 1, designStyle: 'material3', listType: 'switch', label0: 'Lamp' });
@@ -189,8 +184,7 @@ describe('widget accessibility', () => {
         expect(m3List).toContain('width:52px');
         expect(m3List).toContain('width:100%;height:100%');
 
-        // Icon List: clearing the icon-button background is the documented way to let M3 fill it in,
-        // and it must not leave a saved (typically white) icon on a transparent button.
+        // Clearing the icon-button background must not leave a saved (typically white) icon on it.
         const iconListProps = { id: 'iconlist', context: { setValue: vi.fn() } };
         const iconList = new MaterialDesignIconList(fixture<ConstructorParameters<typeof MaterialDesignIconList>[0]>(iconListProps));
         setData(iconList, { countListItems: 1, designStyle: 'material3', listType0: 'buttonToggle', oid0: 'test.0.lamp', listImage0: 'lightbulb', listImageActiveColor0: '#ffffff' }, { 'test.0.lamp.val': true });
@@ -199,7 +193,6 @@ describe('widget accessibility', () => {
         setData(iconList, { countListItems: 1, designStyle: 'material3', listType0: 'buttonToggle', oid0: 'test.0.lamp', listImage0: 'lightbulb' }, { 'test.0.lamp.val': false });
         expect(renderToStaticMarkup(iconList.renderWidgetBody(fixture<Parameters<MaterialDesignIconList['renderWidgetBody']>[0]>(iconListProps)))).toContain('background:var(--md-sys-color-surface-container-high)');
 
-        // Legacy keeps the 32×20 MDC geometry unchanged.
         setData(list, { countListItems: 1, listType: 'switch', label0: 'Lamp' });
         const legacyList = renderToStaticMarkup(list.renderWidgetBody(fixture<Parameters<MaterialDesignList['renderWidgetBody']>[0]>(listProps)));
         expect(legacyList).not.toContain('materialdesign-md3-switch');
@@ -207,12 +200,9 @@ describe('widget accessibility', () => {
     });
 });
 
-// WCAG 1.4.3 / 1.4.11 for the shipped M3 palette. The baseline scheme is Google's, but the pairs the
-// widgets actually combine are ours, and an admin seed override can replace `primary` with anything.
 describe('material 3 colour contrast', () => {
     const css = readFileSync('src-widgets-ts/src/material3-tokens.css', 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
-    // The admin-overridable roles read through `var(--mdw-seed-<role>, <baseline>)`; the baseline
-    // inside that fallback is what ships when nothing is overridden, so it is what gets checked.
+    // The baseline inside the `var(--mdw-seed-<role>, <baseline>)` fallback is what ships unoverridden.
     const roles = (block: string): Record<string, string> => Object.fromEntries([...block.matchAll(/--md-sys-color-([a-z-]+):\s*(?:var\(--mdw-seed-[a-z-]+,\s*)?(#[0-9a-f]{6})/g)].map(match => [match[1], match[2]]));
     const [, lightBlock, darkBlock] = css.split('.materialdesign-widget.mdw-style-material3');
     const light = roles(lightBlock);
@@ -230,10 +220,8 @@ describe('material 3 colour contrast', () => {
         surfaces.forEach(surface => expect(ratio(scheme.outline, scheme[surface])).toBeGreaterThanOrEqual(3));
     });
 
-    // Regression guard: a plain `--md-sys-color-primary: #6750a4` here is declared ON the widget
-    // root and beats the `--mdw-seed-*` layer applyM3SeedVariables() writes to <html>, so a derived
-    // scheme would silently do nothing again. Every role needs it, not just the four that used to be
-    // individually overridable — a scheme that reached half its roles is worse than none.
+    // A plain `--md-sys-color-primary: #6750a4` would be declared ON the widget root and beat the
+    // `--mdw-seed-*` layer that applyM3SeedVariables() writes to <html>.
     it('keeps every colour role behind its --mdw-seed-* fallback, light and dark', () => {
         [lightBlock, darkBlock].forEach((block, index) => {
             const suffix = index ? '-dark' : '';
@@ -242,15 +230,10 @@ describe('material 3 colour contrast', () => {
             });
         });
         expect(lightBlock).toContain('font-family: var(--mdw-seed-font, inherit)');
-        // Button labels read the type-scale token instead of the root rule, so it needs the same
-        // fallback — with `Roboto, sans-serif` they stayed on Roboto after the admin font was cleared
-        // while every other text in the widget went back to the view font.
         expect(lightBlock).toContain('--md-sys-typescale-label-large-font: var(--mdw-seed-font, inherit)');
     });
 
-    // The scheme supplies its own `on-*` roles, so this is no longer about seeds — it is the
-    // foreground picker for colours the USER chose (calendar event colours, chart data labels),
-    // which no palette can pair for us.
+    // The foreground picker for colours the USER chose, which no palette can pair for us.
     it('picks a legible foreground for an arbitrary user colour', () => {
         expect(m3OnColor('#ffee00')).toBe('#1d1b20'); // light background: white label would be ~1.1:1
         expect(m3OnColor('#6750a4')).toBe('#ffffff');
@@ -260,14 +243,12 @@ describe('material 3 colour contrast', () => {
     });
 });
 
-// Phase 9.2/9.5: the type scale is spec data, so it is checked against the spec rather than eyeballed
-// once. Google's published values are in dp; the tokens are in rem so a project that scales the view
-// font scales with it, hence the ×16 on the root font size the browser default gives us.
+// The tokens are in rem, the published values in dp, hence the x16 on the root font size.
 describe('material 3 type scale', () => {
     const tokens = readFileSync('src-widgets-ts/src/material3-tokens.css', 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
     const components = readFileSync('src-widgets-ts/src/material3-components.css', 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
     const declared = Object.fromEntries([...tokens.matchAll(/--md-sys-typescale-([a-z-]+):\s*([^;]+);/g)].map(match => [match[1], match[2].trim()]));
-    // size / line-height / weight / tracking, exactly as published (dp, dp, ‑, dp).
+    // size / line-height / weight / tracking, exactly as published (dp, dp, -, dp).
     const published: Record<string, [number, number, number, number]> = {
         'headline-small': [24, 32, 400, 0],
         'title-large': [22, 28, 400, 0],
@@ -277,8 +258,6 @@ describe('material 3 type scale', () => {
         'body-small': [12, 16, 400, .4],
         'label-large': [14, 20, 500, .1],
     };
-    // Material 3 Expressive, static half: same size/line-height/tracking as the baseline role, one
-    // weight step up (regular -> medium, medium -> bold), so only the weight is a token of its own.
     const emphasized: Record<string, number> = { 'headline-small': 500, 'title-large': 500, 'title-small': 700 };
     const px = (value: string): number => (value.endsWith('rem') ? parseFloat(value) * 16 : parseFloat(value));
 
@@ -286,18 +265,14 @@ describe('material 3 type scale', () => {
         expect(px(declared[`${role}-size`])).toBeCloseTo(size, 5);
         expect(px(declared[`${role}-line-height`])).toBeCloseTo(lineHeight, 5);
         expect(Number(declared[`${role}-weight`])).toBe(weight);
-        // Tracking is published in dp but expressed in em (dp ÷ the role's own size), which is what
-        // keeps it proportional when the user scales the font.
+        // Tracking is published in dp but expressed in em of the role's own size.
         expect(px(declared[`${role}-tracking`]) * px(declared[`${role}-size`])).toBeCloseTo(tracking, 5);
     });
 
-    // Both directions of the "only tokens with a consumer" rule in the tokens-file header: a role
-    // nobody carries is dead weight in every M3 project, and a carrier reading a role nobody declares
-    // renders at the inherited size while looking, in the diff, exactly like it works.
+    // A declared role nothing carries is dead weight; a carrier reading an undeclared role renders at
+    // the inherited size while looking correct in the diff.
     it.each(Object.entries(emphasized))('carries the emphasized weight of %s', (role, weight) => {
         expect(Number(declared[`${role}-emphasized-weight`])).toBe(weight);
-        // One step up from the baseline is the whole rule; equal weights would mean the token is a
-        // no-op that nobody notices until someone wonders why "emphasized" looks like body text.
         expect(weight).toBeGreaterThan(Number(declared[`${role}-weight`]));
     });
 
@@ -309,8 +284,7 @@ describe('material 3 type scale', () => {
         expect([...declaredRoles].sort()).toEqual(all);
     });
 
-    // Motion is opt-out, not opt-in: every duration token has to collapse under reduced motion, or
-    // the one that does not is the one nobody notices until it moves on a machine that asked it not to.
+    // A duration token that does not collapse here moves on a machine that asked it not to.
     it('collapses every motion duration under prefers-reduced-motion', () => {
         const [base, reduced = ''] = tokens.split('@media (prefers-reduced-motion: reduce)');
         const names = (css: string): string[] => [...new Set([...css.matchAll(/--md-sys-motion-duration-([a-z0-9]+):/g)].map(match => match[1]))].sort();
@@ -319,9 +293,8 @@ describe('material 3 type scale', () => {
         expect([...reduced.matchAll(/--md-sys-motion-duration-[a-z0-9]+:([^;]+);/g)].map(match => match[1].trim())).toEqual(names(base).map(() => '0ms'));
     });
 
-    // The size options of List and Card are a select whose named entries become a legacy
-    // `mdc-typography--*` CLASS, not an inline size — and a class loses to these rules. Every carrier
-    // that can receive one has to exempt itself, or M3 overrides a size the user explicitly picked.
+    // The NAMED entries of the List/Card size selects become a legacy `mdc-typography--*` class, not
+    // an inline size, and a class loses to these rules.
     it('never overrides a size the user picked from the typography select', () => {
         const guarded = ['.mdc-list-item__primary-text', '.mdc-list-item__secondary-text', '.materialdesign-list-item-text-right-primary',
             '.materialdesign-list-item-text-right-secondary', '.mdc-list-group__subheader', '.materialdesign-html-card.card-title',
@@ -330,9 +303,6 @@ describe('material 3 type scale', () => {
         expect(components).not.toMatch(new RegExp(`${guarded[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?!:not)`));
     });
 
-    // Shape and the internal component dimensions (Phase 9.2 slice 2). The outer size of a widget is
-    // the vis-2 widget box, never CSS, so the spec's button/text-field heights are not checked here —
-    // only the geometry a widget owns inside itself.
     it('matches the published shape scale', () => {
         expect(Object.fromEntries([...tokens.matchAll(/--md-sys-shape-corner-([a-z-]+):\s*([^;]+);/g)].map(match => [match[1], match[2].trim()])))
             .toEqual({ 'extra-small': '4px', medium: '12px', 'extra-large': '28px', full: '9999px' });
@@ -345,11 +315,11 @@ describe('material 3 type scale', () => {
         ['.mdc-card', 'border-radius: var(--md-sys-shape-corner-medium)'],
     ])('gives %s its M3 geometry', (selector, declaration) => {
         const rule = components.split('}').find(block => block.includes(selector) && block.includes(declaration));
-        // The M3 rules have to stay scoped: a legacy project must not pick up any of this.
+        // A legacy project must not pick up any of this.
         expect(rule).toMatch(/\.materialdesign-widget\.mdw-style-material3/);
     });
 
-    // The dialog surface is inline-styled, so its corner and headline can only be seen on the markup.
+    // Inline-styled, so only the markup can show it.
     it('gives the dialog surface the 28px corner and the headline role', () => {
         const widget = new MaterialDesignDialogView(fixture<ConstructorParameters<typeof MaterialDesignDialogView>[0]>(props));
         const open = (rxData: Record<string, unknown>): string => {
@@ -359,10 +329,8 @@ describe('material 3 type scale', () => {
         const m3 = open({ designStyle: 'material3' });
         expect(m3).toContain('border-radius:var(--md-sys-shape-corner-extra-large)');
         expect(m3).toContain('mdw-md3-dialog-headline');
-        // No inline size/weight/uppercase left to beat the stylesheet — that was the whole point.
         expect(m3).not.toContain('text-transform:uppercase');
         expect(m3).not.toContain('font-size:16px');
-        // A saved size still wins, and legacy is untouched.
         expect(open({ designStyle: 'material3', titleFontSize: 21 })).toContain('font-size:21px');
         expect(open({})).toContain('text-transform:uppercase');
         expect(open({})).toContain('border-radius:4px');

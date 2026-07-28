@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 
 import { formatBoolean, formatNumber, formattedValue, replaceValue, type ValueData } from './MaterialDesignValue';
 
-// BaseRxData carries required fields; test fixtures only set the value-specific keys.
 const data = (overrides: Partial<ValueData>): ValueData => overrides as unknown as ValueData;
 
 describe('MaterialDesignValue formatting', () => {

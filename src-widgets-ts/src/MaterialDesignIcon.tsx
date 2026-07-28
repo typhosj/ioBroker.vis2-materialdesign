@@ -46,8 +46,6 @@ export default class MaterialDesignIcon extends VisWidget {
     renderWidgetBody(props: RenderProps): React.JSX.Element {
         super.renderWidgetBody(props);
         const data = this.state.rxData as IconData;
-        // Material 3 (Phase 4, ../../MATERIAL3_PLAN.md): default icon color from the primary token;
-        // an explicit saved color still wins per the token-precedence rule (m3ColorExplicit).
         const isM3 = designStyle(data as unknown as Record<string, unknown>) === 'material3';
         const iconColor = isM3 && !m3ColorExplicit(data.mdwIconColor) ? 'var(--md-sys-color-primary)' : data.mdwIconColor || '#44739e';
         const icon = renderIcon(data.mdwIcon || 'material-design', iconColor, Number(data.mdwIconSize) || 50);

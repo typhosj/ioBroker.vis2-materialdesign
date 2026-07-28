@@ -48,21 +48,15 @@ const b = (v: unknown, d = false) =>
   v === undefined || v === null || v === ""
     ? d
     : v === true || v === "true" || v === 1 || v === "1";
-// vis-2 stores the first row (index 0) of an indexed group under the plain
-// base name (e.g. `yAxisTitle`), higher rows as `${name}${i}`. Prefer the
-// suffixed key, fall back to the plain name for index 0 so editor edits to
-// the first data set actually take effect.
+// vis-2 stores row 0 of an indexed group under the plain base name, higher rows as `${name}${i}`.
 export const item = (d: Data, key: string, i: number): unknown => { const v = d[`${key}${i}`]; return v !== undefined ? v : (i === 0 ? d[key] : undefined); };
 export function seriesColor(d: Data, i: number, colors: string[], globalColor: unknown): string {
   return s(item(d, "dataColor", i), colors[i] || s(globalColor, "#44739e"));
 }
-// unset commonYAxis -> id 0, so series share one y-axis instead of each series getting its own axis by index.
 export function rowAxisId(d: Data, i: number): string {
   return `yAxis_id_${n(item(d, "commonYAxis", i), 0)}`;
 }
-// one axis config per distinct id (dedupe; else duplicate axis ids). Relies on rowIdx being the identity
-// sequence [0..n-1] (built by Array.from({length}, (_v, i) => i)): rowIdx[i] === i lets the findIndex
-// result be compared directly against the row index i.
+// Relies on rowIdx being the identity sequence [0..n-1], so findIndex can be compared against i.
 export function distinctAxisRows(rowIdx: number[], d: Data): number[] {
   return rowIdx.filter(i => rowIdx.findIndex(j => rowAxisId(d, j) === rowAxisId(d, i)) === i);
 }
@@ -400,9 +394,8 @@ export default class MaterialDesignChartLineHistory extends VisWidget {
         : [];
     const isM3 = designStyle(d) === "material3";
     const m3 = m3ChartColors(this.isDarkTheme());
-    // axes come from the configured data rows (dataCount+1), NOT the loaded
-    // series -- otherwise an empty history range yields no axis config and
-    // chart.js falls back to a default axis that ignores show/position/etc.
+    // Axes come from the configured data rows, not the loaded series — an empty history range would
+    // otherwise leave chart.js on a default axis that ignores show/position.
     const on = (v: unknown): number | undefined => (v === undefined || v === null || v === "" || !Number.isFinite(Number(v)) ? undefined : Number(v));
     const rowIdx = Array.from({ length: boundedCount(d.dataCount, 1, MAX_DYNAMIC_ITEMS - 1) + 1 }, (_v, i) => i);
     const yAxisIdOf = (i: number) => rowAxisId(d, i);
@@ -418,14 +411,11 @@ export default class MaterialDesignChartLineHistory extends VisWidget {
         gridColor: s(item(d, "yAxisGridLinesColor", i), isM3 ? m3.grid : ""),
         min: on(item(d, "yAxisMinValue", i)), max: on(item(d, "yAxisMaxValue", i)), stepSize: on(item(d, "yAxisStep", i)),
       })]);
-    // v4 dropped the built-in moment time scale (and we stay moment-free by design): use a linear x-axis
-    // over the raw timestamps and pre-format each tick with the native formatMoment(). The persisted
-    // xAxisTimeFormats moment tokens keep working; trade-off vs the old time scale is that automatic
-    // unit-based tick spacing is gone (../PORTING.md).
+    // v4 dropped the built-in moment time scale: linear x-axis over raw timestamps, ticks pre-formatted
+    // by formatMoment. Automatic unit-based tick spacing is gone (../PORTING.md).
     const timeFmt = s(d.xAxisTimeFormats);
     const locale = visLocale();
-    // Guard against non-finite tick/tooltip values: new Date(NaN) is an Invalid Date, and formatMoment's
-    // month/weekday tokens call Intl.DateTimeFormat().format(invalidDate) which throws RangeError.
+    // new Date(NaN) is an Invalid Date, and formatMoment's month/weekday tokens throw RangeError on it.
     const fmtTime = (value: unknown, token: string): string => {
       const ms = Number(value);
       return Number.isFinite(ms) ? formatMoment(new Date(ms), token, locale) : "";
@@ -439,9 +429,8 @@ export default class MaterialDesignChartLineHistory extends VisWidget {
       tickCallback: (value) => fmtTime(value, timeFmt || "HH:mm"),
     });
     const scales: Record<string, unknown> = { x: xAxis, ...Object.fromEntries(yEntries) };
-    // Safety net: chart.js v4 hard-crashes (vScale undefined -> getBasePixel) if a dataset references a
-    // y-axis id that has no scale. Series indices can diverge from configured rows (sparse oids), so
-    // backfill any referenced id that isn't already present with a default linear y-axis.
+    // chart.js v4 hard-crashes (vScale undefined) if a dataset references a y-axis id with no scale;
+    // series indices can diverge from configured rows (sparse oids).
     this.series.forEach((_series, i) => { const id = yAxisIdOf(i); if (!(id in scales)) scales[id] = { axis: "y", type: "linear", position: "left" }; });
     const chartjs = <MaterialDesignChartCanvas type="line" data={{ datasets: this.series.map((series, i) => { const seriesColorValue = seriesColor(d, i, colors, d.globalColor); const dsColor = isM3 && seriesColorValue === "#44739e" ? m3.primary : seriesColorValue; return { label: s(item(d, "legendText", i), series.oid), data: series.points.filter(point => point.val !== null).map(point => ({ x: point.ts, y: point.val })), borderColor: dsColor, backgroundColor: b(item(d, "useFillColor", i)) ? s(item(d, "fillColor", i), `${dsColor}33`) : "transparent", fill: b(item(d, "useFillColor", i)), borderWidth: n(item(d, "lineThikness", i), 2), stepped: b(item(d, "steppedLine", i)), tension: 0, pointBackgroundColor: s(item(d, "pointColor", i)), pointRadius: n(d.pointSize, 3), yAxisID: yAxisIdOf(i) }; }) }} options={{ responsive: true, maintainAspectRatio: false, animation: { duration: n(d.animationDuration, 1000) }, scales, plugins: { legend: { display: false }, datalabels: { display: false }, tooltip: { enabled: b(d.showTooltip, true), callbacks: { title: (items: { parsed?: { x?: number } }[]) => fmtTime(items[0]?.parsed?.x, timeFmt || "lll") } } } }} />;
     const legend = b(d.showLegend, true) ? (
@@ -475,11 +464,9 @@ export default class MaterialDesignChartLineHistory extends VisWidget {
         {chartjs}
       </div>
     ) : chartjs;
-    // shrink chart so the legend stays inside the widget frame.
     const chartBox = (
       <div style={{ flex: 1, minWidth: 0, minHeight: 0, position: "relative" }}>{chartMain}</div>
     );
-    // top/left -> legend before chart; bottom/right -> after.
     const legendFirst = ["top", "left"].includes(s(d.legendPosition, "right"));
     const body = legendFirst ? (
       <>{legend}{chartBox}</>

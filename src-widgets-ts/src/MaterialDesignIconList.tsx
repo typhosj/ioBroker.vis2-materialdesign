@@ -167,9 +167,7 @@ const css = `
 .materialdesign-icon-list .materialdesign-button{font-family:var(--materialdesign-font-button);font-size:var(--materialdesign-font-size-button);font-weight:500;text-decoration:none;padding:0 8px;align-items:center;justify-content:center;box-sizing:border-box;height:36px;border:0;outline:0;line-height:inherit;user-select:none;overflow:hidden;vertical-align:middle;border-radius:4px}.materialdesign-icon-list .materialdesign-icon-button{border-radius:100%;width:48px;height:48px;font-size:24px;display:inline-block;box-sizing:border-box;border:0;outline:0;background-color:transparent;fill:currentColor;color:inherit;text-decoration:none;cursor:pointer;user-select:none}.materialdesign-icon-list .materialdesign-button,.materialdesign-icon-list .materialdesign-icon-button{-webkit-tap-highlight-color:transparent}.materialdesign-icon-list .materialdesign-iconList-button:active{box-shadow:inset 0 0 0 999px color-mix(in srgb,var(--materialdesign-color-icon-button-hover) 12%,transparent)}.materialdesign-icon-list .materialdesign-iconList-button:focus-visible{outline:2px solid #44739e;outline-offset:2px}
 `;
 
-// Material 3 (Phase 4, ../../MATERIAL3_PLAN.md): scoped overrides for the static surface colors the
-// css block above hardcodes (#fff item/card backgrounds, #000 card text, #e0e0e0 outline). The
-// color-driven CSS vars are switched to tokens in renderWidgetBody; behavior/geometry unchanged.
+// Scoped overrides for the static surface colors the css block above hardcodes.
 const m3Css = `
 .materialdesign-icon-list.mdw-style-material3 .materialdesign-icon-list-item-standard{background:transparent}
 .materialdesign-icon-list.mdw-style-material3 .materialdesign-icon-list-item-card,.materialdesign-icon-list.mdw-style-material3 .materialdesign-icon-list-item-card-layout-full{background:var(--md-sys-color-surface-container-low);color:var(--md-sys-color-on-surface)}
@@ -235,7 +233,6 @@ export default class MaterialDesignIconList extends VisWidget {
     private readonly relockTimers = new Map<number, number>();
 
     private isM3(data: Data): boolean { return designStyle(data) === 'material3'; }
-    // Legacy blue icon default -> primary token in M3; an explicit saved color still wins.
     private m3IconColor(data: Data, color: string): string { return this.isM3(data) && color === '#44739e' ? 'var(--md-sys-color-primary)' : color; }
 
     static getWidgetInfo(): RxWidgetInfo {
@@ -303,16 +300,13 @@ export default class MaterialDesignIconList extends VisWidget {
         const height = n(data.iconHeight, 24);
         const image = active ? item.imageActive : item.image;
         const savedBackground = active ? item.buttonBackgroundActiveColor : item.buttonBackgroundColor;
-        // On a token-filled active button the surface IS primary, so the legacy-blue icon default has
-        // to become on-primary there rather than primary — otherwise icon and circle are one color.
+        // On a token-filled active button the surface IS primary, so the icon default has to become
+        // on-primary there, or icon and circle are one color.
         const color = this.isM3(data) && active && !savedBackground && (active ? item.imageActiveColor : item.imageColor) === '#44739e'
             ? 'var(--md-sys-color-on-primary)'
             : this.m3IconColor(data, active ? item.imageActiveColor : item.imageColor);
-        // Clearing a color so M3 can fill it in is the documented workflow (README "Material 3"), but
-        // the icon-button background had no token fallback: it went transparent while the icon kept
-        // its saved color — and the common setup is a white icon on a colored circle, i.e. a white
-        // icon on the (white) view. The button surface now falls back to tokens like every other
-        // color here; an explicitly saved background still wins.
+        // The icon-button background had no token fallback: it went transparent while the icon kept its
+        // saved color — typically a white icon on the now-white view.
         const buttonBackground = savedBackground || (this.isM3(data) ? (active ? 'var(--md-sys-color-primary)' : 'var(--md-sys-color-surface-container-high)') : undefined);
         const action = this.actionProps(item, index, current, data);
         const filter = locked && b(data.lockApplyOnlyOnImage, true) ? `grayscale(${n(data.lockFilterGrayscale, 30)}%)` : undefined;

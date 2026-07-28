@@ -87,8 +87,7 @@ function attrs(kind: ControlKind): RxWidgetInfo['visAttrs'] {
     const colorFields =
         kind === 'switch'
             ? [
-                  // M3 "switch with icons" — hidden in legacy, like the button variants, because the
-                  // legacy MDC switch has no handle icon to show.
+                  // Hidden in legacy: the legacy MDC switch has no handle icon to show.
                   { name: 'md3SwitchIcon', label: 'md3SwitchIcon', type: 'checkbox', hidden: (data: Record<string, unknown>) => designStyle(data) !== 'material3' },
                   { name: 'colorSwitchThumb', label: 'colorSwitchThumb', type: 'color' },
                   { name: 'colorSwitchTrack', label: 'colorSwitchTrack', type: 'color' },
@@ -215,17 +214,11 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
             super.renderWidgetBody(props);
             const data = this.state.rxData as ToggleControlData;
             const on = isOn(stateValue(this.state, data.oid || ''), data);
-            // Material 3 presentation (Phase 2, ../../MATERIAL3_PLAN.md). Toggle behavior and on-state
-            // are unchanged; only shape and colors differ in M3. The checkbox keeps its geometry
-            // (already M3-shaped) and re-sources colors from semantic tokens; the switch uses a full
-            // M3 track/handle geometry (see its branch below). An explicit saved color still wins
-            // (token-precedence rule); the shared .mdw-state-layer supplies hover/focus/pressed.
             const isM3 = designStyle(data as Record<string, unknown>) === 'material3';
             const m3 = (explicitValue: unknown, token: string): string => (m3ColorExplicit(explicitValue) ? String(explicitValue) : token);
             const locked = !!data.lockEnabled && !this.unlocked;
             const label = on ? data.labelTrue || data.labelFalse || '' : data.labelFalse || '';
             const labelPosition = data.labelPosition || 'right';
-            // The switch keeps a small gap between control and label like VIS1 (margin 0 10px).
             const switchMargin = labelPosition === 'off' ? 0 : 10;
             const labelElement =
                 labelPosition === 'off' ? null : (
@@ -235,9 +228,7 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
                             color: isM3 ? m3(on ? data.labelColorTrue : data.labelColorFalse, 'var(--md-sys-color-on-surface)') : color(on ? data.labelColorTrue : data.labelColorFalse, '#44739e'),
                             cursor: data.labelClickActive === false ? 'default' : 'pointer',
                             display: 'inline-flex',
-                            // Grow to fill: VIS1 spreads label and control apart in a wide widget (label at the far
-                            // edge, control at the other). `1 1 auto` replicates that spread; a content-sized label
-                            // would hug the control and MISMATCH old. Both old and new hug at content width anyway.
+                            // VIS1 spreads label and control apart in a wide widget; `1 1 auto` replicates that.
                             flex: '1 1 auto',
                             fontFamily: data.valueFontFamily || undefined,
                             fontSize: data.valueFontSize ? sizeCss(data.valueFontSize, 16) : undefined,
@@ -265,8 +256,7 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
             const control =
                 def.kind === 'switch' ? (
                     isM3 ? (
-                        // Same toggle behavior and on-state as legacy; only shape/tokens differ. The
-                        // geometry itself lives in m3Switch() because List renders the same control.
+                        // The geometry lives in m3Switch() because List renders the same control.
                         m3Switch({
                             disabled: !!data.readOnly,
                             filter: controlFilter,
@@ -283,9 +273,8 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
                             ),
                             margin: switchMargin,
                             on,
-                            // The handle follows colorSwitchThumb in BOTH states — feeding it
-                            // colorSwitchTrue (the track's on-color) painted handle and track the same
-                            // color, so a switched-on control was a single filled oval.
+                            // The handle follows colorSwitchThumb in BOTH states — feeding it the track's on-color painted
+                            // handle and track alike, so a switched-on control was a single filled oval.
                             thumbOff: m3ColorExplicit(data.colorSwitchThumb) ? String(data.colorSwitchThumb) : undefined,
                             thumbOn: m3ColorExplicit(data.colorSwitchThumb) ? String(data.colorSwitchThumb) : undefined,
                             trackOff: m3ColorExplicit(data.colorSwitchTrack) ? String(data.colorSwitchTrack) : undefined,
@@ -332,8 +321,8 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
                                     left: on ? 12 : -8,
                                     position: 'absolute',
                                     top: -4,
-                                    // Neutralize the ambient VIS1 `.mdc-switch--checked` translateX(20px); we drive the
-                                    // thumb travel via `left` so it works with or without the legacy stylesheet loaded.
+                                    // Neutralizes the ambient VIS1 `.mdc-switch--checked` translateX(20px); thumb travel is driven via
+                                    // `left` so it works without the legacy stylesheet.
                                     transform: 'none',
                                     transition: 'left 120ms ease',
                                     width: 28,
@@ -376,9 +365,7 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
                             filter: controlFilter,
                             flex: '0 0 auto',
                             height: 40,
-                            // M3 renders a disabled control at 38% content opacity — the switch already
-                            // does (m3Switch `disabled`), the checkbox looked fully enabled. Legacy keeps
-                            // its own look, where read-only was never dimmed either.
+                            // M3 renders a disabled control at 38% content opacity; legacy never dimmed read-only.
                             opacity: isM3 && data.readOnly ? .38 : undefined,
                             padding: 0,
                             position: 'relative',
@@ -441,11 +428,9 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
                 <div
                     className={`materialdesign-widget mdc-form-field materialdesign-${def.kind}${labelPosition === 'left' ? ' mdc-form-field--align-end' : ''}${isM3 ? ` ${designStyleClasses(data as Record<string, unknown>, this.isDarkTheme())}` : ''}`}
                     ref={element => {
-                        // VIS2 wraps every widget in an overflow-hidden element; labels and MDC ripples may extend
-                        // beyond it. Only lift the clipping — do NOT touch the wrapper width. Writing
-                        // `max(clientWidth, scrollWidth)` back on every render is a ratchet: the unbounded MDC ripple
-                        // always makes scrollWidth exceed clientWidth, so the widget grew wider on each re-render
-                        // (visible in the editor as the control widening with every selection). Old sets no width.
+                        // VIS2 wraps every widget in an overflow-hidden element. Only lift the clipping — writing
+                        // `max(clientWidth, scrollWidth)` back is a ratchet, because the unbounded MDC ripple always makes
+                        // scrollWidth exceed clientWidth and the widget grows on every re-render.
                         if (element?.parentElement) {
                             const wrapper = element.parentElement;
                             window.requestAnimationFrame(() => {

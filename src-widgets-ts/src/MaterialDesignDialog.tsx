@@ -308,10 +308,8 @@ export class MaterialDesignDialog extends VisWidget {
     this.polling = false;
     super.componentWillUnmount?.();
   }
-  // VIS2 views use absolutely-positioned widgets, so the embedded view has no
-  // intrinsic height, and its content loads asynchronously. Poll the container's
-  // scrollHeight after opening and size the container to it, so the card fits the
-  // content like the old Vuetify dialog.
+  // VIS2 views position widgets absolutely, so the embedded view has no intrinsic height and loads
+  // asynchronously; poll scrollHeight and size the container to it.
   private startMeasure(): void {
     if (this.kind !== "view") return;
     if (!this.viewRef.current) {
@@ -343,11 +341,8 @@ export class MaterialDesignDialog extends VisWidget {
     };
     tick();
   }
-  // Modal focus behavior (Phase 8 audit — the widget dialog is a plain overlay div, not the native
-  // <dialog> the editor confirmation uses, so none of this comes for free): moving focus into the
-  // card when it opens, restoring it to whatever opened it on close, and the Tab wrap in
-  // `trapFocus()` below. Focus inside an embedded iframe stays the browser's business — the trap
-  // can only see this document.
+  // The widget dialog is a plain overlay div, not the native <dialog>, so focus move, restore and
+  // the Tab wrap are ours. Focus inside an embedded iframe stays the browser's business.
   private focusable(root: HTMLElement): HTMLElement[] {
     return Array.from(
       root.querySelectorAll<HTMLElement>(
@@ -405,12 +400,7 @@ export class MaterialDesignDialog extends VisWidget {
   renderWidgetBody(props: RenderProps): React.JSX.Element {
     super.renderWidgetBody(props);
     const d = this.state.rxData as unknown as Data;
-    // Material 3 (Phase 5, ../../MATERIAL3_PLAN.md): dialog surface/scrim/trigger colors from semantic
-    // tokens when unset (container = surface-container-high, scrim, primary trigger/close); an explicit
-    // saved color still wins. Modality, measure/poll lifecycle, fullscreen and behavior unchanged.
     const isM3 = designStyle(d) === "material3";
-    // Trigger button shape from the saved `buttonStyle`. The two flat legacy styles map onto their M3
-    // namesakes; raised/unelevated are the filled container in both.
     const triggerStyle = s(d.buttonStyle, "raised");
     const triggerIsIcon = triggerStyle === "icon";
     const triggerOutlined = triggerStyle === "outlined";
@@ -438,7 +428,6 @@ export class MaterialDesignDialog extends VisWidget {
       window.innerWidth <= n(d.fullscreenResolutionLower, 0);
     const view = s(d.contains_view);
     const title = s(d.title, view);
-    // Old default: full-width dialog sized to its content (capped at 90vh/90vw).
     const bodyW = fullscreen ? "100%" : s(d.dialogMaxWidth, "96vw");
     const content =
       this.kind === "iframe" ? (
@@ -494,10 +483,8 @@ export class MaterialDesignDialog extends VisWidget {
             className={`materialdesign-${triggerIsIcon ? "icon-" : ""}button${isM3 ? (triggerIsIcon ? " mdw-md3-icon-button mdw-state-layer" : ` mdw-md3-button mdw-md3-button--${triggerM3Variant} mdw-state-layer`) : ""}`}
             onClick={show}
             style={{
-              // `buttonStyle` selected the icon shape and was otherwise ignored: text, raised,
-              // unelevated and outlined all rendered the same filled button. Flat styles now drop the
-              // container (that is what makes them flat) and outlined gets its ring; in M3 the shared
-              // button classes above supply the colors, so they are only set here when saved.
+              // `buttonStyle` selected the icon shape and was otherwise ignored: text, raised, unelevated and
+              // outlined all rendered the same filled button.
               background: triggerFlat ? "transparent" : s(d.mdwButtonPrimaryColor, isM3 ? undefined : "#44739e"),
               border: triggerOutlined ? `1px solid ${s(d.mdwButtonSecondaryColor, isM3 ? "var(--md-sys-color-outline)" : "#44739e")}` : 0,
               borderRadius: isM3 ? undefined : 4,
@@ -553,7 +540,6 @@ export class MaterialDesignDialog extends VisWidget {
               tabIndex={-1}
               style={{
                 background: s(d.backgroundColor, isM3 ? "var(--md-sys-color-surface-container-high)" : "#fff"),
-                // 28 is the corner the spec gives the dialog, and only the dialog (Phase 9.2).
                 borderRadius: isM3 ? "var(--md-sys-shape-corner-extra-large)" : 4,
                 boxShadow:
                   "0 11px 15px -7px rgba(0,0,0,.2),0 24px 38px 3px rgba(0,0,0,.14),0 9px 46px 8px rgba(0,0,0,.12)",
@@ -568,9 +554,8 @@ export class MaterialDesignDialog extends VisWidget {
             >
               {b(d.showTitle, true) ? (
                 <header
-                  // M3 headline-small for the title (Phase 9.2): the size/weight below are left
-                  // unset so material3-components.css can supply the whole role — but only while
-                  // the user set no size of their own, per compat rule #5.
+                  // Size and weight stay unset so the stylesheet supplies the whole role, but only while the user
+                  // set no size of their own (compat rule #5).
                   className={isM3 ? "mdw-md3-dialog-headline" : undefined}
                   style={{
                     alignItems: "center",
@@ -626,7 +611,6 @@ export class MaterialDesignDialog extends VisWidget {
                     width: b(d.buttonFullWidth) ? "100%" : undefined,
                   }}
                   // A button can carry EITHER dangerouslySetInnerHTML OR children, never both (React #60).
-                  // Fullscreen shows the close icon (child); windowed shows the buttonText HTML.
                   {...(fullscreen
                     ? {}
                     : { dangerouslySetInnerHTML: { __html: sanitizeHtml(s(d.buttonText, "close")) } })}

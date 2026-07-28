@@ -60,10 +60,8 @@ describe('widget utilities', () => {
     });
 
     it('VisWidget self-subscribes to the dark-theme oid instead of relying on VIS2 discovery', () => {
-        // Regression test for the bug documented in ../../BUGS.md: VIS2 only ever subscribes to
-        // ids actually present in a widget's saved data, never to an unset visAttrs `default`, so
-        // a widget whose `theme` group was never touched in the editor (no visible fields besides
-        // `useTheme`, e.g. Calendar) would never receive the shared dark-theme state at all.
+        // VIS2 only subscribes to ids present in a widget's saved data, never to an unset visAttrs
+        // `default`, so a widget whose `theme` group was never touched received no dark-theme state.
         type Handler = (id: string, state: { val: unknown } | null) => void;
         const handlers: Record<string, Handler> = {};
         const subscribeState = vi.fn((id: string, cb: Handler) => { handlers[id] = cb; return Promise.resolve(); });
@@ -83,7 +81,6 @@ describe('widget utilities', () => {
         expect(widget.isDarkTheme()).toBe(true);
         expect(forceUpdateCalls).toBe(1);
 
-        // no re-render for a state change that doesn't flip the boolean
         handlers[DEFAULT_DARK_THEME_OID](DEFAULT_DARK_THEME_OID, { val: true });
         expect(forceUpdateCalls).toBe(1);
 
@@ -102,15 +99,11 @@ describe('widget utilities', () => {
 
     it('every widget receives the same designStyle field via createInfo(), strictly defaulting to legacy', () => {
         const info = createInfo('test-widget', 'Calendar', []);
-        // designStyle and useTheme lead the widget's `common` group, whether the widget brings one
-        // of its own or not — an existing group keeps its own fields after them.
         const commonGroup = info.visAttrs?.find(group => group.name === 'common');
         const field = commonGroup?.fields.find(candidate => candidate.name === 'designStyle') as { options?: Array<{ value: string }>; default?: string } | undefined;
         expect(field).toBeDefined();
         expect(commonGroup?.fields[0]?.name).toBe('designStyle');
         expect(commonGroup?.fields[1]?.name).toBe('useTheme');
-        // Default is the project default, so a widget the user never touched follows the adapter
-        // setting — which itself starts at legacy, keeping compat rule #4 intact.
         expect(field?.options?.map(option => option.value)).toEqual(['default', 'legacy', 'material3']);
         expect(field?.default).toBe('default');
 
@@ -120,7 +113,7 @@ describe('widget utilities', () => {
         expect(merged[merged.length - 1]?.name).toBe('oid');
         expect(withOwnCommon.visAttrs?.filter(group => group.name === 'common')).toHaveLength(1);
 
-        // Compat rule #4: missing/unknown value always means legacy, never an implicit opt-in.
+        // Compat rule #4: missing/unknown value always means legacy.
         expect(designStyle(undefined)).toBe('legacy');
         expect(designStyle({})).toBe('legacy');
         expect(designStyle({ designStyle: 'material3' })).toBe('material3');
@@ -130,14 +123,11 @@ describe('widget utilities', () => {
     it('falls back to the project default style, which a widget\'s own choice always overrides', () => {
         try {
             setProjectDesignStyle('material3');
-            // No own style (and the "project default" option) follow the project setting ...
             expect(designStyle(undefined)).toBe('material3');
             expect(designStyle({ designStyle: 'default' })).toBe('material3');
-            // ... an explicit per-widget style never does.
             expect(designStyle({ designStyle: 'legacy' })).toBe('legacy');
 
-            // Anything but 'material3' (unset state, empty string, garbage) stays legacy — an
-            // untouched project must never flip to M3 on its own.
+            // Anything but 'material3' stays legacy — an untouched project must never flip on its own.
             setProjectDesignStyle(undefined);
             expect(designStyle(undefined)).toBe('legacy');
             setProjectDesignStyle('');
@@ -151,7 +141,6 @@ describe('widget utilities', () => {
         expect(designStyleClasses(undefined, false)).toBe('mdw-style-legacy');
         expect(designStyleClasses({ designStyle: 'material3' }, false)).toBe('mdw-style-material3');
         expect(designStyleClasses({ designStyle: 'material3' }, true)).toBe('mdw-style-material3 mdw-dark');
-        // Dark flag is irrelevant in legacy mode - never leaks an M3 class.
         expect(designStyleClasses({ designStyle: 'legacy' }, true)).toBe('mdw-style-legacy');
     });
 
@@ -161,7 +150,6 @@ describe('widget utilities', () => {
     });
 
     it('rejects anything that is not a {light,dark} map of role→hex', () => {
-        // The state is writable, and a role name goes straight into a CSS custom property name.
         expect(parseM3Scheme(undefined)).toBeUndefined();
         expect(parseM3Scheme('')).toBeUndefined();
         expect(parseM3Scheme('not json')).toBeUndefined();
@@ -172,8 +160,7 @@ describe('widget utilities', () => {
     });
 
     it('applies the derived scheme as the --mdw-seed-* layer, falling back to the token default when unset', () => {
-        // The `--md-sys-*` tokens themselves are declared ON the widget root by material3-tokens.css
-        // and would beat anything set on `html`, so the override layer has its own variable names.
+        // The `--md-sys-*` tokens are declared ON the widget root and would beat anything set on `html`.
         applyM3SeedVariables({
             [`${M3_SCHEME_OID}.val`]: JSON.stringify({ light: { primary: '#123456', 'on-primary': '#ffffff' }, dark: { primary: '#ffe082', 'on-primary': '#1d1b20' } }),
             [`${M3_FONT_OID}.val`]: 'Jura-Regular',
@@ -183,11 +170,9 @@ describe('widget utilities', () => {
         expect(document.documentElement.style.getPropertyValue('--mdw-seed-primary-dark')).toBe('#ffe082');
         expect(document.documentElement.style.getPropertyValue('--mdw-seed-on-primary-dark')).toBe('#1d1b20');
         expect(document.documentElement.style.getPropertyValue('--mdw-seed-font')).toBe('Jura-Regular');
-        // Roles the scheme does not carry stay unset rather than half-applied.
         expect(document.documentElement.style.getPropertyValue('--mdw-seed-outline')).toBe('');
 
-        // Unset (or explicitly cleared): every property is removed so the material3-tokens.css
-        // baseline shows through the var() fallback again, instead of pinning a stale scheme.
+        // Cleared: every property is removed so the tokens-file baseline shows through the var() fallback.
         applyM3SeedVariables({ [`${M3_SCHEME_OID}.val`]: '' });
         M3_TOKEN_ROLES.forEach(role => {
             expect(document.documentElement.style.getPropertyValue(`--mdw-seed-${role}`)).toBe('');
@@ -264,17 +249,13 @@ describe('widget utilities', () => {
     });
 
     it('sanitizes HTML sinks: strips handlers/scripts, keeps formatting', () => {
-        // formatting HTML and data:image survive untouched
         expect(sanitizeHtml('<b style="color:red">hi</b>')).toBe('<b style="color:red">hi</b>');
         expect(sanitizeHtml('<img src="data:image/png;base64,AAAA">')).toContain('data:image/png');
-        // active content and handlers are removed
         expect(sanitizeHtml('<img src="x" onerror="alert(1)">')).toBe('<img src="x">');
         expect(sanitizeHtml('<div onclick="steal()">x</div>')).toBe('<div>x</div>');
         expect(sanitizeHtml('<script>alert(1)</script>ok')).toBe('ok');
         expect(sanitizeHtml('<a href="javascript:alert(1)">x</a>')).toBe('<a>x</a>');
-        // obfuscated javascript: URL (tabs/newlines between chars) is still caught
         expect(sanitizeHtml('<a href="java\tscript:alert(1)">x</a>')).toBe('<a>x</a>');
-        // empty / non-string inputs are safe
         expect(sanitizeHtml(undefined)).toBe('');
         expect(sanitizeHtml(42)).toBe('42');
     });
@@ -318,14 +299,11 @@ describe('widget utilities', () => {
         expect(sliderKeyValue('PageDown', 50, 0, 100, 1)).toBe(40);
         expect(sliderKeyValue('Home', 50, 10, 100, 5)).toBe(10);
         expect(sliderKeyValue('End', 50, 10, 90, 5)).toBe(90);
-        // clamped at the ends, and a no-op there reports "not handled" so the key stays free
         expect(sliderKeyValue('ArrowRight', 100, 0, 100, 5)).toBeNull();
         expect(sliderKeyValue('ArrowLeft', 0, 0, 100, 5)).toBeNull();
         expect(sliderKeyValue('Enter', 50, 0, 100, 5)).toBeNull();
-        // off-grid state values snap onto the grid, fractional steps stay free of float noise
         expect(sliderKeyValue('ArrowRight', 52, 0, 100, 5)).toBe(55);
         expect(sliderKeyValue('ArrowRight', 0.3, 0, 1, 0.1)).toBe(0.4);
-        // min offsets the grid, an invalid step falls back to 1
         expect(sliderKeyValue('ArrowRight', 12, 2, 100, 5)).toBe(12 + 5);
         expect(sliderKeyValue('ArrowRight', 50, 0, 100, 0)).toBe(51);
     });

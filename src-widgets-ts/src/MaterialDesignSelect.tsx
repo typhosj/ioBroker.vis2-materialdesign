@@ -406,7 +406,6 @@ export default class MaterialDesignSelect extends VisWidget {
         super.componentWillUnmount?.();
     }
     private readonly rootRef = React.createRef<HTMLDivElement>();
-    // Autocomplete subclass sets this true to render a typeable filter input.
     protected isAutocomplete = false;
     private filterText: string | undefined;
 
@@ -491,22 +490,17 @@ export default class MaterialDesignSelect extends VisWidget {
         const filter = this.isAutocomplete ? this.filterText : undefined;
         const visibleList = filter ? list.filter(item => item.text.toLowerCase().includes(filter.toLowerCase())) : list;
         const active = this.open || (current !== undefined && current !== null && current !== '');
-        // Material 3 (Phase 3, ../../MATERIAL3_PLAN.md): recolor the select/autocomplete chrome and
-        // dropdown from semantic tokens (outline/primary border, on-surface text, on-surface-variant
-        // label, filled container, surface-container menu, secondary-container selected item) while
-        // keeping geometry and all behavior. An explicit saved color still wins per the token-precedence
-        // rule; m3c() emits the token only when the saved value is unset. The legacy `#000000` text
-        // default counts as unset so the M3 token applies (dark mode needs this).
+        // m3c() emits the token only when the saved value is unset; the legacy `#000000` text default
+        // counts as unset so the M3 token applies, which dark mode needs.
         const isM3 = designStyle(data) === 'material3';
         const m3c = (saved: unknown, token: string, legacyFallback: string): string =>
             isM3 && !m3ColorExplicit(saved) ? token : color(saved, legacyFallback);
-        // M3 menu item is 48 (Phase 9.2), the legacy default 40 — the saved option still wins, and the
-        // open-upwards calculation below has to measure the same height it renders.
+        // The saved option still wins, and the open-upwards calculation has to measure the height it renders.
         const itemHeight = num(data.listItemHeight, 0) || (isM3 ? 48 : 40);
         const border = this.open
             ? m3c(data.inputLayoutBorderColorSelected, 'var(--md-sys-color-primary)', '#44739e')
             : m3c(data.inputLayoutBorderColor, 'var(--md-sys-color-outline)', 'rgba(0, 0, 0, 0.54)');
-        // Outlined box uses a lighter resting border to match the old widget (0.2), not the darker underline default (0.54).
+        // Lighter resting border than the underline default, matching the old widget.
         const outlinedBorder = this.open
             ? m3c(data.inputLayoutBorderColorSelected, 'var(--md-sys-color-primary)', '#44739e')
             : m3c(data.inputLayoutBorderColor, 'var(--md-sys-color-outline)', 'rgba(0, 0, 0, 0.24)');
@@ -559,7 +553,7 @@ export default class MaterialDesignSelect extends VisWidget {
             const spaceBelow = window.innerHeight - rect.bottom;
             openUp = spaceBelow < menuH && rect.top > spaceBelow;
         }
-        // Autocomplete uses a plain div field so its editable filter input stays typeable (an input nested in a <button> is not).
+        // A plain div, because an <input> nested in a <button> is not typeable.
         const FieldTag = this.isAutocomplete ? 'div' : 'button';
         return (
             <div
@@ -814,8 +808,6 @@ export default class MaterialDesignSelect extends VisWidget {
                             className="v-menu__content v-select-list"
                             style={{
                                 background: m3c(data.listItemBackgroundColor, 'var(--md-sys-color-surface-container)', '#FFFFFF'),
-                                // M3 menu surface (Phase 9.2): extra-small corner and elevation
-                                // level 2. Legacy keeps its square panel and hand-rolled shadow.
                                 borderRadius: isM3 ? 'var(--md-sys-shape-corner-extra-small)' : undefined,
                                 bottom: openUp ? (data.listPositionOffset ? '100%' : 'calc(100% + 4px)') : undefined,
                                 boxShadow: isM3 ? 'var(--md-sys-elevation-level2)' : '0 4px 6px rgba(32, 33, 36, 0.28)',

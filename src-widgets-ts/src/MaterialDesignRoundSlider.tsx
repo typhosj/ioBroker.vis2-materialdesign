@@ -131,8 +131,8 @@ export function working(value: ioBroker.StateValue | undefined): boolean {
 }
 
 export function polar(angle: number, radius: number): { x: number; y: number } {
-    // Angle measured clockwise from 3 o'clock (positive x), matching the old round-slider webcomponent
-    // (`_angle2xy = {x: cos, y: sin}`) so startAngle/arcLength orient identically (default 135/270 → gap at bottom).
+    // Angle measured clockwise from 3 o'clock, matching the old round-slider webcomponent, so
+    // startAngle/arcLength orient identically.
     const rad = (angle * Math.PI) / 180;
     return { x: 50 + radius * Math.cos(rad), y: 50 + radius * Math.sin(rad) };
 }
@@ -184,7 +184,7 @@ export default class MaterialDesignRoundSlider extends VisWidget {
         const y = event.clientY - box.top - box.height / 2;
         const start = num(data.startAngle, 135);
         const arc = Math.max(1, num(data.arcLength, 270));
-        // atan2 is clockwise from 3 o'clock (positive x, y down) — same frame as polar() above.
+        // atan2 is clockwise from 3 o'clock, same frame as polar() above.
         let angle = (Math.atan2(y, x) * 180) / Math.PI;
         if (angle < 0) {
             angle += 360;
@@ -216,8 +216,6 @@ export default class MaterialDesignRoundSlider extends VisWidget {
         const progress = (data.rtl ? 100 - value.percent : value.percent) / 100;
         const progressArc = arc * progress;
         const handle = polar(start + progressArc, radius);
-        // Material 3 (Phase 3): recolor arc/handle from tokens (bar=primary, path=surface-container-high,
-        // handle=primary), geometry and behavior unchanged; explicit saved color still wins.
         const isM3 = designStyle(data as Record<string, unknown>) === 'material3';
         const pathColor = isM3 && !m3ColorExplicit(data.colorAfterThumb) ? 'var(--md-sys-color-surface-container-high)' : cleanColor(data.colorAfterThumb, 'rgba(161, 161, 161, 0.26)');
         const barColor = isM3 && !m3ColorExplicit(data.colorBeforeThumb) ? 'var(--md-sys-color-primary)' : cleanColor(data.colorBeforeThumb, '#44739e');
@@ -234,9 +232,7 @@ export default class MaterialDesignRoundSlider extends VisWidget {
             }
         };
 
-        // Keyboard operation and slider semantics (Phase 8 audit): the arc was pointer-only and had
-        // no role/value at all. Arrows/PageUp/PageDown/Home/End commit through the same optimistic
-        // write path as the pointer; non-slider keys are left alone so Tab still moves focus.
+        // Non-slider keys are left alone so Tab still moves focus.
         const writeFromKey = (event: React.KeyboardEvent<SVGSVGElement>): void => {
             if (disabled) return;
             const next = sliderKeyValue(event.key, value.raw, min, max, range(data).step);

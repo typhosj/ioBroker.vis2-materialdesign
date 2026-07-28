@@ -33,7 +33,7 @@ describe('chartAxis', () => {
             tickLength: 0,
             time: { tooltipFormat: 'lll' },
         })).toEqual({
-            // id is not emitted in v4 (the scales object key carries it); min/max moved to scale level.
+            // v4: the scales object key carries the id, and min/max moved to scale level.
             type: 'linear', position: 'right', display: false, stacked: true, min: 0, max: 100,
             time: { tooltipFormat: 'lll' },
             ticks: {

@@ -1,14 +1,6 @@
 /*
- * Material 3 shared component states (Phase 1, ../../MATERIAL3_PLAN.md).
- *
- * A single reusable "state layer" pattern (hover/focus/pressed/dragged as an overlay behind the
- * content, selected/disabled as direct style changes, per the M3 spec) that Phase 2+ widgets opt
- * into by adding `mdw-state-layer` to an interactive element already positioned (or made
- * `position: relative` here) — no per-widget CSS duplication. Everything is plain CSS
- * (custom-property-driven opacity, `currentColor` overlay): no JS-computed styles, no added
- * runtime cost for widgets that stay on `legacy`, per ../../MATERIAL3_PLAN.md "Performance
- * priorities". Scoped the same way as the tokens file, so it is inert until a widget both opts
- * into `mdw-style-material3` AND adds these classes.
+ * Material 3 shared component rules, scoped like the tokens file: inert until a widget carries
+ * `mdw-style-material3` (../../MATERIAL3_PLAN.md).
  */
 
 .materialdesign-widget.mdw-style-material3 .mdw-state-layer {
@@ -49,9 +41,8 @@
     color: var(--md-sys-color-on-secondary-container);
 }
 
-/* Disabled is a direct style change, not a state layer (an inert element has no hover/press to
-   show) — 38% content opacity is the M3 baseline for disabled controls. Plain `opacity` (not
-   `color-mix()`, unsupported before Chrome 111) keeps this within the project's Chrome 89 target. */
+/* `opacity`, not `color-mix()`: the latter is unsupported before Chrome 111 and this project
+   targets Chrome 89. */
 .materialdesign-widget.mdw-style-material3 .mdw-state-layer:disabled,
 .materialdesign-widget.mdw-style-material3 .mdw-state-layer[aria-disabled='true'] {
     cursor: not-allowed;
@@ -64,11 +55,8 @@
     opacity: 0;
 }
 
-/*
- * M3 switch handle (geometry in m3Switch(), ../src/widgetUtils.tsx): the handle grows to 28 px while
- * pressed. Done as a scale so the inline left/top of the two resting sizes stay authoritative — the
- * factor per state arrives as `--mdw-switch-pressed-scale`.
- */
+/* Scaled rather than repositioned so the inline left/top of the resting sizes stay authoritative;
+   the factor per state arrives as `--mdw-switch-pressed-scale`. */
 .materialdesign-widget.mdw-style-material3 .materialdesign-md3-switch:active .mdw-md3-switch-handle {
     transform: scale(var(--mdw-switch-pressed-scale, 1));
 }
@@ -83,14 +71,6 @@
     }
 }
 
-/*
- * M3 common (non-icon) button variants (Phase 2, ../../MATERIAL3_PLAN.md). Presentation only:
- * shape (full pill), label-large type, and the five container/label color pairings — driven purely
- * by the semantic tokens so an untouched widget is coherent, while an explicit saved widget color
- * still wins because the widget emits it as an inline style (token-precedence rule). The button
- * also carries `mdw-state-layer` for hover/focus/pressed. `currentColor` in the state layer resolves
- * to each variant's label color (e.g. on-primary for filled), which is the M3 spec state-layer color.
- */
 .materialdesign-widget.mdw-style-material3 .mdw-md3-button {
     background: transparent;
     border: 0;
@@ -130,12 +110,6 @@
     color: var(--md-sys-color-primary);
 }
 
-/*
- * M3 icon-button variants (Phase 2). Round (`border-radius:50%` supplied inline by the widget so the
- * legacy hit-area geometry is preserved), four M3 kinds: standard (transparent, on-surface-variant
- * icon), filled (primary), tonal (secondary-container), outlined (outline ring). Same token
- * precedence and shared `.mdw-state-layer` as the common buttons above.
- */
 .materialdesign-widget.mdw-style-material3 .mdw-md3-icon-button {
     background: transparent;
     border: 0;
@@ -158,33 +132,13 @@
     color: var(--md-sys-color-on-surface-variant);
 }
 
-/*
- * M3 type scale, wired to the elements that carry it (Phase 9.2, ../../MATERIAL3_PLAN.md). Until
- * now `label-large` on buttons was the only role with a consumer, so "Material 3" left every other
- * text at whatever size the legacy MDC CSS happened to give it.
- *
- * All of it is CSS on class names the widgets ALREADY emit, which is also what keeps compat rule #5
- * ("M3 geometry applies only where the user has set no explicit size"): the per-item size options
- * are emitted as INLINE styles, and an inline declaration beats any stylesheet rule regardless of
- * specificity. A widget whose text size the user set keeps it, in both styles, with no code here
- * consulting the option at all. The three places where the widget baked a DEFAULT into that inline
- * style (list header, top app bar title, dialog title/button) are the only ones that needed a code
- * change — they now leave the property unset in M3 when the user set nothing, so these rules apply.
- *
- * Each rule is more specific than the widget-local CSS it overrides (`.materialdesign-list .x` etc.
- * is 0-2-0, the two classes on the root here make it 0-3-0), so file order does not matter.
- */
-/* Every rule below targets the element that CARRIES the widget's inline size option, never a child
-   of it — an inline size on the parent would otherwise be overridden by a token on the child, which
-   is exactly the compat-rule-#5 breakage the inline-wins argument above is supposed to prevent.
-   Hence `.mdc-drawer .mdc-list-item` and `.mdc-top-app-bar`, not their `__text`/`__title` spans.
+/* Each rule targets the element that CARRIES the widget's inline size option, never a child of it:
+   an inline size on the parent would otherwise lose to a token on the child. Hence
+   `.mdc-drawer .mdc-list-item` and `.mdc-top-app-bar`, not their `__text`/`__title` spans.
 
-   `:not([class*="mdc-typography--"])` is the second half of that rule, and it is not theoretical:
-   List and Card offer their size options as a SELECT whose named entries (`headline6`, `subtitle2`,
-   `body2`, …) are emitted as a legacy `mdc-typography--*` class instead of an inline size, and a
-   class loses to these rules on specificity. Without the guard, "Material 3" silently overrode a
-   size the user had explicitly picked — found on the live host, not by any test. Numeric entries in
-   the same option still arrive inline, and inline wins on its own. */
+   `:not([class*="mdc-typography--"])` is the other half: the NAMED entries of the List/Card size
+   selects (`headline6`, `subtitle2`, …) are emitted as a legacy class, not inline, and a class loses
+   to these rules on specificity — without the guard M3 overrides a size the user picked. */
 .materialdesign-widget.mdw-style-material3 .mdc-list-item__primary-text:not([class*="mdc-typography--"]),
 .materialdesign-widget.mdw-style-material3 .mdc-drawer .mdc-list-item {
     font-size: var(--md-sys-typescale-body-large-size);
@@ -204,9 +158,6 @@
     line-height: var(--md-sys-typescale-body-medium-line-height);
 }
 
-/* Trailing supporting text: M3 gives it `label-small`, but this column carries live values, not a
-   label, and 11 px is unreadable on a wall panel at two metres. `body-small` is the smallest role
-   the scale offers for actual content. */
 .materialdesign-widget.mdw-style-material3 .materialdesign-list-item-text-right-secondary:not([class*="mdc-typography--"]) {
     font-size: var(--md-sys-typescale-body-small-size);
     font-weight: var(--md-sys-typescale-body-small-weight);
@@ -214,9 +165,6 @@
     line-height: var(--md-sys-typescale-body-small-line-height);
 }
 
-/* The three title carriers take the EMPHASIZED weight of their role (Expressive, static half): same
-   size, line-height and tracking, one step heavier. Emphasis on the headings only — running text
-   stays baseline, because a dashboard read at two metres does not need a bold paragraph. */
 .materialdesign-widget.mdw-style-material3 .mdc-list-group__subheader:not([class*="mdc-typography--"]),
 .materialdesign-widget.mdw-style-material3 .mdc-data-table__header-cell {
     font-size: var(--md-sys-typescale-title-small-size);
@@ -241,9 +189,8 @@
     line-height: var(--md-sys-typescale-headline-small-line-height);
 }
 
-/* The dialog's close/confirm button is inline-styled, not one of the `.mdw-md3-button` variants, so
-   it gets the label-large role directly. `text-transform` is the one thing that has to be UNDONE
-   rather than set: legacy MDC uppercases button labels, M3 is sentence case. */
+/* Inline-styled, not a `.mdw-md3-button` variant. `text-transform` has to be UNDONE: legacy MDC
+   uppercases button labels, M3 is sentence case. */
 .materialdesign-widget.mdw-style-material3 .mdw-md3-dialog-button {
     font-family: var(--md-sys-typescale-label-large-font);
     font-size: var(--md-sys-typescale-label-large-size);
@@ -253,25 +200,14 @@
     text-transform: none;
 }
 
-/*
- * M3 shape and component geometry (Phase 9.2). Same mechanism as the type scale above: rules on the
- * element that carries the widget's own inline option, so a project that set a height or a corner
- * keeps it (compat rule #5), and legacy roots never match.
- *
- * What is deliberately NOT here: the spec's outer dimensions for buttons (40 px) and text fields
- * (56 px). Those widgets ARE the vis-2 widget box — the view positions and sizes them, `height:100%`
- * is all the widget itself says — so a height here would either fight the editor or silently resize
- * every existing project. Only geometry the widget owns internally is M3's to set: list items, table
- * rows, menu items, the dialog surface.
- */
+/* Buttons (40 px) and text fields (56 px) get NO outer size here: those widgets are the vis-2
+   widget box, which the view positions and sizes. Only widget-internal geometry is M3's to set. */
 .materialdesign-widget.mdw-style-material3 .mdc-card {
     border-radius: var(--md-sys-shape-corner-medium);
 }
 
-/* 56 px is the one-line M3 list item; the legacy default was MDC's 48. The variable is what the
-   `listItemHeight` option writes, so a project that set a height still wins — only the fallback
-   moves. `!important` matches the widget-local rule it overrides (which needs it against ambient
-   legacy CSS); at equal importance the extra class here decides. */
+/* The variable is what the `listItemHeight` option writes, so a saved height still wins; only the
+   fallback moves. `!important` matches the widget-local rule it overrides. */
 .materialdesign-widget.mdw-style-material3.materialdesign-list .mdc-list-item {
     min-height: var(--materialdesign-list-item-height, 56px) !important;
 }
@@ -284,13 +220,8 @@
     height: 52px;
 }
 
-/*
- * Forced colors / Windows high contrast (Phase 8 audit). The UA replaces every color here with the
- * user's palette, which breaks the two things M3 leans on: the translucent `currentColor` state
- * layer becomes an opaque sheet over the content, and filled/tonal buttons lose the fill that
- * distinguishes them from a text button. So: drop the overlay, and give every M3 button a real
- * border, which forced-colors keeps.
- */
+/* Forced colors flattens the translucent state layer into an opaque sheet and drops the fill that
+   separates filled/tonal from text buttons, so: no overlay, and a real border. */
 @media (forced-colors: active) {
     .materialdesign-widget.mdw-style-material3 .mdw-state-layer::before {
         display: none;

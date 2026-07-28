@@ -135,7 +135,7 @@ export class MaterialDesignAdvancedView extends VisWidget {
   getWidgetInfo(): RxWidgetInfo {
     return advancedViewInfo(this.kind);
   }
-  // Native VIS2 child-view embedding (legacy vis.renderView is a stub in VIS2).
+  // legacy vis.renderView is a stub in VIS2.
   private embed(view: string): React.JSX.Element {
     return (
       this as unknown as {

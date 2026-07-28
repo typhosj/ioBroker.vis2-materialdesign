@@ -108,8 +108,7 @@ export function num(value: unknown, fallback = 0): number {
     return Number.isFinite(parsed) ? parsed : fallback;
 }
 
-// Snap a value to the nearest multiple of step and strip binary-float noise
-// (e.g. step 0.1 -> 0.1*3 = 0.30000000000000004). Rounds to the step's decimals.
+// Strips binary-float noise (step 0.1 -> 0.1*3 = 0.30000000000000004).
 export function snapToStep(value: number, step: number): number {
     if (!Number.isFinite(step) || step <= 0) {
         return value;
@@ -119,9 +118,7 @@ export function snapToStep(value: number, step: number): number {
     return decimals ? Number(stepped.toFixed(decimals)) : stepped;
 }
 
-// Travelling fill for `progressIndeterminate`. Plain CSS (transform only, no layout work) and it
-// stops under `prefers-reduced-motion`, where a centered static bar is the honest fallback — per the
-// motion rules in ../../MATERIAL3_PLAN.md.
+// Transform only, and it stops under `prefers-reduced-motion`.
 const INDETERMINATE_CSS =
     '@keyframes materialdesign-progress-indeterminate{0%{transform:translateX(-100%)}100%{transform:translateX(250%)}}'
     + '.materialdesign-progress--indeterminate{animation:materialdesign-progress-indeterminate 1.8s cubic-bezier(.4,0,.2,1) infinite}'
@@ -132,9 +129,7 @@ export function cleanColor(value: unknown, fallback: string): string {
     return raw && !raw.startsWith('#mdwTheme:') ? raw : fallback;
 }
 
-// Material 3 (Phase 5, ../../MATERIAL3_PLAN.md): with isM3 the unset progress color falls back to the
-// primary token instead of the legacy blue; an explicit saved color (incl. colorOne/colorTwo) still
-// wins. Default isM3=false keeps the exported behavior — and its unit tests — unchanged.
+// Default isM3=false keeps the exported behavior — and its unit tests — unchanged.
 export function progressState(value: ioBroker.StateValue | undefined, data: ProgressData, isM3 = false): { percent: number; raw: number; color: string; label: string } {
     const min = num(data.min, 0);
     const max = num(data.max, 100);
@@ -189,10 +184,7 @@ export default class MaterialDesignProgress extends VisWidget {
         const background = cleanColor(data.colorProgressBackground, isM3 ? 'var(--md-sys-color-surface-container-high)' : 'rgba(161, 161, 161, 0.26)');
         const striped = data.progressStriped;
         const stripeColor = cleanColor(data.progressStripedColor, 'rgba(255, 255, 255, 0.25)');
-        // `progressIndeterminate` only widened the bar to 100% — a full bar, indistinguishable from a
-        // finished one, with the percentage still printed on it. Now the fill travels (the M3 linear
-        // indicator's behavior) and the value label goes away, because there is no value to show.
-        // Legacy renders the same animation: the old look was not a design, it was the missing piece.
+        // `progressIndeterminate` only widened the bar to 100%, indistinguishable from a finished one.
         const indeterminate = !!data.progressIndeterminate;
         const displayedPercent = indeterminate ? 100 : progress.percent;
         const reverse = data.reverse && !indeterminate;

@@ -36,8 +36,7 @@ const n = (v: unknown, d = 0) =>
   v === undefined || v === null || v === "" || !Number.isFinite(Number(v))
     ? d
     : Number(v);
-// like n() but yields undefined (not 0) for empty/invalid, so an unset
-// axis min/max stays auto-scaling instead of collapsing the axis to 0.
+// Yields undefined (not 0) for empty/invalid, so an unset axis min/max stays auto-scaling.
 const optN = (v: unknown): number | undefined =>
   v === undefined || v === null || v === "" || !Number.isFinite(Number(v))
     ? undefined
@@ -55,11 +54,9 @@ export const jsonChartValue = (raw: unknown): number | null => {
 export function graphColor(graph: Graph, index: number, palette: string[], globalColor: unknown): string {
   return s(graph.color, palette[index] || s(globalColor, "#44739e"));
 }
-// unset yAxis_id -> id 0, so all graphs share one y-axis instead of each graph getting its own axis by index.
 export function graphAxisId(graph: Graph): string {
   return `yAxis_id_${n((graph as Record<string, unknown>).yAxis_id, 0)}`;
 }
-// one axis config per distinct id (dedupe; else duplicate axis ids).
 export function distinctAxisGraphs(graphs: Graph[]): Graph[] {
   return graphs.filter((graph, i) => graphs.findIndex(g => graphAxisId(g) === graphAxisId(graph)) === i);
 }
@@ -347,7 +344,7 @@ export default class MaterialDesignChartJson extends VisWidget {
         ))}
       </div>
     ) : null;
-    // v4: scales are a keyed object (x + one entry per distinct y-axis id), not xAxes/yAxes arrays.
+    // v4: scales are a keyed object (x + one entry per distinct y-axis id).
     const axisId = graphAxisId;
     const yEntries = distinctAxisGraphs(graphs).map((graph): [string, Record<string, unknown>] => [axisId(graph), chartAxis({
       axis: "y",
@@ -371,12 +368,10 @@ export default class MaterialDesignChartJson extends VisWidget {
     });
     const scales = { x: xAxis, ...Object.fromEntries(yEntries) };
     const chartjs = <MaterialDesignChartCanvas type={s(data.chartType, "bar")} data={{ labels, datasets: graphs.map((graph, i) => { const color = graphColor(graph, i, palette, data.globalColor); const dsColor = isM3 && color === "#44739e" ? m3.primary : color; return { type: s(graph.type, s(data.chartType, "bar")), label: s(graph.legendText), data: (graph.data || []).map(jsonChartValue), borderColor: dsColor, backgroundColor: b(graph.line_UseFillColor) ? s(graph.line_FillColor, `${dsColor}33`) : dsColor, borderWidth: n(graph.line_Thickness, n(graph.barBorderWidth, 2)), stepped: b(graph.line_steppedLine), spanGaps: b(graph.line_spanGaps, true), fill: b(graph.line_UseFillColor), yAxisID: axisId(graph), stack: b(graph.barIsStacked) ? String(n((graph as Record<string, unknown>).barStackId, 0)) : undefined }; }) }} options={{ responsive: true, maintainAspectRatio: false, animation: { duration: n(data.animationDuration, 1000) }, scales, plugins: { legend: { display: false }, tooltip: { enabled: b(data.showTooltip, true) }, datalabels: { display: false } } }} />;
-    // keep the canvas from eating the whole flex box (else legend spills
-    // outside the widget frame); shrink chart, keep legend natural size.
+    // Keep the canvas from eating the whole flex box, else the legend spills outside the widget frame.
     const chartBox = (
       <div style={{ flex: 1, minWidth: 0, minHeight: 0, position: "relative" }}>{chartjs}</div>
     );
-    // top/left -> legend before chart; bottom/right -> after.
     const legendFirst = ["top", "left"].includes(s(data.legendPosition, "right"));
     const body = legendFirst ? (
       <>{legend}{chartBox}</>

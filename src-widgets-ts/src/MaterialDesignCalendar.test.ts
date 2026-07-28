@@ -93,12 +93,10 @@ describe('weekNumber (ISO 8601)', () => {
 
 describe('calendarGridStart', () => {
     it('backs the month grid up to the configured first weekday on/before the 1st', () => {
-        // July 2026: the 1st is a Wednesday (day 3); first weekday Monday (1) -> grid starts Mon 2026-06-29.
         const start = calendarGridStart(new Date(2026, 6, 15), 'month', 1);
         expect(isoDate(start)).toBe('2026-06-29');
     });
     it('backs the week grid up to the configured first weekday on/before the reference day', () => {
-        // Thu 2026-07-23 with week starting Monday -> Mon 2026-07-20.
         const start = calendarGridStart(new Date(2026, 6, 23), 'week', 1);
         expect(isoDate(start)).toBe('2026-07-20');
     });
@@ -111,7 +109,6 @@ describe('calendarGridStart', () => {
 
 describe('calendarDayCount', () => {
     it('always returns a multiple of 7 for month view (full leading+trailing weeks)', () => {
-        // July 2026 starts on Wednesday; with Monday-first weeks needs 5 weeks = 35 cells.
         expect(calendarDayCount(new Date(2026, 6, 15), 'month', 1)).toBe(35);
     });
     it('returns 7 for week view and 1 for day view regardless of the reference date', () => {
@@ -129,7 +126,6 @@ describe('calendarEventSlot', () => {
     });
 
     it('computes row/span for an event fully inside the window', () => {
-        // 09:00-11:00 inside an 08:00-18:00 window at 60-minute intervals -> row 1 (1h after 08:00), span 2.
         const slot = calendarEventSlot({ start: '2026-07-23T09:00', end: '2026-07-23T11:00' }, window_.firstMinute, window_.endMinute, window_.intervalMinutes);
         expect(slot).toEqual({ row: 1, span: 2, startMinute: 9 * 60 });
     });

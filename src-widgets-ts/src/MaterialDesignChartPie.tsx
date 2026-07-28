@@ -54,8 +54,7 @@ export function buildPieValues(data: Data, source: Record<string, unknown>[] | n
         item?.dataColor,
         s(data[`dataColor${i}`], colors[i] || s(data.globalColor, "#44739e")),
       ),
-      // Empty means "not configured": the label color is then derived from the slice color it is
-      // drawn on (datalabelsConfig/labelColorFor), which a fixed default cannot get right.
+      // Empty means "not configured": the label color is then derived from the slice it is drawn on.
       textColor: s(
         item?.valueColor,
         s(data[`valueTextColor${i}`], s(data.valuesFontColor)),
@@ -378,11 +377,9 @@ export default class MaterialDesignChartPie extends VisWidget {
       title: (items: { dataIndex?: number }[]) => { const item = values[n(items[0]?.dataIndex)]; return item?.tooltipTitle ? item.tooltipTitle.split("\\n") : ""; },
       label: (item: { dataIndex?: number }) => { const v = values[n(item.dataIndex)]; if (v?.tooltipText) return v.tooltipText.split("\\n"); const num = n(v?.value).toLocaleString(undefined, { minimumFractionDigits: Math.max(0, n(data.tooltipValueMinDecimals)), maximumFractionDigits: Math.max(0, n(data.tooltipValueMaxDecimals)) }); return `${s(v?.label)}: ${num}${s(v?.appendix)}`; },
     } } } }} />;
-    // shrink chart so the legend stays inside the widget frame.
     const chartBox = (
       <div style={{ flex: 1, minWidth: 0, minHeight: 0, position: "relative" }}>{chartjs}</div>
     );
-    // top/left -> legend before chart; bottom/right -> after.
     const legendFirst = ["top", "left"].includes(s(data.legendPosition, "top"));
     const body = legendFirst ? (
       <>{legend}{chartBox}</>

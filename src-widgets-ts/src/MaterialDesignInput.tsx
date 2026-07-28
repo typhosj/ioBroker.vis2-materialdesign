@@ -261,7 +261,7 @@ function inputType(data: InputData): string {
     return data.inputType === 'mask' ? 'text' : data.inputType || 'text';
 }
 
-// VueTheMask-style tokens (VIS1 used vue-the-mask); any other mask char is a literal separator.
+// VueTheMask-style tokens; any other mask char is a literal separator.
 const MASK_TOKENS: Record<string, { pattern: RegExp; transform?: (c: string) => string }> = {
     '#': { pattern: /\d/ },
     S: { pattern: /[a-zA-Z]/ },
@@ -271,7 +271,6 @@ const MASK_TOKENS: Record<string, { pattern: RegExp; transform?: (c: string) => 
     X: { pattern: /./ },
 };
 
-// Effective mask string: strip the stored `['…']` array syntax, take the first mask.
 function maskPattern(data: InputData): string {
     if (data.inputType !== 'mask' || !data.inputMask) {
         return '';
@@ -279,7 +278,6 @@ function maskPattern(data: InputData): string {
     return data.inputMask.replace(/^\[/, '').replace(/\]$/, '').replace(/'/g, '').split(',')[0].trim();
 }
 
-// Enforce the mask on raw input: keep only chars matching each token position, auto-insert literals.
 export function applyMask(raw: string, mask: string): string {
     if (!mask) {
         return raw;
@@ -348,10 +346,8 @@ export function activeLabelTranslateY(value: unknown): number {
 
 let notchCanvas: HTMLCanvasElement | null | undefined;
 
-// Width of the outline notch (the border gap the floating label sits in). A per-character
-// heuristic wildly overestimates proportional text (e.g. "Zieltemperatur" measured 77px but the
-// old length*factor formula returned 112px → an oversized notch), so measure the real rendered
-// text via canvas when available and only fall back to a heuristic for SSR / no-canvas contexts.
+// A per-character heuristic wildly overestimates proportional text, so the notch width is measured
+// via canvas where available.
 export function outlinedNotchWidth(label: string, labelFontSize: unknown, labelFontFamily?: unknown): number {
     if (!label) {
         return 0;
@@ -372,7 +368,6 @@ export function outlinedNotchWidth(label: string, labelFontSize: unknown, labelF
             /* fall through to heuristic */
         }
     }
-    // Heuristic fallback (SSR / no canvas): fixed overhead + average per-character advance.
     return Math.max(Math.round(label.length * activeFontSize * 0.5 + activeFontSize * 0.7), 20);
 }
 
@@ -425,11 +420,8 @@ export default class MaterialDesignInput extends VisWidget {
         const value = this.localValue ?? String(state ?? '');
         const active = this.focused || value !== '';
         const layout = layoutClass(data.inputLayout);
-        // Material 3 (Phase 3, ../../MATERIAL3_PLAN.md): recolor the text-field chrome from semantic
-        // tokens (outline/primary border, on-surface text, on-surface-variant label/appendix, filled
-        // container) while keeping geometry and all behavior. An explicit saved color still wins per
-        // the token-precedence rule (m3ColorExplicit); the legacy `#000000` text default and legacy
-        // `#mdwTheme:` theme tokens count as unset so the M3 token applies (dark mode needs this).
+        // An explicit saved color wins (m3ColorExplicit); the legacy `#000000` default and `#mdwTheme:`
+        // tokens count as unset so the M3 token applies, which dark mode needs.
         const isM3 = designStyle(data as Record<string, unknown>) === 'material3';
         const textDefault =
             data.inputTextColor === undefined ||
@@ -478,9 +470,8 @@ export default class MaterialDesignInput extends VisWidget {
         const hasDetails = !!data.inputMessage || !!data.showInputCounter;
         const slotMinHeight = enclosed || filled ? 40 : 32;
         const labelTranslateY = activeLabelTranslateY(data.inputTranslateY);
-        // A prepend-inner icon shifts the text slot (and thus the label) to the right. When the label
-        // floats up it should sit in the notch at the field's front, exactly like a field without an
-        // icon, so shift the ACTIVE label back left by the icon column width (padding + icon size).
+        // A prepend-inner icon shifts the text slot right; the floating label has to be shifted back by
+        // the icon column width so it sits in the notch at the field's front.
         const innerIconShift = icon(
             data.prepandInnerIcon,
             data.prepandInnerIconColor,
@@ -574,10 +565,8 @@ export default class MaterialDesignInput extends VisWidget {
                                     <fieldset
                                         aria-hidden="true"
                                         style={{
-                                            // The outline must wrap the WHOLE field. Inside the flex `v-input__slot`
-                                            // an in-flow fieldset collapses to the legend width (a small box on the
-                                            // left); position it absolutely so it spans the slot. The old widget got
-                                            // this from ambient legacy Vuetify CSS which is gone once legacy is removed.
+                                            // Inside the flex `v-input__slot` an in-flow fieldset collapses to the legend width, so it is
+                                            // positioned absolutely to span the slot.
                                             backgroundColor: 'transparent',
                                             borderColor,
                                             borderRadius: layout.includes('rounded') ? 28 : 4,
@@ -616,8 +605,7 @@ export default class MaterialDesignInput extends VisWidget {
                                     <div
                                         className="v-input__prepend-inner"
                                         style={{
-                                            // Center the inner icon vertically inside the flex slot instead of
-                                            // letting it stick to the top-left (ambient legacy CSS did this before).
+                                            // Ambient legacy CSS used to center the inner icon in the flex slot.
                                             alignItems: 'center',
                                             alignSelf: 'center',
                                             display: 'flex',
@@ -692,14 +680,12 @@ export default class MaterialDesignInput extends VisWidget {
                                             this.forceUpdate();
                                         }}
                                         onChange={event => {
-                                            // Mask type enforces the pattern as you type (VIS1 vue-the-mask parity).
                                             this.localValue =
                                                 data.inputType === 'mask'
                                                     ? applyMask(event.target.value, maskPattern(data))
                                                     : event.target.value;
-                                            // Native date/time pickers (esp. Android) fire only `change`,
-                                            // often without a blur — commit their atomic value immediately.
-                                            // Text/number/mask keep committing on blur/Enter to avoid per-keystroke writes.
+                                            // Native date/time pickers (esp. Android) fire only `change`, often without a blur — commit
+                                            // immediately. Text/number/mask commit on blur/Enter to avoid per-keystroke writes.
                                             if (data.inputType === 'date' || data.inputType === 'time') {
                                                 this.commit(data, event.target.value);
                                             }
@@ -716,8 +702,7 @@ export default class MaterialDesignInput extends VisWidget {
                                         }}
                                         placeholder={placeholder(data)}
                                         style={{
-                                            // Reset the native input chrome (border/background/outline). The old widget
-                                            // relied on ambient legacy Vuetify CSS for this; keep it self-contained here.
+                                            // Reset the native input chrome; the old widget relied on ambient legacy Vuetify CSS.
                                             appearance: 'none',
                                             background: 'transparent',
                                             border: 0,
@@ -730,8 +715,7 @@ export default class MaterialDesignInput extends VisWidget {
                                             flex: '1 1 auto',
                                             height: enclosed ? 20 : undefined,
                                             lineHeight: '20px',
-                                            // Push the text down for regular AND filled so the floating label
-                                            // (which moves to the top of the box) does not overlap the value.
+                                            // Push the text down so the floating label does not overlap the value.
                                             marginTop: !enclosed && data.inputLabelText ? 14 : undefined,
                                             maxWidth: '100%',
                                             minWidth: 0,

@@ -9,7 +9,6 @@ const s = (value: unknown, fallback = ''): string => value === undefined || valu
 const n = (value: unknown, fallback = 0): number => value === undefined || value === null || value === '' || !Number.isFinite(Number(value)) ? fallback : Number(value);
 const b = (value: unknown, fallback = false): boolean => value === undefined || value === null || value === '' ? fallback : value === true || value === 'true' || value === 1 || value === '1';
 function parse(value: unknown): Alert[] | null { try { const result: unknown = JSON.parse(s(value)); return Array.isArray(result) ? result as Alert[] : null; } catch { return null; } }
-// Material Design elevation shadows (dp 0..24), matching Vuetify v-alert elevation
 const U = 'rgba(0,0,0,.2)', P = 'rgba(0,0,0,.14)', A = 'rgba(0,0,0,.12)';
 const ELEV = ['none',
     `0 2px 1px -1px ${U},0 1px 1px 0 ${P},0 1px 3px 0 ${A}`,
@@ -49,12 +48,8 @@ export default class MaterialDesignAlerts extends VisWidget {
         const data = this.state.rxData as unknown as Data;
         const raw = stateValue(this.state, s(data.oid));
         const parsed = parse(raw);
-        // Material 3 (Phase 5, ../../MATERIAL3_PLAN.md): an alert with no payload color falls back to
-        // semantic tokens (surface-container fill, on-surface text, on-surface-variant icons); a
-        // per-alert or saved color still wins. Elevation/behavior/JSON handling unchanged.
         const isM3 = designStyle(data) === 'material3';
-        // The parse-failure alert is the one genuinely semantic error state this widget has, so in M3
-        // it uses the error role instead of raw `red` (Phase 8 audit).
+        // The parse failure is the one genuinely semantic error state here, so M3 uses the error role.
         const errorColor = isM3 ? 'var(--md-sys-color-error)' : 'red';
         const alerts = parsed ?? (raw === undefined || raw === null || raw === '' ? [] : [{ text: 'Error in JSON string', borderColor: errorColor, icon: 'alert-box', iconColor: errorColor }]);
         const shown = alerts.slice(0, boundedCount(data.showMaxAlerts, 3) || MAX_DYNAMIC_ITEMS);

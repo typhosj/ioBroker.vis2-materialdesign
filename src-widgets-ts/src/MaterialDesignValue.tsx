@@ -143,8 +143,6 @@ function evalMaybe(expression: string | undefined, value: unknown): unknown {
     return Function(`"use strict";return (${replaced});`)() as unknown;
 }
 
-// Native (moment-free) duration/timestamp formatting. VIS1 used moment tokens here; the shared
-// widgetUtils helpers reproduce them via Intl + arithmetic, so the runtime no longer needs moment.
 function formatDuration(seconds: number, template: string): string {
     if (template === 'humanize') {
         return humanizeDuration(seconds, visLocale());
@@ -173,9 +171,8 @@ export function formatNumber(value: unknown, data: ValueData): string {
         return text(current);
     }
     const min = data.minDecimals === undefined ? undefined : number(data.minDecimals);
-    // `Intl.NumberFormat` throws a RangeError when max < min, and VIS2 renders widgets of a view in
-    // one tree without an error boundary — so that one editable combination (min 2, max 1) blanked
-    // the whole view, not just this widget. Widen max instead of throwing; min wins, as configured.
+    // `Intl.NumberFormat` throws a RangeError when max < min, and VIS2 renders a view's widgets in one
+    // tree without an error boundary, so that combination blanked the whole view.
     const max = data.maxDecimals === undefined ? undefined : Math.max(number(data.maxDecimals), min ?? 0);
     const formatted = new Intl.NumberFormat(undefined, {
         minimumFractionDigits: min,
@@ -232,8 +229,6 @@ export default class MaterialDesignValue extends VisWidget {
         super.renderWidgetBody(props);
         const data = this.state.rxData as ValueData;
         const value = stateValue(this.state, data.oid);
-        // Material 3 (Phase 4, ../../MATERIAL3_PLAN.md): unset value/prepend/append text falls back to
-        // on-surface, unset icon to primary; an explicit saved color still wins (empty result = unset).
         const isM3 = designStyle(data as unknown as Record<string, unknown>) === 'material3';
         const m3Text = (resolved: string, token: string): string | undefined =>
             resolved || (isM3 ? token : undefined);

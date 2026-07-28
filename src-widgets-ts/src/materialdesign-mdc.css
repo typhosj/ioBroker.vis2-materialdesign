@@ -1,18 +1,9 @@
 /*
- * Vendored Material Components (MDC) rules that the VIS2 widgets rely on ambiently.
+ * MDC rules the widgets rely on ambiently, copied from the legacy bundle so they keep rendering
+ * once it is gone. Only rules with no inline equivalent are here; `.mdc-card__media*` in particular
+ * is the aspect-ratio spacer, without which the image div collapses to height 0.
  *
- * These are copied verbatim from the legacy `widgets/materialdesign/lib.min.css` (MDC
- * baseline) so the widgets keep rendering identically once the legacy VIS1 bundle is
- * removed. Everything else the widgets need (switch/checkbox/list/table/topappbar
- * geometry) is already inline-styled in the components; only the rules below have no
- * inline equivalent:
- *   - `.mdc-typography--*` : title/subtitle/body sizing+weight in Card and IconList.
- *   - `.mdc-card`          : elevation shadow + border radius (Card container).
- *   - `.mdc-card__media*`  : media aspect-ratio spacer (without it the image div
- *                            collapses to height 0 and the picture is invisible).
- *
- * Scoped under `.materialdesign-widget` so they cannot leak onto other adapters'
- * widgets on the same VIS2 page (the legacy rules were global).
+ * Scoped under `.materialdesign-widget` so they cannot leak onto other adapters' widgets.
  */
 
 .materialdesign-widget .mdc-typography--headline1 { font-family: Roboto, sans-serif; -moz-osx-font-smoothing: grayscale; -webkit-font-smoothing: antialiased; font-size: 6rem; line-height: 6rem; font-weight: 300; letter-spacing: -.015625em; text-decoration: inherit; text-transform: inherit; }

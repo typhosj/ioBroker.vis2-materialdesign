@@ -1,10 +1,7 @@
 import React from 'react';
 
-// Combined editor field: pick an MDI font icon (searchable, ~6800 names parsed from the loaded
-// mdi-font.css) OR browse a file from the ioBroker file system (via socket.readDir, starting at the
-// root namespace list so any adapter — e.g. icons-mfd-svg — is reachable). Both write into the same
-// widget-data field. renderIcon() already handles both value kinds (image path -> <img>/mask,
-// otherwise -> `mdi-<name>`), so no runtime change is needed.
+// Picks an MDI font icon or an ioBroker file into the same widget-data field; renderIcon() already
+// handles both value kinds.
 
 type FileEntry = { file: string; isDir: boolean };
 export interface PickerSocket {
@@ -79,9 +76,8 @@ export function pickerValueName(value: string): string {
     }
 }
 
-// Checkerboard tile behind image thumbnails: many ioBroker icon adapters ship white or `currentColor`
-// SVGs that would be invisible on the light dialog surface (white on white). The pattern makes both
-// black and white icons readable.
+// Many ioBroker icon adapters ship white or `currentColor` SVGs that would be invisible on the
+// light dialog surface.
 const checker: React.CSSProperties = {
     alignItems: 'center',
     backgroundColor: '#9e9e9e',
@@ -116,7 +112,6 @@ export function IconFilePicker({ value, onChange, socket, label, texts, theme }:
     const [candidate, setCandidate] = React.useState(value);
     const dialogRef = React.useRef<HTMLDialogElement>(null);
 
-    // theme-aware colors (fall back to a neutral dark palette so the dialog fits the vis2 editor)
     const pal = theme?.palette || {};
     const dark = pal.mode !== 'light';
     const surface = pal.background?.paper || (dark ? '#2a2a2a' : '#fff');
@@ -153,7 +148,7 @@ export function IconFilePicker({ value, onChange, socket, label, texts, theme }:
         setOpen(true);
     };
 
-    // --- file browser: ns === '' means the root namespace list ---
+    // ns === '' means the root namespace list
     const [ns, setNs] = React.useState('');
     const [path, setPath] = React.useState('');
     const [entries, setEntries] = React.useState<FileEntry[]>([]);

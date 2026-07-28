@@ -95,8 +95,7 @@ describe('select data sources and writes', () => {
     });
 });
 
-// Phase 9.2: the menu surface is inline-styled, so the shape/elevation tokens can only be checked on
-// the rendered markup, not by parsing the stylesheet.
+// The menu surface is inline-styled, so only the rendered markup can show it.
 describe('select material 3 menu geometry', () => {
     const menu = (rxData: Record<string, unknown>): string => {
         const select = new MaterialDesignSelect(fixture<ConstructorParameters<typeof MaterialDesignSelect>[0]>({ context: {} }));

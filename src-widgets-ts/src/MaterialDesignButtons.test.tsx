@@ -96,8 +96,6 @@ describe('shared button actions', () => {
         expect(changeView).toHaveBeenCalledWith('details');
     });
 
-    // The icon-button slider's arc kept the legacy blue in M3 because its colors never went through
-    // the token fallback the button container uses.
     it('takes the slider arc colors from the M3 tokens unless one is saved', () => {
         const Button = createButtonClass({ id: 'test-slider', name: 'slider', kind: 'slider', layout: 'icon', label: '', icon: 'plus' });
         const instance = fixture<{

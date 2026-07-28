@@ -432,8 +432,7 @@ export class MaterialDesignViews extends VisWidget {
     this.polling = false;
     super.componentWillUnmount?.();
   }
-  // Native VIS2 child-view embed. The embedded view has no intrinsic height
-  // (absolute children) and loads async, so poll each cell's scrollHeight.
+  // The embedded view has no intrinsic height (absolute children) and loads async.
   private embed(view: string): React.JSX.Element {
     return (
       this as unknown as {
@@ -505,9 +504,8 @@ export class MaterialDesignViews extends VisWidget {
     super.renderWidgetBody(props);
     this.widgetId = props.id;
     const d = this.state.rxData as unknown as Data;
-    // Material 3 (Phase 4, ../../MATERIAL3_PLAN.md): a masonry/grid container has no surface of its own —
-    // it only embeds child views, each carrying its own designStyle. The single M3 touch is the
-    // empty-cell placeholder outline (editor hint) and the root style class; behavior unchanged.
+    // A masonry/grid container has no surface of its own; it only embeds child views, each carrying
+    // its own designStyle.
     const isM3 = designStyle(d) === "material3";
     const layout = this.layout(d);
     const count = boundedCount(d.countViews, 3, MAX_DYNAMIC_ITEMS - 1);

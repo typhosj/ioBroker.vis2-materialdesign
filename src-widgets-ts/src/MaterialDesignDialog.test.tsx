@@ -5,8 +5,6 @@ import { MaterialDesignDialog } from './MaterialDesignDialog';
 
 function fixture<T>(value: unknown): T { return value as T; }
 
-// `buttonStyle` picked the icon shape and was otherwise ignored: text, raised, unelevated and
-// outlined all rendered the same filled trigger, in both design styles.
 describe('dialog trigger button style', () => {
     const render = (rxData: Record<string, unknown>): string => {
         const dialog = new MaterialDesignDialog(fixture<ConstructorParameters<typeof MaterialDesignDialog>[0]>({ context: { setValue: vi.fn() } }), 'view');

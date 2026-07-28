@@ -1,15 +1,9 @@
-// Shared chart.js v4 cartesian axis builder for the Bar / JSON / Line-History
-// charts. Every field is optional; only the ones that are actually set are
-// emitted, so chart.js keeps its own defaults for the rest. This is what lets
-// the editor "axis layout" groups (show/hide, position, grid lines, tick
-// labels, title, colors) take effect instead of being silently ignored.
+// Shared chart.js v4 cartesian axis builder. Only fields that are actually set are emitted, so
+// chart.js keeps its own defaults for the rest.
 //
-// v4 note: scales moved from the v2 `{xAxes:[…],yAxes:[…]}` arrays to a keyed
-// object (`scales: { x, y, <id> }`) — callers key this builder's output by id.
-// Field renames handled here: ticks.fontColor→color, fontFamily/fontSize→font,
-// gridLines→grid (+tickMarkLength→tickLength), scaleLabel→title (labelString→
-// text, fontColor→color, font*). min/max moved from ticks to the scale level.
-// zeroLine* has no v4 equivalent (dropped).
+// v4 renames handled here: ticks.fontColor→color, fontFamily/fontSize→font, gridLines→grid
+// (+tickMarkLength→tickLength), scaleLabel→title, min/max from ticks to the scale. zeroLine* has no
+// v4 equivalent.
 export type AxisSpec = {
     id?: string;
     axis?: 'x' | 'y'; // v4: pin the axis kind for custom-id scales (don't rely on position/id inference)
@@ -85,11 +79,8 @@ export function chartAxis(a: AxisSpec): Record<string, unknown> {
     return axis;
 }
 
-// Material 3 (Phase 7, ../../MATERIAL3_PLAN.md): concrete chart-internal colors for the M3 render
-// path. Chart.js paints on a <canvas>, which cannot resolve CSS custom properties, so the token
-// values from material3-tokens.css (Google's baseline scheme) are inlined here as concrete hex,
-// dark-aware. Only the DOM card/title surfaces use the CSS-var tokens; everything drawn on the
-// canvas (axis text, grid, default series color) uses these.
+// Chart.js paints on a <canvas>, which cannot resolve CSS custom properties, so the M3 token
+// values are inlined here as concrete hex, dark-aware.
 export function m3ChartColors(isDark: boolean): { text: string; grid: string; primary: string } {
     return isDark
         ? { text: '#cac4d0', grid: '#49454f', primary: '#d0bcff' }

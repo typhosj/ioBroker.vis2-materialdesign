@@ -64,8 +64,7 @@ export function buildBars(data: Data, source: Record<string, unknown>[] | null, 
         row?.valueText,
         s(indexed(data, "valueText", i), value.toLocaleString(undefined, { minimumFractionDigits: Math.max(0, n(data.valuesMinDecimals)), maximumFractionDigits: decimals })),
       ),
-      // Empty means "not configured": the label color is then derived from the bar color it is drawn
-      // on (datalabelsConfig/labelColorFor), which a fixed default cannot get right.
+      // Empty means "not configured": the label color is then derived from the bar it is drawn on.
       valueColor: s(
         row?.valueColor,
         s(
@@ -84,10 +83,8 @@ export function buildBars(data: Data, source: Record<string, unknown>[] | null, 
 }
 
 export function barAxisRange(data: Data, bars: Bar[]): { min: number; max: number } {
-  // Treat an unset numeric field uniformly whether vis-2 stored it as "", undefined OR null: any of
-  // them means "auto-scale from the data". A stray null used to fall through to n(null, 1) = 1, which
-  // on chart.js v4 (where the axis min/max are actually honored, unlike the v2 build that ignored the
-  // scales object) collapsed the value axis to 0..1 and clipped every bar to the same height.
+  // Unset means "auto-scale from the data", whether vis-2 stored "", undefined or null. A stray null
+  // fell through to 1, which on v4 collapsed the value axis to 0..1 and clipped every bar.
   const unset = (v: unknown): boolean => v === "" || v === undefined || v === null;
   const min = unset(data.axisValueMin)
     ? Math.min(0, ...bars.map((bar) => bar.value))
@@ -519,8 +516,7 @@ export default class MaterialDesignChartBar extends VisWidget {
   renderWidgetBody(props: RenderProps): React.JSX.Element {
     super.renderWidgetBody(props);
     const data = this.state.rxData as unknown as Data;
-    // Material 3 (Phase 7): chart-internal colors resolve to concrete M3 hex (canvas can't read CSS
-    // vars); DOM card surfaces use CSS-var tokens. An explicit saved color still wins.
+    // Canvas cannot read CSS vars, so chart-internal colors resolve to concrete M3 hex.
     const isM3 = designStyle(data) === "material3";
     const m3 = m3ChartColors(this.isDarkTheme());
     const fromJson = s(data.chartDataMethod) === "jsonStringObject";
@@ -537,7 +533,6 @@ export default class MaterialDesignChartBar extends VisWidget {
     const title = s(data.title);
     const on = (v: unknown): number | undefined => (v === undefined || v === null || v === "" || !Number.isFinite(Number(v)) ? undefined : Number(v));
     const axisOf = (ax: "x" | "y"): Record<string, unknown> => chartAxis({
-      // type is set on the value axis below (linear); the category axis keeps chart.js' category default.
       position: s(data[`${ax}AxisPosition`]),
       display: b(data[`${ax}AxisShowAxis`], true),
       labelsDisplay: b(data[`${ax}AxisShowAxisLabels`], true),
@@ -554,10 +549,9 @@ export default class MaterialDesignChartBar extends VisWidget {
       gridWidth: on(data[`${ax}AxisGridLinesWitdh`]),
       drawTicks: b(data[`${ax}AxisShowTicks`], true),
       tickLength: on(data[`${ax}AxisTickLength`]),
-      // zeroLine* has no chart.js v4 equivalent (dropped in the migration; editor fields remain inert).
+      // zeroLine* has no chart.js v4 equivalent; the editor fields remain inert.
     });
-    // value axis (numeric) carries the computed min/max; the other axis holds category labels.
-    // v4: horizontalBar is gone -> type "bar" + indexAxis "y"; scales are a keyed object, not xAxes/yAxes arrays.
+    // v4: horizontalBar is gone -> type "bar" + indexAxis "y"; scales are a keyed object.
     const valueAxis = axisOf(horizontal ? "x" : "y");
     valueAxis.type = "linear"; valueAxis.min = min; valueAxis.max = max;
     const catAxis = axisOf(horizontal ? "y" : "x");

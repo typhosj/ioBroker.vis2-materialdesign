@@ -56,7 +56,6 @@ describe('labelColorFor', () => {
     const context = (background: unknown, index = 0): Parameters<typeof labelColorFor>[0] => ({ dataIndex: index, dataset: { backgroundColor: background } });
 
     it('picks a readable label color for the slice it is drawn on', () => {
-        // Value labels sit on the slice, so a fixed color is unreadable on half of any palette.
         expect(labelColorFor(context(['#44739e', '#ffeb3b'], 0))).toBe('#ffffff');
         expect(labelColorFor(context(['#44739e', '#ffeb3b'], 1))).toBe('#1d1b20');
         expect(labelColorFor(context('#2e7d32'))).toBe('#ffffff');

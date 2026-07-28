@@ -11,15 +11,14 @@ type Item = { objectId: string; text: string; subText: string; rightText: string
 const n = (v: unknown, d = 0): number => v === '' || v === undefined || v === null || !Number.isFinite(Number(v)) ? d : Number(v);
 const s = (v: unknown, d = ''): string => v === '' || v === undefined || v === null || v === 'null' ? d : typeof v === "string" ? v : typeof v === "number" || typeof v === "boolean" || typeof v === "bigint" ? String(v) : d;
 const b = (v: unknown, d = false): boolean => v === undefined || v === null || v === '' ? d : v === true || v === 'true' || v === 1 || v === '1';
-// Mirror legacy myMdwHelper.getFontSize: MDC typography name -> class, numeric -> Npx, anything else (keyword like
-// 'x-large', 'auto', empty) -> inherit (no font-size). The old widget renders these keyword sizes as `inherit` (=16px);
-// applying them as literal CSS font-size (as before) blew the text up to 24px and overlapped the subtitle.
+// Mirrors legacy myMdwHelper.getFontSize. Applying keyword sizes as literal CSS font-size blew the
+// text up to 24px and overlapped the subtitle.
 const fontSizeStyle = (v: unknown): { className: string; fontSize: string | undefined } => {
     const t = s(v);
     if (t === '') return { className: '', fontSize: undefined };
     if (/headline|subtitle|body|caption|button|overline/.test(t)) return { className: `mdc-typography--${t}`, fontSize: undefined };
-    // Numeric -> Npx; keyword ('x-large', 'medium', 'auto', …) -> explicit `inherit` so it overrides the MDC
-    // `__secondary-text`(14px)/`__meta`(12px) defaults and inherits the item's 16px, exactly like legacy getFontSize.
+    // Keyword sizes become explicit `inherit` so they override the MDC `__secondary-text`/`__meta`
+    // defaults, exactly like legacy getFontSize.
     return { className: '', fontSize: Number.isFinite(Number(t)) ? `${Number(t)}px` : 'inherit' };
 };
 
@@ -48,8 +47,8 @@ function item(data: Data, index: number, json?: Record<string, unknown>): Item {
     return { objectId: s(get('oid', 'objectId')), text: s(get('label', 'text'), `Item ${index}`), subText: s(get('subLabel', 'subText')), rightText: s(get('rightLabel', 'rightText')), rightSubText: s(get('rightSubLabel', 'rightSubText')), image, imageColor, imageActive: s(get('listImageActive', 'imageActive'), image), imageActiveColor: s(get('listImageActiveColor', 'imageActiveColor'), imageColor), header: s(get('groupHeader', 'header')), divider: b(get('dividers', 'showDivider')), buttonStateValue: get('listTypeButtonStateValue', 'buttonStateValue'), buttonNavView: s(get('listTypeButtonNav', 'buttonNavView')), buttonLink: s(get('listTypeButtonLink', 'buttonLink')), overflow: b(get('listOverflow', 'listOverflow')) };
 }
 
-// Render a fully inline-styled MDC switch/checkbox so the control stays visible even when the
-// legacy MDC stylesheet is absent (VIS2 does not load it). Mirrors MaterialDesignToggleControls.
+// Fully inline-styled so the control stays visible without the legacy MDC stylesheet, which VIS2
+// does not load.
 function listToggle(kind: 'switch' | 'checkbox', on: boolean, readonly: boolean, data: Data, onChange: (checked: boolean) => void, isM3 = false): React.JSX.Element {
     const input = (
         <input
@@ -62,15 +61,13 @@ function listToggle(kind: 'switch' | 'checkbox', on: boolean, readonly: boolean,
             {...(kind === 'switch' ? { role: 'switch' } : {})}
         />
     );
-    // In M3 the row switch is the same 52×32 control as the Switch widget (shared m3Switch), not the
-    // 32×20 legacy MDC shape — which also puts the click target past the WCAG 2.5.8 24 px minimum that
-    // the legacy geometry misses on its own.
+    // In M3 the row switch is the shared 52×32 control, which also clears the WCAG 2.5.8 24 px minimum
+    // that the 32×20 legacy shape misses.
     if (kind === 'switch' && isM3) {
         return m3Switch({
             disabled: readonly,
             input,
             on,
-            // the row's own <input> already carries role="switch" and its checked state
             rootProps: { 'aria-checked': undefined, role: undefined },
             thumbOff: s(data.colorSwitchThumb) || undefined,
             thumbOn: s(data.colorSwitchThumb) || undefined,
@@ -103,32 +100,28 @@ function listToggle(kind: 'switch' | 'checkbox', on: boolean, readonly: boolean,
     );
 }
 
-// MDC list base layout — previously supplied ambiently by the legacy materialdesign bundle. Vendored
-// here (scoped) so the list stays intact once that legacy CSS is gone: without display:flex the item
-// stacks the icon above the text, and without the list reset the <ul> gets browser indent/bullets.
+// Vendored MDC list layout: without display:flex the item stacks the icon above the text, and
+// without the list reset the <ul> gets browser indent/bullets.
 const listCss = '.materialdesign-list .mdc-list{list-style:none;margin:0;padding:0}'
-    // Legacy MDC gave list items `padding:0 16px` ambiently; without it the left icon hugs the edge and the
-    // switch thumb-underlay (extends past its 32px track) gets clipped by the list's overflow-x:hidden.
+    // Without the ambient legacy `padding:0 16px` the left icon hugs the edge and the switch
+    // thumb-underlay gets clipped by the list's overflow-x:hidden.
     + '.materialdesign-list .mdc-list-item{display:flex;align-items:center;position:relative;padding:0 16px}'
     + '.materialdesign-list .mdc-list-item__text{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;justify-content:center}'
     + '.materialdesign-list .mdc-list-item__primary-text,.materialdesign-list .mdc-list-item__secondary-text{display:block}'
-    // Legacy MDC defaults for the secondary line (grey + smaller); the per-item inline style only sets
-    // color/font-size when the editor provides them, so these apply otherwise (matches the fontSizeStyle comment).
+    // Legacy MDC defaults for the secondary line; the inline style only sets these when the editor
+    // provides them.
     + '.materialdesign-list .mdc-list-item__secondary-text{color:rgba(0,0,0,.54);font-size:.875rem}'
     + '.materialdesign-list .mdc-list-item__meta{margin-left:auto}'
     + '.materialdesign-list .mdc-list-group__subheader{display:block;margin:0;list-style:none}'
     + '.materialdesign-list .mdc-list-item:focus-visible{outline:2px solid #44739e;outline-offset:-2px}'
-    // Counter the legacy `min-height:40px!important` (if still present) with a CSS-var-driven row height,
-    // and let the graphic size itself (legacy forced 24x24, clamping larger listImageHeight SVGs).
+    // Counters the legacy `min-height:40px!important` and lets the graphic size itself (legacy forced
+    // 24x24, clamping larger listImageHeight SVGs).
     + '.materialdesign-list.materialdesign-widget .mdc-list-item{min-height:var(--materialdesign-list-item-height,48px)!important;height:auto!important}'
     + '.materialdesign-list .mdc-list-item__graphic{flex-shrink:0;display:inline-flex;align-items:center;width:auto!important;height:auto!important;overflow:visible}'
-    // `listLayout: card`/`cardOutlined` set this class but nothing ever styled it — the geometry came
-    // from ambient legacy VIS1 CSS that is gone, so both card layouts rendered identical to `standard`.
-    // The background already arrives as `--materialdesign-color-card-background` (token in M3, #fff in
-    // legacy); shape and elevation belong with it.
+    // `listLayout: card`/`cardOutlined` set this class but the geometry came from ambient legacy VIS1
+    // CSS that is gone, so both card layouts rendered identical to `standard`.
     + '.materialdesign-list .materialdesign-list-card{background:var(--materialdesign-color-card-background,#fff);border-radius:4px;box-shadow:0 2px 1px -1px rgba(0,0,0,.2),0 1px 1px 0 rgba(0,0,0,.14),0 1px 3px 0 rgba(0,0,0,.12);height:100%;overflow:hidden}'
     + '.materialdesign-list .materialdesign-list-card--outlined{border:1px solid rgba(0,0,0,.12);box-shadow:none}'
-    // M3: the same two roles the spec gives a filled and an outlined card, plus the large corner.
     + '.materialdesign-list.mdw-style-material3 .materialdesign-list-card{border-radius:var(--md-sys-shape-corner-medium);box-shadow:var(--md-sys-elevation-level1)}'
     + '.materialdesign-list.mdw-style-material3 .materialdesign-list-card--outlined{background:var(--md-sys-color-surface);border:1px solid var(--md-sys-color-outline-variant);box-shadow:none}';
 
@@ -139,9 +132,6 @@ export default class MaterialDesignList extends VisWidget {
     private activate(data: Data, value: unknown, current: unknown, row: Item): void { const type = s(data.listType); if (type.endsWith('_readonly') || type === 'text') return; this.feedback(data); if (type === 'checkbox' || type === 'switch') setStateValue(this.props, row.objectId, value as ioBroker.StateValue); else if (type === 'buttonToggle') setStateValue(this.props, row.objectId, !current); else if (type === 'buttonState') setStateValue(this.props, row.objectId, parseActionValue(s(row.buttonStateValue))); else if (type === 'buttonNav') this.props.context?.changeView?.(row.buttonNavView); else if (type === 'buttonLink') { const href = safeWidgetUrl(row.buttonLink); if (href) window.open(href, '_blank', 'noopener,noreferrer'); } }
     renderWidgetBody(props: RenderProps): React.JSX.Element {
         super.renderWidgetBody(props); const data = this.state.rxData as unknown as Data;
-        // Material 3 (Phase 4, ../../MATERIAL3_PLAN.md): unset list text/divider/header/icon colors fall
-        // back to semantic tokens (m3 = token when the value is empty, else the saved color). Behavior,
-        // item data, actions and geometry unchanged. An explicit saved color still wins.
         const isM3 = designStyle(data) === 'material3';
         const m3 = (v: unknown, token: string): string | undefined => s(v) || (isM3 ? token : undefined);
         const m3f = (v: unknown, token: string, fb: string): string => s(v) || (isM3 ? token : fb);

@@ -2,7 +2,6 @@ import React from 'react';
 import type { RxWidgetInfo } from '@iobroker/types-vis-2';
 import { squarePreview, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, m3OnColor, sizeCss, stateValue, formatMoment } from './widgetUtils';
 
-// Re-exported for existing importers/tests; the implementation now lives in widgetUtils (shared with Value).
 export { formatMoment };
 
 type Data = Record<string, unknown> & { oid?: string };
@@ -15,13 +14,12 @@ const b = (v: unknown, d = false): boolean => v === undefined || v === null || v
 const n = (v: unknown, d = 0): number => Number.isFinite(Number(v)) ? Number(v) : d;
 const px = (v: unknown, d: number): string => sizeCss(v, d);
 const events = (v: unknown): Event[] => { try { const value = JSON.parse(s(v)); return Array.isArray(value) ? value : []; } catch { return []; } };
-// Local YYYY-MM-DD (toISOString() shifts to UTC and misplaces events by a day in +offset zones)
+// toISOString() shifts to UTC and misplaces events by a day in +offset zones.
 export const isoDate = (day: Date): string => `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
 export const eventMinutes = (value: unknown, fallback = 0): number => {
     const match = s(value).match(/(?:T|\s)(\d{1,2}):(\d{2})/);
     return match ? Math.min(1439, Number(match[1]) * 60 + Number(match[2])) : fallback;
 };
-// month/week grid start: the Monday/Sunday/etc.-aligned first cell before or on the 1st (month) or the reference day (week).
 export function calendarGridStart(reference: Date, view: string, firstWeekday: number): Date {
     const start = new Date(reference);
     start.setHours(0, 0, 0, 0);
@@ -33,7 +31,6 @@ export function calendarGridStart(reference: Date, view: string, firstWeekday: n
     }
     return start;
 }
-// month view always renders full weeks (leading days from the previous month + trailing days into the next).
 export function calendarDayCount(reference: Date, view: string, firstWeekday: number): number {
     if (view === 'month') {
         const lastDay = new Date(reference.getFullYear(), reference.getMonth() + 1, 0);
@@ -42,8 +39,6 @@ export function calendarDayCount(reference: Date, view: string, firstWeekday: nu
     }
     return view === 'week' ? 7 : 1;
 }
-// time-grid geometry for one event: its row (offset from firstMinute) and row-span, clipped to the visible
-// [firstMinute, endMinute) window; null when the event falls entirely outside that window.
 export function calendarEventSlot(event: Event, firstMinute: number, endMinute: number, intervalMinutes: number): { row: number; span: number; startMinute: number } | null {
     const startMinute = eventMinutes(event.start, firstMinute);
     const finishMinute = Math.max(startMinute + intervalMinutes, eventMinutes(event.end, startMinute + intervalMinutes));
@@ -60,7 +55,7 @@ export const calendarEventOccursOnDate = (event: Event, date: string): boolean =
     const rawEnd = s(event.end);
     const end = (rawEnd || start).slice(0, 10);
     if (!start || start > date) return false;
-    // iCalendar uses an exclusive DTEND for all-day events. Equal start/end stays a one-day fallback.
+    // iCalendar uses an exclusive DTEND for all-day events.
     return rawEnd && !calendarEventHasTime(rawEnd) && end > start ? date < end : date <= end;
 };
 export function formatCalendarTime(minutes: number, mode = 'locale', locale?: string): string {
@@ -69,7 +64,7 @@ export function formatCalendarTime(minutes: number, mode = 'locale', locale?: st
     const mins = normalized % 60;
     if (mode === '24h') return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
     if (mode === '12h') return `${hours % 12 || 12}:${String(mins).padStart(2, '0')} ${hours < 12 ? 'AM' : 'PM'}`;
-    // German locale: match the legacy Vuetify axis format `HH Uhr` (full hours) instead of Intl's `HH:MM`.
+    // German locale: the legacy Vuetify axis format is `HH Uhr`, not Intl's `HH:MM`.
     if (locale && locale.toLowerCase().startsWith('de')) return mins === 0 ? `${String(hours).padStart(2, '0')} Uhr` : `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
     return new Intl.DateTimeFormat(locale, { hour: '2-digit', minute: '2-digit' }).format(new Date(2000, 0, 1, hours, mins));
 }
@@ -106,12 +101,9 @@ export default class MaterialDesignCalendar extends VisWidget {
         const dayCount = calendarDayCount(this.date, view, order[0]);
         const today = new Date(); today.setHours(0, 0, 0, 0);
         const navLocale = typeof window !== 'undefined' ? window.navigator.language : undefined;
-        // Weekday/month text must follow the ioBroker system language (like the legacy widget), not the browser locale.
+        // Weekday/month text follows the ioBroker system language, not the browser locale.
         const locale = typeof window !== 'undefined' ? ((window as unknown as { vis?: { language?: string }; systemLang?: string }).vis?.language || (window as unknown as { systemLang?: string }).systemLang || navLocale) : navLocale;
         const timeLocale = locale;
-        // Material 3 (Phase 7, ../../MATERIAL3_PLAN.md): unset colors fall back to semantic tokens, an
-        // explicit saved color still wins (token precedence rule). Grid geometry, navigation, event
-        // placement and the time axis are unchanged by construction.
         const isM3 = designStyle(d) === 'material3';
         const m3 = (v: unknown, token: string, fb: string): string => s(v) || (isM3 ? token : fb);
         const borderColor = m3(d.calendarBorderColor, 'var(--md-sys-color-outline-variant)', '#e0e0e0');
@@ -126,11 +118,8 @@ export default class MaterialDesignCalendar extends VisWidget {
         const dayButtonFontColor = m3(d.calendarDayButtonFontColor, 'var(--md-sys-color-on-surface)', isDark ? '#fff' : '#000');
         const eventBackground = isM3 ? 'var(--md-sys-color-primary-container)' : '#44739e';
         const eventColor = isM3 ? 'var(--md-sys-color-on-primary-container)' : '#fff';
-        // Events usually bring their own background from the calendar source. The M3 default text color
-        // is the partner of `primary-container` and reads badly on anything else (dark violet on a
-        // green holiday entry), so when an event carries a color but no text color, derive the readable
-        // one from that background — same sRGB math the seed overrides use. Non-parseable colors keep
-        // the token pair. Legacy stays on white, unchanged.
+        // An event's background comes from the calendar source, so an unset text color is derived from it;
+        // non-parseable colors keep the token pair.
         const eventText = (event: { color?: unknown; colorText?: unknown }): string =>
             s(event.colorText) || (isM3 && s(event.color) ? m3OnColor(s(event.color)) || eventColor : eventColor);
         const eventRadius = isM3 ? 'var(--md-sys-shape-corner-extra-small)' : undefined;
@@ -152,23 +141,17 @@ export default class MaterialDesignCalendar extends VisWidget {
         const gridDays = Array.from({ length: dayCount }, (_, index) => { const day = new Date(start); day.setDate(start.getDate() + index); return { day, iso: isoDate(day) }; });
         const timeAxisWidth = Math.max(32, n(d.calendarTimeAxisWidth, 60));
         const timeGridColumns = `${timeAxisWidth + 1}px repeat(${dayCount}, minmax(0, 1fr))`;
-        // Day/week header and body are two separate grids with the same column template, but only the
-        // body scrolls: a classic (space-taking) scrollbar narrows the body's content box, so its 1fr
-        // day columns end up a few px narrower than the header's and the two drift apart to the right.
-        // `scrollbar-gutter: stable` reserves the same gutter in both — on the header via `overflow:
-        // hidden`, which makes it a scroll container (so the gutter applies) without drawing anything.
-        // Browsers with overlay scrollbars reserve nothing in either, and pre-Chrome-94 ignores the
-        // property and behaves exactly as before. The month grid needs none of this: header row and
-        // day cells live in ONE grid there.
+        // Header and body are two grids with the same column template but only the body scrolls, so a
+        // space-taking scrollbar narrows its columns and the two drift. `scrollbar-gutter: stable` reserves
+        // the gutter in both; the header needs `overflow: hidden` to be a scroll container at all.
         const timeGrid = <div className="v-calendar v-calendar-daily theme--light v-calendar-events" style={{ display: 'flex', flex: 1, flexDirection: 'column', minHeight: 0, overflow: 'hidden' }}><div className="v-calendar-daily__head" style={{ display: 'grid', flex: '0 0 auto', gridTemplateColumns: timeGridColumns, overflow: 'hidden', scrollbarGutter: 'stable' }}>
             <div className="materialdesign-calendar-intervals-head" style={{ background: s(d.calendarTimeAxisHeaderBackgroundColor, 'transparent'), border: 0 }} />
             {gridDays.map(({ day, iso }) => { const isToday = day.getTime() === today.getTime(); const next = view === 'week' ? s(d.calendarDayButtonWeekViewGoTo, 'day') : s(d.calendarDayButtonDayViewGoTo, 'week'); const hf = view === 'week' ? s(d.calendarWeekViewHeaderFormat) : s(d.calendarDayViewHeaderFormat); const df = view === 'week' ? s(d.calendarWeekViewDayFormat) : s(d.calendarDayViewDayFormat); const header = hf ? formatMoment(day, hf, locale) : new Intl.DateTimeFormat(locale, { weekday: 'long' }).format(day); const label = df ? formatMoment(day, df, locale) : day.getDate(); return <div className={`v-calendar-daily_head-day ${isToday ? 'v-present' : 'v-past'}`} key={`header-${iso}`} style={{ background: headerBackground, borderBottom: `1px solid ${borderColor}`, borderRight: `1px solid ${borderColor}`, borderTop: `1px solid ${borderColor}`, minWidth: 0, paddingBottom: 1, width: 'auto' }}><div className="v-calendar-daily_head-weekday" style={{ color: isToday ? dayLabelTodayColor : dayLabelColor, fontFamily: isToday ? s(d.calendarDayLabelTodayFontFamily, 'inherit') : s(d.calendarDayLabelFontFamily, 'inherit'), fontSize: px(isToday ? d.calendarDayLabelTodayFontSize : d.calendarDayLabelFontSize, 13), overflow: 'hidden', padding: 4, textAlign: 'center', textTransform: 'uppercase' }}>{header}</div><div className="v-calendar-daily_head-day-label" style={{ overflow: 'hidden', paddingBottom: 3, textAlign: 'center' }}><button aria-current={isToday ? 'date' : undefined} className="v-btn--round" type="button" onClick={() => setView(next)} style={{ alignItems: 'center', background: isToday ? dayButtonTodayColor : s(d.calendarDayButtonColor, 'transparent'), border: 0, borderRadius: '50%', color: isToday ? dayButtonTodayFontColor : dayButtonFontColor, cursor: 'pointer', display: 'inline-flex', fontFamily: isToday ? s(d.calendarDayButtonTodayFontFamily, 'inherit') : s(d.calendarDayButtonFontFamily, 'inherit'), fontSize: px(isToday ? d.calendarDayButtonTodayFontSize : d.calendarDayButtonFontSize, 14), height: 56, justifyContent: 'center', minWidth: 0, padding: 0, width: 56 }}><span>{label}</span></button></div></div>; })}
         </div><div className="v-calendar-daily__scroll-area" style={{ display: 'grid', flex: 1, gridTemplateColumns: timeGridColumns, gridTemplateRows: `repeat(${slotCount}, minmax(${slotHeight}px, 1fr))`, minHeight: 0, overflow: 'auto', scrollbarGutter: 'stable' }}>
             {Array.from({ length: slotCount }, (_, slot) => {
                 const minute = firstMinute + slot * intervalMinutes;
-                // The label sits (via translateY(50%)) on the slot's lower border, i.e. the next boundary — so it
-                // must show that boundary's time. Using minute + interval/2 put a :30 offset on every hour line and
-                // stopped the German "HH Uhr" format from ever matching a full hour.
+                // The label sits on the slot's LOWER border, i.e. the next boundary, so it must show that
+                // boundary's time; minute + interval/2 put a :30 offset on every hour line.
                 const labelMinute = minute + intervalMinutes;
                 const showLabel = slot < slotCount - 1 && (b(d.calendarTimeAxisShortIntervals, true) || labelMinute % 60 === 0);
                 return <React.Fragment key={`slot-${minute}`}><div style={{ alignItems: 'flex-end', background: s(d.calendarTimeAxisBackgroundColor, 'transparent'), boxSizing: 'border-box', display: 'flex', gridColumn: 1, gridRow: slot + 1, justifyContent: 'flex-end' }}>{showLabel ? <div className="v-calendar-daily__interval-text" style={{ boxSizing: 'border-box', color: timeAxisFontColor, fontFamily: s(d.calendarTimeAxisFont, 'inherit'), fontSize: px(d.calendarTimeAxisFontSize, 12), paddingRight: 4, textAlign: 'right', transform: 'translateY(50%)', width: timeAxisWidth - 8 }}>{formatCalendarTime(labelMinute, timeFormat, timeLocale)}</div> : null}</div>{gridDays.map(({ iso }, dayIndex) => <div className="v-calendar-daily__day-interval" key={`${iso}-${minute}`} style={{ background: s(d.calendarDayBackgroundColor, 'transparent'), borderLeft: dayIndex === 0 ? 0 : undefined, borderRight: `1px solid ${borderColor}`, borderTop: `1px solid ${borderColor}`, gridColumn: dayIndex + 2, gridRow: slot + 1 }} />)}</React.Fragment>;
