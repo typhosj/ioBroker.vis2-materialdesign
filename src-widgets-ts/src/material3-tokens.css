@@ -7,12 +7,13 @@
  * SAME shared dark-theme flag every widget already reads (see `isDarkTheme()`/`darkThemeOid()` in
  * widgetUtils.tsx) — no separate dark-detection mechanism, no per-frame JS color computation.
  *
- * Values are Google's published Material 3 baseline scheme (seed #6750A4), chosen specifically
- * because the semantic pairs (e.g. primary/on-primary) are already contrast-verified by Google —
- * satisfying the Phase 1 exit criterion without a runtime contrast-checking dependency. Individual
- * roles can be overridden per project via the optional admin-configured seed colors (see
- * `applyM3SeedVariables` in widgetUtils.tsx) or by any widget's own explicit saved option, per the
- * token-precedence rule in ../../MATERIAL3_PLAN.md.
+ * Values are the Material 3 baseline scheme (seed #6750A4). A project can replace the whole scheme
+ * with one derived from its own seed: the admin computes it once and writes it to
+ * `colors.md3Scheme`, and `applyM3SeedVariables()` in widgetUtils.tsx spreads it onto the
+ * `--mdw-seed-*` layer below. Individual widgets can still override a color through their own saved
+ * options, per the token-precedence rule in ../../MATERIAL3_PLAN.md. Contrast is not taken on trust
+ * for either path — MaterialDesignAccessibility.test.tsx checks the baseline pairs the widgets
+ * actually combine, and m3scheme.test.ts checks that a derived scheme holds the same ratios.
  *
  * Only tokens with an actual consumer are defined (Phase 8: "remove any M3 CSS or helper that no
  * registered widget uses") — the unused half of the M3 token set (shape small/medium/large, the
@@ -22,14 +23,20 @@
  */
 
 /*
- * The four admin-configurable seed roles (plus the repaired `on-primary` and the optional font)
- * read through a `var(--mdw-seed-*, <baseline>)` fallback instead of naming the baseline directly.
- * That indirection is required, not cosmetic: `applyM3SeedVariables()` writes the override onto
- * `document.documentElement`, but the baseline below is declared on the widget root ITSELF — a
- * custom property declared on an element always beats the value inherited from an ancestor, so a
- * plain `--md-sys-color-primary: #6750a4` here would silently swallow every admin override. The
- * `--mdw-seed-*` names have no declaration on the widget root, so the root-level one is what
+ * EVERY color role reads through a `var(--mdw-seed-*, <baseline>)` fallback instead of naming the
+ * baseline directly. That indirection is required, not cosmetic: `applyM3SeedVariables()` writes the
+ * override onto `document.documentElement`, but the baseline below is declared on the widget root
+ * ITSELF — a custom property declared on an element always beats the value inherited from an
+ * ancestor, so a plain `--md-sys-color-primary: #6750a4` here would silently swallow every override.
+ * The `--mdw-seed-*` names have no declaration on the widget root, so the root-level one is what
  * inherits down, and an unset override falls back to the baseline for free.
+ *
+ * The baseline values themselves are GENERATED, not transcribed: `m3SchemeFromSeed('#6750a4')` in
+ * src-admin/src/m3scheme.ts, the same function that derives an admin's own seed. That is why they
+ * differ by ±1/255 from Google's published table on most roles (and by more on `error`, where the
+ * published baseline still carries the pre-2023 #b3261e). Having one generator for both means "no
+ * seed configured" and "seed set to the M3 baseline color" produce byte-identical widgets instead of
+ * two near-misses. `m3scheme.test.ts` pins the agreement with the published table.
  */
 .materialdesign-widget.mdw-style-material3 {
     /* Follows the view/parent font unless the admin sets one — no visual change while unset. */
@@ -37,22 +44,22 @@
 
     --md-sys-color-primary: var(--mdw-seed-primary, #6750a4);
     --md-sys-color-on-primary: var(--mdw-seed-on-primary, #ffffff);
-    --md-sys-color-primary-container: #eaddff;
-    --md-sys-color-on-primary-container: #21005d;
+    --md-sys-color-primary-container: var(--mdw-seed-primary-container, #e9ddff);
+    --md-sys-color-on-primary-container: var(--mdw-seed-on-primary-container, #22005d);
     --md-sys-color-secondary: var(--mdw-seed-secondary, #625b71);
-    --md-sys-color-secondary-container: #e8def8;
-    --md-sys-color-on-secondary-container: #1d192b;
-    --md-sys-color-tertiary: var(--mdw-seed-tertiary, #7d5260);
-    --md-sys-color-error: var(--mdw-seed-error, #b3261e);
-    --md-sys-color-surface: #fef7ff;
-    --md-sys-color-surface-container-low: #f7f2fa;
-    --md-sys-color-surface-container: #f3edf7;
-    --md-sys-color-surface-container-high: #ece6f0;
-    --md-sys-color-on-surface: #1d1b20;
-    --md-sys-color-on-surface-variant: #49454f;
-    --md-sys-color-outline: #79747e;
-    --md-sys-color-outline-variant: #cac4d0;
-    --md-sys-color-scrim: #000000;
+    --md-sys-color-secondary-container: var(--mdw-seed-secondary-container, #e8def8);
+    --md-sys-color-on-secondary-container: var(--mdw-seed-on-secondary-container, #1e192b);
+    --md-sys-color-tertiary: var(--mdw-seed-tertiary, #7e5260);
+    --md-sys-color-error: var(--mdw-seed-error, #ba1a1a);
+    --md-sys-color-surface: var(--mdw-seed-surface, #fdf7ff);
+    --md-sys-color-surface-container-low: var(--mdw-seed-surface-container-low, #f8f2fa);
+    --md-sys-color-surface-container: var(--mdw-seed-surface-container, #f2ecf4);
+    --md-sys-color-surface-container-high: var(--mdw-seed-surface-container-high, #ece6ee);
+    --md-sys-color-on-surface: var(--mdw-seed-on-surface, #1d1b20);
+    --md-sys-color-on-surface-variant: var(--mdw-seed-on-surface-variant, #49454e);
+    --md-sys-color-outline: var(--mdw-seed-outline, #7a757f);
+    --md-sys-color-outline-variant: var(--mdw-seed-outline-variant, #cac4cf);
+    --md-sys-color-scrim: var(--mdw-seed-scrim, #000000);
 
     --md-sys-shape-corner-extra-small: 4px;
     /* Card corner, back in the set together with its consumer (List `listLayout: card`), per the
@@ -80,28 +87,30 @@
     --md-sys-motion-easing-standard: cubic-bezier(.2, 0, 0, 1);
 }
 
-/* Dark reads its own `--mdw-seed-*-dark` overrides: a seed picked for a light background is not a
-   usable dark-mode color, so the two sets stay independent (same split the legacy theme editor has
-   had all along with its separate light/dark palettes). */
+/* Dark carries its own `--mdw-seed-*-dark` layer, but NOT its own seed: both schemes are derived
+   from the same tonal palettes at different tones, which is what makes one seed produce a coherent
+   pair. (Until Phase 9 this block took four independent dark seed colors, on the argument that a
+   color chosen for a light background is unusable on a dark one — true of a raw color used AS a
+   role, which is what those four were, and moot once a palette sits in between.) */
 .materialdesign-widget.mdw-style-material3.mdw-dark {
-    --md-sys-color-primary: var(--mdw-seed-primary-dark, #d0bcff);
+    --md-sys-color-primary: var(--mdw-seed-primary-dark, #cfbcff);
     --md-sys-color-on-primary: var(--mdw-seed-on-primary-dark, #381e72);
-    --md-sys-color-primary-container: #4f378b;
-    --md-sys-color-on-primary-container: #eaddff;
-    --md-sys-color-secondary: var(--mdw-seed-secondary-dark, #ccc2dc);
-    --md-sys-color-secondary-container: #4a4458;
-    --md-sys-color-on-secondary-container: #e8def8;
+    --md-sys-color-primary-container: var(--mdw-seed-primary-container-dark, #4f378a);
+    --md-sys-color-on-primary-container: var(--mdw-seed-on-primary-container-dark, #e9ddff);
+    --md-sys-color-secondary: var(--mdw-seed-secondary-dark, #cbc2db);
+    --md-sys-color-secondary-container: var(--mdw-seed-secondary-container-dark, #4a4458);
+    --md-sys-color-on-secondary-container: var(--mdw-seed-on-secondary-container-dark, #e8def8);
     --md-sys-color-tertiary: var(--mdw-seed-tertiary-dark, #efb8c8);
-    --md-sys-color-error: var(--mdw-seed-error-dark, #f2b8b5);
-    --md-sys-color-surface: #141218;
-    --md-sys-color-surface-container-low: #1d1b20;
-    --md-sys-color-surface-container: #211f26;
-    --md-sys-color-surface-container-high: #2b2930;
-    --md-sys-color-on-surface: #e6e0e9;
-    --md-sys-color-on-surface-variant: #cac4d0;
-    --md-sys-color-outline: #938f99;
-    --md-sys-color-outline-variant: #49454f;
-    --md-sys-color-scrim: #000000;
+    --md-sys-color-error: var(--mdw-seed-error-dark, #ffb4ab);
+    --md-sys-color-surface: var(--mdw-seed-surface-dark, #141218);
+    --md-sys-color-surface-container-low: var(--mdw-seed-surface-container-low-dark, #1d1b20);
+    --md-sys-color-surface-container: var(--mdw-seed-surface-container-dark, #211f24);
+    --md-sys-color-surface-container-high: var(--mdw-seed-surface-container-high-dark, #2b292f);
+    --md-sys-color-on-surface: var(--mdw-seed-on-surface-dark, #e6e0e9);
+    --md-sys-color-on-surface-variant: var(--mdw-seed-on-surface-variant-dark, #cac4cf);
+    --md-sys-color-outline: var(--mdw-seed-outline-dark, #948f99);
+    --md-sys-color-outline-variant: var(--mdw-seed-outline-variant-dark, #49454e);
+    --md-sys-color-scrim: var(--mdw-seed-scrim-dark, #000000);
 }
 
 /* Motion is opt-out, not opt-in: the duration collapses so state-layer/expand/collapse transitions

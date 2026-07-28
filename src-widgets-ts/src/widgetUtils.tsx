@@ -685,39 +685,33 @@ export function applyThemeVariables(data: Record<string, unknown>, values: Recor
     });
 }
 
-// Optional Material 3 "seed colors" (../../MATERIAL3_PLAN.md Phase 1: "expose optional seed colors
-// only in admin configuration, not per widget"). Deliberately just 4 directly-overridable roles,
-// not a full seed→tonal-palette derivation (that needs HCT/CAM16 color math — a new runtime
-// dependency and per-render computation, against the plan's "Performance priorities"). The
-// on-*/container roles stay at the contrast-verified baseline from material3-tokens.css; only the
-// 4 "seed" roles themselves are overridable — each with its own light AND dark value, since a seed
-// chosen for a light background is not a usable dark-mode color — via fixed global states declared
-// in ../../io-package.json `instanceObjects` and set from the adapter's admin settings UI
-// (src-admin/src/main.tsx) — never a per-widget editor field.
-export const M3_SEED_ROLES = ['primary', 'secondary', 'tertiary', 'error'] as const;
-export type M3SeedRole = typeof M3_SEED_ROLES[number];
+// Optional project-wide Material 3 color scheme (../../MATERIAL3_PLAN.md Phase 9.1). The admin
+// derives BOTH complete schemes from one seed color and writes them here as JSON; this side only
+// spreads the result onto CSS custom properties. No color math runs in the widget runtime — that is
+// the whole point of computing it in the admin, which loads once per configuration, rather than in a
+// runtime that loads on every wall panel on every reload.
+//
+// Until Phase 9 this was four directly-overridable roles with an independent light and dark value
+// each (8 states). Four raw colors are not an M3 scheme: seeding `primary` left its paired
+// `primary-container`/`on-primary-container` at the lilac baseline, which is exactly the pairing
+// that carries M3's color semantics.
+export const M3_SCHEME_OID = 'vis2-materialdesign.0.colors.md3Scheme';
 
-export function m3SeedOid(role: M3SeedRole, dark = false): string {
-    return `vis2-materialdesign.0.colors.md3${role.charAt(0).toUpperCase()}${role.slice(1)}${dark ? 'Dark' : ''}`;
-}
+// The roles material3-tokens.css declares. Kept in sync by hand with `M3_ROLES` in
+// src-admin/src/m3scheme.ts (not imported across the two bundles) — a role the admin emits but this
+// list omits would simply never reach a widget, so `m3scheme.test.ts` asserts the two agree.
+export const M3_TOKEN_ROLES = ['primary', 'on-primary', 'primary-container', 'on-primary-container', 'secondary', 'secondary-container', 'on-secondary-container',
+    'tertiary', 'error', 'surface', 'surface-container-low', 'surface-container', 'surface-container-high', 'on-surface', 'on-surface-variant',
+    'outline', 'outline-variant', 'scrim'] as const;
 
 // Optional project-wide font for M3-style widgets. Unset means "inherit from the view", so an
 // existing project's typography does not move (see the `font-family` rule in material3-tokens.css).
 export const M3_FONT_OID = 'vis2-materialdesign.0.fonts.md3Font';
 
-// Every global state an M3-style widget subscribes to: both seed variants per role, plus the font.
+// Every global state an M3-style widget subscribes to. Two, down from nine before Phase 9.
 export function m3SeedOids(): string[] {
-    return [...M3_SEED_ROLES.flatMap(role => [m3SeedOid(role), m3SeedOid(role, true)]), M3_FONT_OID];
+    return [M3_SCHEME_OID, M3_FONT_OID];
 }
-
-// WCAG 1.4.3 for seed overrides (Phase 8). An override replaces `--md-sys-color-primary` but not its
-// paired `--md-sys-color-on-primary`, which stays the baseline white — a light seed (yellow, cyan…)
-// then leaves every filled button/label below 4.5:1, which no amount of "Google verified the baseline
-// pairs" covers. So repair the pair: pick whichever of M3's two extreme on-colors contrasts better
-// with the chosen seed. Still not a tonal-palette derivation (no HCT dependency); contrast only
-// depends on the on-color, and only `on-primary` has a consumer today.
-const ON_LIGHT = '#ffffff';
-const ON_DARK = '#1d1b20'; // = --md-sys-color-on-surface, M3's darkest baseline on-color
 
 export function parseColor(color: string): [number, number, number] | undefined {
     const hex = color.trim().match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i)?.[1];
@@ -738,10 +732,35 @@ export function contrastRatio(a: [number, number, number], b: [number, number, n
     return (high + 0.05) / (low + 0.05);
 }
 
+// A legible foreground for an ARBITRARY color the user picked — a calendar event color, a chart
+// data-label background. Those never come from the scheme, so no palette can supply their on-color;
+// pick whichever of M3's two extreme on-colors contrasts better. (Before Phase 9 this also repaired
+// `on-primary` after a seed override replaced `primary` without its pair. The derived scheme carries
+// its own `on-*` roles now, so that use is gone — these two callers are what is left.)
+const ON_LIGHT = '#ffffff';
+const ON_DARK = '#1d1b20'; // = --md-sys-color-on-surface, M3's darkest baseline on-color
+
 export function m3OnColor(color: string): string | undefined {
     const rgb = parseColor(color);
-    if (!rgb) return undefined; // named colors / gradients: leave the baseline pair alone rather than guess
+    if (!rgb) return undefined; // named colors / gradients: leave the caller's fallback alone rather than guess
     return contrastRatio(rgb, parseColor(ON_LIGHT)!) >= contrastRatio(rgb, parseColor(ON_DARK)!) ? ON_LIGHT : ON_DARK;
+}
+
+// A scheme role name is written straight into a CSS custom property name, and the JSON comes from a
+// writable state, so it is not trusted input. Anything but a plain role name / hex color is dropped.
+const ROLE_NAME = /^[a-z][a-z-]*$/;
+const HEX_COLOR = /^#[0-9a-f]{3}([0-9a-f]{3})?$/i;
+
+/** One `{ light, dark }` pair of role→color maps, or `undefined` if the state does not hold one. */
+export function parseM3Scheme(raw: ioBroker.StateValue | undefined): { light: Record<string, string>; dark: Record<string, string> } | undefined {
+    if (typeof raw !== 'string' || !raw) return undefined;
+    let parsed: unknown;
+    try { parsed = JSON.parse(raw); } catch { return undefined; }
+    if (!parsed || typeof parsed !== 'object') return undefined;
+    const side = (value: unknown): Record<string, string> => value && typeof value === 'object'
+        ? Object.fromEntries(Object.entries(value as Record<string, unknown>).filter(([role, color]) => ROLE_NAME.test(role) && typeof color === 'string' && HEX_COLOR.test(color)) as [string, string][])
+        : {};
+    return { light: side((parsed as Record<string, unknown>).light), dark: side((parsed as Record<string, unknown>).dark) };
 }
 
 // Writes the `--mdw-seed-*` override layer onto the document root. It deliberately does NOT write
@@ -754,15 +773,12 @@ export function applyM3SeedVariables(values: Record<string, ioBroker.StateValue 
         if (value) document.documentElement.style.setProperty(variable, value);
         else document.documentElement.style.removeProperty(variable);
     };
-    M3_SEED_ROLES.forEach(role => {
-        [false, true].forEach(dark => {
-            const raw = values[`${m3SeedOid(role, dark)}.val`];
-            const value = typeof raw === 'string' && raw ? raw : undefined;
-            const suffix = dark ? '-dark' : '';
-            set(`--mdw-seed-${role}${suffix}`, value);
-            // Only `on-primary` has a consumer today, so only that pair gets contrast-repaired.
-            if (role === 'primary') set(`--mdw-seed-on-primary${suffix}`, value && m3OnColor(value));
-        });
+    const scheme = parseM3Scheme(values[`${M3_SCHEME_OID}.val`]);
+    // Both blocks in material3-tokens.css are rewritten together: a partial scheme would leave the
+    // dark block on the baseline while light followed the seed, i.e. two unrelated palettes.
+    M3_TOKEN_ROLES.forEach(role => {
+        set(`--mdw-seed-${role}`, scheme?.light[role]);
+        set(`--mdw-seed-${role}-dark`, scheme?.dark[role]);
     });
     const font = values[`${M3_FONT_OID}.val`];
     set('--mdw-seed-font', typeof font === 'string' && font ? font : undefined);

@@ -16,49 +16,11 @@ import fonts from '../../admin/lib/fonts.json';
 // same as the widget names in the theme table below.
 import presets from '../../admin/lib/presets.json';
 import '../../fonts.css';
+import { M3_BASELINE_SEED, M3_ROLES, m3SchemeFromSeed, type M3Scheme } from './m3scheme';
 import './style.css';
 
-// Kept in sync by hand with `M3_SEED_ROLES` in src-widgets-ts/src/widgetUtils.tsx (not imported —
-// that module pulls in the whole widget runtime/CSS, which does not belong in the admin bundle).
-const M3_SEED_ROLES = ['primary', 'secondary', 'tertiary', 'error'] as const;
-type M3SeedRole = (typeof M3_SEED_ROLES)[number];
 const MD3_FONT_KEY = 'md3Font';
-function md3Key(role: M3SeedRole, dark = false): string { return `md3${role.charAt(0).toUpperCase()}${role.slice(1)}${dark ? 'Dark' : ''}`; }
-
-// [light, dark] baseline per role, mirroring src-widgets-ts/src/material3-tokens.css. Shown as the
-// field placeholder and in the swatch, so an empty field still tells the user what they will get.
-const M3_BASELINE: Record<M3SeedRole, [string, string]> = {
-    primary: ['#6750a4', '#d0bcff'],
-    secondary: ['#625b71', '#ccc2dc'],
-    tertiary: ['#7d5260', '#efb8c8'],
-    error: ['#b3261e', '#f2b8b5'],
-};
-
-// Same contrast repair the widget runtime applies to `on-primary` (m3OnColor in widgetUtils.tsx),
-// duplicated for the same reason M3_SEED_ROLES is — only to PREVIEW here what the runtime will do.
-function parseColor(color: string): [number, number, number] | undefined {
-    const hex = color.trim().match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i)?.[1];
-    if (!hex) return undefined;
-    const full = hex.length === 3 ? hex.replace(/./g, char => char + char) : hex;
-    return [0, 2, 4].map(index => parseInt(full.substr(index, 2), 16)) as [number, number, number];
-}
-function relativeLuminance(rgb: [number, number, number]): number {
-    const [r, g, b] = rgb.map(part => { const value = part / 255; return value <= 0.03928 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4; });
-    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
-}
-function contrastRatio(a: [number, number, number], b: [number, number, number]): number {
-    const [high, low] = [relativeLuminance(a), relativeLuminance(b)].sort((x, y) => y - x);
-    return (high + 0.05) / (low + 0.05);
-}
-// Same two extremes and the same comparison as the runtime — a preview that used its own heuristic
-// could disagree with what the widget actually renders.
-const ON_LIGHT = '#ffffff';
-const ON_DARK = '#1d1b20';
-function m3OnColor(color: string): string | undefined {
-    const rgb = parseColor(color);
-    if (!rgb) return undefined;
-    return contrastRatio(rgb, parseColor(ON_LIGHT)!) >= contrastRatio(rgb, parseColor(ON_DARK)!) ? ON_LIGHT : ON_DARK;
-}
+const MD3_SEED_KEY = 'md3Seed';
 // `props.config`/`config` are `Record<string, unknown>`; a bare String(value) on an unconstrained
 // unknown would satisfy the compiler but risk "[object Object]" if a value is ever malformed.
 function str(value: unknown): string { return typeof value === 'string' || typeof value === 'number' ? String(value) : ''; }
@@ -159,40 +121,47 @@ function PresetCard(props: { children: React.ReactNode }): React.JSX.Element {
     </CardContent></Card>;
 }
 
+// The derived scheme, shown so the seed field is not a leap of faith: these are the exact colors the
+// widgets will receive, computed by the same function that writes the `colors.md3Scheme` state.
+function SchemePreview(props: { scheme: M3Scheme }): React.JSX.Element {
+    return <Box sx={{ backgroundColor: props.scheme.surface, borderRadius: 1, border: '1px solid', borderColor: props.scheme.outline, display: 'grid', gap: 0.5, gridTemplateColumns: 'repeat(auto-fit, minmax(112px, 1fr))', p: 1 }}>
+        {M3_ROLES.map(role => {
+            // Every role is drawn on itself with a legible label: `on-*` roles read on their own
+            // container, the rest on the surface they are meant to sit on.
+            const on = role.startsWith('on-') ? props.scheme[role.slice(3) as keyof M3Scheme] : props.scheme[`on-${role}` as keyof M3Scheme] ?? props.scheme['on-surface'];
+            return <Box key={role} sx={{ backgroundColor: role.startsWith('on-') ? on : props.scheme[role], borderRadius: 0.5, color: role.startsWith('on-') ? props.scheme[role] : on, fontSize: 11, overflow: 'hidden', px: 0.75, py: 0.5, textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={`${role} ${props.scheme[role]}`}>{role}</Box>;
+        })}
+    </Box>;
+}
+
 function Material3Editor(props: { config: NativeConfig; update: (key: string, value: unknown) => void }): React.JSX.Element {
-    // Reset only existed on the Classic side, where it clears that theme's slots. The M3 equivalent
-    // is emptying the overrides so the baseline from material3-tokens.css applies again — per card,
-    // so the light seeds, the dark seeds and the font can be reverted independently.
-    const seedCard = (dark: boolean): React.JSX.Element => <Card sx={{ mt: 2 }}><CardContent>
-        <Box sx={{ alignItems: 'center', display: 'flex', gap: 2 }}>
-            <Typography variant="h6">{t(dark ? 'material3SeedColorsDark' : 'material3SeedColors')}</Typography>
-            <Button sx={{ ml: 'auto' }} onClick={() => M3_SEED_ROLES.forEach(role => props.update(md3Key(role, dark), ''))}>{t('reset')}</Button>
-        </Box>
-        <FormHelperText sx={{ mb: 2 }}>{t('material3SeedColorsInfo')}</FormHelperText>
-        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 2 }}>{M3_SEED_ROLES.map(role => {
-            const value = str(props.config[md3Key(role, dark)]);
-            const baseline = M3_BASELINE[role][dark ? 1 : 0];
-            // Only `primary` gets its on-color repaired at runtime, so only there can we honestly
-            // preview the text color a filled surface will use.
-            const on = role === 'primary' ? m3OnColor(value || baseline) : undefined;
-            return <Box key={role} sx={{ alignItems: 'center', display: 'flex', gap: 1 }}>
-                <ColorSwatch fallback={baseline} onChange={next => props.update(md3Key(role, dark), next)} size={28} value={value} />
-                <TextField fullWidth label={t(`material3Seed_${role}`)} onChange={event => props.update(md3Key(role, dark), event.target.value)} placeholder={baseline} value={value} variant="standard" />
-                {on && <Box sx={{ backgroundColor: value || baseline, borderRadius: 0.5, color: on, flex: '0 0 auto', fontSize: 13, px: 1, py: 0.25 }}>Aa</Box>}
-            </Box>;
-        })}</Box>
-    </CardContent></Card>;
+    const seed = str(props.config[MD3_SEED_KEY]);
+    // An unset seed renders the baseline preview, which is exactly what the widgets fall back to —
+    // the CSS baseline is generated from this same seed, so the two cannot drift apart.
+    const scheme = m3SchemeFromSeed(seed || M3_BASELINE_SEED);
     const font = str(props.config[MD3_FONT_KEY]);
     return <>
         <PresetCard>
-            <PresetSelect label={t('presetColors')} onApply={index => {
-                const preset = presets.material3Colors[index];
-                M3_SEED_ROLES.forEach(role => { props.update(md3Key(role), preset.light[role]); props.update(md3Key(role, true), preset.dark[role]); });
-            }} options={presets.material3Colors} />
+            <PresetSelect label={t('presetColors')} onApply={index => props.update(MD3_SEED_KEY, presets.material3Colors[index].seed)} options={presets.material3Colors} />
             <PresetSelect label={t('presetFonts')} onApply={index => props.update(MD3_FONT_KEY, presets.material3Fonts[index].font)} options={presets.material3Fonts} />
         </PresetCard>
-        {seedCard(false)}
-        {seedCard(true)}
+        <Card sx={{ mt: 2 }}><CardContent>
+            <Box sx={{ alignItems: 'center', display: 'flex', gap: 2 }}>
+                <Typography variant="h6">{t('material3Seed')}</Typography>
+                <Button sx={{ ml: 'auto' }} onClick={() => props.update(MD3_SEED_KEY, '')}>{t('reset')}</Button>
+            </Box>
+            <FormHelperText sx={{ mb: 2 }}>{t('material3SeedInfo')}</FormHelperText>
+            <Box sx={{ alignItems: 'center', display: 'flex', gap: 1, mb: 2, maxWidth: 420 }}>
+                <ColorSwatch fallback={M3_BASELINE_SEED} onChange={next => props.update(MD3_SEED_KEY, next)} size={28} value={seed} />
+                <TextField fullWidth label={t('material3Seed')} onChange={event => props.update(MD3_SEED_KEY, event.target.value)} placeholder={M3_BASELINE_SEED} value={seed} variant="standard" />
+            </Box>
+            {scheme
+                ? [false, true].map(dark => <Box key={String(dark)} sx={{ mt: 1 }}>
+                    <FormHelperText sx={{ mb: 0.5 }}>{t(dark ? 'material3SchemeDark' : 'material3SchemeLight')}</FormHelperText>
+                    <SchemePreview scheme={dark ? scheme.dark : scheme.light} />
+                </Box>)
+                : <FormHelperText error>{t('material3SeedInvalid')}</FormHelperText>}
+        </CardContent></Card>
         <Card sx={{ mt: 2 }}><CardContent>
             <Box sx={{ alignItems: 'center', display: 'flex', gap: 2 }}>
                 <Typography variant="h6">{t('material3Font')}</Typography>
@@ -342,9 +311,10 @@ class MaterialDesignAdmin extends GenericApp<GenericAppProps, GenericAppState> {
     // The global settings states are declared in io-package.json `instanceObjects`, but js-controller
     // only materializes those when an INSTANCE IS CREATED — never on upgrade. A host that installed
     // this adapter before a given state was added therefore never gets it (verified on the live host:
-    // `colors.md3Primary` was missing since the version that introduced it, which is one reason the
-    // seed colors never did anything there). So create them here too, with the same
-    // common/role/type as io-package declares, and only when they are actually absent.
+    // the then-`colors.md3Primary` was missing since the version that introduced it, which is one
+    // reason the seed colors never did anything there — that state is gone now, the failure mode is
+    // not). So create them here too, with the same common/role/type as io-package declares, and only
+    // when they are actually absent.
     private async ensureGlobalState(id: string, name: string, role: string, value: string): Promise<void> {
         if (!(await this.socket.getObject(id))) {
             await this.socket.setObject(id, { type: 'state', common: { name, desc: name, type: 'string', read: true, write: true, role, def: '' }, native: {} });
@@ -356,14 +326,15 @@ class MaterialDesignAdmin extends GenericApp<GenericAppProps, GenericAppState> {
         const namespace = `${this.adapterName}.${this.instance}`;
         const ensuredChannels = new Set<string>();
         await this.socket.setState(`${namespace}.sentry`, config.sentryReport === true, true);
-        for (const dark of [false, true]) {
-            for (const role of M3_SEED_ROLES) {
-                const key = md3Key(role, dark);
-                const id = `${namespace}.colors.${key}`;
-                await this.ensureAncestorChannels(id, namespace, ensuredChannels);
-                await this.ensureGlobalState(id, `Material 3 seed color: ${role} (optional, ${dark ? 'dark' : 'light'})`, 'level.color.rgb', str(config[key]));
-            }
-        }
+        // The seed is derived to a full scheme HERE, once per save, and only the result travels to
+        // the widgets — see ../../MATERIAL3_PLAN.md Phase 9.1. An empty or unparseable seed writes an
+        // empty state, which makes every widget fall back to the generated baseline in
+        // material3-tokens.css rather than to a half-applied scheme.
+        const schemeId = `${namespace}.colors.md3Scheme`;
+        await this.ensureAncestorChannels(schemeId, namespace, ensuredChannels);
+        const seed = str(config[MD3_SEED_KEY]);
+        const scheme = seed ? m3SchemeFromSeed(seed) : undefined;
+        await this.ensureGlobalState(schemeId, 'Material 3 color scheme derived from the seed (JSON, written by the admin UI)', 'json', scheme ? JSON.stringify(scheme) : '');
         const fontId = `${namespace}.fonts.${MD3_FONT_KEY}`;
         await this.ensureAncestorChannels(fontId, namespace, ensuredChannels);
         await this.ensureGlobalState(fontId, 'Material 3 font family (optional, inherits from the view when empty)', 'text', str(config[MD3_FONT_KEY]));

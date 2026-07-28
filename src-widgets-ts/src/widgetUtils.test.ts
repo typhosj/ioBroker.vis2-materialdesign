@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { VisRxWidgetState } from '@iobroker/types-vis-2';
 import { pickerValueName } from './IconFilePicker';
-import { DEFAULT_DARK_THEME_OID, M3_FONT_OID, M3_SEED_ROLES, MAX_DYNAMIC_ITEMS, VisWidget, accessibleText, applyM3SeedVariables, applyThemeVariables, boundedCount, createInfo, darkThemeOid, designStyle, designStyleClasses, editorDialogPalette, formatDurationTokens, formatMoment, humanizeDuration, iconFieldDataKey, m3SeedOid, m3SeedOids, parseActionValue, safeWidgetUrl, sanitizeHtml, setProjectDesignStyle, setStateValue, sliderKeyValue, stateValue, stringValue } from './widgetUtils';
+import { DEFAULT_DARK_THEME_OID, M3_FONT_OID, M3_SCHEME_OID, M3_TOKEN_ROLES, MAX_DYNAMIC_ITEMS, VisWidget, accessibleText, applyM3SeedVariables, applyThemeVariables, boundedCount, createInfo, darkThemeOid, designStyle, designStyleClasses, editorDialogPalette, formatDurationTokens, formatMoment, humanizeDuration, iconFieldDataKey, m3SeedOids, parseActionValue, parseM3Scheme, safeWidgetUrl, sanitizeHtml, setProjectDesignStyle, setStateValue, sliderKeyValue, stateValue, stringValue } from './widgetUtils';
 
 function fixture<T>(value: unknown): T { return value as T; }
 
@@ -155,45 +155,57 @@ describe('widget utilities', () => {
         expect(designStyleClasses({ designStyle: 'legacy' }, true)).toBe('mdw-style-legacy');
     });
 
-    it('maps M3 seed roles to their fixed global state ids', () => {
-        expect(M3_SEED_ROLES).toEqual(['primary', 'secondary', 'tertiary', 'error']);
-        expect(m3SeedOid('primary')).toBe('vis2-materialdesign.0.colors.md3Primary');
-        expect(m3SeedOid('error')).toBe('vis2-materialdesign.0.colors.md3Error');
-        expect(m3SeedOid('primary', true)).toBe('vis2-materialdesign.0.colors.md3PrimaryDark');
-        expect(m3SeedOids()).toHaveLength(M3_SEED_ROLES.length * 2 + 1);
-        expect(m3SeedOids()).toContain(M3_FONT_OID);
+    it('subscribes to exactly the scheme and the font, not a state per role', () => {
+        expect(m3SeedOids()).toEqual([M3_SCHEME_OID, M3_FONT_OID]);
+        expect(M3_SCHEME_OID).toBe('vis2-materialdesign.0.colors.md3Scheme');
     });
 
-    it('applies optional M3 seed overrides as the --mdw-seed-* layer, falling back to the token default when unset', () => {
+    it('rejects anything that is not a {light,dark} map of role→hex', () => {
+        // The state is writable, and a role name goes straight into a CSS custom property name.
+        expect(parseM3Scheme(undefined)).toBeUndefined();
+        expect(parseM3Scheme('')).toBeUndefined();
+        expect(parseM3Scheme('not json')).toBeUndefined();
+        expect(parseM3Scheme('42')).toBeUndefined();
+        expect(parseM3Scheme('{}')).toEqual({ light: {}, dark: {} });
+        expect(parseM3Scheme(JSON.stringify({ light: { primary: '#123456', 'not a role': '#000000', bad: 'red', 'on-surface': '#fff' }, dark: null })))
+            .toEqual({ light: { primary: '#123456', 'on-surface': '#fff' }, dark: {} });
+    });
+
+    it('applies the derived scheme as the --mdw-seed-* layer, falling back to the token default when unset', () => {
         // The `--md-sys-*` tokens themselves are declared ON the widget root by material3-tokens.css
         // and would beat anything set on `html`, so the override layer has its own variable names.
-        applyM3SeedVariables({ [`${m3SeedOid('primary')}.val`]: '#123456', [`${m3SeedOid('primary', true)}.val`]: '#ffe082', [`${M3_FONT_OID}.val`]: 'Jura-Regular' });
+        applyM3SeedVariables({
+            [`${M3_SCHEME_OID}.val`]: JSON.stringify({ light: { primary: '#123456', 'on-primary': '#ffffff' }, dark: { primary: '#ffe082', 'on-primary': '#1d1b20' } }),
+            [`${M3_FONT_OID}.val`]: 'Jura-Regular',
+        });
         expect(document.documentElement.style.getPropertyValue('--mdw-seed-primary')).toBe('#123456');
-        expect(document.documentElement.style.getPropertyValue('--mdw-seed-primary-dark')).toBe('#ffe082');
-        expect(document.documentElement.style.getPropertyValue('--mdw-seed-font')).toBe('Jura-Regular');
-        // on-primary is repaired per variant: dark text on the light seed, light text on the dark one.
         expect(document.documentElement.style.getPropertyValue('--mdw-seed-on-primary')).toBe('#ffffff');
+        expect(document.documentElement.style.getPropertyValue('--mdw-seed-primary-dark')).toBe('#ffe082');
         expect(document.documentElement.style.getPropertyValue('--mdw-seed-on-primary-dark')).toBe('#1d1b20');
+        expect(document.documentElement.style.getPropertyValue('--mdw-seed-font')).toBe('Jura-Regular');
+        // Roles the scheme does not carry stay unset rather than half-applied.
+        expect(document.documentElement.style.getPropertyValue('--mdw-seed-outline')).toBe('');
 
-        // Unset (or explicitly cleared): the property is removed so the material3-tokens.css
-        // baseline value shows through the var() fallback again, instead of pinning a stale override.
-        applyM3SeedVariables({ [`${m3SeedOid('primary')}.val`]: '' });
-        expect(document.documentElement.style.getPropertyValue('--mdw-seed-primary')).toBe('');
-        expect(document.documentElement.style.getPropertyValue('--mdw-seed-on-primary')).toBe('');
-        expect(document.documentElement.style.getPropertyValue('--mdw-seed-primary-dark')).toBe('');
+        // Unset (or explicitly cleared): every property is removed so the material3-tokens.css
+        // baseline shows through the var() fallback again, instead of pinning a stale scheme.
+        applyM3SeedVariables({ [`${M3_SCHEME_OID}.val`]: '' });
+        M3_TOKEN_ROLES.forEach(role => {
+            expect(document.documentElement.style.getPropertyValue(`--mdw-seed-${role}`)).toBe('');
+            expect(document.documentElement.style.getPropertyValue(`--mdw-seed-${role}-dark`)).toBe('');
+        });
         expect(document.documentElement.style.getPropertyValue('--mdw-seed-font')).toBe('');
 
         applyM3SeedVariables(undefined);
         applyM3SeedVariables({});
     });
 
-    it('VisWidget only subscribes to the optional M3 seed-color oids for widgets actually using material3', () => {
+    it('VisWidget only subscribes to the optional M3 scheme oids for widgets actually using material3', () => {
         const subscribeState = vi.fn().mockResolvedValue(undefined);
         const unsubscribeState = vi.fn();
         const legacyWidget = new VisWidget(fixture<ConstructorParameters<typeof VisWidget>[0]>({ context: { socket: { subscribeState, unsubscribeState } } }));
         legacyWidget.state = fixture<typeof legacyWidget.state>({ rxData: {}, values: {} });
         legacyWidget.componentDidMount();
-        expect(subscribeState).not.toHaveBeenCalledWith(m3SeedOid('primary'), expect.any(Function));
+        expect(subscribeState).not.toHaveBeenCalledWith(M3_SCHEME_OID, expect.any(Function));
 
         subscribeState.mockClear();
         const m3Widget = new VisWidget(fixture<ConstructorParameters<typeof VisWidget>[0]>({ context: { socket: { subscribeState, unsubscribeState } } }));

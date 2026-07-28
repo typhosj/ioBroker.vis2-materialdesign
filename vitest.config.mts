@@ -3,7 +3,10 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
     test: {
         environment: 'jsdom',
-        include: ['src-widgets-ts/src/**/*.test.{ts,tsx}'],
+        // The admin bundle is not otherwise unit-tested, but the M3 scheme generator lives there by
+        // design (Phase 9.1: the color math must not reach the widget runtime) and it is the one
+        // piece of admin code whose output every M3 widget depends on.
+        include: ['src-widgets-ts/src/**/*.test.{ts,tsx}', 'src-admin/src/**/*.test.{ts,tsx}'],
         setupFiles: ['test/widgets.setup.ts'],
         coverage: {
             provider: 'v8',

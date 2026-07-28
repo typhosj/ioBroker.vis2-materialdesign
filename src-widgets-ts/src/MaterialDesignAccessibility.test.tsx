@@ -3,7 +3,7 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { contrastRatio, m3OnColor, parseColor } from './widgetUtils';
+import { M3_TOKEN_ROLES, contrastRatio, m3OnColor, parseColor } from './widgetUtils';
 
 import MaterialDesignAlerts from './MaterialDesignAlerts';
 import MaterialDesignCalendar from './MaterialDesignCalendar';
@@ -231,12 +231,13 @@ describe('material 3 colour contrast', () => {
     });
 
     // Regression guard: a plain `--md-sys-color-primary: #6750a4` here is declared ON the widget
-    // root and beats the `--mdw-seed-*` layer applyM3SeedVariables() writes to <html>, so every
-    // admin seed override would silently do nothing again.
-    it('keeps every admin-overridable role behind its --mdw-seed-* fallback, light and dark', () => {
+    // root and beats the `--mdw-seed-*` layer applyM3SeedVariables() writes to <html>, so a derived
+    // scheme would silently do nothing again. Every role needs it, not just the four that used to be
+    // individually overridable — a scheme that reached half its roles is worse than none.
+    it('keeps every colour role behind its --mdw-seed-* fallback, light and dark', () => {
         [lightBlock, darkBlock].forEach((block, index) => {
             const suffix = index ? '-dark' : '';
-            ['primary', 'on-primary', 'secondary', 'tertiary', 'error'].forEach(role => {
+            M3_TOKEN_ROLES.forEach(role => {
                 expect(block).toContain(`--md-sys-color-${role}: var(--mdw-seed-${role}${suffix},`);
             });
         });
@@ -247,11 +248,14 @@ describe('material 3 colour contrast', () => {
         expect(lightBlock).toContain('--md-sys-typescale-label-large-font: var(--mdw-seed-font, inherit)');
     });
 
-    it('repairs the on-colour when an admin seed overrides primary', () => {
-        expect(m3OnColor('#ffee00')).toBe('#1d1b20'); // light seed: white label would be ~1.1:1
+    // The scheme supplies its own `on-*` roles, so this is no longer about seeds — it is the
+    // foreground picker for colours the USER chose (calendar event colours, chart data labels),
+    // which no palette can pair for us.
+    it('picks a legible foreground for an arbitrary user colour', () => {
+        expect(m3OnColor('#ffee00')).toBe('#1d1b20'); // light background: white label would be ~1.1:1
         expect(m3OnColor('#6750a4')).toBe('#ffffff');
         expect(m3OnColor('rgb(255, 238, 0)')).toBe('#1d1b20');
-        expect(m3OnColor('rebeccapurple')).toBeUndefined(); // unparseable: keep the baseline pair
-        [...'#ffee00 #6750a4 #b3261e #003366'.split(' ')].forEach(seed => expect(contrastRatio(parseColor(seed)!, parseColor(m3OnColor(seed)!)!)).toBeGreaterThanOrEqual(4.5));
+        expect(m3OnColor('rebeccapurple')).toBeUndefined(); // unparseable: leave the caller's fallback
+        [...'#ffee00 #6750a4 #b3261e #003366'.split(' ')].forEach(colour => expect(contrastRatio(parseColor(colour)!, parseColor(m3OnColor(colour)!)!)).toBeGreaterThanOrEqual(4.5));
     });
 });
