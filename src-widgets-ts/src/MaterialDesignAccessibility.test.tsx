@@ -319,6 +319,17 @@ describe('material 3 type scale', () => {
         expect([...reduced.matchAll(/--md-sys-motion-duration-[a-z0-9]+:([^;]+);/g)].map(match => match[1].trim())).toEqual(names(base).map(() => '0ms'));
     });
 
+    // The size options of List and Card are a select whose named entries become a legacy
+    // `mdc-typography--*` CLASS, not an inline size — and a class loses to these rules. Every carrier
+    // that can receive one has to exempt itself, or M3 overrides a size the user explicitly picked.
+    it('never overrides a size the user picked from the typography select', () => {
+        const guarded = ['.mdc-list-item__primary-text', '.mdc-list-item__secondary-text', '.materialdesign-list-item-text-right-primary',
+            '.materialdesign-list-item-text-right-secondary', '.mdc-list-group__subheader', '.materialdesign-html-card.card-title',
+            '.materialdesign-html-card.card-subtitle', '.materialdesign-html-card.card-body'];
+        guarded.forEach(selector => expect(components).toContain(`${selector}:not([class*="mdc-typography--"])`));
+        expect(components).not.toMatch(new RegExp(`${guarded[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?!:not)`));
+    });
+
     // Shape and the internal component dimensions (Phase 9.2 slice 2). The outer size of a widget is
     // the vis-2 widget box, never CSS, so the spec's button/text-field heights are not checked here —
     // only the geometry a widget owns inside itself.

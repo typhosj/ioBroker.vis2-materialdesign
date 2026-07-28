@@ -177,8 +177,15 @@
 /* Every rule below targets the element that CARRIES the widget's inline size option, never a child
    of it — an inline size on the parent would otherwise be overridden by a token on the child, which
    is exactly the compat-rule-#5 breakage the inline-wins argument above is supposed to prevent.
-   Hence `.mdc-drawer .mdc-list-item` and `.mdc-top-app-bar`, not their `__text`/`__title` spans. */
-.materialdesign-widget.mdw-style-material3 .mdc-list-item__primary-text,
+   Hence `.mdc-drawer .mdc-list-item` and `.mdc-top-app-bar`, not their `__text`/`__title` spans.
+
+   `:not([class*="mdc-typography--"])` is the second half of that rule, and it is not theoretical:
+   List and Card offer their size options as a SELECT whose named entries (`headline6`, `subtitle2`,
+   `body2`, …) are emitted as a legacy `mdc-typography--*` class instead of an inline size, and a
+   class loses to these rules on specificity. Without the guard, "Material 3" silently overrode a
+   size the user had explicitly picked — found on the live host, not by any test. Numeric entries in
+   the same option still arrive inline, and inline wins on its own. */
+.materialdesign-widget.mdw-style-material3 .mdc-list-item__primary-text:not([class*="mdc-typography--"]),
 .materialdesign-widget.mdw-style-material3 .mdc-drawer .mdc-list-item {
     font-size: var(--md-sys-typescale-body-large-size);
     font-weight: var(--md-sys-typescale-body-large-weight);
@@ -186,11 +193,11 @@
     line-height: var(--md-sys-typescale-body-large-line-height);
 }
 
-.materialdesign-widget.mdw-style-material3 .mdc-list-item__secondary-text,
-.materialdesign-widget.mdw-style-material3 .materialdesign-list-item-text-right-primary,
+.materialdesign-widget.mdw-style-material3 .mdc-list-item__secondary-text:not([class*="mdc-typography--"]),
+.materialdesign-widget.mdw-style-material3 .materialdesign-list-item-text-right-primary:not([class*="mdc-typography--"]),
 .materialdesign-widget.mdw-style-material3 .mdc-data-table__cell,
-.materialdesign-widget.mdw-style-material3 .materialdesign-html-card.card-subtitle,
-.materialdesign-widget.mdw-style-material3 .materialdesign-html-card.card-body {
+.materialdesign-widget.mdw-style-material3 .materialdesign-html-card.card-subtitle:not([class*="mdc-typography--"]),
+.materialdesign-widget.mdw-style-material3 .materialdesign-html-card.card-body:not([class*="mdc-typography--"]) {
     font-size: var(--md-sys-typescale-body-medium-size);
     font-weight: var(--md-sys-typescale-body-medium-weight);
     letter-spacing: var(--md-sys-typescale-body-medium-tracking);
@@ -200,7 +207,7 @@
 /* Trailing supporting text: M3 gives it `label-small`, but this column carries live values, not a
    label, and 11 px is unreadable on a wall panel at two metres. `body-small` is the smallest role
    the scale offers for actual content. */
-.materialdesign-widget.mdw-style-material3 .materialdesign-list-item-text-right-secondary {
+.materialdesign-widget.mdw-style-material3 .materialdesign-list-item-text-right-secondary:not([class*="mdc-typography--"]) {
     font-size: var(--md-sys-typescale-body-small-size);
     font-weight: var(--md-sys-typescale-body-small-weight);
     letter-spacing: var(--md-sys-typescale-body-small-tracking);
@@ -210,7 +217,7 @@
 /* The three title carriers take the EMPHASIZED weight of their role (Expressive, static half): same
    size, line-height and tracking, one step heavier. Emphasis on the headings only — running text
    stays baseline, because a dashboard read at two metres does not need a bold paragraph. */
-.materialdesign-widget.mdw-style-material3 .mdc-list-group__subheader,
+.materialdesign-widget.mdw-style-material3 .mdc-list-group__subheader:not([class*="mdc-typography--"]),
 .materialdesign-widget.mdw-style-material3 .mdc-data-table__header-cell {
     font-size: var(--md-sys-typescale-title-small-size);
     font-weight: var(--md-sys-typescale-title-small-emphasized-weight);
@@ -220,7 +227,7 @@
 
 .materialdesign-widget.mdw-style-material3 .materialdesign-list-header,
 .materialdesign-widget.mdw-style-material3 .mdc-top-app-bar,
-.materialdesign-widget.mdw-style-material3 .materialdesign-html-card.card-title {
+.materialdesign-widget.mdw-style-material3 .materialdesign-html-card.card-title:not([class*="mdc-typography--"]) {
     font-size: var(--md-sys-typescale-title-large-size);
     font-weight: var(--md-sys-typescale-title-large-emphasized-weight);
     letter-spacing: var(--md-sys-typescale-title-large-tracking);
