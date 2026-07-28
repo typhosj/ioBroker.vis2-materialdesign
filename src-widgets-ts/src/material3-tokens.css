@@ -16,10 +16,12 @@
  * actually combine, and m3scheme.test.ts checks that a derived scheme holds the same ratios.
  *
  * Only tokens with an actual consumer are defined (Phase 8: "remove any M3 CSS or helper that no
- * registered widget uses") — the unused half of the M3 token set (shape small/medium/large, the
- * body/title type scales, elevation 0/2..5, the extra motion durations, and the unpaired
- * container/on-color error and tertiary roles) was dropped rather than shipped to every M3
- * project. Add a token back together with the widget that consumes it, not ahead of it.
+ * registered widget uses") — the unused half of the M3 token set (elevation 0/2..5, the extra
+ * motion durations, and the unpaired container/on-color error and tertiary roles) was dropped
+ * rather than shipped to every M3 project. Add a token back together with the widget that consumes
+ * it, not ahead of it. That is how the type-scale roles below arrived in Phase 9.2: with the
+ * carriers wired in the same commit, not ahead of them. `display-*`, `headline-large/medium`,
+ * `title-medium` and `label-medium/small` still have no carrier and are still absent.
  */
 
 /*
@@ -67,14 +69,56 @@
     --md-sys-shape-corner-medium: 12px;
     --md-sys-shape-corner-full: 9999px;
 
-    /* Same fallback as the widget root above: with `Roboto, sans-serif` here, clearing the admin's
-       M3 font left button labels on Roboto while the rest of the widget went back to inheriting the
-       view font. A `<button>` does not inherit the page font on its own, hence the explicit rule in
-       material3-components.css that reads this token. */
+    /*
+     * Type scale (Phase 9.2). Google's published values, in rem so a project that scales the view
+     * font scales with it; `MaterialDesignAccessibility.test.tsx` pins every number against a
+     * transcribed copy of the published table, so drift fails the build instead of the eye.
+     *
+     * Still only the roles with a consumer, per the header rule — the carriers are wired in
+     * material3-components.css (list, table, card, top app bar, dialog). The FAMILY stays with the
+     * root `font-family` above for all of them except `label-large`: a `<button>` does not inherit
+     * the page font, so that one role needs to carry it, with the same `--mdw-seed-font` fallback
+     * (with `Roboto, sans-serif` here, clearing the admin's M3 font left button labels on Roboto
+     * while the rest of the widget went back to the view font).
+     */
+    --md-sys-typescale-headline-small-size: 1.5rem;
+    --md-sys-typescale-headline-small-line-height: 2rem;
+    --md-sys-typescale-headline-small-weight: 400;
+    --md-sys-typescale-headline-small-tracking: 0;
+
+    --md-sys-typescale-title-large-size: 1.375rem;
+    --md-sys-typescale-title-large-line-height: 1.75rem;
+    --md-sys-typescale-title-large-weight: 400;
+    --md-sys-typescale-title-large-tracking: 0;
+
+    --md-sys-typescale-title-small-size: .875rem;
+    --md-sys-typescale-title-small-line-height: 1.25rem;
+    --md-sys-typescale-title-small-weight: 500;
+    --md-sys-typescale-title-small-tracking: .0071428571em;
+
+    --md-sys-typescale-body-large-size: 1rem;
+    --md-sys-typescale-body-large-line-height: 1.5rem;
+    --md-sys-typescale-body-large-weight: 400;
+    --md-sys-typescale-body-large-tracking: .03125em;
+
+    --md-sys-typescale-body-medium-size: .875rem;
+    --md-sys-typescale-body-medium-line-height: 1.25rem;
+    --md-sys-typescale-body-medium-weight: 400;
+    --md-sys-typescale-body-medium-tracking: .0178571429em;
+
+    --md-sys-typescale-body-small-size: .75rem;
+    --md-sys-typescale-body-small-line-height: 1rem;
+    --md-sys-typescale-body-small-weight: 400;
+    --md-sys-typescale-body-small-tracking: .0333333333em;
+
     --md-sys-typescale-label-large-font: var(--mdw-seed-font, inherit);
     --md-sys-typescale-label-large-size: .875rem;
+    --md-sys-typescale-label-large-line-height: 1.25rem;
     --md-sys-typescale-label-large-weight: 500;
-    --md-sys-typescale-label-large-tracking: .00625em;
+    /* Tracking is published in dp and expressed here in em of the role's OWN size (0.1 ÷ 14), not of
+       the 16 px root — `em` on `letter-spacing` resolves against the element's font size. The old
+       `.00625em` here was 0.1 ÷ 16 and therefore rendered 0.0875 px on a 14 px label. */
+    --md-sys-typescale-label-large-tracking: .0071428571em;
 
     --md-sys-elevation-level1: 0 1px 2px 0 rgba(0, 0, 0, .3), 0 1px 3px 1px rgba(0, 0, 0, .15);
 

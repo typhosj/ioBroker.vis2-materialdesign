@@ -567,14 +567,18 @@ export class MaterialDesignDialog extends VisWidget {
             >
               {b(d.showTitle, true) ? (
                 <header
+                  // M3 headline-small for the title (Phase 9.2): the size/weight below are left
+                  // unset so material3-components.css can supply the whole role — but only while
+                  // the user set no size of their own, per compat rule #5.
+                  className={isM3 ? "mdw-md3-dialog-headline" : undefined}
                   style={{
                     alignItems: "center",
                     background: s(d.headerBackgroundColor),
                     color: s(d.titleColor, isM3 ? "var(--md-sys-color-on-surface)" : "#44739e"),
                     display: "flex",
                     fontFamily: s(d.titleFont),
-                    fontSize: sizeCss(d.titleFontSize, 16),
-                    fontWeight: 500,
+                    fontSize: isM3 && !s(d.titleFontSize) ? undefined : sizeCss(d.titleFontSize, 16),
+                    fontWeight: isM3 ? undefined : 500,
                     height: n(d.headerHeight, 50),
                     padding: "0 24px",
                   }}
@@ -600,6 +604,7 @@ export class MaterialDesignDialog extends VisWidget {
                   />
                 ) : null}
                 <button
+                  className={isM3 ? "mdw-md3-dialog-button" : undefined}
                   onClick={close}
                   onPointerDown={fullscreen ? () => { this.pressClose = true; this.forceUpdate(); } : undefined}
                   onPointerUp={fullscreen ? () => { this.pressClose = false; this.forceUpdate(); } : undefined}
@@ -611,12 +616,12 @@ export class MaterialDesignDialog extends VisWidget {
                     color: s(d.buttonFontColor, isM3 ? "var(--md-sys-color-primary)" : "#44739e"),
                     cursor: "pointer",
                     fontFamily: s(d.buttonFont),
-                    fontSize: sizeCss(d.buttonFontSize, 16),
-                    fontWeight: 500,
+                    fontSize: isM3 && !s(d.buttonFontSize) ? undefined : sizeCss(d.buttonFontSize, 16),
+                    fontWeight: isM3 ? undefined : 500,
                     height: 36,
                     minWidth: 64,
                     padding: "0 16px",
-                    textTransform: "uppercase",
+                    textTransform: isM3 ? undefined : "uppercase",
                     width: b(d.buttonFullWidth) ? "100%" : undefined,
                   }}
                   // A button can carry EITHER dangerouslySetInnerHTML OR children, never both (React #60).

@@ -100,6 +100,7 @@
     font-size: var(--md-sys-typescale-label-large-size);
     font-weight: var(--md-sys-typescale-label-large-weight);
     letter-spacing: var(--md-sys-typescale-label-large-tracking);
+    line-height: var(--md-sys-typescale-label-large-line-height);
 }
 
 .materialdesign-widget.mdw-style-material3 .mdw-md3-button--filled {
@@ -155,6 +156,91 @@
     background: transparent;
     border: 1px solid var(--md-sys-color-outline);
     color: var(--md-sys-color-on-surface-variant);
+}
+
+/*
+ * M3 type scale, wired to the elements that carry it (Phase 9.2, ../../MATERIAL3_PLAN.md). Until
+ * now `label-large` on buttons was the only role with a consumer, so "Material 3" left every other
+ * text at whatever size the legacy MDC CSS happened to give it.
+ *
+ * All of it is CSS on class names the widgets ALREADY emit, which is also what keeps compat rule #5
+ * ("M3 geometry applies only where the user has set no explicit size"): the per-item size options
+ * are emitted as INLINE styles, and an inline declaration beats any stylesheet rule regardless of
+ * specificity. A widget whose text size the user set keeps it, in both styles, with no code here
+ * consulting the option at all. The three places where the widget baked a DEFAULT into that inline
+ * style (list header, top app bar title, dialog title/button) are the only ones that needed a code
+ * change — they now leave the property unset in M3 when the user set nothing, so these rules apply.
+ *
+ * Each rule is more specific than the widget-local CSS it overrides (`.materialdesign-list .x` etc.
+ * is 0-2-0, the two classes on the root here make it 0-3-0), so file order does not matter.
+ */
+/* Every rule below targets the element that CARRIES the widget's inline size option, never a child
+   of it — an inline size on the parent would otherwise be overridden by a token on the child, which
+   is exactly the compat-rule-#5 breakage the inline-wins argument above is supposed to prevent.
+   Hence `.mdc-drawer .mdc-list-item` and `.mdc-top-app-bar`, not their `__text`/`__title` spans. */
+.materialdesign-widget.mdw-style-material3 .mdc-list-item__primary-text,
+.materialdesign-widget.mdw-style-material3 .mdc-drawer .mdc-list-item {
+    font-size: var(--md-sys-typescale-body-large-size);
+    font-weight: var(--md-sys-typescale-body-large-weight);
+    letter-spacing: var(--md-sys-typescale-body-large-tracking);
+    line-height: var(--md-sys-typescale-body-large-line-height);
+}
+
+.materialdesign-widget.mdw-style-material3 .mdc-list-item__secondary-text,
+.materialdesign-widget.mdw-style-material3 .materialdesign-list-item-text-right-primary,
+.materialdesign-widget.mdw-style-material3 .mdc-data-table__cell,
+.materialdesign-widget.mdw-style-material3 .materialdesign-html-card.card-subtitle,
+.materialdesign-widget.mdw-style-material3 .materialdesign-html-card.card-body {
+    font-size: var(--md-sys-typescale-body-medium-size);
+    font-weight: var(--md-sys-typescale-body-medium-weight);
+    letter-spacing: var(--md-sys-typescale-body-medium-tracking);
+    line-height: var(--md-sys-typescale-body-medium-line-height);
+}
+
+/* Trailing supporting text: M3 gives it `label-small`, but this column carries live values, not a
+   label, and 11 px is unreadable on a wall panel at two metres. `body-small` is the smallest role
+   the scale offers for actual content. */
+.materialdesign-widget.mdw-style-material3 .materialdesign-list-item-text-right-secondary {
+    font-size: var(--md-sys-typescale-body-small-size);
+    font-weight: var(--md-sys-typescale-body-small-weight);
+    letter-spacing: var(--md-sys-typescale-body-small-tracking);
+    line-height: var(--md-sys-typescale-body-small-line-height);
+}
+
+.materialdesign-widget.mdw-style-material3 .mdc-list-group__subheader,
+.materialdesign-widget.mdw-style-material3 .mdc-data-table__header-cell {
+    font-size: var(--md-sys-typescale-title-small-size);
+    font-weight: var(--md-sys-typescale-title-small-weight);
+    letter-spacing: var(--md-sys-typescale-title-small-tracking);
+    line-height: var(--md-sys-typescale-title-small-line-height);
+}
+
+.materialdesign-widget.mdw-style-material3 .materialdesign-list-header,
+.materialdesign-widget.mdw-style-material3 .mdc-top-app-bar,
+.materialdesign-widget.mdw-style-material3 .materialdesign-html-card.card-title {
+    font-size: var(--md-sys-typescale-title-large-size);
+    font-weight: var(--md-sys-typescale-title-large-weight);
+    letter-spacing: var(--md-sys-typescale-title-large-tracking);
+    line-height: var(--md-sys-typescale-title-large-line-height);
+}
+
+.materialdesign-widget.mdw-style-material3 .mdw-md3-dialog-headline {
+    font-size: var(--md-sys-typescale-headline-small-size);
+    font-weight: var(--md-sys-typescale-headline-small-weight);
+    letter-spacing: var(--md-sys-typescale-headline-small-tracking);
+    line-height: var(--md-sys-typescale-headline-small-line-height);
+}
+
+/* The dialog's close/confirm button is inline-styled, not one of the `.mdw-md3-button` variants, so
+   it gets the label-large role directly. `text-transform` is the one thing that has to be UNDONE
+   rather than set: legacy MDC uppercases button labels, M3 is sentence case. */
+.materialdesign-widget.mdw-style-material3 .mdw-md3-dialog-button {
+    font-family: var(--md-sys-typescale-label-large-font);
+    font-size: var(--md-sys-typescale-label-large-size);
+    font-weight: var(--md-sys-typescale-label-large-weight);
+    letter-spacing: var(--md-sys-typescale-label-large-tracking);
+    line-height: var(--md-sys-typescale-label-large-line-height);
+    text-transform: none;
 }
 
 /*

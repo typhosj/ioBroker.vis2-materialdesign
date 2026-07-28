@@ -259,3 +259,42 @@ describe('material 3 colour contrast', () => {
         [...'#ffee00 #6750a4 #b3261e #003366'.split(' ')].forEach(colour => expect(contrastRatio(parseColor(colour)!, parseColor(m3OnColor(colour)!)!)).toBeGreaterThanOrEqual(4.5));
     });
 });
+
+// Phase 9.2/9.5: the type scale is spec data, so it is checked against the spec rather than eyeballed
+// once. Google's published values are in dp; the tokens are in rem so a project that scales the view
+// font scales with it, hence the ×16 on the root font size the browser default gives us.
+describe('material 3 type scale', () => {
+    const tokens = readFileSync('src-widgets-ts/src/material3-tokens.css', 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+    const components = readFileSync('src-widgets-ts/src/material3-components.css', 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+    const declared = Object.fromEntries([...tokens.matchAll(/--md-sys-typescale-([a-z-]+):\s*([^;]+);/g)].map(match => [match[1], match[2].trim()]));
+    // size / line-height / weight / tracking, exactly as published (dp, dp, ‑, dp).
+    const published: Record<string, [number, number, number, number]> = {
+        'headline-small': [24, 32, 400, 0],
+        'title-large': [22, 28, 400, 0],
+        'title-small': [14, 20, 500, .1],
+        'body-large': [16, 24, 400, .5],
+        'body-medium': [14, 20, 400, .25],
+        'body-small': [12, 16, 400, .4],
+        'label-large': [14, 20, 500, .1],
+    };
+    const px = (value: string): number => (value.endsWith('rem') ? parseFloat(value) * 16 : parseFloat(value));
+
+    it.each(Object.entries(published))('matches the published values for %s', (role, [size, lineHeight, weight, tracking]) => {
+        expect(px(declared[`${role}-size`])).toBeCloseTo(size, 5);
+        expect(px(declared[`${role}-line-height`])).toBeCloseTo(lineHeight, 5);
+        expect(Number(declared[`${role}-weight`])).toBe(weight);
+        // Tracking is published in dp but expressed in em (dp ÷ the role's own size), which is what
+        // keeps it proportional when the user scales the font.
+        expect(px(declared[`${role}-tracking`]) * px(declared[`${role}-size`])).toBeCloseTo(tracking, 5);
+    });
+
+    // Both directions of the "only tokens with a consumer" rule in the tokens-file header: a role
+    // nobody carries is dead weight in every M3 project, and a carrier reading a role nobody declares
+    // renders at the inherited size while looking, in the diff, exactly like it works.
+    it('declares exactly the roles the components stylesheet carries', () => {
+        const carried = new Set([...components.matchAll(/var\(--md-sys-typescale-([a-z-]+)-(?:size|line-height|weight|tracking|font)\)/g)].map(match => match[1]));
+        expect([...carried].sort()).toEqual(Object.keys(published).sort());
+        const declaredRoles = new Set(Object.keys(declared).map(name => name.replace(/-(?:size|line-height|weight|tracking|font)$/, '')));
+        expect([...declaredRoles].sort()).toEqual(Object.keys(published).sort());
+    });
+});
