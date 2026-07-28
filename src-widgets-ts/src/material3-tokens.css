@@ -83,6 +83,18 @@
      * (with `Roboto, sans-serif` here, clearing the admin's M3 font left button labels on Roboto
      * while the rest of the widget went back to the view font).
      */
+    /*
+     * The emphasized half of the scale (Material 3 Expressive, static part — Phase 9.2). Emphasized
+     * is the SAME size, line-height and tracking as its baseline role, one step heavier: regular →
+     * medium, medium → bold. So only the weight needs a token; carrying three more that repeat the
+     * baseline verbatim would be three more things to drift. The roles that take it are the ones
+     * that carry a title, never running text: a dashboard is read at two metres and a bold body
+     * paragraph is noise, not emphasis.
+     */
+    --md-sys-typescale-headline-small-emphasized-weight: 500;
+    --md-sys-typescale-title-large-emphasized-weight: 500;
+    --md-sys-typescale-title-small-emphasized-weight: 700;
+
     --md-sys-typescale-headline-small-size: 1.5rem;
     --md-sys-typescale-headline-small-line-height: 2rem;
     --md-sys-typescale-headline-small-weight: 400;
@@ -134,6 +146,13 @@
 
     --md-sys-motion-duration-short2: 100ms;
     --md-sys-motion-easing-standard: cubic-bezier(.2, 0, 0, 1);
+    /* Expressive motion, static half (Phase 9.2): the switch handle travels on emphasized-decelerate
+       over 200 ms instead of the flat 100 ms standard curve. Spring physics is what Expressive
+       actually specifies, and it needs `linear()` (Chrome 113) or a JS loop — both out at this
+       baseline, and a physics loop on a wall panel is what the Performance priorities section
+       forbids. A decelerating curve is the part of that motion a plain transition can carry. */
+    --md-sys-motion-duration-short4: 200ms;
+    --md-sys-motion-easing-emphasized-decelerate: cubic-bezier(.05, .7, .1, 1);
 }
 
 /* Dark carries its own `--mdw-seed-*-dark` layer, but NOT its own seed: both schemes are derived
@@ -168,5 +187,6 @@
 @media (prefers-reduced-motion: reduce) {
     .materialdesign-widget.mdw-style-material3 {
         --md-sys-motion-duration-short2: 0ms;
+        --md-sys-motion-duration-short4: 0ms;
     }
 }

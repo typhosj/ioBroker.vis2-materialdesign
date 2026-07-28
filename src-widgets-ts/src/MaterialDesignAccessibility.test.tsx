@@ -277,6 +277,9 @@ describe('material 3 type scale', () => {
         'body-small': [12, 16, 400, .4],
         'label-large': [14, 20, 500, .1],
     };
+    // Material 3 Expressive, static half: same size/line-height/tracking as the baseline role, one
+    // weight step up (regular -> medium, medium -> bold), so only the weight is a token of its own.
+    const emphasized: Record<string, number> = { 'headline-small': 500, 'title-large': 500, 'title-small': 700 };
     const px = (value: string): number => (value.endsWith('rem') ? parseFloat(value) * 16 : parseFloat(value));
 
     it.each(Object.entries(published))('matches the published values for %s', (role, [size, lineHeight, weight, tracking]) => {
@@ -291,11 +294,29 @@ describe('material 3 type scale', () => {
     // Both directions of the "only tokens with a consumer" rule in the tokens-file header: a role
     // nobody carries is dead weight in every M3 project, and a carrier reading a role nobody declares
     // renders at the inherited size while looking, in the diff, exactly like it works.
+    it.each(Object.entries(emphasized))('carries the emphasized weight of %s', (role, weight) => {
+        expect(Number(declared[`${role}-emphasized-weight`])).toBe(weight);
+        // One step up from the baseline is the whole rule; equal weights would mean the token is a
+        // no-op that nobody notices until someone wonders why "emphasized" looks like body text.
+        expect(weight).toBeGreaterThan(Number(declared[`${role}-weight`]));
+    });
+
     it('declares exactly the roles the components stylesheet carries', () => {
+        const all = [...Object.keys(published), ...Object.keys(emphasized).map(role => `${role}-emphasized`)].sort();
         const carried = new Set([...components.matchAll(/var\(--md-sys-typescale-([a-z-]+)-(?:size|line-height|weight|tracking|font)\)/g)].map(match => match[1]));
-        expect([...carried].sort()).toEqual(Object.keys(published).sort());
+        expect([...carried].sort()).toEqual(all);
         const declaredRoles = new Set(Object.keys(declared).map(name => name.replace(/-(?:size|line-height|weight|tracking|font)$/, '')));
-        expect([...declaredRoles].sort()).toEqual(Object.keys(published).sort());
+        expect([...declaredRoles].sort()).toEqual(all);
+    });
+
+    // Motion is opt-out, not opt-in: every duration token has to collapse under reduced motion, or
+    // the one that does not is the one nobody notices until it moves on a machine that asked it not to.
+    it('collapses every motion duration under prefers-reduced-motion', () => {
+        const [base, reduced = ''] = tokens.split('@media (prefers-reduced-motion: reduce)');
+        const names = (css: string): string[] => [...new Set([...css.matchAll(/--md-sys-motion-duration-([a-z0-9]+):/g)].map(match => match[1]))].sort();
+        expect(names(base)).not.toEqual([]);
+        expect(names(reduced)).toEqual(names(base));
+        expect([...reduced.matchAll(/--md-sys-motion-duration-[a-z0-9]+:([^;]+);/g)].map(match => match[1].trim())).toEqual(names(base).map(() => '0ms'));
     });
 
     // Shape and the internal component dimensions (Phase 9.2 slice 2). The outer size of a widget is

@@ -207,10 +207,13 @@
     line-height: var(--md-sys-typescale-body-small-line-height);
 }
 
+/* The three title carriers take the EMPHASIZED weight of their role (Expressive, static half): same
+   size, line-height and tracking, one step heavier. Emphasis on the headings only — running text
+   stays baseline, because a dashboard read at two metres does not need a bold paragraph. */
 .materialdesign-widget.mdw-style-material3 .mdc-list-group__subheader,
 .materialdesign-widget.mdw-style-material3 .mdc-data-table__header-cell {
     font-size: var(--md-sys-typescale-title-small-size);
-    font-weight: var(--md-sys-typescale-title-small-weight);
+    font-weight: var(--md-sys-typescale-title-small-emphasized-weight);
     letter-spacing: var(--md-sys-typescale-title-small-tracking);
     line-height: var(--md-sys-typescale-title-small-line-height);
 }
@@ -219,14 +222,14 @@
 .materialdesign-widget.mdw-style-material3 .mdc-top-app-bar,
 .materialdesign-widget.mdw-style-material3 .materialdesign-html-card.card-title {
     font-size: var(--md-sys-typescale-title-large-size);
-    font-weight: var(--md-sys-typescale-title-large-weight);
+    font-weight: var(--md-sys-typescale-title-large-emphasized-weight);
     letter-spacing: var(--md-sys-typescale-title-large-tracking);
     line-height: var(--md-sys-typescale-title-large-line-height);
 }
 
 .materialdesign-widget.mdw-style-material3 .mdw-md3-dialog-headline {
     font-size: var(--md-sys-typescale-headline-small-size);
-    font-weight: var(--md-sys-typescale-headline-small-weight);
+    font-weight: var(--md-sys-typescale-headline-small-emphasized-weight);
     letter-spacing: var(--md-sys-typescale-headline-small-tracking);
     line-height: var(--md-sys-typescale-headline-small-line-height);
 }

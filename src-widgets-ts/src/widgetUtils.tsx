@@ -392,7 +392,10 @@ export function m3Switch(options: {
     rootProps?: React.HTMLAttributes<HTMLDivElement>;
 }): React.JSX.Element {
     const { on, input, trackOn, trackOff, thumbOn, thumbOff, disabled, filter, icon, margin, rootProps } = options;
-    const motion = 'var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard)';
+    // Expressive motion, static half (Phase 9.2): the handle decelerates into its end position over
+    // 200 ms instead of the flat 100 ms standard curve. `prefers-reduced-motion` collapses the
+    // duration token to 0 (see material3-tokens.css), so this stays opt-out like the rest.
+    const motion = 'var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-emphasized-decelerate)';
     return (
         <div
             aria-checked={on}
