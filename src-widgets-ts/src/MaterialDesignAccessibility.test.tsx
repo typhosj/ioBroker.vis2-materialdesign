@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -313,6 +313,7 @@ describe('material 3 type scale', () => {
         ['.mdc-data-table__header-row', 'height: 56px'],
         ['.mdc-data-table__row', 'height: 52px'],
         ['.mdc-card', 'border-radius: var(--md-sys-shape-corner-medium)'],
+        ['.mdw-md3-button', 'border-radius: var(--md-sys-shape-corner-full)'],
     ])('gives %s its M3 geometry', (selector, declaration) => {
         const rule = components.split('}').find(block => block.includes(selector) && block.includes(declaration));
         // A legacy project must not pick up any of this.
@@ -334,5 +335,45 @@ describe('material 3 type scale', () => {
         expect(open({ designStyle: 'material3', titleFontSize: 21 })).toContain('font-size:21px');
         expect(open({})).toContain('text-transform:uppercase');
         expect(open({})).toContain('border-radius:4px');
+    });
+});
+
+// The three token groups type and shape leave over. Same rule as up there: the published table lives
+// here, in the repo, and drift fails the build instead of surviving as a footnote.
+describe('material 3 elevation, state layers and motion', () => {
+    const dir = 'src-widgets-ts/src/';
+    // Only the base block: the reduced-motion override at the end of the file redeclares two duration
+    // tokens as 0ms, and a later key wins in fromEntries.
+    const tokens = readFileSync(`${dir}material3-tokens.css`, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '').split('@media')[0];
+    const declared = Object.fromEntries([...tokens.matchAll(/--md-sys-((?:elevation|state|motion)-[a-z0-9-]+):\s*([^;]+);/g)].map(match => [match[1], match[2].trim()]));
+    const published: Record<string, string> = {
+        'elevation-level1': '0 1px 2px 0 rgba(0, 0, 0, 0.3), 0 1px 3px 1px rgba(0, 0, 0, 0.15)',
+        'elevation-level2': '0 1px 2px 0 rgba(0, 0, 0, 0.3), 0 2px 6px 2px rgba(0, 0, 0, 0.15)',
+        'state-hover-opacity': '0.08',
+        'state-focus-opacity': '0.10',
+        'state-pressed-opacity': '0.10',
+        'state-dragged-opacity': '0.16',
+        'motion-duration-short2': '100ms',
+        'motion-duration-short4': '200ms',
+        'motion-easing-standard': 'cubic-bezier(0.2, 0, 0, 1)',
+        'motion-easing-emphasized-decelerate': 'cubic-bezier(0.05, 0.7, 0.1, 1)',
+    };
+    // The stylesheet writes `.3` and `.10` as `.1`; that is CSS formatting, not a different value.
+    const normalise = (value: string): string => value.replace(/\s+/g, '').replace(/\b0\./g, '.').replace(/(\.\d*?)0+\b/g, '$1');
+
+    it.each(Object.entries(published))('matches the published value for %s', (name, value) => {
+        expect(normalise(declared[name] ?? '')).toBe(normalise(value));
+    });
+
+    // Both directions, as for the type scale: a token nothing reads is dead weight, and a consumer
+    // reading an undeclared token silently renders with no shadow, no state layer or no transition —
+    // all three look deliberate in a diff. Test files are not consumers.
+    it('declares exactly the elevation, state and motion tokens the sources read', () => {
+        const sources = readdirSync(dir)
+            .filter(name => /\.(css|tsx?)$/.test(name) && name !== 'material3-tokens.css' && !name.includes('.test.'))
+            .map(name => readFileSync(dir + name, 'utf8')).join('\n');
+        const consumed = new Set([...sources.matchAll(/var\(--md-sys-((?:elevation|state|motion)-[a-z0-9-]+)\)/g)].map(match => match[1]));
+        expect([...consumed].sort()).toEqual(Object.keys(declared).sort());
+        expect(Object.keys(declared).sort()).toEqual(Object.keys(published).sort());
     });
 });
