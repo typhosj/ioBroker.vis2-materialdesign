@@ -2,7 +2,7 @@ import React from "react";
 import { MAX_DYNAMIC_ITEMS, squarePreview, boundedCount, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, formatMoment, visLocale, stateValue, sanitizeHtml } from './widgetUtils';
 import type { RxWidgetInfo, VisRxWidgetState } from "@iobroker/types-vis-2";
 import { colorSchemes, scheme } from "./MaterialDesignColorScheme";
-import { MaterialDesignChartCanvas } from "./MaterialDesignChartCanvas";
+import { MaterialDesignChartCanvas, datalabelsConfig } from "./MaterialDesignChartCanvas";
 import { chartAxis, m3ChartColors } from "./chartAxis";
 
 type Data = Record<string, unknown>;
@@ -188,6 +188,10 @@ const attrs: RxWidgetInfo["visAttrs"] = [
       color("valuesFontColor"),
       { name: "valuesFontFamily", label: "valuesFontFamily", type: "fontname" },
       num("valuesFontSize"),
+      color("valuesBackgroundColor"),
+      color("valuesBorderColor"),
+      num("valuesBorderWidth"),
+      num("valuesBorderRadius"),
     ]),
   },
   {
@@ -430,10 +434,21 @@ export default class MaterialDesignChartLineHistory extends VisWidget {
       tickCallback: (value) => fmtTime(value, timeFmt || "HH:mm"),
     });
     const scales: Record<string, unknown> = { x: xAxis, ...Object.fromEntries(yEntries) };
+    // Value labels are per series here, so they ride on the dataset; the plugin default below stays
+    // `display: false` because a dataset without its own config labels the raw {x,y} object.
+    const seriesLabels = (i: number, points: Point[], dsColor: string): object => {
+      const min = Math.max(0, n(item(d, "valuesMinDecimals", i)));
+      const max = Math.max(min, n(item(d, "valuesMaxDecimals", i)));
+      const append = s(item(d, "valuesAppendText", i));
+      const labelColor = s(item(d, "valuesFontColor", i), dsColor);
+      const perSeries: Data = { designStyle: d.designStyle };
+      for (const key of ["showValues", "valuesSteps", "valuesFontFamily", "valuesFontSize", "valuesBackgroundColor", "valuesBorderColor", "valuesBorderWidth", "valuesBorderRadius"]) perSeries[key] = item(d, key, i);
+      return datalabelsConfig(perSeries, index => ({ color: labelColor, text: `${n(points[index]?.val).toLocaleString(visLocale(), { maximumFractionDigits: max, minimumFractionDigits: min })}${append}` }), { align: "top", anchor: "end" });
+    };
     // chart.js v4 hard-crashes (vScale undefined) if a dataset references a y-axis id with no scale;
     // series indices can diverge from configured rows (sparse oids).
     this.series.forEach((_series, i) => { const id = yAxisIdOf(i); if (!(id in scales)) scales[id] = { axis: "y", type: "linear", position: "left" }; });
-    const chartjs = <MaterialDesignChartCanvas type="line" data={{ datasets: this.series.map((series, i) => { const seriesColorValue = seriesColor(d, i, colors, d.globalColor); const dsColor = isM3 && seriesColorValue === "#44739e" ? m3.primary : seriesColorValue; return { label: s(item(d, "legendText", i), series.oid), data: series.points.filter(point => point.val !== null).map(point => ({ x: point.ts, y: point.val })), borderColor: dsColor, backgroundColor: b(item(d, "useFillColor", i)) ? s(item(d, "fillColor", i), `${dsColor}33`) : "transparent", fill: b(item(d, "useFillColor", i)), borderWidth: n(item(d, "lineThikness", i), 2), stepped: b(item(d, "steppedLine", i)), tension: 0, pointBackgroundColor: s(item(d, "pointColor", i)), pointRadius: n(d.pointSize, 3), yAxisID: yAxisIdOf(i) }; }) }} options={{ responsive: true, maintainAspectRatio: false, animation: { duration: n(d.animationDuration, 1000) }, scales, plugins: { legend: { display: false }, datalabels: { display: false }, tooltip: { enabled: b(d.showTooltip, true), callbacks: { title: (items: { parsed?: { x?: number } }[]) => fmtTime(items[0]?.parsed?.x, timeFmt || "lll") } } } }} />;
+    const chartjs = <MaterialDesignChartCanvas type="line" data={{ datasets: this.series.map((series, i) => { const seriesColorValue = seriesColor(d, i, colors, d.globalColor); const dsColor = isM3 && seriesColorValue === "#44739e" ? m3.primary : seriesColorValue; const points = series.points.filter(point => point.val !== null); return { label: s(item(d, "legendText", i), series.oid), data: points.map(point => ({ x: point.ts, y: point.val })), datalabels: seriesLabels(i, points, dsColor), borderColor: dsColor, backgroundColor: b(item(d, "useFillColor", i)) ? s(item(d, "fillColor", i), `${dsColor}33`) : "transparent", fill: b(item(d, "useFillColor", i)), borderWidth: n(item(d, "lineThikness", i), 2), stepped: b(item(d, "steppedLine", i)), tension: 0, pointBackgroundColor: s(item(d, "pointColor", i)), pointRadius: n(d.pointSize, 3), yAxisID: yAxisIdOf(i) }; }) }} options={{ responsive: true, maintainAspectRatio: false, animation: { duration: n(d.animationDuration, 1000) }, scales, plugins: { legend: { display: false }, datalabels: { display: false }, tooltip: { enabled: b(d.showTooltip, true), callbacks: { title: (items: { parsed?: { x?: number } }[]) => fmtTime(items[0]?.parsed?.x, timeFmt || "lll") } } } }} />;
     const legend = b(d.showLegend, true) ? (
       <div
         style={{

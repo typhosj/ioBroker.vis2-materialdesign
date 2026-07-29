@@ -277,6 +277,10 @@ const attrs: RxWidgetInfo["visAttrs"] = [
         max: 360,
         step: 1,
       },
+      { name: "valuesBackgroundColor", label: "valuesBackgroundColor", type: "color" },
+      { name: "valuesBorderColor", label: "valuesBorderColor", type: "color" },
+      { name: "valuesBorderWidth", label: "valuesBorderWidth", type: "number" },
+      { name: "valuesBorderRadius", label: "valuesBorderRadius", type: "number" },
     ],
   },
   ...["yAxis", "xAxis"].map((axis) => ({

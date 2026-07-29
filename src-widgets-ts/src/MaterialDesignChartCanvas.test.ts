@@ -39,6 +39,13 @@ describe('datalabelsConfig', () => {
         expect((saved.color as (context: unknown) => string)(context)).toBe('#00696d');
     });
 
+    // Upstream #68: the box behind the value. Unset must leave the plugin drawing nothing at all.
+    it('passes the label box through and stays invisible while unset', () => {
+        expect(datalabelsConfig({}, label, { align: 'top', anchor: 'end' })).toMatchObject({ backgroundColor: null, borderColor: null, borderRadius: 0, borderWidth: 0 });
+        expect(datalabelsConfig({ valuesBackgroundColor: '#eeeeee', valuesBorderColor: '#111111', valuesBorderRadius: 4, valuesBorderWidth: 2 }, label, { align: 'top', anchor: 'end' }))
+            .toMatchObject({ backgroundColor: '#eeeeee', borderColor: '#111111', borderRadius: 4, borderWidth: 2 });
+    });
+
     it('thins the labels out with valuesSteps', () => {
         const every2 = datalabelsConfig({ valuesSteps: 2 }, label, { align: 'top', anchor: 'end' }) as Record<string, unknown>;
         const display = every2.display as (context: { dataIndex: number }) => unknown;

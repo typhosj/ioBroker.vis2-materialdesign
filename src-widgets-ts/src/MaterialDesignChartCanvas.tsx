@@ -72,6 +72,10 @@ export function datalabelsConfig(
   return {
     align,
     anchor,
+    backgroundColor: str(data.valuesBackgroundColor) || null,
+    borderColor: str(data.valuesBorderColor) || null,
+    borderRadius: num(data.valuesBorderRadius),
+    borderWidth: num(data.valuesBorderWidth),
     color: (context: LabelContext): string => label(context.dataIndex).color || (onElement ? labelColorFor(context) : offElementColor(context)),
     display: show === "showValuesOff" ? false : (context: LabelContext): boolean | string => (context.dataIndex % steps === 0 ? visible : false),
     font: { family: str(data.valuesFontFamily) || undefined, size: num(data.valuesFontSize, 12) },

@@ -1,3 +1,4 @@
+import { isValidElement } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
 import MaterialDesignChartLineHistory, { distinctAxisRows, item, rowAxisId, seriesColor } from './MaterialDesignChartLineHistory';
@@ -59,6 +60,38 @@ describe('line history loading', () => {
         await Promise.resolve();
         await Promise.resolve();
         expect(inspection.series).toEqual([]);
+    });
+});
+
+describe('per-series value labels (upstream #68)', () => {
+    type Dataset = { datalabels: Record<string, unknown> };
+    type Points = Array<{ ts: number; val: number | null }>;
+    const findDatasets = (node: unknown): Dataset[] | undefined => {
+        if (Array.isArray(node)) return node.map(findDatasets).find(Boolean);
+        if (!isValidElement(node)) return undefined;
+        const props = node.props as { data?: { datasets?: Dataset[] }; children?: unknown };
+        return props.data?.datasets || findDatasets(props.children);
+    };
+    function datasets(rxData: Record<string, unknown>, series: Points[]): Dataset[] {
+        const widget = new MaterialDesignChartLineHistory(fixture<ConstructorParameters<typeof MaterialDesignChartLineHistory>[0]>({ context: {} }));
+        fixture<HistoryInspection>(widget).series = series.map((points, index) => ({ oid: `test.0.value${index}`, points }));
+        widget.state = fixture<typeof widget.state>({ rxData, values: {} });
+        return findDatasets(widget.renderWidgetBody(fixture<Parameters<MaterialDesignChartLineHistory['renderWidgetBody']>[0]>({}))) || [];
+    }
+
+    it('labels the y value of the point, not the raw {x,y} object', () => {
+        const [dataset] = datasets({ dataCount: 0, valuesMaxDecimals: 1, valuesAppendText: ' W' }, [[{ ts: 100, val: 2.25 }, { ts: 200, val: null }, { ts: 300, val: 4 }]]);
+        expect((dataset.datalabels.formatter as (value: unknown, context: { dataIndex: number }) => string)(0, { dataIndex: 1 })).toBe('4 W');
+        expect((dataset.datalabels.display as (context: { dataIndex: number }) => unknown)({ dataIndex: 0 })).toBe(true);
+    });
+
+    it('takes the label box and the on/off switch from the series row', () => {
+        const rxData = { dataCount: 1, valuesBackgroundColor1: '#eeeeee', showValues1: 'showValuesOff' };
+        const [first, second] = datasets(rxData, [[{ ts: 1, val: 1 }], [{ ts: 1, val: 1 }]]);
+        expect(first.datalabels.backgroundColor).toBeNull();
+        expect(first.datalabels.display).toEqual(expect.any(Function));
+        expect(second.datalabels.backgroundColor).toBe('#eeeeee');
+        expect(second.datalabels.display).toBe(false);
     });
 });
 

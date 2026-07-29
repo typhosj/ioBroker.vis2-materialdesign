@@ -117,6 +117,34 @@ describe('shared button actions', () => {
     });
 });
 
+// Upstream #159 asks for an active icon and active icon color on the state button; the shared
+// button already carries both, and `isActive` makes them fire when the state equals the write value.
+describe('state button active presentation (upstream #159)', () => {
+    const Button = createButtonClass(definition('state'));
+    const render = (rxData: Record<string, unknown>, current: ioBroker.StateValue | undefined): string => {
+        const instance = fixture<{ state: unknown; renderWidgetBody: (props: unknown) => React.JSX.Element }>(
+            new Button(fixture<ConstructorParameters<typeof Button>[0]>({ context: { setValue: vi.fn() } })),
+        );
+        instance.state = fixture<typeof instance.state>({ rxData, values: { 'test.0.mode.val': current } });
+        return renderToStaticMarkup(instance.renderWidgetBody(fixture<Parameters<typeof instance.renderWidgetBody>[0]>({})));
+    };
+    const rxData = { oid: 'test.0.mode', value: '2', image: 'lightbulb-outline', imageColor: '#111111', imageTrue: 'lightbulb', imageTrueColor: '#00696d', colorBgTrue: '#eeeeee' };
+
+    it('swaps icon, icon color and background while the state holds the write value', () => {
+        const active = render(rxData, 2);
+        expect(active).toContain('mdi-lightbulb"');
+        expect(active).toContain('#00696d');
+        expect(active).toContain('#eeeeee');
+    });
+
+    it('keeps the inactive icon and color for any other value', () => {
+        const inactive = render(rxData, 1);
+        expect(inactive).toContain('mdi-lightbulb-outline');
+        expect(inactive).toContain('#111111');
+        expect(inactive).not.toContain('#00696d');
+    });
+});
+
 describe('Material Symbols as a second icon source', () => {
     const html = (value: string): string => renderToStaticMarkup(renderIcon(value, '#000', 24));
 

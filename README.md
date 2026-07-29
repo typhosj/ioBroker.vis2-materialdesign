@@ -43,12 +43,11 @@ modes, so switching a widget back and forth never changes what it does.
 4. Setting the style back to `legacy` restores the old look exactly.
 
 Dark mode follows the same `vis2-materialdesign.0.colors.darkTheme` state the
-legacy widgets already use. The adapter's admin settings ("Material 3 seed
-colors") can override the `primary`, `secondary`, `tertiary` and `error` roles
-project-wide — today the widgets read `primary` (the accent used across all
-Material 3 widgets) and `error` (JSON error states); `secondary` and `tertiary`
-are reserved for upcoming widgets. Everything else uses Google's
-contrast-verified Material 3 baseline palette.
+legacy widgets already use. The adapter's Design tab takes **one seed color** and
+derives the complete Material 3 scheme from it — all 18 roles, light and dark,
+with every `on-*` pair — into `vis2-materialdesign.0.colors.md3Scheme`, which the
+widgets read. Leave the seed empty and you get Google's contrast-verified
+Material 3 baseline palette.
 
 ## Requirements
 
@@ -90,9 +89,18 @@ can still be changed afterwards.
 Report current VIS 2 problems in the
 [GitHub issue tracker](https://github.com/typhosj/ioBroker.vis2-materialdesign/issues).
 
+Feedback on the Material 3 style — how it looks and feels next to what you know
+from the original adapter, not only what crashes — has its own form:
+[Material 3 beta feedback](https://github.com/typhosj/ioBroker.vis2-materialdesign/issues/new?template=material3_beta_feedback.md).
+Material 3 stays opt-in per widget while the beta runs, so nothing you report is
+a reason to wait with an upgrade.
+
 ## Changelog
 ### **WORK IN PROGRESS**
 
+- (typhosj) Added an alternating row color to the Table widget, so every second row can carry its own background (upstream wish #127)
+- (typhosj) Added background color, border color, border width and corner radius for the value labels of the Bar, Pie and Line History charts (upstream wish #68)
+- (typhosj) Fixed the Line History chart never drawing its value labels: the widget's per-series "show values" options had no effect at all, and now format the point value with the configured decimals and append text. A chart that never set the option shows labels again, as it does in the original adapter
 - (typhosj) Fixed the Theme Editor's config dialog closing before the runtime state sync finished, which could leave the object tree half migrated; the dialog now waits for the sync to complete before closing, and shows a toast when it finishes without closing
 
 ### 0.3.3 (2026-07-24)

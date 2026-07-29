@@ -231,6 +231,10 @@ const attrs: RxWidgetInfo["visAttrs"] = [
         max: 360,
         step: 1,
       },
+      color("valuesBackgroundColor"),
+      color("valuesBorderColor"),
+      number("valuesBorderWidth"),
+      number("valuesBorderRadius"),
     ],
   },
   {
