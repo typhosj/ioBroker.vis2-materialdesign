@@ -1079,5 +1079,6 @@
     "designStyleInfo": "Standaardstijl voor elke widget zonder eigen stijl in de VIS-editor. De keuze bepaalt ook welke standaardwaarden hieronder worden bewerkt.",
     "material3Font": "Material 3-lettertype",
     "material3FontInfo": "Geldt voor alle widgets in Material 3-stijl. Leeg betekent dat het lettertype van de view wordt geërfd.",
-    "designStyle_default": "Projectstandaard"
+    "designStyle_default": "Projectstandaard",
+    "showAdvanced": "geavanceerde opties tonen"
 }

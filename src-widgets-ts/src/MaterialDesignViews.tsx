@@ -357,6 +357,7 @@ export function viewsInfo(kind: Kind): RxWidgetInfo {
           fields: itemFields,
         },
       ],
+      ["handySettings", "tabletSettings"],
     ),
     visPrev: squarePreview(masonry ? 'F056E' : 'F11D9'),
     visDefaultStyle: { width: "100%", height: "100%" },

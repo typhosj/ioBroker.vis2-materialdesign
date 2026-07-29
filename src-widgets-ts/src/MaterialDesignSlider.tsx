@@ -239,7 +239,7 @@ export default class MaterialDesignSlider extends VisWidget {
 
     static getWidgetInfo(): RxWidgetInfo {
         return {
-            ...createInfo('tplVis2-materialdesign-Slider', 'Slider', attrs),
+            ...createInfo('tplVis2-materialdesign-Slider', 'Slider', attrs, ['tickLayout', 'color', 'thumbLabelLayout']),
             visPrev: squarePreview('F1542'),
             visDefaultStyle: { width: 200, height: 100 },
         };

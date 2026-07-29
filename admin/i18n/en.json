@@ -1079,5 +1079,6 @@
     "designStyleInfo": "Default style for every widget that has no style of its own set in the VIS editor. The choice also decides which style's default values are edited below.",
     "material3Font": "Material 3 font",
     "material3FontInfo": "Applies to every widget in Material 3 style. Empty means the font is inherited from the view.",
-    "designStyle_default": "Project default"
+    "designStyle_default": "Project default",
+    "showAdvanced": "show advanced options"
 }

@@ -264,6 +264,7 @@ export default class MaterialDesignChartLineHistory extends VisWidget {
         "tplVis2-materialdesign-Chart-Line-History",
         "Line History Chart",
         attrs,
+        ["card", "legendLayout", "tooltipLayout", "xAxisLayout", "yAxisLayout"],
       ),
       visPrev: squarePreview('F012A'),
       visDefaultStyle: { width: 400, height: 270 },

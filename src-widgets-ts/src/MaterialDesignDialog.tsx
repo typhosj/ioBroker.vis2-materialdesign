@@ -269,6 +269,7 @@ export function dialogInfo(kind: Kind): RxWidgetInfo {
           fields: closeFields,
         },
       ],
+      ["buttonLayout", "layoutTitle", "layoutdialogCloseButton"],
     ),
     visPrev: squarePreview('F10AC'),
     visDefaultStyle: { width: 100, height: 30 },

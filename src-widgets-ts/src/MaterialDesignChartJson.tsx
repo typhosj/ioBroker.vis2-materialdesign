@@ -287,7 +287,7 @@ const attrs: RxWidgetInfo["visAttrs"] = [
 export default class MaterialDesignChartJson extends VisWidget {
   static getWidgetInfo(): RxWidgetInfo {
     return {
-      ...createInfo("tplVis2-materialdesign-Chart-JSON", "JSON Chart", attrs),
+      ...createInfo("tplVis2-materialdesign-Chart-JSON", "JSON Chart", attrs, ["card", "legendLayout", "tooltipLayout", "xAxisLayout", "yAxisLayout"]),
       visPrev: squarePreview('F154E'),
       visDefaultStyle: { width: 400, height: 270 },
     };

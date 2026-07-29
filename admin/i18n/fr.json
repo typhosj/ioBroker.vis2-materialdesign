@@ -1079,5 +1079,6 @@
     "designStyleInfo": "Style par défaut pour chaque widget sans style propre dans l'éditeur VIS. Ce choix détermine aussi quelles valeurs par défaut sont modifiées ci-dessous.",
     "material3Font": "Police Material 3",
     "material3FontInfo": "S'applique à tous les widgets en style Material 3. Vide : la police est héritée de la vue.",
-    "designStyle_default": "Valeur par défaut du projet"
+    "designStyle_default": "Valeur par défaut du projet",
+    "showAdvanced": "afficher les options avancées"
 }

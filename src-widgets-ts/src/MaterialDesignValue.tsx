@@ -212,7 +212,7 @@ export default class MaterialDesignValue extends VisWidget {
 
     static getWidgetInfo(): RxWidgetInfo {
         return {
-            ...createInfo('tplVis2-materialdesign-value', 'Value', attrs),
+            ...createInfo('tplVis2-materialdesign-value', 'Value', attrs, ['layout', 'formatBoolean', 'formatLinked', 'changeEffect']),
             visPrev: squarePreview('F0199'),
             visDefaultStyle: {
                 width: 100,

@@ -177,7 +177,7 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
 
         static getWidgetInfo(): RxWidgetInfo {
             return {
-                ...createInfo(def.id, def.name, attrs(def.kind)),
+                ...createInfo(def.id, def.name, attrs(def.kind), ['color', 'lock']),
                 visPrev: preview(def),
                 visDefaultStyle: {
                     width: def.kind === 'switch' ? 80 : 76,

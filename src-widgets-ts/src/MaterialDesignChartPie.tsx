@@ -312,7 +312,7 @@ const attrs: RxWidgetInfo["visAttrs"] = [
 export default class MaterialDesignChartPie extends VisWidget {
   static getWidgetInfo(): RxWidgetInfo {
     return {
-      ...createInfo("tplVis2-materialdesign-Chart-Pie", "Pie Chart", attrs),
+      ...createInfo("tplVis2-materialdesign-Chart-Pie", "Pie Chart", attrs, ["card", "pieValuesLayout", "legendLayout", "tooltipLayout"]),
       visPrev: squarePreview('F012B'),
       visDefaultStyle: { width: 400, height: 270 },
     };

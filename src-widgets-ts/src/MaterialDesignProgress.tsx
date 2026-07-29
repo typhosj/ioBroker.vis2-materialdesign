@@ -165,7 +165,7 @@ export default class MaterialDesignProgress extends VisWidget {
 
     static getWidgetInfo(): RxWidgetInfo {
         return {
-            ...createInfo('tplVis2-materialdesign-Progress', 'Progress', linearAttrs),
+            ...createInfo('tplVis2-materialdesign-Progress', 'Progress', linearAttrs, ['layoutStriped', 'color']),
             visPrev: squarePreview('F03F0'),
             visDefaultStyle: { width: 100, height: 30 },
         };

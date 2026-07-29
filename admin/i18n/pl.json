@@ -1079,5 +1079,6 @@
     "designStyleInfo": "Domyślny styl dla każdego widżetu bez własnego stylu w edytorze VIS. Wybór decyduje też, które wartości domyślne są edytowane poniżej.",
     "material3Font": "Czcionka Material 3",
     "material3FontInfo": "Dotyczy wszystkich widżetów w stylu Material 3. Puste oznacza dziedziczenie czcionki z widoku.",
-    "designStyle_default": "Domyślny dla projektu"
+    "designStyle_default": "Domyślny dla projektu",
+    "showAdvanced": "pokaż opcje zaawansowane"
 }

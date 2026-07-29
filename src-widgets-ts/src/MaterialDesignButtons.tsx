@@ -458,7 +458,7 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
 
         static getWidgetInfo(): RxWidgetInfo {
             return {
-                ...createInfo(def.id, def.name, attrs(def)),
+                ...createInfo(def.id, def.name, attrs(def), ['color', 'lock']),
                 visWidgetLabel: widgetLabel(def),
                 visPrev: preview(def),
                 visDefaultStyle: {

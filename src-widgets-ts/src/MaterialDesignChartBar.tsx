@@ -505,7 +505,7 @@ const attrs: RxWidgetInfo["visAttrs"] = [
 export default class MaterialDesignChartBar extends VisWidget {
   static getWidgetInfo(): RxWidgetInfo {
     return {
-      ...createInfo("tplVis2-materialdesign-Chart-Bar", "Bar Chart", attrs),
+      ...createInfo("tplVis2-materialdesign-Chart-Bar", "Bar Chart", attrs, ["card", "barValuesLayout", "legendLayout", "tooltipLayout"]),
       visPrev: squarePreview('F0128'),
       visDefaultStyle: { width: 400, height: 270 },
     };

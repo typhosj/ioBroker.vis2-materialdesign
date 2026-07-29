@@ -72,7 +72,7 @@ export default class MaterialDesignProgressCircular extends VisWidget {
 
     static getWidgetInfo(): RxWidgetInfo {
         return {
-            ...createInfo('tplVis2-materialdesign-Progress-Circular', 'Progress Circular', attrs),
+            ...createInfo('tplVis2-materialdesign-Progress-Circular', 'Progress Circular', attrs, ['color']),
             visPrev: squarePreview('F07AF'),
             visDefaultStyle: { width: 70, height: 70 },
         };

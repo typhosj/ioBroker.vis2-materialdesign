@@ -28,7 +28,7 @@ const attrs: RxWidgetInfo['visAttrs'] = [
     { name: 'controlCard', label: 'group_controlCard', fields: [{ name: 'clickType', label: 'clickType', type: 'select', options: ['none', 'card', 'image', 'text'], default: 'none' }, { name: 'controlType', label: 'controlType', type: 'select', options: ['link', 'state'], default: 'link' }, { name: 'href', label: 'href', type: 'url' }, { name: 'state_oid', label: 'state_oid', type: 'id' }, { name: 'state_value', label: 'state_value', type: 'text' }] },
 ];
 export default class MaterialDesignCard extends VisWidget {
-    static getWidgetInfo(): RxWidgetInfo { return { ...createInfo('tplVis2-materialdesign-Card', 'HTML Card', attrs), visPrev: squarePreview('F0B78'), visDefaultStyle: { width: 200, height: 130 } }; }
+    static getWidgetInfo(): RxWidgetInfo { return { ...createInfo('tplVis2-materialdesign-Card', 'HTML Card', attrs, ['color', 'controlCard']), visPrev: squarePreview('F0B78'), visDefaultStyle: { width: 200, height: 130 } }; }
     getWidgetInfo(): RxWidgetInfo { return MaterialDesignCard.getWidgetInfo(); }
     private seenRefresh: unknown; private refreshReady = false; private refreshTs = 0; private refreshTimer?: number;
     private bust(): void { this.refreshTs = Date.now(); this.forceUpdate(); }

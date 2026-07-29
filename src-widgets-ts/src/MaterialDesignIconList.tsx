@@ -236,7 +236,7 @@ export default class MaterialDesignIconList extends VisWidget {
     private m3IconColor(data: Data, color: string): string { return this.isM3(data) && color === '#44739e' ? 'var(--md-sys-color-primary)' : color; }
 
     static getWidgetInfo(): RxWidgetInfo {
-        return { ...createInfo('tplVis2-materialdesign-Icon-List', 'Icon List', attrs), visPrev: squarePreview('F0572'), visDefaultStyle: { width: 400, height: 270 } };
+        return { ...createInfo('tplVis2-materialdesign-Icon-List', 'Icon List', attrs, ['listItemLayout', 'listItemCardBackground', 'iconListHeader', 'lock']), visPrev: squarePreview('F0572'), visDefaultStyle: { width: 400, height: 270 } };
     }
 
     getWidgetInfo(): RxWidgetInfo { return MaterialDesignIconList.getWidgetInfo(); }

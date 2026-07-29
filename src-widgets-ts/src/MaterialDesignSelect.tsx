@@ -466,7 +466,7 @@ export default class MaterialDesignSelect extends VisWidget {
 
     static getWidgetInfo(): RxWidgetInfo {
         return {
-            ...createInfo('tplVis2-materialdesign-Select', 'Select', attrs),
+            ...createInfo('tplVis2-materialdesign-Select', 'Select', attrs, ['inputLayout', 'inputAppendix', 'inputSubText', 'counter', 'icons', 'selectListLayout']),
             visPrev: squarePreview('F1400'),
             visDefaultStyle: { width: 150, height: 38 },
         };

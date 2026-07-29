@@ -390,7 +390,7 @@ export default class MaterialDesignInput extends VisWidget {
 
     static getWidgetInfo(): RxWidgetInfo {
         return {
-            ...createInfo('tplVis2-materialdesign-Input', 'Input', attrs),
+            ...createInfo('tplVis2-materialdesign-Input', 'Input', attrs, ['inputLayout', 'inputAppendix', 'inputSubText', 'counter', 'icons']),
             visPrev: squarePreview('F060E'),
             visDefaultStyle: { width: 150, height: 38 },
         };

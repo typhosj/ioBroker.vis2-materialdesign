@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { VisRxWidgetState } from '@iobroker/types-vis-2';
+import type { VisRxWidgetState, WidgetData } from '@iobroker/types-vis-2';
 import { pickerValueName } from './IconFilePicker';
 import { DEFAULT_DARK_THEME_OID, M3_FONT_OID, M3_SCHEME_OID, M3_TOKEN_ROLES, MAX_DYNAMIC_ITEMS, VisWidget, accessibleText, applyM3SeedVariables, applyThemeVariables, boundedCount, createInfo, darkThemeOid, designStyle, designStyleClasses, editorDialogPalette, formatDurationTokens, formatMoment, humanizeDuration, iconFieldDataKey, m3SeedOids, parseActionValue, parseM3Scheme, safeWidgetUrl, sanitizeHtml, setProjectDesignStyle, setStateValue, sliderKeyValue, stateValue, stringValue } from './widgetUtils';
 
@@ -118,6 +118,43 @@ describe('widget utilities', () => {
         expect(designStyle({})).toBe('legacy');
         expect(designStyle({ designStyle: 'material3' })).toBe('material3');
         expect(designStyle({ designStyle: 'not-a-real-style' })).toBe('legacy');
+    });
+
+    it('hides advanced groups until the switch is on or the widget already holds an advanced value', () => {
+        const attrs = [
+            { name: 'common', fields: [{ name: 'oid', type: 'id' as const }] },
+            { name: 'color', fields: [{ name: 'barColor', type: 'color' as const }, { name: 'dense', type: 'checkbox' as const, default: true }, { name: 'width', type: 'number' as const, default: 4 }] },
+            { name: 'rows', indexFrom: 0, indexTo: 'count', hidden: (data: WidgetData) => data.method !== 'inputPerEditor', fields: [{ name: 'rowText', type: 'text' as const }] },
+        ];
+        const info = createInfo('test-advanced', 'Calendar', attrs, ['color', 'rows']);
+        const hiddenOf = (name: string): ((data: WidgetData, index: number) => boolean) =>
+            info.visAttrs.find(group => group.name === name)!.hidden as (data: WidgetData, index: number) => boolean;
+
+        expect(info.visAttrs.find(group => group.name === 'common')?.fields.some(field => field.name === 'showAdvanced')).toBe(true);
+        // Fresh insert: VIS2 has written every declared default and nothing else.
+        expect(hiddenOf('color')({ oid: '', dense: true }, 0)).toBe(true);
+        expect(hiddenOf('color')({ showAdvanced: true }, 0)).toBe(false);
+        // An upstream project's widget carries a value in an advanced group — every advanced group opens.
+        expect(hiddenOf('color')({ barColor: '#ff0000' }, 0)).toBe(false);
+        expect(hiddenOf('color')({ dense: false }, 0)).toBe(false);
+        // A checkbox VIS2 materialised as `false` without a declared default is not the user's doing.
+        expect(hiddenOf('color')({ barColor: '', dense: true, showAdvanced: false }, 0)).toBe(true);
+        // An explicit `false` wins over the derived "on" — otherwise turning the switch off does
+        // nothing at all on a widget that carries an advanced value, which every List does.
+        expect(hiddenOf('color')({ barColor: '#ff0000', showAdvanced: false }, 0)).toBe(true);
+        // ...but only when it was actually flipped; an absent key still derives.
+        expect(hiddenOf('color')({ barColor: '#ff0000', showAdvanced: '' }, 0)).toBe(false);
+        // VIS2 hands a number field back as a string; that is not a changed value.
+        expect(hiddenOf('color')({ width: '4' }, 0)).toBe(true);
+        expect(hiddenOf('color')({ width: '6' }, 0)).toBe(false);
+        // The group's own hidden() still applies once the advanced gate is open.
+        expect(hiddenOf('rows')({ showAdvanced: true, method: 'jsonStringObject' }, 0)).toBe(true);
+        expect(hiddenOf('rows')({ showAdvanced: true, method: 'inputPerEditor' }, 0)).toBe(false);
+
+        // No advanced group means no switch and no hidden() anywhere.
+        const plain = createInfo('test-plain', 'Calendar', attrs);
+        expect(plain.visAttrs.find(group => group.name === 'common')?.fields.some(field => field.name === 'showAdvanced')).toBe(false);
+        expect(plain.visAttrs.find(group => group.name === 'color')?.hidden).toBeUndefined();
     });
 
     it('falls back to the project default style, which a widget\'s own choice always overrides', () => {

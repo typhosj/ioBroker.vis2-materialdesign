@@ -168,7 +168,7 @@ export default class MaterialDesignRoundSlider extends VisWidget {
 
     static getWidgetInfo(): RxWidgetInfo {
         return {
-            ...createInfo('tplVis2-materialdesign-Slider-Round', 'Slider Round', attrs),
+            ...createInfo('tplVis2-materialdesign-Slider-Round', 'Slider Round', attrs, ['color']),
             visPrev: squarePreview('F04C5'),
             visDefaultStyle: { width: 100, height: 100 },
         };

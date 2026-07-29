@@ -1079,5 +1079,6 @@
     "designStyleInfo": "Standardstil für alle Widgets, die im VIS-Editor keinen eigenen Stil gesetzt haben. Die Auswahl bestimmt außerdem, welche Standardwerte unten bearbeitet werden.",
     "material3Font": "Material 3 Schriftart",
     "material3FontInfo": "Gilt für alle Widgets im Material-3-Stil. Leer bedeutet: Die Schrift wird von der View geerbt.",
-    "designStyle_default": "Projektstandard"
+    "designStyle_default": "Projektstandard",
+    "showAdvanced": "Erweiterte Optionen anzeigen"
 }

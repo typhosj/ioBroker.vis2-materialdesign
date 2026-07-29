@@ -1079,5 +1079,6 @@
     "designStyleInfo": "适用于在 VIS 编辑器中未单独设置样式的所有控件的默认样式。该选择同时决定下方编辑的是哪种样式的默认值。",
     "material3Font": "Material 3 字体",
     "material3FontInfo": "适用于所有 Material 3 样式的控件。留空表示继承视图的字体。",
-    "designStyle_default": "项目默认"
+    "designStyle_default": "项目默认",
+    "showAdvanced": "显示高级选项"
 }

@@ -2,7 +2,7 @@ import React from 'react';
 import '@fontsource/jura/files/jura-latin-400-normal.woff2';
 import '@fontsource/roboto-condensed/files/roboto-condensed-latin-400-normal.woff2';
 
-import type { RxRenderWidgetProps, RxWidgetInfo, RxWidgetInfoAttributesField, VisRxWidgetProps, VisRxWidgetState } from '@iobroker/types-vis-2';
+import type { RxRenderWidgetProps, RxWidgetInfo, RxWidgetInfoAttributesField, VisRxWidgetProps, VisRxWidgetState, WidgetData } from '@iobroker/types-vis-2';
 import { IconFilePicker, type PickerSocket, type PickerTexts, type PickerTheme } from './IconFilePicker';
 import type VisRxWidget from '@iobroker/types-vis-2/visRxWidget';
 import colors from '../../admin/lib/colors.json';
@@ -281,12 +281,53 @@ export function squarePreview(glyph: string): string {
     );
 }
 
-export function createInfo(id: string, name: string, attrs: RxWidgetInfo['visAttrs']): RxWidgetInfo {
-    const shared: RxWidgetInfo['visAttrs'][number]['fields'] = [
+// A field counts as "set" only when it deviates from what a fresh insert would have written, so a
+// checkbox VIS2 materialises as `false` without a default does not count as the user's doing.
+function fieldIsSet(field: RxWidgetInfoAttributesField, data: WidgetData): boolean {
+    const { name, default: def } = field as { name?: string; default?: string | number | boolean };
+    if (!name) {
+        return false;
+    }
+    const value = data[name];
+    const fallback = def ?? (typeof value === 'boolean' ? false : undefined);
+    // Compared as text: VIS2 hands a number field back as the string "4" against a numeric default 4,
+    // and a strict comparison would read every such widget as touched.
+    return value !== undefined && value !== null && value !== '' && String(value) !== String(fallback);
+}
+
+export function createInfo(id: string, name: string, attrs: RxWidgetInfo['visAttrs'], advancedGroups: readonly string[] = []): RxWidgetInfo {
+    const shared: RxWidgetInfoAttributesField[] = [
         { name: 'designStyle', type: 'select', label: 'designStyle', options: [{ value: 'default', label: 'designStyle_default' }, { value: 'legacy', label: 'legacy' }, { value: 'material3', label: 'material3' }], default: 'default' },
         ...themeFields(name),
     ];
+    const advanced = new Set(advancedGroups);
+    const advancedFields = attrs.filter(group => advanced.has(group.name)).flatMap(group => [...group.fields]);
+    if (advancedFields.length) {
+        // Right behind designStyle, ahead of the theme block — a master switch buried under ~40 theme
+        // selectors is one nobody finds.
+        shared.splice(1, 0, { name: 'showAdvanced', type: 'checkbox', label: 'showAdvanced' });
+    }
+    // Three-state on purpose. Untouched, the switch has no key at all and the answer is derived: a
+    // widget carried over from an upstream project already holds advanced values, and hiding those
+    // would lose them from view. Once the user has actually flipped it, their choice wins in BOTH
+    // directions — deriving "on" over an explicit `false` makes turning it off a no-op, which is what
+    // every List does (they all carry `listItemHeight`).
+    const showAdvanced = (data: WidgetData): boolean =>
+        data.showAdvanced === undefined || data.showAdvanced === null || data.showAdvanced === ''
+            ? advancedFields.some(field => fieldIsSet(field, data))
+            : !!data.showAdvanced;
     const common = attrs.find(group => group.name === 'common');
+    const groups = attrs.map(group => {
+        const withShared = group === common ? { ...group, fields: [...shared, ...group.fields] } : group;
+        if (!advanced.has(group.name)) {
+            return withShared;
+        }
+        const own = typeof group.hidden === 'function' ? group.hidden : undefined;
+        return {
+            ...withShared,
+            hidden: (data: WidgetData, index: number): boolean => !showAdvanced(data) || (own ? own(data, index) : false),
+        };
+    });
     return {
         id,
         visSet: 'vis2-materialdesign',
@@ -294,9 +335,7 @@ export function createInfo(id: string, name: string, attrs: RxWidgetInfo['visAtt
         visSetColor: setColor,
         visName: name,
         visPrev: '',
-        visAttrs: common
-            ? attrs.map(group => group === common ? { ...group, fields: [...shared, ...group.fields] } : group)
-            : [{ name: 'common', fields: shared }, ...attrs],
+        visAttrs: common ? groups : [{ name: 'common', fields: shared }, ...groups],
     };
 }
 

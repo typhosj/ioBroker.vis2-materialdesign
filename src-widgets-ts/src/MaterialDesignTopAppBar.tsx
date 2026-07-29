@@ -38,7 +38,7 @@ const barM3Css = '.materialdesign-topAppBar-with-Drawer.mdw-style-material3 .mdc
 
 export default class MaterialDesignTopAppBar extends VisWidget {
     private open = false; private expanded = new Set<number>(); private lastSelected = -1;
-    static getWidgetInfo(): RxWidgetInfo { return { ...createInfo('tplVis2-materialdesign-TopAppBar-Navigation', 'Top App Bar', attrs), visPrev: squarePreview('F06FC'), visDefaultStyle: { width: 400, height: 270 } }; }
+    static getWidgetInfo(): RxWidgetInfo { return { ...createInfo('tplVis2-materialdesign-TopAppBar-Navigation', 'Top App Bar', attrs, ['drawerColors', 'drawerSubItemsLayout', 'drawerSubItemsColors']), visPrev: squarePreview('F06FC'), visDefaultStyle: { width: 400, height: 270 } }; }
     getWidgetInfo(): RxWidgetInfo { return MaterialDesignTopAppBar.getWidgetInfo(); }
     renderWidgetBody(props: RenderProps): React.JSX.Element {
         super.renderWidgetBody(props); const data = this.state.rxData as unknown as Data;

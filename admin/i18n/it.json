@@ -1079,5 +1079,6 @@
     "designStyleInfo": "Stile predefinito per ogni widget senza uno stile proprio nell'editor VIS. La scelta determina anche quali valori predefiniti si modificano qui sotto.",
     "material3Font": "Carattere Material 3",
     "material3FontInfo": "Vale per tutti i widget in stile Material 3. Vuoto significa che il carattere viene ereditato dalla vista.",
-    "designStyle_default": "Predefinito del progetto"
+    "designStyle_default": "Predefinito del progetto",
+    "showAdvanced": "mostra opzioni avanzate"
 }

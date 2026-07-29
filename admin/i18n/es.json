@@ -1079,5 +1079,6 @@
     "designStyleInfo": "Estilo predeterminado para cada widget que no tenga un estilo propio en el editor de VIS. La selección también decide qué valores predeterminados se editan abajo.",
     "material3Font": "Fuente de Material 3",
     "material3FontInfo": "Se aplica a todos los widgets con estilo Material 3. Vacío significa que la fuente se hereda de la vista.",
-    "designStyle_default": "Predeterminado del proyecto"
+    "designStyle_default": "Predeterminado del proyecto",
+    "showAdvanced": "mostrar opciones avanzadas"
 }
