@@ -1,6 +1,7 @@
 import React from 'react';
 
 import type { RxWidgetInfo, VisRxWidgetProps } from '@iobroker/types-vis-2';
+import { symbolName } from './IconFilePicker';
 
 import { MAX_DYNAMIC_ITEMS, squarePreview, PressState, RenderProps, VisWidget, boundedCount, createInfo, designStyle, designStyleClasses, iconField, parseActionValue, safeWidgetUrl, setStateValue, sizeCss, stateValue, sanitizeHtml, stringValue } from './widgetUtils';
 
@@ -322,6 +323,10 @@ export function renderIcon(image: string, colorValue: string, size: number, reco
         );
     }
 
+    const symbol = symbolName(image);
+    if (symbol) {
+        return <span className="mdw-symbol" style={style}>{symbol}</span>;
+    }
     return <span className={`mdi ${image.startsWith('mdi-') ? image : `mdi-${image}`}`} style={style} />;
 }
 

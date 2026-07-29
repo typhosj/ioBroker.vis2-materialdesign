@@ -1,0 +1,35 @@
+/*
+ * Material Symbols Outlined, self-hosted (Apache-2.0, google/material-design-icons). The opt-in
+ * second icon source next to MDI; MDI stays the default (../../MATERIAL3_PLAN.md, 9.3).
+ *
+ * There is no per-glyph class map here — Symbols addresses glyphs by LIGATURE, so the whole source
+ * costs one @font-face plus one rule regardless of how many icons a project uses, and the font is
+ * downloaded only once a glyph from it actually renders. Regenerate face and name list with
+ * `node scripts/fetch-material-symbols.cjs`.
+ */
+@font-face {
+    font-family: 'Material Symbols Outlined';
+    font-style: normal;
+    font-weight: 400;
+    /* `block` and not `swap`: until the face arrives the element still contains the ligature TEXT
+       ('light_mode'), which swap would happily render as a word inside the widget. */
+    font-display: block;
+    src: url('../img/material-symbols-outlined.woff2') format('woff2');
+}
+
+.mdw-symbol {
+    display: inline-block;
+    font-family: 'Material Symbols Outlined';
+    /* `liga` is what turns the name into the glyph; without it the span renders as its own text. */
+    font-feature-settings: 'liga';
+    font-size: inherit;
+    font-style: normal;
+    font-weight: normal;
+    letter-spacing: normal;
+    line-height: inherit;
+    text-transform: none;
+    white-space: nowrap;
+    word-wrap: normal;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}

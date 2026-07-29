@@ -12,6 +12,7 @@ import fontSizes from '../../admin/lib/fontSizes.json';
 import groupLabels from './generated/groupLabels.json';
 import '../../fonts.css';
 import './mdi-font.css';
+import './material-symbols.css';
 import './materialdesign-mdc.css';
 import './vis2-editor-dialog.css';
 import './material3-tokens.css';

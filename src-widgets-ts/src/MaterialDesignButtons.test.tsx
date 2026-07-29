@@ -2,7 +2,10 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { createButtonClass, m3ColorExplicit } from './MaterialDesignButtons';
+import { readFileSync, statSync } from 'node:fs';
+
+import { symbolName } from './IconFilePicker';
+import { createButtonClass, m3ColorExplicit, renderIcon } from './MaterialDesignButtons';
 
 function fixture<T>(value: unknown): T { return value as T; }
 
@@ -111,5 +114,48 @@ describe('shared button actions', () => {
         expect(m3).not.toContain('#44739e');
         expect(render({ oid: 'test.0.dim', designStyle: 'material3', showAlways: true, foregroundColor: '#00696d' })).toContain('#00696d');
         expect(render({ oid: 'test.0.dim', showAlways: true })).toContain('#44739e');
+    });
+});
+
+describe('Material Symbols as a second icon source', () => {
+    const html = (value: string): string => renderToStaticMarkup(renderIcon(value, '#000', 24));
+
+    it('renders an `ms-` value as a ligature, not as an MDI class', () => {
+        expect(html('ms-light_mode')).toContain('class="mdw-symbol"');
+        expect(html('ms-light_mode')).toContain('>light_mode<');
+        expect(html('ms-light_mode')).not.toContain('mdi-');
+    });
+
+    it('leaves every other value kind on its old path', () => {
+        expect(html('weather-sunny')).toContain('class="mdi mdi-weather-sunny"');
+        expect(html('mdi-weather-sunny')).toContain('class="mdi mdi-weather-sunny"');
+        expect(html('/icons/lamp.png')).toContain('<img');
+        expect(symbolName('weather-sunny')).toBeNull();
+        expect(symbolName('ms-')).toBe('');
+    });
+
+    it('carries no MDI name that the `ms-` prefix would shadow', () => {
+        const mdi = readFileSync('src-widgets-ts/src/mdi-font.css', 'utf8');
+        expect(mdi).not.toMatch(/\.mdi-ms-[a-z0-9-]+::before/);
+    });
+
+    it('ships one static face below the MDI font, and every offered name in it', () => {
+        const css = readFileSync('src-widgets-ts/src/material-symbols.css', 'utf8');
+        const file = css.match(/url\('\.\.\/img\/([^']+)'\)/)?.[1];
+        expect(file).toBe('material-symbols-outlined.woff2');
+        // A ligature source with `liga` off renders its own name as text; `swap` shows that text
+        // while the face loads. Both are silent, and both look like a broken icon.
+        expect(css).toContain("font-feature-settings: 'liga'");
+        expect(css).toContain('font-display: block');
+        // The 2025 variable face is 487,736 B. Phase 9.3 accepted Symbols on the measurement that
+        // the pinned static instance stays UNDER the MDI font it sits next to.
+        const symbols = statSync(`src-widgets-ts/static/img/${file}`).size;
+        expect(symbols).toBeLessThan(statSync('src-widgets-ts/static/img/materialdesignicons-webfont.woff2').size);
+
+        const names = JSON.parse(readFileSync('src-widgets-ts/src/generated/materialSymbolsNames.json', 'utf8')) as string[];
+        expect(names.length).toBeGreaterThan(3000);
+        // Anything outside the ligature alphabet cannot resolve to a glyph, and a name carrying the
+        // prefix would round-trip through symbolName() as a different icon.
+        expect(names.filter(name => !/^[a-z0-9_]+$/.test(name))).toEqual([]);
     });
 });

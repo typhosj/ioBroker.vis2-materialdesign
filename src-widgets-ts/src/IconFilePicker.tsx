@@ -1,7 +1,7 @@
 import React from 'react';
 
-// Picks an MDI font icon or an ioBroker file into the same widget-data field; renderIcon() already
-// handles both value kinds.
+// Picks an MDI icon, a Material Symbols icon or an ioBroker file into the same widget-data field;
+// renderIcon() already handles all three value kinds.
 
 type FileEntry = { file: string; isDir: boolean };
 export interface PickerSocket {
@@ -30,6 +30,14 @@ export interface PickerTexts {
     preview: string;
     search: string;
     up: string;
+}
+
+// Material Symbols addresses glyphs by ligature, so a Symbols value carries its own prefix: without
+// it `light_mode` is indistinguishable from an MDI name, which renderIcon resolves as `mdi-*`.
+export const SYMBOL_PREFIX = 'ms-';
+
+export function symbolName(value: string): string | null {
+    return value.startsWith(SYMBOL_PREFIX) ? value.slice(SYMBOL_PREFIX.length) : null;
 }
 
 let MDI_CACHE: string[] | null = null;
@@ -102,12 +110,17 @@ function Preview({ value, size = 22 }: { value: string; size?: number }): React.
             </span>
         );
     }
+    const symbol = symbolName(value);
+    if (symbol) {
+        return <span className="mdw-symbol" style={{ fontSize: size, lineHeight: 1 }}>{symbol}</span>;
+    }
     return <span className={`mdi mdi-${value.replace(/^mdi-/, '')}`} style={{ fontSize: size, lineHeight: 1 }} />;
 }
 
 export function IconFilePicker({ value, onChange, socket, label, texts, theme }: { value: string; onChange: (v: string) => void; socket?: PickerSocket; label?: string; texts: PickerTexts; theme?: PickerTheme }): React.JSX.Element {
     const [open, setOpen] = React.useState(false);
     const [tab, setTab] = React.useState<'icon' | 'file'>(isImg(value) ? 'file' : 'icon');
+    const [source, setSource] = React.useState<'mdi' | 'symbols'>(symbolName(value) ? 'symbols' : 'mdi');
     const [search, setSearch] = React.useState('');
     const [candidate, setCandidate] = React.useState(value);
     const dialogRef = React.useRef<HTMLDialogElement>(null);
@@ -133,7 +146,18 @@ export function IconFilePicker({ value, onChange, socket, label, texts, theme }:
         }
     }, [open]);
 
-    const names = React.useMemo(() => mdiNames(), []);
+    // ~60 kB of names that only the Symbols source needs: a dynamic import keeps them in their own
+    // chunk, so a dashboard that never opens this picker never loads them.
+    const [symbolNames, setSymbolNames] = React.useState<string[] | null>(null);
+    React.useEffect(() => {
+        if (source !== 'symbols' || symbolNames) {
+            return;
+        }
+        void import('./generated/materialSymbolsNames.json').then(module => setSymbolNames(module.default));
+    }, [source, symbolNames]);
+
+    const mdi = React.useMemo(() => mdiNames(), []);
+    const names = source === 'symbols' ? symbolNames || [] : mdi;
     const filtered = React.useMemo(() => {
         const q = search.trim().toLowerCase();
         return (q ? names.filter(n => n.includes(q)) : names).slice(0, 400);
@@ -145,6 +169,7 @@ export function IconFilePicker({ value, onChange, socket, label, texts, theme }:
     };
     const showPicker = (): void => {
         setCandidate(value);
+        setSource(symbolName(value) ? 'symbols' : 'mdi');
         setOpen(true);
     };
 
@@ -221,22 +246,29 @@ export function IconFilePicker({ value, onChange, socket, label, texts, theme }:
                             <Preview value={candidate} size={88} />
                             <span style={{ color: subText, fontSize: 12 }}>{texts.preview}</span>
                         </div>
-                        <input onChange={e => setCandidate(e.target.value)} placeholder="mdi-name oder /path.svg" style={{ ...inputStyle, flex: 1, minWidth: 0 }} value={candidate} />
+                        <input onChange={e => setCandidate(e.target.value)} placeholder="mdi-name / ms-name / /path.svg" style={{ ...inputStyle, flex: 1, minWidth: 0 }} value={candidate} />
                     </div>
 
                     {/* content */}
                     <div style={{ flex: '1 1 auto', overflowY: 'auto', padding: '0 20px 8px' }}>
                         {tab === 'icon' ? (
                             <>
-                                <input autoFocus onChange={e => setSearch(e.target.value)} placeholder={texts.search} style={{ ...inputStyle, marginBottom: 12, width: '100%' }} value={search} />
-                                <div style={{ display: 'grid', gap: 6, gridTemplateColumns: 'repeat(auto-fill,minmax(58px,1fr))' }}>
-                                    {filtered.map(n => (
-                                        <button aria-label={`${n}: ${texts.choose}`} key={n} onClick={() => setCandidate(n)} style={{ alignItems: 'center', aspectRatio: '1', background: candidate === n ? primary : 'transparent', border: `1px solid ${candidate === n ? primary : divider}`, borderRadius: 6, color: candidate === n ? '#fff' : text, cursor: 'pointer', display: 'flex', justifyContent: 'center', padding: 0 }} title={n} type="button">
-                                            <span className={`mdi mdi-${n}`} style={{ fontSize: 26, lineHeight: 1 }} />
-                                        </button>
-                                    ))}
+                                <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+                                    <input autoFocus onChange={e => setSearch(e.target.value)} placeholder={texts.search} style={{ ...inputStyle, flex: 1, minWidth: 0 }} value={search} />
+                                    <button className={`mdw-editor-button ${source === 'mdi' ? 'mdw-editor-button--contained' : 'mdw-editor-button--text'}`} onClick={() => setSource('mdi')} style={{ textTransform: 'none' }} type="button">MDI</button>
+                                    <button className={`mdw-editor-button ${source === 'symbols' ? 'mdw-editor-button--contained' : 'mdw-editor-button--text'}`} onClick={() => setSource('symbols')} style={{ textTransform: 'none' }} type="button">Symbols</button>
                                 </div>
-                                <div style={{ color: subText, fontSize: 12, padding: '10px 0' }}>{filtered.length} / {names.length}</div>
+                                <div style={{ display: 'grid', gap: 6, gridTemplateColumns: 'repeat(auto-fill,minmax(58px,1fr))' }}>
+                                    {filtered.map(n => {
+                                        const iconValue = source === 'symbols' ? `${SYMBOL_PREFIX}${n}` : n;
+                                        return (
+                                            <button aria-label={`${n}: ${texts.choose}`} key={n} onClick={() => setCandidate(iconValue)} style={{ alignItems: 'center', aspectRatio: '1', background: candidate === iconValue ? primary : 'transparent', border: `1px solid ${candidate === iconValue ? primary : divider}`, borderRadius: 6, color: candidate === iconValue ? '#fff' : text, cursor: 'pointer', display: 'flex', justifyContent: 'center', padding: 0 }} title={n} type="button">
+                                                <Preview size={26} value={iconValue} />
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                                <div style={{ color: subText, fontSize: 12, padding: '10px 0' }}>{source === 'symbols' && !symbolNames ? texts.loading : `${filtered.length} / ${names.length}`}</div>
                             </>
                         ) : (
                             <>
