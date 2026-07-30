@@ -39,3 +39,16 @@ language, so the screenshots are German.
 
 - **show thumb label** – off, while dragging or always.
 - Thumb **size**, background and font colors follow.
+
+## Design style
+
+The **Classic** (left) and **Material 3** (right) style side by side, see
+[Design style](../README.md#design-style): the horizontal slider with value
+label, ticks and thumb label, read-only, vertical, plus the round slider at 360°
+and 270° and read-only.
+
+<img src="../../media/vis2_slider_styles.png" alt="Slider and round slider in the Classic and the Material 3 style">
+
+The same widgets with the dark theme switched on:
+
+<img src="../../media/vis2_slider_styles_dark.png" alt="Slider and round slider in the Classic and the Material 3 style, dark theme">

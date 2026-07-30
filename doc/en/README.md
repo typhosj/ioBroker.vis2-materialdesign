@@ -39,6 +39,36 @@ changed afterwards remain individual overrides. The global JavaScript script in
 the adapter configuration is only needed when scripts must access theme values
 directly.
 
+## Design style
+
+Every widget renders in one of two styles, selected in the **WIDGET** tab under
+**General → design style**:
+
+- **Classic** – the established Material Design 2-era look, the default.
+- **Material 3** – Material 3 color roles, shape, type and state layers.
+- **Project default** – follows the style set in the adapter's **Design** tab, so
+  a whole project can be switched centrally.
+
+<img src="../media/vis2_style_editor_basic.png" width="300" alt="Design style in the General group">
+
+Material 3 changes presentation only. Object ids, option names, values, write
+behaviour, timers and navigation are identical in both styles, and setting a
+widget back to `Classic` restores the old look exactly. Colors, fonts and sizes
+you configured explicitly still win — Material 3 only fills in the values you
+left empty, so clear those fields to let a widget follow the Material 3 palette.
+
+Dark mode follows the same `vis2-materialdesign.0.colors.darkTheme` state the
+classic style already uses. The **Design** tab derives the complete Material 3
+scheme from one seed color; leave the seed empty for Google's baseline palette.
+
+Each widget page shows both styles side by side in light and dark mode.
+
+**show advanced options**, right below the style, reveals the rarely used option
+groups of the selected widget. A widget that already carries such values shows
+them without the switch.
+
+<img src="../media/vis2_style_editor_advanced.png" width="300" alt="Additional option groups with advanced options enabled">
+
 ## Choose a widget by task
 
 - Switch and navigate: [Buttons](widgets/buttons.md),

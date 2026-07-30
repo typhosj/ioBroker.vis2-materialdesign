@@ -85,3 +85,16 @@ nutzen, damit keine doppelten Achsen entstehen.
 Das Widget verwendet `axisLabels` als Kategorien. Für echte, direkt aus einer
 History-Instanz geladene Zeitachsen ist das
 [Linienverlaufsdiagramm](chart-line-history.md) vorgesehen.
+
+## Gestaltungsstil
+
+Die Stile **Klassisch** (links) und **Material 3** (rechts) nebeneinander, siehe
+[Gestaltungsstil](../README.md#gestaltungsstil): das Standarddiagramm mit Typ
+aus dem JSON, ohne Legende, Legende unten, ohne X-Achsenlinien und in einer
+Karte.
+
+<img src="../../media/vis2_chart_json_styles.png" alt="JSON-Diagramm im klassischen und im Material-3-Stil">
+
+Dieselben Widgets bei eingeschaltetem Dark-Theme:
+
+<img src="../../media/vis2_chart_json_styles_dark.png" alt="JSON-Diagramm im klassischen und im Material-3-Stil, dunkel">

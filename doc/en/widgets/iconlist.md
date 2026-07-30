@@ -40,3 +40,16 @@ optional **Item layout** group.
 
 Icons accept Material Design icon names and image sources. Use the active icon
 fields for a separate on-state appearance.
+
+## Design style
+
+The **Classic** (left) and **Material 3** (right) style side by side, see
+[Design style](../README.md#design-style): the plain text list, the card and
+outlined card layout, inset dividers, switch and checkbox rows and the icon
+list.
+
+<img src="../../media/vis2_list_styles.png" alt="List and icon list in the Classic and the Material 3 style">
+
+The same widgets with the dark theme switched on:
+
+<img src="../../media/vis2_list_styles_dark.png" alt="List and icon list in the Classic and the Material 3 style, dark theme">

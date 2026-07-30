@@ -41,3 +41,16 @@ The **Image / Icon** group takes a Material Design icon name or image source (wi
 a separate on-state color), **Colors** overrides the theme, **Feedback** adds
 haptics and a click sound, and **Locking** requires an unlock click before the
 action runs.
+
+## Design style
+
+The **Classic** (left) and **Material 3** (right) style side by side, see
+[Design style](../README.md#design-style): the filled, tonal, elevated, outlined
+and text containers, a label-only button, read-only, locked and an explicit
+color override.
+
+<img src="../../media/vis2_buttons_styles.png" alt="Buttons in the Classic and the Material 3 style">
+
+The same widgets with the dark theme switched on:
+
+<img src="../../media/vis2_buttons_styles_dark.png" alt="Buttons in the Classic and the Material 3 style, dark theme">

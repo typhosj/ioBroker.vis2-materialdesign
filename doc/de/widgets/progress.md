@@ -35,3 +35,16 @@ aufgeklappt. Nicht aufgeführte Einstellungen sind selbsterklärend.
 Die Gruppe **Streifen** aktiviert und gestaltet ein Streifenmuster. Unter
 **Farben** ersetzen zwei optionale Schwellenfarben (je mit Bedingung) die
 Standardfarbe, sobald der Wert sie überschreitet.
+
+## Gestaltungsstil
+
+Die Stile **Klassisch** (links) und **Material 3** (rechts) nebeneinander, siehe
+[Gestaltungsstil](../README.md#gestaltungsstil): den linearen Balken bei
+niedrigem, mittlerem und hohem Wert, eckig und gestreift, unbestimmt sowie die
+kreisförmige Variante bestimmt, dick und unbestimmt.
+
+<img src="../../media/vis2_progress_styles.png" alt="Fortschritt im klassischen und im Material-3-Stil">
+
+Dieselben Widgets bei eingeschaltetem Dark-Theme:
+
+<img src="../../media/vis2_progress_styles_dark.png" alt="Fortschritt im klassischen und im Material-3-Stil, dunkel">

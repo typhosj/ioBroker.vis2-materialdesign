@@ -39,3 +39,15 @@ The **Slider** variant turns the button into a circular value slider:
 
 Material Design icon names, local image paths, URLs and data URLs are supported.
 Single-color SVGs can be recolored with the icon color.
+
+## Design style
+
+The **Classic** (left) and **Material 3** (right) style side by side, see
+[Design style](../README.md#design-style): the standard, filled, tonal and
+outlined variants, read-only and a 56 px touch target.
+
+<img src="../../media/vis2_icon_buttons_styles.png" alt="Icon buttons in the Classic and the Material 3 style">
+
+The same widgets with the dark theme switched on:
+
+<img src="../../media/vis2_icon_buttons_styles_dark.png" alt="Icon buttons in the Classic and the Material 3 style, dark theme">

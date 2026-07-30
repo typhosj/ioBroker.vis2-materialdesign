@@ -40,3 +40,16 @@ Die Gruppe **Bild / Icon** nimmt einen Material-Design-Iconnamen oder eine
 Bildquelle (mit eigener Ein-Zustand-Farbe), **Farben** überschreibt das Thema,
 **Feedback** ergänzt Haptik und Klicksound, und **Verriegeln** verlangt einen
 Entsperr-Klick vor der Aktion.
+
+## Gestaltungsstil
+
+Die Stile **Klassisch** (links) und **Material 3** (rechts) nebeneinander, siehe
+[Gestaltungsstil](../README.md#gestaltungsstil): die Container-Varianten filled,
+tonal, elevated, outlined und text, reines Label, read only, gesperrt und eine
+eigene Farbe.
+
+<img src="../../media/vis2_buttons_styles.png" alt="Buttons im klassischen und im Material-3-Stil">
+
+Dieselben Widgets bei eingeschaltetem Dark-Theme:
+
+<img src="../../media/vis2_buttons_styles_dark.png" alt="Buttons im klassischen und im Material-3-Stil, dunkel">

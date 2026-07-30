@@ -41,3 +41,16 @@ Minimal JSON example:
 ```json
 [{ "objectId": "0_userdata.0.light", "text": "Light", "subText": "Living room", "image": "lightbulb" }]
 ```
+
+## Design style
+
+The **Classic** (left) and **Material 3** (right) style side by side, see
+[Design style](../README.md#design-style): the plain text list, the card and
+outlined card layout, inset dividers, switch and checkbox rows and the icon
+list.
+
+<img src="../../media/vis2_list_styles.png" alt="List and icon list in the Classic and the Material 3 style">
+
+The same widgets with the dark theme switched on:
+
+<img src="../../media/vis2_list_styles_dark.png" alt="List and icon list in the Classic and the Material 3 style, dark theme">

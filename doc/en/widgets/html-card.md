@@ -36,3 +36,15 @@ The **Card action** group makes the card clickable:
 
 Content fields (title, subtitle, text) accept VIS 2 HTML/bindings. Use only
 trusted HTML.
+
+## Design style
+
+The **Classic** (left) and **Material 3** (right) style side by side, see
+[Design style](../README.md#design-style): the Basic, Basic outlined,
+BasicHeader, BasicHeaderOverlay and Horizontal layouts and a clickable card.
+
+<img src="../../media/vis2_html_card_styles.png" alt="HTML card in the Classic and the Material 3 style">
+
+The same widgets with the dark theme switched on:
+
+<img src="../../media/vis2_html_card_styles_dark.png" alt="HTML card in the Classic and the Material 3 style, dark theme">

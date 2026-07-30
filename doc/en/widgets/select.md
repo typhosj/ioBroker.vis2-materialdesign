@@ -48,3 +48,16 @@ For the clear, collapse (menu arrow), prepend, inner-prepend and outer-append ic
 you can select an icon or an image.
 
 <img src="../../media/vis2_select_editor_icons.png" width="340" alt="Select icon fields">
+
+## Design style
+
+The **Classic** (left) and **Material 3** (right) style side by side, see
+[Design style](../README.md#design-style): the regular, filled and outlined
+layouts, options with icons, a value column, the clear icon and autocomplete
+while typing and after selection.
+
+<img src="../../media/vis2_select_styles.png" alt="Select and autocomplete in the Classic and the Material 3 style">
+
+The same widgets with the dark theme switched on:
+
+<img src="../../media/vis2_select_styles_dark.png" alt="Select and autocomplete in the Classic and the Material 3 style, dark theme">

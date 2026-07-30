@@ -39,6 +39,38 @@ Danach gesetzte Widget-Werte bleiben individuelle Überschreibungen. Das globale
 JavaScript-Skript in der Adapterkonfiguration ist nur nötig, wenn Skripte direkt
 auf Theme-Werte zugreifen sollen.
 
+## Gestaltungsstil
+
+Jedes Widget wird in einem von zwei Stilen dargestellt, wählbar im Tab **WIDGET**
+unter **Allgemein → Gestaltungsstil**:
+
+- **Klassisch** – das gewohnte Aussehen aus der Material-Design-2-Zeit, Standard.
+- **Material 3** – Farbrollen, Formen, Typografie und State-Layer von Material 3.
+- **Projektstandard** – folgt dem Stil aus dem Tab **Design** der
+  Adapterkonfiguration, damit ein ganzes Projekt zentral umgestellt werden kann.
+
+<img src="../media/vis2_style_editor_basic.png" width="300" alt="Gestaltungsstil in der Gruppe Allgemein">
+
+Material 3 ändert nur die Darstellung. Datenpunkte, Optionsnamen, Werte,
+Schreibverhalten, Timer und Navigation sind in beiden Stilen identisch, und die
+Rückstellung auf `Klassisch` stellt das alte Aussehen exakt wieder her. Explizit
+gesetzte Farben, Schriften und Größen gewinnen weiterhin — Material 3 füllt nur
+leer gelassene Werte. Damit ein Widget der Material-3-Palette folgt, diese Felder
+leeren.
+
+Der Dark-Mode folgt demselben Datenpunkt
+`vis2-materialdesign.0.colors.darkTheme` wie im klassischen Stil. Der Tab
+**Design** leitet das komplette Material-3-Schema aus einer Seed-Farbe ab; ohne
+Seed gilt Googles Basispalette.
+
+Jede Widget-Seite zeigt beide Stile nebeneinander, hell und dunkel.
+
+**Erweiterte Optionen anzeigen** direkt unter dem Stil blendet die selten
+benötigten Optionsgruppen des Widgets ein. Ein Widget, das solche Werte bereits
+enthält, zeigt sie auch ohne den Schalter.
+
+<img src="../media/vis2_style_editor_advanced.png" width="300" alt="Zusätzliche Optionsgruppen bei eingeschalteten erweiterten Optionen">
+
 ## Widget nach Aufgabe wählen
 
 - Schalten und navigieren: [Buttons](widgets/buttons.md),

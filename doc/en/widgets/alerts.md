@@ -43,3 +43,15 @@ language, so the screenshots are German.
 ```
 
 The state must contain a JSON array. Invalid JSON is shown as an error in the widget.
+
+## Design style
+
+The **Classic** (left) and **Material 3** (right) style side by side, see
+[Design style](../README.md#design-style): the normal, outlined, tile and dense
+layouts and an alert without the border stripe.
+
+<img src="../../media/vis2_alerts_styles.png" alt="Alerts in the Classic and the Material 3 style">
+
+The same widgets with the dark theme switched on:
+
+<img src="../../media/vis2_alerts_styles_dark.png" alt="Alerts in the Classic and the Material 3 style, dark theme">

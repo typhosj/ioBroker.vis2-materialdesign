@@ -34,3 +34,16 @@ selbsterklärend.
 
 Optionale Gruppen **Farben**, **Feedback** und **Verriegeln** überschreiben das
 Thema und schützen vor versehentlicher Bedienung.
+
+## Gestaltungsstil
+
+Die Stile **Klassisch** (links) und **Material 3** (rechts) nebeneinander, siehe
+[Gestaltungsstil](../README.md#gestaltungsstil): die vertikalen Varianten
+filled, tonal, elevated, outlined und text, Toggle im Ein-Zustand, read only und
+gesperrt.
+
+<img src="../../media/vis2_buttons_vertical_styles.png" alt="Vertikale Buttons im klassischen und im Material-3-Stil">
+
+Dieselben Widgets bei eingeschaltetem Dark-Theme:
+
+<img src="../../media/vis2_buttons_vertical_styles_dark.png" alt="Vertikale Buttons im klassischen und im Material-3-Stil, dunkel">

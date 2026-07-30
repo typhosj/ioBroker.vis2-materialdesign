@@ -60,3 +60,16 @@ Farbschema und globale Widget-Einstellungen zurück.
 - Minimum und Maximum begrenzen die Wertachse. Leere Felder behalten automatische Skalierung.
 - Tooltip-Texte pro Datensatz ersetzen die automatisch erzeugte Beschriftung.
 - Bei horizontaler Darstellung werden X- und Y-Achse funktional vertauscht: X enthält Werte, Y die Kategorien.
+
+## Gestaltungsstil
+
+Die Stile **Klassisch** (links) und **Material 3** (rechts) nebeneinander, siehe
+[Gestaltungsstil](../README.md#gestaltungsstil): vertikale und horizontale
+Balken, mit und ohne Wertlabels, Wertlabel mit Box, schmale Balken und das
+Diagramm in einer Karte.
+
+<img src="../../media/vis2_chart_bar_styles.png" alt="Balkendiagramm im klassischen und im Material-3-Stil">
+
+Dieselben Widgets bei eingeschaltetem Dark-Theme:
+
+<img src="../../media/vis2_chart_bar_styles_dark.png" alt="Balkendiagramm im klassischen und im Material-3-Stil, dunkel">

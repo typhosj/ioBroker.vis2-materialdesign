@@ -31,3 +31,16 @@ Nicht aufgeführte Einstellungen sind selbsterklärend.
 
 Die Gruppe **Farben** steuert Spurhintergrund, aktiven Bogen (vor/nach dem
 Knopf) und den Knopf selbst.
+
+## Gestaltungsstil
+
+Die Stile **Klassisch** (links) und **Material 3** (rechts) nebeneinander, siehe
+[Gestaltungsstil](../README.md#gestaltungsstil): den horizontalen Slider mit
+Wertlabel, Skala und Thumb-Label, read only, vertikal sowie den runden Slider
+mit 360° und 270° und read only.
+
+<img src="../../media/vis2_slider_styles.png" alt="Slider und runder Slider im klassischen und im Material-3-Stil">
+
+Dieselben Widgets bei eingeschaltetem Dark-Theme:
+
+<img src="../../media/vis2_slider_styles_dark.png" alt="Slider und runder Slider im klassischen und im Material-3-Stil, dunkel">

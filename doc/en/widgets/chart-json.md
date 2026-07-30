@@ -85,3 +85,16 @@ share an ID to avoid duplicate axes.
 The widget uses `axisLabels` as categories. Use
 [Line history chart](chart-line-history.md) for a real time axis loaded directly
 from a history instance.
+
+## Design style
+
+The **Classic** (left) and **Material 3** (right) style side by side, see
+[Design style](../README.md#design-style): the default chart with the type taken
+from the JSON, without legend, legend at the bottom, without x-axis lines and
+inside a card.
+
+<img src="../../media/vis2_chart_json_styles.png" alt="JSON chart in the Classic and the Material 3 style">
+
+The same widgets with the dark theme switched on:
+
+<img src="../../media/vis2_chart_json_styles_dark.png" alt="JSON chart in the Classic and the Material 3 style, dark theme">

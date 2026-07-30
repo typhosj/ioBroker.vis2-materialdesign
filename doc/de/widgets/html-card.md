@@ -35,3 +35,16 @@ Die Gruppe **Kartenaktion** macht die Karte klickbar:
 
 Inhaltsfelder (Titel, Untertitel, Text) unterstützen VIS-2-HTML/Bindings. Nur
 vertrauenswürdiges HTML nutzen.
+
+## Gestaltungsstil
+
+Die Stile **Klassisch** (links) und **Material 3** (rechts) nebeneinander, siehe
+[Gestaltungsstil](../README.md#gestaltungsstil): die Layouts Basic, Basic
+outlined, BasicHeader, BasicHeaderOverlay und Horizontal sowie eine klickbare
+Karte.
+
+<img src="../../media/vis2_html_card_styles.png" alt="HTML Card im klassischen und im Material-3-Stil">
+
+Dieselben Widgets bei eingeschaltetem Dark-Theme:
+
+<img src="../../media/vis2_html_card_styles_dark.png" alt="HTML Card im klassischen und im Material-3-Stil, dunkel">

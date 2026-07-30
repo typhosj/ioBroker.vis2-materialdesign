@@ -52,3 +52,16 @@ außer dass `valueText` vom Kreisdiagramm nicht benötigt wird.
 - Eine eigene Abschnittsfarbe hat Vorrang vor Farbschema und globaler Farbe.
 - Tooltip-Minimal- und Maximalstellen formatieren nur automatisch erzeugte Tooltip-Werte. Ein eigener `tooltipText` ersetzt diese Ausgabe.
 - Legende und Diagramm teilen sich den verfügbaren Platz. Bei vielen Abschnitten eignet sich eine Position oben oder unten mit breiterem Widget.
+
+## Gestaltungsstil
+
+Die Stile **Klassisch** (links) und **Material 3** (rechts) nebeneinander, siehe
+[Gestaltungsstil](../README.md#gestaltungsstil): Pie und Doughnut, breiterer
+Doughnut-Kern, mit und ohne Wertlabels, Wertlabel mit Box, ohne Legende und in
+einer Karte.
+
+<img src="../../media/vis2_chart_pie_styles.png" alt="Kreisdiagramm im klassischen und im Material-3-Stil">
+
+Dieselben Widgets bei eingeschaltetem Dark-Theme:
+
+<img src="../../media/vis2_chart_pie_styles_dark.png" alt="Kreisdiagramm im klassischen und im Material-3-Stil, dunkel">

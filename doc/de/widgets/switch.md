@@ -34,3 +34,16 @@ Entsperren und eine automatische Wiederverriegelung; für das **Symbol** lässt
 sich ein Icon oder ein Bild auswählen.
 
 <img src="../../media/vis2_switch_editor_lock.png" width="340" alt="Symbolfeld der Gruppe Verriegeln">
+
+## Gestaltungsstil
+
+Die Stile **Klassisch** (links) und **Material 3** (rechts) nebeneinander, siehe
+[Gestaltungsstil](../README.md#gestaltungsstil): Checkbox und Switch: aus, an,
+Label links, read only, gesperrt, eigene Farbe und das Material-3-Häkchen im
+Switch-Griff.
+
+<img src="../../media/vis2_toggles_styles.png" alt="Checkbox und Switch im klassischen und im Material-3-Stil">
+
+Dieselben Widgets bei eingeschaltetem Dark-Theme:
+
+<img src="../../media/vis2_toggles_styles_dark.png" alt="Checkbox und Switch im klassischen und im Material-3-Stil, dunkel">

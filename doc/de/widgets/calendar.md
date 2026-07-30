@@ -52,3 +52,16 @@ Die Gruppen für Kopfzeile, Kalenderwochen, Bedienung und Zeitachse gestalten di
 ```
 
 Der State muss ein JSON-Array enthalten.
+
+## Gestaltungsstil
+
+Die Stile **Klassisch** (links) und **Material 3** (rechts) nebeneinander, siehe
+[Gestaltungsstil](../README.md#gestaltungsstil): die Monatsansicht mit und ohne
+Kalenderwoche, Wochen- und Tagesansicht, Steuerung outlined und den Kalender
+ohne Steuerung.
+
+<img src="../../media/vis2_calendar_styles.png" alt="Kalender im klassischen und im Material-3-Stil">
+
+Dieselben Widgets bei eingeschaltetem Dark-Theme:
+
+<img src="../../media/vis2_calendar_styles_dark.png" alt="Kalender im klassischen und im Material-3-Stil, dunkel">

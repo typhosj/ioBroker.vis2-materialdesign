@@ -42,3 +42,15 @@ aufgeführte Einstellungen sind selbsterklärend.
 ```
 
 Der State muss ein JSON-Array enthalten. Ungültiges JSON erscheint als Fehler.
+
+## Gestaltungsstil
+
+Die Stile **Klassisch** (links) und **Material 3** (rechts) nebeneinander, siehe
+[Gestaltungsstil](../README.md#gestaltungsstil): die Layouts normal, outlined,
+tile und dense sowie eine Meldung ohne Rahmenstreifen.
+
+<img src="../../media/vis2_alerts_styles.png" alt="Meldungen im klassischen und im Material-3-Stil">
+
+Dieselben Widgets bei eingeschaltetem Dark-Theme:
+
+<img src="../../media/vis2_alerts_styles_dark.png" alt="Meldungen im klassischen und im Material-3-Stil, dunkel">

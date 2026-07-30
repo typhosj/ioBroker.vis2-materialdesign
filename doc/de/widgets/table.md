@@ -42,3 +42,15 @@ Die Anzeige folgt der JSON-Eigenschaftsreihenfolge.
 ```
 
 In jeder Zeile dieselbe JSON-Eigenschaftsreihenfolge verwenden.
+
+## Gestaltungsstil
+
+Die Stile **Klassisch** (links) und **Material 3** (rechts) nebeneinander, siehe
+[Gestaltungsstil](../README.md#gestaltungsstil): die Tabelle mit und ohne
+Kopfzeile, abgerundet, mit fixiertem Kopf und mit Zeilentrennern.
+
+<img src="../../media/vis2_table_styles.png" alt="Tabelle im klassischen und im Material-3-Stil">
+
+Dieselben Widgets bei eingeschaltetem Dark-Theme:
+
+<img src="../../media/vis2_table_styles_dark.png" alt="Tabelle im klassischen und im Material-3-Stil, dunkel">

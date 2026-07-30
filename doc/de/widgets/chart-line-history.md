@@ -59,3 +59,15 @@ Chart-Timeout erhöhen.
 - Neu angelegte Datensätze teilen standardmäßig eine Y-Achse. Deren Position, Titel und Grenzen stammen aus der ersten Datensatzgruppe. Leere Min-/Max-Felder behalten automatische Skalierung.
 - X-Achsen-Zeitformat verwendet Moment-Format-Token, beispielsweise `HH:mm` für eine 24-Stunden-Anzeige. Dasselbe Format wird auf Sekunden, Minuten, Stunden und Tage angewendet.
 - Tooltip-Modus `index` vergleicht Reihen am gleichen X-Wert; `nearest` zeigt den nächstgelegenen Punkt.
+
+## Gestaltungsstil
+
+Die Stile **Klassisch** (links) und **Material 3** (rechts) nebeneinander, siehe
+[Gestaltungsstil](../README.md#gestaltungsstil): die einfache Linie, Wertlabels,
+Stufen (stepped), Füllfarbe, ohne Legende und in einer Karte.
+
+<img src="../../media/vis2_chart_line_history_styles.png" alt="Verlaufsdiagramm im klassischen und im Material-3-Stil">
+
+Dieselben Widgets bei eingeschaltetem Dark-Theme:
+
+<img src="../../media/vis2_chart_line_history_styles_dark.png" alt="Verlaufsdiagramm im klassischen und im Material-3-Stil, dunkel">

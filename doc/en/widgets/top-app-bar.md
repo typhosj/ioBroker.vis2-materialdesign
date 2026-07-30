@@ -38,3 +38,16 @@ Menu entries come from the data and item groups:
 - **menu id** – value written for this entry.
 - **label / header / divider** – entry text, section header flag and separator.
 - **icon + color**, **submenus** and **permission group / visibility** per entry.
+
+## Design style
+
+The **Classic** (left) and **Material 3** (right) style side by side, see
+[Design style](../README.md#design-style): the standard, dense and short
+layouts, a fixed title, an explicit color override, a permanent drawer and an
+icon-only drawer.
+
+<img src="../../media/vis2_top_app_bar_styles.png" alt="Top App Bar in the Classic and the Material 3 style">
+
+The same widgets with the dark theme switched on:
+
+<img src="../../media/vis2_top_app_bar_styles_dark.png" alt="Top App Bar in the Classic and the Material 3 style, dark theme">

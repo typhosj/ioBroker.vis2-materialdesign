@@ -39,3 +39,15 @@ optionalen Gruppe **Layout des Listenelements**.
 
 Icons akzeptieren Material-Design-Iconnamen und Bildquellen. Über die
 Aktiv-Icon-Felder lässt sich ein eigenes Aussehen für den Ein-Zustand festlegen.
+
+## Gestaltungsstil
+
+Die Stile **Klassisch** (links) und **Material 3** (rechts) nebeneinander, siehe
+[Gestaltungsstil](../README.md#gestaltungsstil): die reine Textliste, Karte und
+Karte outlined, Trenner inset, Switch- und Checkbox-Zeilen sowie die Icon-Liste.
+
+<img src="../../media/vis2_list_styles.png" alt="Liste und Icon-Liste im klassischen und im Material-3-Stil">
+
+Dieselben Widgets bei eingeschaltetem Dark-Theme:
+
+<img src="../../media/vis2_list_styles_dark.png" alt="Liste und Icon-Liste im klassischen und im Material-3-Stil, dunkel">

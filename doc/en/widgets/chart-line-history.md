@@ -58,3 +58,15 @@ check recording and the selected range first, then increase Chart timeout.
 - Newly configured datasets share one Y axis by default. Its position, title and limits come from the first dataset group. Empty min/max fields retain automatic scaling.
 - X-axis time format uses Moment format tokens, for example `HH:mm` for a 24-hour display. The same format is applied to seconds, minutes, hours and days.
 - Tooltip mode `index` compares datasets at the same X value; `nearest` shows the closest point.
+
+## Design style
+
+The **Classic** (left) and **Material 3** (right) style side by side, see
+[Design style](../README.md#design-style): the plain line, value labels, stepped
+lines, a fill color, without legend and inside a card.
+
+<img src="../../media/vis2_chart_line_history_styles.png" alt="Line history chart in the Classic and the Material 3 style">
+
+The same widgets with the dark theme switched on:
+
+<img src="../../media/vis2_chart_line_history_styles_dark.png" alt="Line history chart in the Classic and the Material 3 style, dark theme">

@@ -40,3 +40,16 @@ A separate **Boolean formatting** group appears once the target type is boolean:
 it holds the **text for true / false** and a **condition** value that decides the
 true/false state for non-boolean inputs. The change effect briefly highlights
 updated values.
+
+## Design style
+
+The **Classic** (left) and **Material 3** (right) style side by side, see
+[Design style](../README.md#design-style): a number with unit, a boolean as
+text, text with a prefix, a value with icon, right aligned, plus the Icon widget
+small, large and recolored.
+
+<img src="../../media/vis2_value_styles.png" alt="Value and icon in the Classic and the Material 3 style">
+
+The same widgets with the dark theme switched on:
+
+<img src="../../media/vis2_value_styles_dark.png" alt="Value and icon in the Classic and the Material 3 style, dark theme">

@@ -43,3 +43,15 @@ Display order follows the JSON property order.
 ```
 
 Use a JSON object with the same property order for every row.
+
+## Design style
+
+The **Classic** (left) and **Material 3** (right) style side by side, see
+[Design style](../README.md#design-style): the table with and without a header
+row, rounded, with a fixed header and with row dividers.
+
+<img src="../../media/vis2_table_styles.png" alt="Table in the Classic and the Material 3 style">
+
+The same widgets with the dark theme switched on:
+
+<img src="../../media/vis2_table_styles_dark.png" alt="Table in the Classic and the Material 3 style, dark theme">

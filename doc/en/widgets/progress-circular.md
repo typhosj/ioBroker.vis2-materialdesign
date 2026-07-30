@@ -36,3 +36,16 @@ ioBroker system language, so the screenshots are German.
 In **Colors** you set the progress color, the background ring, the inner (center)
 color and two optional threshold colors that replace the progress color by
 condition.
+
+## Design style
+
+The **Classic** (left) and **Material 3** (right) style side by side, see
+[Design style](../README.md#design-style): the linear bar at low, medium and
+high values, square and striped, indeterminate, plus the circular variant
+determinate, thick and indeterminate.
+
+<img src="../../media/vis2_progress_styles.png" alt="Progress in the Classic and the Material 3 style">
+
+The same widgets with the dark theme switched on:
+
+<img src="../../media/vis2_progress_styles_dark.png" alt="Progress in the Classic and the Material 3 style, dark theme">

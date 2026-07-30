@@ -22,11 +22,13 @@ VIS Material Design widget work by Scrounger.
 ## Design status
 
 Every widget ships two presentations, selected per widget in the editor under
-**Style → Design style**:
+**General → design style**:
 
-- **Legacy** (default): the established Material Design 2-era look. Unchanged,
+- **Classic** (default): the established Material Design 2-era look. Unchanged,
   and what every existing and every newly inserted widget uses.
 - **Material 3**: Material 3 color roles, shape, type and state layers.
+- **Project default**: follows the default style set in the adapter's **Design**
+  tab, for switching a whole project at once.
 
 Material 3 changes presentation only. Component IDs, option names, object IDs,
 state values, write behaviour, timers and navigation are identical in both
@@ -34,16 +36,17 @@ modes, so switching a widget back and forth never changes what it does.
 
 ### Switching an existing project
 
-1. Select a widget, open **Style → Design style** and pick `material3`.
+1. Select a widget, open **General → design style** and pick `Material 3`.
 2. Any color, font or size you explicitly configured still wins — Material 3
    only fills in the values you left empty. To let a widget follow the Material 3
    palette, clear those fields.
-3. Switch widget by widget and check the result; there is deliberately no
-   project-wide conversion, and a saved project is never converted implicitly.
-4. Setting the style back to `legacy` restores the old look exactly.
+3. Switch widget by widget and check the result, or set the default style in the
+   adapter's Design tab and leave the widgets on `Project default`; a saved
+   project is never converted implicitly.
+4. Setting the style back to `Classic` restores the old look exactly.
 
 Dark mode follows the same `vis2-materialdesign.0.colors.darkTheme` state the
-legacy widgets already use. The adapter's Design tab takes **one seed color** and
+classic widgets already use. The adapter's Design tab takes **one seed color** and
 derives the complete Material 3 scheme from it — all 18 roles, light and dark,
 with every `on-*` pair — into `vis2-materialdesign.0.colors.md3Scheme`, which the
 widgets read. Leave the seed empty and you get Google's contrast-verified
@@ -98,6 +101,19 @@ a reason to wait with an upgrade.
 ## Changelog
 ### **WORK IN PROGRESS**
 
+- (typhosj) Translated the plain-language values of the widget dropdowns (on/off, none, contains, exists, left/right/top/bottom, 12 h / 24 h and others) in all 11 languages; the documented Material and chart.js variant names (filled, tonal, outlined, pie, doughnut, standard, dense, …) stay verbatim so the editor keeps matching the documentation
+- (typhosj) Added the missing translations for 42 widget options that showed their raw key in the editor (fade-in/out duration, fade effect, scrolling, pre-rendering, tick source and others), in all 11 languages
+- (typhosj) Fixed the "use card" option of all four charts cutting the card off: the card filled the widget box, so its shadow and rounded edge sat outside the area VIS 2 draws
+- (typhosj) Added the hint text and the entry counter to the Select and Autocomplete widgets: both options sat in the editor without any effect. The hint follows "show input message always" — off, it only appears while the list is open; the counter shows the number of entries and is opt-in (its editor default claimed otherwise)
+- (typhosj) Fixed the Table widget drawing a divider under the LAST row, which stuck out over the rounded edge of the card layouts
+- (typhosj) Fixed the calendar day button being cut off in the week and day view: it was a fixed 56 px circle, and now fits the column width (Material 3: 40 px)
+- (typhosj) Fixed the List widget's "card" and "card outlined" layouts losing their shadow and border: the card filled the widget box edge to edge and VIS 2 clips there
+- (typhosj) Fixed the Table widget's "card" and "card outlined" layouts rendering exactly like "standard": the layouts only set a class, whose styling lived in the removed VIS 1 stylesheet
+- (typhosj) Fixed the Material 3 elevated button (normal and vertical) losing its drop shadow: the button filled the widget box edge to edge and VIS 2 clips there, so the shadow was cut off on all four sides
+- (typhosj) Fixed the doughnut chart placing its value labels outside the colored ring; they now sit in the middle of the ring (a saved "value position align" still wins)
+- (typhosj) Fixed the Round Slider drawing nothing at all with `arcLength: 360`: a full turn puts the arc's start and end on the same point, which SVG renders as an empty path
+- (typhosj) Fixed the Card widget's "Horizontal" layout: it had no styling at all, so the image collapsed to zero height and title and text stacked below an empty square instead of sitting beside the image
+- (typhosj) Fixed the Bar and Line History charts cutting off their bottom axis and legend when "use card" is on: the chart kept the full card height and the card title pushed it out of the widget
 - (typhosj) Added an alternating row color to the Table widget, so every second row can carry its own background (upstream wish #127)
 - (typhosj) Added background color, border color, border width and corner radius for the value labels of the Bar, Pie and Line History charts (upstream wish #68)
 - (typhosj) Fixed the Line History chart never drawing its value labels: the widget's per-series "show values" options had no effect at all, and now format the point value with the configured decimals and append text. A chart that never set the option shows labels again, as it does in the original adapter

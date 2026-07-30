@@ -48,3 +48,16 @@ vorangestellte und das äußere angehängte Symbol lässt sich ein Icon oder ein
 Bild auswählen.
 
 <img src="../../media/vis2_select_editor_icons.png" width="340" alt="Select-Symbolfelder">
+
+## Gestaltungsstil
+
+Die Stile **Klassisch** (links) und **Material 3** (rechts) nebeneinander, siehe
+[Gestaltungsstil](../README.md#gestaltungsstil): die Layouts regular, filled und
+outlined, Einträge mit Symbolen, Wert-Spalte, Clear-Icon sowie Autocomplete
+während der Eingabe und nach der Auswahl.
+
+<img src="../../media/vis2_select_styles.png" alt="Select und Autocomplete im klassischen und im Material-3-Stil">
+
+Dieselben Widgets bei eingeschaltetem Dark-Theme:
+
+<img src="../../media/vis2_select_styles_dark.png" alt="Select und Autocomplete im klassischen und im Material-3-Stil, dunkel">

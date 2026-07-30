@@ -34,3 +34,15 @@ the ioBroker system language, so the screenshots are German.
 
 Optional **Colors**, **Feedback** and **Locking** groups override the theme and
 protect the button against accidental activation.
+
+## Design style
+
+The **Classic** (left) and **Material 3** (right) style side by side, see
+[Design style](../README.md#design-style): the vertical filled, tonal, elevated,
+outlined and text containers, a toggle in the on state, read-only and locked.
+
+<img src="../../media/vis2_buttons_vertical_styles.png" alt="Vertical buttons in the Classic and the Material 3 style">
+
+The same widgets with the dark theme switched on:
+
+<img src="../../media/vis2_buttons_vertical_styles_dark.png" alt="Vertical buttons in the Classic and the Material 3 style, dark theme">

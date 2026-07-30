@@ -60,3 +60,16 @@ color scheme and global widget settings.
 - Minimum and maximum constrain the value axis. Empty fields retain automatic scaling.
 - Per-dataset tooltip text replaces the automatically generated label.
 - Horizontal presentation functionally swaps X and Y axes: X contains values, Y contains categories.
+
+## Design style
+
+The **Classic** (left) and **Material 3** (right) style side by side, see
+[Design style](../README.md#design-style): vertical and horizontal bars, with
+and without value labels, a boxed value label, narrow bars and the chart inside
+a card.
+
+<img src="../../media/vis2_chart_bar_styles.png" alt="Bar chart in the Classic and the Material 3 style">
+
+The same widgets with the dark theme switched on:
+
+<img src="../../media/vis2_chart_bar_styles_dark.png" alt="Bar chart in the Classic and the Material 3 style, dark theme">

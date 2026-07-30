@@ -39,3 +39,16 @@ Eine eigene Gruppe **Logikwert Formatierung** erscheint, sobald der Zieltyp
 boolesch ist: Sie enthält die **Texte für true / false** und eine **Bedingung**,
 die bei nicht-booleschen Eingaben über den true/false-Zustand entscheidet. Der
 Änderungseffekt hebt aktualisierte Werte kurz hervor.
+
+## Gestaltungsstil
+
+Die Stile **Klassisch** (links) und **Material 3** (rechts) nebeneinander, siehe
+[Gestaltungsstil](../README.md#gestaltungsstil): Zahl mit Einheit, Boolean als
+Text, Text mit Präfix, Wert mit Symbol, rechtsbündig sowie das Icon-Widget
+klein, groß und eingefärbt.
+
+<img src="../../media/vis2_value_styles.png" alt="Wertanzeige und Symbol im klassischen und im Material-3-Stil">
+
+Dieselben Widgets bei eingeschaltetem Dark-Theme:
+
+<img src="../../media/vis2_value_styles_dark.png" alt="Wertanzeige und Symbol im klassischen und im Material-3-Stil, dunkel">

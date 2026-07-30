@@ -34,3 +34,16 @@ aufgeklappt. Nicht aufgeführte Einstellungen sind selbsterklärend.
 Unter **Farben** werden Fortschrittsfarbe, Hintergrundring, Innen-(Mitte-)Farbe
 sowie zwei optionale Schwellenfarben gesetzt, die die Fortschrittsfarbe je nach
 Bedingung ersetzen.
+
+## Gestaltungsstil
+
+Die Stile **Klassisch** (links) und **Material 3** (rechts) nebeneinander, siehe
+[Gestaltungsstil](../README.md#gestaltungsstil): den linearen Balken bei
+niedrigem, mittlerem und hohem Wert, eckig und gestreift, unbestimmt sowie die
+kreisförmige Variante bestimmt, dick und unbestimmt.
+
+<img src="../../media/vis2_progress_styles.png" alt="Fortschritt im klassischen und im Material-3-Stil">
+
+Dieselben Widgets bei eingeschaltetem Dark-Theme:
+
+<img src="../../media/vis2_progress_styles_dark.png" alt="Fortschritt im klassischen und im Material-3-Stil, dunkel">

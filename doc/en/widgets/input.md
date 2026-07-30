@@ -36,3 +36,16 @@ an icon or an image.
 <img src="../../media/vis2_input_editor_icons.png" width="340" alt="Input icon fields">
 
 To choose from a list of values use the [Select](select.md) widget instead.
+
+## Design style
+
+The **Classic** (left) and **Material 3** (right) style side by side, see
+[Design style](../README.md#design-style): the regular, filled, filled-rounded,
+outlined, outlined-rounded and solo layouts, prefix/suffix, hint and counter, a
+number field with clear icon and centered text.
+
+<img src="../../media/vis2_input_styles.png" alt="Input in the Classic and the Material 3 style">
+
+The same widgets with the dark theme switched on:
+
+<img src="../../media/vis2_input_styles_dark.png" alt="Input in the Classic and the Material 3 style, dark theme">

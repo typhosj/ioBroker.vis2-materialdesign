@@ -53,3 +53,16 @@ remaining calendar chrome.
 ```
 
 The state must contain a JSON array.
+
+## Design style
+
+The **Classic** (left) and **Material 3** (right) style side by side, see
+[Design style](../README.md#design-style): the month view with and without week
+numbers, the week and day view, outlined controls and the calendar without
+controls.
+
+<img src="../../media/vis2_calendar_styles.png" alt="Calendar in the Classic and the Material 3 style">
+
+The same widgets with the dark theme switched on:
+
+<img src="../../media/vis2_calendar_styles_dark.png" alt="Calendar in the Classic and the Material 3 style, dark theme">

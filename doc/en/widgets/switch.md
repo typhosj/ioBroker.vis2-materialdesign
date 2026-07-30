@@ -34,3 +34,16 @@ The optional **Colors** group controls thumb, track, active and hover colors.
 you can select an icon or an image.
 
 <img src="../../media/vis2_switch_editor_lock.png" width="340" alt="Locking group icon field">
+
+## Design style
+
+The **Classic** (left) and **Material 3** (right) style side by side, see
+[Design style](../README.md#design-style): checkbox and switch: off, on, label
+on the left, read-only, locked, an explicit color and the Material 3 check mark
+inside the switch handle.
+
+<img src="../../media/vis2_toggles_styles.png" alt="Checkbox and switch in the Classic and the Material 3 style">
+
+The same widgets with the dark theme switched on:
+
+<img src="../../media/vis2_toggles_styles_dark.png" alt="Checkbox and switch in the Classic and the Material 3 style, dark theme">

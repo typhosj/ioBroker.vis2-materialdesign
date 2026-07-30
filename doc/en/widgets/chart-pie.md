@@ -52,3 +52,16 @@ not need `valueText`.
 - An individual segment color takes precedence over the color scheme and global color.
 - Tooltip minimum and maximum decimals format only automatically generated values. A custom `tooltipText` replaces that output.
 - Legend and chart share the available space. For many segments, use a top or bottom legend with a wider widget.
+
+## Design style
+
+The **Classic** (left) and **Material 3** (right) style side by side, see
+[Design style](../README.md#design-style): pie and doughnut, a wider doughnut
+core, with and without value labels, a boxed value label, without legend and
+inside a card.
+
+<img src="../../media/vis2_chart_pie_styles.png" alt="Pie chart in the Classic and the Material 3 style">
+
+The same widgets with the dark theme switched on:
+
+<img src="../../media/vis2_chart_pie_styles_dark.png" alt="Pie chart in the Classic and the Material 3 style, dark theme">
