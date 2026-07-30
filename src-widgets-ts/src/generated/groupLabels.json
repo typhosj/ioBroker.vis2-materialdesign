@@ -6,7 +6,7 @@
         "group_barLayout": "bar chart layout:",
         "group_barValuesLayout": "bar chart values layout:",
         "group_buttonLayout": "Button Layout",
-        "group_buttonOids": "Object Id",
+        "group_buttonOids": "Object IDs",
         "group_calendarButtonsLayout": "calendar buttons layout",
         "group_calendarCustomFormats": "custom date formats",
         "group_calendarEventLayout": "appointment layout",
@@ -93,7 +93,9 @@
         "group_xAxisLayout": "x axis layout",
         "group_yAxisLayout": "y axis layout",
         "group_yAxisLayoutForData": "y-axis layout for data",
-        "group_style": "Style"
+        "group_style": "Style",
+        "group_renderViewsOnLoad": "pre-rendering:",
+        "group_views": "views:"
     },
     "de": {
         "group_alertLayout": "Layout",
@@ -102,7 +104,7 @@
         "group_barLayout": "Balkendiagramm Layout:",
         "group_barValuesLayout": "Balkendiagrammwerte Layout:",
         "group_buttonLayout": "Button Layout",
-        "group_buttonOids": "Objekt Id",
+        "group_buttonOids": "Objekt-IDs",
         "group_calendarButtonsLayout": "Layout der Kalendertasten",
         "group_calendarCustomFormats": "benutzerdefinierte Datumsformate",
         "group_calendarEventLayout": "Terminlayout",
@@ -189,7 +191,9 @@
         "group_xAxisLayout": "x-Achsen Layout",
         "group_yAxisLayout": "y-Achsen Layout",
         "group_yAxisLayoutForData": "y-Achsen-Layout für Datensatz",
-        "group_style": "Stil"
+        "group_style": "Stil",
+        "group_renderViewsOnLoad": "Vorab-Rendering:",
+        "group_views": "Ansichten:"
     },
     "es": {
         "group_alertLayout": "diseño",
@@ -198,7 +202,7 @@
         "group_barLayout": "diseño del gráfico de barras:",
         "group_barValuesLayout": "diseño de valores del gráfico de barras:",
         "group_buttonLayout": "Diseño de botones",
-        "group_buttonOids": "ID de objeto",
+        "group_buttonOids": "IDs de objeto",
         "group_calendarButtonsLayout": "diseño de botones de calendario",
         "group_calendarCustomFormats": "formatos de fecha personalizados",
         "group_calendarEventLayout": "diseño de cita",
@@ -285,7 +289,9 @@
         "group_xAxisLayout": "diseño del eje x",
         "group_yAxisLayout": "diseño del eje y",
         "group_yAxisLayoutForData": "diseño del eje y para datos",
-        "group_style": "Estilo"
+        "group_style": "Estilo",
+        "group_renderViewsOnLoad": "pre-renderizado:",
+        "group_views": "vistas:"
     },
     "fr": {
         "group_alertLayout": "disposition",
@@ -294,7 +300,7 @@
         "group_barLayout": "Diagramme à barres:",
         "group_barValuesLayout": "Diagramme à barres mise en page:",
         "group_buttonLayout": "Disposition des boutons",
-        "group_buttonOids": "Id d'objet",
+        "group_buttonOids": "ID d'objet",
         "group_calendarButtonsLayout": "disposition des boutons de calendrier",
         "group_calendarCustomFormats": "formats de date personnalisés",
         "group_calendarEventLayout": "disposition des rendez-vous",
@@ -381,7 +387,9 @@
         "group_xAxisLayout": "disposition des axes x",
         "group_yAxisLayout": "Disposition en Y",
         "group_yAxisLayoutForData": "disposition en ordonnée pour les données",
-        "group_style": "Style"
+        "group_style": "Style",
+        "group_renderViewsOnLoad": "pré-rendu :",
+        "group_views": "vues :"
     },
     "it": {
         "group_alertLayout": "disposizione",
@@ -477,7 +485,9 @@
         "group_xAxisLayout": "layout dell'asse x",
         "group_yAxisLayout": "layout dell'asse y",
         "group_yAxisLayoutForData": "layout dell'asse y per i dati",
-        "group_style": "Stile"
+        "group_style": "Stile",
+        "group_renderViewsOnLoad": "pre-rendering:",
+        "group_views": "viste:"
     },
     "nl": {
         "group_alertLayout": "lay-out",
@@ -486,7 +496,7 @@
         "group_barLayout": "lay-out van staafdiagram:",
         "group_barValuesLayout": "lay-out waarden staafdiagram:",
         "group_buttonLayout": "Knopindeling",
-        "group_buttonOids": "Object-id",
+        "group_buttonOids": "Object-ID's",
         "group_calendarButtonsLayout": "kalender knoppen lay-out",
         "group_calendarCustomFormats": "aangepaste datumnotaties",
         "group_calendarEventLayout": "afspraak lay-out",
@@ -573,7 +583,9 @@
         "group_xAxisLayout": "x asindeling",
         "group_yAxisLayout": "y-aslay-out",
         "group_yAxisLayoutForData": "y-aslay-out voor gegevens",
-        "group_style": "Stijl"
+        "group_style": "Stijl",
+        "group_renderViewsOnLoad": "pre-rendering:",
+        "group_views": "views:"
     },
     "pl": {
         "group_alertLayout": "układ",
@@ -582,7 +594,7 @@
         "group_barLayout": "układ wykresu słupkowego:",
         "group_barValuesLayout": "układ wartości wykresu słupkowego:",
         "group_buttonLayout": "Układ przycisków",
-        "group_buttonOids": "ID obiektu",
+        "group_buttonOids": "ID obiektów",
         "group_calendarButtonsLayout": "układ przycisków kalendarza",
         "group_calendarCustomFormats": "niestandardowe formaty dat",
         "group_calendarEventLayout": "układ spotkania",
@@ -669,7 +681,9 @@
         "group_xAxisLayout": "układ osi x",
         "group_yAxisLayout": "układ osi y",
         "group_yAxisLayoutForData": "Układ osi y dla danych",
-        "group_style": "Styl"
+        "group_style": "Styl",
+        "group_renderViewsOnLoad": "wstępne renderowanie:",
+        "group_views": "widoki:"
     },
     "pt": {
         "group_alertLayout": "disposição",
@@ -678,7 +692,7 @@
         "group_barLayout": "layout do gráfico de barras:",
         "group_barValuesLayout": "layout dos valores do gráfico de barras:",
         "group_buttonLayout": "Layout do botão",
-        "group_buttonOids": "Id do objeto",
+        "group_buttonOids": "IDs de objeto",
         "group_calendarButtonsLayout": "layout de botões do calendário",
         "group_calendarCustomFormats": "formatos de data personalizados",
         "group_calendarEventLayout": "layout de compromisso",
@@ -765,7 +779,9 @@
         "group_xAxisLayout": "layout do eixo x",
         "group_yAxisLayout": "layout do eixo y",
         "group_yAxisLayoutForData": "layout do eixo y para dados",
-        "group_style": "Estilo"
+        "group_style": "Estilo",
+        "group_renderViewsOnLoad": "pré-renderização:",
+        "group_views": "vistas:"
     },
     "ru": {
         "group_alertLayout": "расположение",
@@ -774,7 +790,7 @@
         "group_barLayout": "макет гистограммы:",
         "group_barValuesLayout": "макет значений гистограммы:",
         "group_buttonLayout": "Расположение кнопок",
-        "group_buttonOids": "Идентификатор объекта",
+        "group_buttonOids": "Идентификаторы объектов",
         "group_calendarButtonsLayout": "расположение кнопок календаря",
         "group_calendarCustomFormats": "настраиваемые форматы даты",
         "group_calendarEventLayout": "макет назначения",
@@ -861,7 +877,9 @@
         "group_xAxisLayout": "макет оси X",
         "group_yAxisLayout": "макет оси Y",
         "group_yAxisLayoutForData": "макет оси Y для данных",
-        "group_style": "Стиль"
+        "group_style": "Стиль",
+        "group_renderViewsOnLoad": "предварительная отрисовка:",
+        "group_views": "виды:"
     },
     "uk": {
         "group_alertLayout": "Макет",
@@ -870,7 +888,7 @@
         "group_barLayout": "Стовпчик діаграма LAYOUT:",
         "group_barValuesLayout": "стовпчик діаграма значення макет:",
         "group_buttonLayout": "Кнопка макет",
-        "group_buttonOids": "OBJECT ID",
+        "group_buttonOids": "Ідентифікатори об’єктів",
         "group_calendarButtonsLayout": "CALENDAR кнопки макет",
         "group_calendarCustomFormats": "Власний дата FORMATS",
         "group_calendarEventLayout": "APPOINTMENT макет",
@@ -957,7 +975,9 @@
         "group_xAxisLayout": "X вісь макет",
         "group_yAxisLayout": "Y вісь макет",
         "group_yAxisLayoutForData": "Y вісь макет FOR дані",
-        "group_style": "Стиль"
+        "group_style": "Стиль",
+        "group_renderViewsOnLoad": "попереднє відмальовування:",
+        "group_views": "вигляди:"
     },
     "zh-cn": {
         "group_alertLayout": "布局",
@@ -966,7 +986,7 @@
         "group_barLayout": "条形图布局：",
         "group_barValuesLayout": "条形图值布局：",
         "group_buttonLayout": "按钮布局",
-        "group_buttonOids": "对象编号",
+        "group_buttonOids": "对象 ID",
         "group_calendarButtonsLayout": "日历按钮布局",
         "group_calendarCustomFormats": "自定义日期格式",
         "group_calendarEventLayout": "约会安排",
@@ -1053,6 +1073,8 @@
         "group_xAxisLayout": "x轴布局",
         "group_yAxisLayout": "y轴布局",
         "group_yAxisLayoutForData": "数据的Y轴布局",
-        "group_style": "样式"
+        "group_style": "样式",
+        "group_renderViewsOnLoad": "预渲染：",
+        "group_views": "视图："
     }
 }
