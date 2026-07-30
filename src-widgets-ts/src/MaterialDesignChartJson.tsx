@@ -398,11 +398,15 @@ export default class MaterialDesignChartJson extends VisWidget {
             className="materialdesign-html-card-container mdc-card"
             style={{
               background: s(data.colorBackground) || (isM3 ? "var(--md-sys-color-surface-container-low)" : undefined),
+              // Inset: the card filled the widget box, and VIS2 clips there — the whole card shadow
+              // and its rounded edge sat outside the visible area.
+              boxSizing: "border-box",
               display: "flex",
               flexDirection: "column",
-              height: "100%",
+              height: "calc(100% - 6px)",
+              margin: 3,
               padding: n(data.borderDistance, 8),
-              width: "100%",
+              width: "calc(100% - 6px)",
             }}
           >
             <div

@@ -187,3 +187,20 @@ describe('Material Symbols as a second icon source', () => {
         expect(names.filter(name => !/^[a-z0-9_]+$/.test(name))).toEqual([]);
     });
 });
+
+// VIS2 clips a widget at its box, so a shadow drawn on the box edge is invisible.
+describe('elevated button shadow room', () => {
+    const Button = createButtonClass(definition('state'));
+    const render = (rxData: Record<string, unknown>): string => {
+        const instance = fixture<{ state: unknown; renderWidgetBody: (props: unknown) => React.JSX.Element }>(
+            new Button(fixture<ConstructorParameters<typeof Button>[0]>({ context: { setValue: vi.fn() } })),
+        );
+        instance.state = fixture<typeof instance.state>({ rxData, values: {} });
+        return renderToStaticMarkup(instance.renderWidgetBody(fixture<Parameters<typeof instance.renderWidgetBody>[0]>({})));
+    };
+    it('insets only the elevated variant, the only one carrying a shadow', () => {
+        expect(render({ designStyle: 'material3', md3ButtonVariant: 'elevated' })).toContain('padding:4px');
+        expect(render({ designStyle: 'material3', md3ButtonVariant: 'filled' })).toContain('padding:0');
+        expect(render({ md3ButtonVariant: 'elevated' })).toContain('padding:0');
+    });
+});

@@ -579,9 +579,14 @@ export default class MaterialDesignChartBar extends VisWidget {
             style={{
               background: s(data.colorBackground) || (isM3 ? "var(--md-sys-color-surface-container-low)" : undefined),
               boxSizing: "border-box",
-              height: "100%",
+              display: "flex",
+              flexDirection: "column",
+              // Inset: the card filled the widget box, and VIS2 clips there — the whole card shadow
+              // and its rounded edge sat outside the visible area.
+              height: "calc(100% - 6px)",
+              margin: 3,
               padding: n(data.borderDistance, 8),
-              width: "100%",
+              width: "calc(100% - 6px)",
             }}
           >
             <div
@@ -593,7 +598,9 @@ export default class MaterialDesignChartBar extends VisWidget {
               }}
               dangerouslySetInnerHTML={{ __html: sanitizeHtml(title) }}
             />
-                {chartjs}
+            {/* The canvas is height:100%, so in a plain block card it kept the FULL card height and
+                the title pushed its bottom axis out of the widget. Flex row that takes the rest. */}
+            <div style={{ flex: "1 1 0", minHeight: 0 }}>{chartjs}</div>
           </div>
         ) : (
           chartjs

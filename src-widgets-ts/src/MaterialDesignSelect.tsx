@@ -207,7 +207,10 @@ const attrs: RxWidgetInfo['visAttrs'] = [
         name: 'counter',
         label: 'group_counter',
         fields: [
-            { name: 'showInputCounter', label: 'showInputCounter', type: 'checkbox', default: true },
+            // Opt-in, and the declared default has to say so: it read `true` while the widget drew the
+            // counter only for a truthy saved value, so the editor claimed a counter that no existing
+            // select showed.
+            { name: 'showInputCounter', label: 'showInputCounter', type: 'checkbox' },
             { name: 'inputCounterColor', label: 'inputCounterColor', type: 'color' },
             { name: 'inputCounterFontSize', label: 'inputCounterFontSize', type: 'number', default: 14 },
             { name: 'inputCounterFontFamily', label: 'inputCounterFontFamily', type: 'fontname' },
@@ -555,6 +558,13 @@ export default class MaterialDesignSelect extends VisWidget {
         }
         // A plain div, because an <input> nested in a <button> is not typeable.
         const FieldTag = this.isAutocomplete ? 'div' : 'button';
+        // The hint and counter options existed in the editor since the port but were never rendered.
+        // `showInputMessageAlways` follows Vuetify's `persistent-hint`: off, the hint only shows while
+        // the field is "focused", which for a select is its open list.
+        const showMessage = !!data.inputMessage && (data.showInputMessageAlways !== false || this.open);
+        const hasDetails = showMessage || !!data.showInputCounter;
+        const detailColor = (value: unknown, fallback: string): string =>
+            (isM3 && !m3ColorExplicit(value) ? 'var(--md-sys-color-on-surface-variant)' : color(value, fallback));
         return (
             <div
                 className={`materialdesign-widget materialdesign-select${isM3 ? ` ${designStyleClasses(data, this.isDarkTheme())}` : ''}`}
@@ -563,7 +573,7 @@ export default class MaterialDesignSelect extends VisWidget {
             >
                 <div
                     className="materialdesign-vuetify-select"
-                    style={{ boxSizing: 'border-box', height: '100%', position: 'relative', width: '100%' }}
+                    style={{ boxSizing: 'border-box', display: hasDetails ? 'flex' : undefined, flexDirection: 'column', height: '100%', position: 'relative', width: '100%' }}
                 >
                     <FieldTag
                         aria-expanded={this.open}
@@ -590,8 +600,10 @@ export default class MaterialDesignSelect extends VisWidget {
                             color: textColor,
                             cursor: 'pointer',
                             display: 'flex',
+                            flex: hasDetails ? '1 1 auto' : undefined,
                             fontFamily: data.inputTextFontFamily || 'inherit',
-                            height: '100%',
+                            height: hasDetails ? undefined : '100%',
+                            minHeight: 0,
                             padding: '0 10px',
                             position: 'relative',
                             textAlign: data.inputAlignment || 'left',
@@ -803,6 +815,43 @@ export default class MaterialDesignSelect extends VisWidget {
                             <span style={{ flex: '0 0 auto', marginLeft: 4 }}>{selectedIcon}</span>
                         ) : null}
                     </FieldTag>
+                    {hasDetails ? (
+                        <div
+                            className="v-text-field__details"
+                            style={{ alignItems: 'center', display: 'flex', flex: '0 0 auto', justifyContent: 'flex-end', maxWidth: '100%', minHeight: 14, padding: '0 10px' }}
+                        >
+                            {showMessage ? (
+                                <div
+                                    style={{
+                                        color: detailColor(data.inputMessageColor, 'rgba(0, 0, 0, 0.54)'),
+                                        flex: 1,
+                                        fontFamily: data.inputMessageFontFamily || undefined,
+                                        fontSize: sizeCss(data.inputMessageFontSize, 14),
+                                        textAlign: 'left',
+                                    }}
+                                >
+                                    {data.inputMessage}
+                                </div>
+                            ) : null}
+                            {data.showInputCounter ? (
+                                <div
+                                    className="v-counter"
+                                    style={{
+                                        color: detailColor(data.inputCounterColor, 'rgba(0, 0, 0, 0.54)'),
+                                        flex: '0 1 auto',
+                                        fontFamily: data.inputCounterFontFamily || undefined,
+                                        fontSize: sizeCss(data.inputCounterFontSize, 14),
+                                        marginLeft: 8,
+                                        whiteSpace: 'nowrap',
+                                    }}
+                                >
+                                    {/* Entry count, not character count: for a select the list length is the
+                                        number a reader can act on, and there is no maximum to count against. */}
+                                    {list.length}
+                                </div>
+                            ) : null}
+                        </div>
+                    ) : null}
                     {this.open ? (
                         <div
                             className="v-menu__content v-select-list"

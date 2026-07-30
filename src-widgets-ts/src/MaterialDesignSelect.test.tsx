@@ -116,3 +116,20 @@ describe('select material 3 menu geometry', () => {
         expect(menu({ designStyle: 'material3', listItemHeight: 64 })).toContain('min-height:64px');
     });
 });
+
+// The hint and counter options sat in the editor doing nothing until 0.4.
+describe('hint and counter', () => {
+    const render = (rxData: Record<string, unknown>): string => {
+        const select = new MaterialDesignSelect(fixture<ConstructorParameters<typeof MaterialDesignSelect>[0]>({ context: {} }));
+        select.state = fixture<typeof select.state>({ rxData, values: {} });
+        return renderToStaticMarkup(select.renderWidgetBody(fixture<Parameters<MaterialDesignSelect['renderWidgetBody']>[0]>({})));
+    };
+    const list = { listDataMethod: 'jsonStringObject', jsonStringObject: '[{"value":1,"text":"A"},{"value":2,"text":"B"},{"value":3,"text":"C"}]' };
+    it('draws the hint, and the counter as the number of entries', () => {
+        expect(render({ ...list, inputMessage: 'Raum wählen' })).toContain('Raum wählen');
+        expect(render({ ...list, showInputCounter: true })).toContain('>3<');
+    });
+    it('hides a non-persistent hint while the list is closed', () => {
+        expect(render({ ...list, inputMessage: 'Raum wählen', showInputMessageAlways: false })).not.toContain('Raum wählen');
+    });
+});

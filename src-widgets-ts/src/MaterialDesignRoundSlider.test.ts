@@ -35,6 +35,11 @@ describe('MaterialDesignRoundSlider logic', () => {
         it('clears the large-arc flag at or below 180°', () => {
             expect(arcPath(0, 90, 40)).toContain('A 40 40 0 0 1');
         });
+        it('draws a full turn as two half arcs, since one arc between identical points is invisible', () => {
+            const full = arcPath(0, 360, 40);
+            expect(full.match(/A 40 40/g)).toHaveLength(2);
+            expect(full).toMatch(/^M 90 50 A 40 40 0 0 1 10 50(\.\d+)? A 40 40 0 0 1 90 50$/);
+        });
     });
 
     describe('label', () => {

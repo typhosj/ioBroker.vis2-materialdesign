@@ -120,7 +120,10 @@ const listCss = '.materialdesign-list .mdc-list{list-style:none;margin:0;padding
     + '.materialdesign-list .mdc-list-item__graphic{flex-shrink:0;display:inline-flex;align-items:center;width:auto!important;height:auto!important;overflow:visible}'
     // `listLayout: card`/`cardOutlined` set this class but the geometry came from ambient legacy VIS1
     // CSS that is gone, so both card layouts rendered identical to `standard`.
-    + '.materialdesign-list .materialdesign-list-card{background:var(--materialdesign-color-card-background,#fff);border-radius:4px;box-shadow:0 2px 1px -1px rgba(0,0,0,.2),0 1px 1px 0 rgba(0,0,0,.14),0 1px 3px 0 rgba(0,0,0,.12);height:100%;overflow:hidden}'
+    // The 3 px inset is not decoration: the card filled the widget box edge to edge, and VIS2 clips
+    // there (`.vis-widget` is `overflow: hidden`), so the shadow was entirely outside the visible
+    // area and the outlined variant lost its bottom border.
+    + '.materialdesign-list .materialdesign-list-card{background:var(--materialdesign-color-card-background,#fff);border-radius:4px;box-shadow:0 2px 1px -1px rgba(0,0,0,.2),0 1px 1px 0 rgba(0,0,0,.14),0 1px 3px 0 rgba(0,0,0,.12);box-sizing:border-box;margin:3px;height:calc(100% - 6px);overflow:hidden}'
     + '.materialdesign-list .materialdesign-list-card--outlined{border:1px solid rgba(0,0,0,.12);box-shadow:none}'
     + '.materialdesign-list.mdw-style-material3 .materialdesign-list-card{border-radius:var(--md-sys-shape-corner-medium);box-shadow:var(--md-sys-elevation-level1)}'
     + '.materialdesign-list.mdw-style-material3 .materialdesign-list-card--outlined{background:var(--md-sys-color-surface);border:1px solid var(--md-sys-color-outline-variant);box-shadow:none}';

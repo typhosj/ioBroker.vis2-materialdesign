@@ -377,7 +377,11 @@ export default class MaterialDesignChartPie extends VisWidget {
         ))}
       </div>
     ) : null;
-    const chartjs = <MaterialDesignChartCanvas type={s(data.chartType, "pie")} data={{ labels: values.map(item => item.label), datasets: [{ data: values.map(item => item.value), backgroundColor: values.map(item => isM3 && item.color === "#44739e" ? m3.primary : item.color), borderColor: s(data.borderColor, "#fff"), borderWidth: n(data.borderWidth, 1) }] }} options={{ responsive: true, maintainAspectRatio: false, animation: { duration: n(data.animationDuration, 1000) }, cutout: s(data.chartType) === "doughnut" ? `${n(data.doughnutCutOut, 50)}%` : 0, plugins: { datalabels: datalabelsConfig(data, index => { const item = values[index]; return { color: item?.textColor, text: `${n(item?.value).toLocaleString(undefined, { minimumFractionDigits: Math.max(0, n(data.valuesMinDecimals)), maximumFractionDigits: Math.max(0, n(data.valuesMaxDecimals)) })}${s(item?.appendix)}` }; }, { align: "end", anchor: "center" }), legend: { display: false }, tooltip: { enabled: b(data.showTooltip, true), callbacks: {
+    const chartjs = <MaterialDesignChartCanvas type={s(data.chartType, "pie")} data={{ labels: values.map(item => item.label), datasets: [{ data: values.map(item => item.value), backgroundColor: values.map(item => isM3 && item.color === "#44739e" ? m3.primary : item.color), borderColor: s(data.borderColor, "#fff"), borderWidth: n(data.borderWidth, 1) }] }} options={{ responsive: true, maintainAspectRatio: false, animation: { duration: n(data.animationDuration, 1000) }, cutout: s(data.chartType) === "doughnut" ? `${n(data.doughnutCutOut, 50)}%` : 0, plugins: { datalabels: datalabelsConfig(data, index => { const item = values[index]; return { color: item?.textColor, text: `${n(item?.value).toLocaleString(undefined, { minimumFractionDigits: Math.max(0, n(data.valuesMinDecimals)), maximumFractionDigits: Math.max(0, n(data.valuesMaxDecimals)) })}${s(item?.appendix)}` }; // `align: "end"` pushes the label outward from the middle of the arc band. On a pie that lands
+    // inside the slice, but on a doughnut the band is narrow and its middle already sits near the
+    // outer edge — the labels ended up outside the colored ring, the wider the cut-out the further
+    // out. Doughnuts centre the label in the band instead; `valuesPositionAlign` still overrides.
+    }, { align: s(data.chartType) === "doughnut" ? "center" : "end", anchor: "center" }), legend: { display: false }, tooltip: { enabled: b(data.showTooltip, true), callbacks: {
       title: (items: { dataIndex?: number }[]) => { const item = values[n(items[0]?.dataIndex)]; return item?.tooltipTitle ? item.tooltipTitle.split("\\n") : ""; },
       label: (item: { dataIndex?: number }) => { const v = values[n(item.dataIndex)]; if (v?.tooltipText) return v.tooltipText.split("\\n"); const num = n(v?.value).toLocaleString(undefined, { minimumFractionDigits: Math.max(0, n(data.tooltipValueMinDecimals)), maximumFractionDigits: Math.max(0, n(data.tooltipValueMaxDecimals)) }); return `${s(v?.label)}: ${num}${s(v?.appendix)}`; },
     } } } }} />;
@@ -411,9 +415,12 @@ export default class MaterialDesignChartPie extends VisWidget {
               boxSizing: "border-box",
               display: "flex",
               flexDirection: "column",
-              height: "100%",
+              // Inset: the card filled the widget box, and VIS2 clips there — the whole card shadow
+              // and its rounded edge sat outside the visible area.
+              height: "calc(100% - 6px)",
+              margin: 3,
               padding: n(data.borderDistance, 8),
-              width: "100%",
+              width: "calc(100% - 6px)",
             }}
           >
             <div

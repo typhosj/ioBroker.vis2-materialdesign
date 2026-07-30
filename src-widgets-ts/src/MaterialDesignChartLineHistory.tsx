@@ -475,9 +475,11 @@ export default class MaterialDesignChartLineHistory extends VisWidget {
       </div>
     ) : null;
     const chartMain = b(d.cardUse) ? (
-      <div className="materialdesign-html-card-container mdc-card" style={{ background: s(d.colorBackground) || (isM3 ? "var(--md-sys-color-surface-container-low)" : undefined), boxSizing: "border-box", display: "flex", flexDirection: "column", height: "100%", padding: n(d.borderDistance, 8), width: "100%" }}>
+      <div className="materialdesign-html-card-container mdc-card" style={{ background: s(d.colorBackground) || (isM3 ? "var(--md-sys-color-surface-container-low)" : undefined), boxSizing: "border-box", display: "flex", flexDirection: "column", height: "calc(100% - 6px)", margin: 3, padding: n(d.borderDistance, 8), width: "calc(100% - 6px)" }}>
         <div style={{ background: s(d.colorTitleSectionBackground), color: s(d.colorTitle) || (isM3 ? "var(--md-sys-color-on-surface)" : undefined), fontFamily: s(d.titleFontFamily) }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(s(d.title)) }} />
-        {chartjs}
+        {/* The canvas is height:100%, so without a flex row of its own it keeps the full card height
+            and the title pushes its bottom axis out of the widget. */}
+        <div style={{ flex: "1 1 0", minHeight: 0 }}>{chartjs}</div>
       </div>
     ) : chartjs;
     const chartBox = (

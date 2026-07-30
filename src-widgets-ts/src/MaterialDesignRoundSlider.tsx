@@ -143,6 +143,12 @@ export function arcPath(start: number, length: number, radius: number): string {
     const to = polar(end, radius);
     const large = Math.abs(length) > 180 ? 1 : 0;
     const sweep = length >= 0 ? 1 : 0;
+    // A full turn puts start and end on the same point, and an SVG arc between identical points
+    // draws nothing — `arcLength: 360` rendered an empty widget. Two half turns instead.
+    if (Math.abs(length) >= 360) {
+        const half = polar(start + 180 * (sweep ? 1 : -1), radius);
+        return `M ${from.x} ${from.y} A ${radius} ${radius} 0 0 ${sweep} ${half.x} ${half.y} A ${radius} ${radius} 0 0 ${sweep} ${from.x} ${from.y}`;
+    }
     return `M ${from.x} ${from.y} A ${radius} ${radius} 0 ${large} ${sweep} ${to.x} ${to.y}`;
 }
 

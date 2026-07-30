@@ -629,8 +629,11 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
                 </>
             );
 
+            // VIS2 clips every widget (`.vis-widget` is `overflow: hidden`) and the button fills its box
+            // edge to edge, so the elevated variant's drop shadow was cut off on all four sides. It is
+            // the only variant carrying one, so it is the only one that gives up the 4 px.
             return (
-                <div className={isM3 ? `materialdesign-widget ${designStyleClasses(data, this.isDarkTheme())}` : undefined} style={{ boxSizing: 'border-box', width: '100%', height: '100%', padding: 0 }}>
+                <div className={isM3 ? `materialdesign-widget ${designStyleClasses(data, this.isDarkTheme())}` : undefined} style={{ boxSizing: 'border-box', width: '100%', height: '100%', padding: m3Standard && m3Variant === 'elevated' ? 4 : 0 }}>
                     <button
                         type="button"
                         aria-pressed={on}

@@ -30,3 +30,10 @@
 .materialdesign-widget .mdc-card__media--square::before { margin-top: 100%; }
 .materialdesign-widget .mdc-card__media--16-9::before { margin-top: 56.25%; }
 .materialdesign-widget .mdc-card__media-content { position: absolute; top: 0; right: 0; bottom: 0; left: 0; box-sizing: border-box; }
+
+/* The Horizontal card layout had no rule at all: its wrapper stayed a plain block, so the media's
+   `::before` margin collapsed out of it (height 0, image invisible) and title/text stacked below an
+   empty square instead of sitting beside the image. */
+.materialdesign-widget .horizontal-container { display: flex; flex-direction: row; height: 100%; min-height: 0; }
+.materialdesign-widget .horizontal-container > .mdc-card__media { flex: 0 0 40%; align-self: stretch; overflow: hidden; }
+.materialdesign-widget .horizontal-container > div:last-child { display: flex; flex-direction: column; flex: 1 1 auto; min-width: 0; overflow: hidden; }
