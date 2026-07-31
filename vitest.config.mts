@@ -13,6 +13,10 @@ export default defineConfig({
             reporter: ['text', 'json-summary'],
             reportsDirectory: 'coverage',
             include: ['src-widgets-ts/src/**/*.{ts,tsx}'],
+            // Everything below is a 3-16 line registration shim — one `createButtonClass(...)` /
+            // `createViewClass(...)` call with no branch in it. They are excluded so the percentages
+            // below describe the code that can actually be wrong, not ~30 files of boilerplate that
+            // would inflate them. Anything with logic belongs in the measurement, not here.
             exclude: [
                 'src-widgets-ts/src/**/*.test.{ts,tsx}',
                 'src-widgets-ts/src/**/*.d.ts',
@@ -28,11 +32,14 @@ export default defineConfig({
                 'src-widgets-ts/src/MaterialDesignDialog{View,IFrame}.tsx',
                 'src-widgets-ts/src/MaterialDesign{Grid,Masonry}Views.tsx',
             ],
+            // Set just under the measured values (60.57 / 49.62 / 56.40 / 61.04), so removing a test
+            // trips the gate. The previous numbers sat ~20 points below the actual coverage and
+            // could only have failed after a collapse, which is not a gate.
             thresholds: {
-                statements: 40,
-                branches: 27,
-                functions: 35,
-                lines: 38,
+                statements: 60,
+                branches: 49,
+                functions: 56,
+                lines: 60,
             },
         },
     },
