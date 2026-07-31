@@ -30,3 +30,29 @@ Das Widget **Farbschema-Vorschau** zeigt die verfügbaren Material-Design-Palett
 
 Icon-/Bildfelder akzeptieren Material-Design-Namen, gängige Bildpfade, HTTP(S)-
 URLs und Data-URLs. SVG-Masken unterstützen eine einzelne konfigurierte Farbe.
+
+## Zwei Icon-Quellen
+
+Jedes Icon-/Bildfeld öffnet denselben Picker, und dieser Picker hat zwei Quellen.
+Umgeschaltet wird mit den Schaltflächen **MDI** / **Symbols** über dem Icon-Raster.
+
+- **MDI** (Standard) – [Material Design Icons](https://pictogrammers.com/library/mdi/),
+  7447 Glyphen. Das ist der Satz des ursprünglichen Adapters, bestehende Projekte
+  funktionieren also unverändert weiter. Der Name darf mit oder ohne Präfix
+  geschrieben werden: `lightbulb` und `mdi-lightbulb` sind dasselbe Icon.
+- **Symbols** – [Material Symbols Outlined](https://fonts.google.com/icons), Googles
+  aktueller Icon-Satz und derjenige, gegen den Material 3 gezeichnet ist. Ein
+  Symbols-Name wird immer **mit dem Präfix `ms-`** gespeichert: `ms-light_mode`,
+  `ms-schedule`. Das Präfix unterscheidet die beiden Sätze — mehrere Namen gibt es
+  in beiden, und ohne Präfix würde `light_mode` als MDI-Icon gesucht und nicht
+  dargestellt.
+
+Beide Sätze werden selbst ausgeliefert, brauchen zur Laufzeit also kein Internet.
+Es sind getrennte Webfonts, und ein Panel lädt einen davon erst, wenn tatsächlich
+eine Glyphe daraus gezeichnet wird: eine Ansicht nur mit MDI-Icons lädt den
+Symbols-Font nie und umgekehrt. Werden beide in einer Ansicht gemischt, fallen
+beide Downloads an.
+
+Statt durch das Raster zu scrollen, kann der Name auch direkt in das Textfeld des
+Pickers eingegeben werden — es akzeptiert `mdi-name`, `ms-name` und Bildpfade
+gleichermaßen.

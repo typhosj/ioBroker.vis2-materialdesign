@@ -67,6 +67,22 @@ Each widget page shows both styles side by side in light and dark mode.
 groups of the selected widget. A widget that already carries such values shows
 them without the switch.
 
+### Known limits of the Material 3 beta
+
+- **The widgets read instance 0.** The theme, dark-mode, design-style and Material 3
+  states are read from `vis2-materialdesign.0.…`. The adapter is a singleton, and
+  ioBroker creates instance 0 by default, so this is what every normal install has —
+  but an instance deliberately created under a different number is not picked up by
+  the widgets.
+- **`Project default` shows the classic style for a moment.** A widget set to
+  `Project default` renders classic until the project's design-style state has
+  arrived over the socket, then switches. On a slow connection that is visible as a
+  brief flash on every panel load. Setting the style on the widget itself
+  (`Material 3` instead of `Project default`) avoids it.
+- **A seed written by a script does not recompute the scheme.** The seed color is
+  converted to the full Material 3 scheme when the adapter configuration is saved,
+  not when the state changes. Write the seed in the **Design** tab and save.
+
 <img src="../media/vis2_style_editor_advanced.png" width="300" alt="Additional option groups with advanced options enabled">
 
 ## Choose a widget by task

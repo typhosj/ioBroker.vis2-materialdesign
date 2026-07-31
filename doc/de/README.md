@@ -69,6 +69,23 @@ Jede Widget-Seite zeigt beide Stile nebeneinander, hell und dunkel.
 benötigten Optionsgruppen des Widgets ein. Ein Widget, das solche Werte bereits
 enthält, zeigt sie auch ohne den Schalter.
 
+### Bekannte Grenzen der Material-3-Beta
+
+- **Die Widgets lesen Instanz 0.** Theme-, Dark-Mode-, Gestaltungsstil- und
+  Material-3-Datenpunkte werden unter `vis2-materialdesign.0.…` gelesen. Der Adapter
+  ist ein Singleton und ioBroker legt standardmäßig Instanz 0 an, das entspricht also
+  jeder normalen Installation — eine bewusst unter anderer Nummer angelegte Instanz
+  wird von den Widgets aber nicht gefunden.
+- **`Projektstandard` zeigt kurz den klassischen Stil.** Ein Widget mit
+  `Projektstandard` stellt zunächst klassisch dar, bis der Gestaltungsstil-Datenpunkt
+  über den Socket eingetroffen ist, und wechselt dann. Bei langsamer Verbindung ist
+  das bei jedem Laden des Panels als kurzes Aufblitzen sichtbar. Wird der Stil direkt
+  am Widget gesetzt (`Material 3` statt `Projektstandard`), tritt das nicht auf.
+- **Ein per Skript geschriebener Seed berechnet das Schema nicht neu.** Die
+  Seed-Farbe wird beim Speichern der Adapterkonfiguration in das vollständige
+  Material-3-Schema umgerechnet, nicht bei Änderung des Datenpunkts. Den Seed also im
+  Tab **Design** setzen und speichern.
+
 <img src="../media/vis2_style_editor_advanced.png" width="300" alt="Zusätzliche Optionsgruppen bei eingeschalteten erweiterten Optionen">
 
 ## Widget nach Aufgabe wählen
