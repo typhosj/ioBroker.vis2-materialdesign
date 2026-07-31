@@ -55,10 +55,12 @@ jobs:
       - run: npm ci
       - run: npx tsc -p src-widgets-ts/tsconfig.json --noEmit
       - run: npm run build
-      - name: committed bundle must match the sources
+      # src-widgets-ts/src/generated is in the list because the build regenerates it too
+      # (gen-group-labels.cjs, from admin/i18n) and it is committed as a source file.
+      - name: committed build output must match the sources
         run: |
-          git diff --exit-code -- widgets admin \
-            || { echo "::error::widgets/ or admin/ is stale — run 'npm run build' and commit the result"; exit 1; }
+          git diff --exit-code -- widgets admin src-widgets-ts/src/generated \
+            || { echo "::error::committed build output is stale — run 'npm run build' and commit the result"; exit 1; }
       # After the build, not before: the dual-node_modules version check reads
       # src-widgets-ts/node_modules, which only exists once the build has installed it.
       - run: npm run test:pr-gate
