@@ -48,7 +48,12 @@ clean();
 require('./scripts/gen-group-labels.cjs').generate();
 
 if (!existsSync(`${srcTs}/node_modules`)) {
-    execFileSync('npm', ['install'], { cwd: srcTs, shell: true, stdio: 'inherit' });
+    // `ci` and not `install`: this tree has its own committed lockfile, and the bundle it produces is
+    // a checked-in artifact. `install` is free to resolve newer patch versions than the lockfile
+    // pins, which makes the same commit build to different bytes on a machine that starts cold — and
+    // CI always starts cold, so it would report bundle drift that no source change caused.
+    const command = existsSync(`${srcTs}package-lock.json`) ? 'ci' : 'install';
+    execFileSync('npm', [command], { cwd: srcTs, shell: true, stdio: 'inherit' });
 }
 
 execFileSync('npm', ['run', 'build'], { cwd: srcTs, shell: true, stdio: 'inherit' });

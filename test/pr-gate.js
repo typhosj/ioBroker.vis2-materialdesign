@@ -38,6 +38,16 @@ for (const dep of Object.keys(widgetPkg.dependencies || {})) {
     assert.strictEqual(widgetVersion.split(".")[0], rootVersion.split(".")[0], `${dep} installed major differs: src-widgets-ts has ${widgetVersion}, root has ${rootVersion} — bump BOTH package.json files and npm install in both`);
 }
 
+// 0.4.0 of this package ships one extensionless relative ESM import in
+// dynamiccolor/color_spec_2025.js. A bundler resolves it, plain Node throws ERR_MODULE_NOT_FOUND —
+// which breaks every node-side script and check here. The M3 scheme only needs the Hct/TonalPalette
+// API, which 0.3.0 has. Before widening this range, require() the package under plain Node first.
+assert.match(
+    pkg.devDependencies["@material/material-color-utilities"],
+    /^\^?0\.3\./,
+    "@material/material-color-utilities must stay on 0.3.x — 0.4.0 is not loadable under plain Node",
+);
+
 for (const object of objects) {
     assert.ok(object._id, "object needs _id");
     assert.ok(object.type, `${object._id} needs type`);

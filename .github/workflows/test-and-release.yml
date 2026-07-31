@@ -39,8 +39,32 @@ jobs:
       - run: npm ci
       - run: npm test
 
+  # `widgets/` and `admin/assets/` are checked-in build artifacts — they are what the package ships,
+  # and nothing above rebuilds them. Without this job a commit that changes a widget source but
+  # forgets the rebuild passes every check and releases the previous bundle.
+  build-is-current:
+    needs: check-and-lint
+    if: contains(github.event.head_commit.message, '[skip ci]') == false
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24.x
+          cache: npm
+      - run: npm ci
+      - run: npx tsc -p src-widgets-ts/tsconfig.json --noEmit
+      - run: npm run build
+      - name: committed bundle must match the sources
+        run: |
+          git diff --exit-code -- widgets admin \
+            || { echo "::error::widgets/ or admin/ is stale — run 'npm run build' and commit the result"; exit 1; }
+      # After the build, not before: the dual-node_modules version check reads
+      # src-widgets-ts/node_modules, which only exists once the build has installed it.
+      - run: npm run test:pr-gate
+
   deploy:
-    needs: [check-and-lint, adapter-tests]
+    needs: [check-and-lint, adapter-tests, build-is-current]
     if: |
       contains(github.event.head_commit.message, '[skip ci]') == false &&
       github.event_name == 'push' &&
