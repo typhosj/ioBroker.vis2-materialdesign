@@ -522,7 +522,7 @@
         "widget": "Icon List"
     },
     {
-        "id": "light.icon_list.subText_selected",
+        "id": "dark.icon_list.subText_selected",
         "desc": "subLabelFontColorSelected",
         "defaultValue": 1,
         "widget": "Icon List"
