@@ -97,6 +97,15 @@ export default {
     target: "chrome89",
     outDir: "./build",
     rollupOptions: {
+      output: {
+        // Module federation names its virtual chunks after the whole share path, which since
+        // @module-federation/vite 1.16.14 includes an `__mf_owner__1__` infix and reaches 134
+        // characters. `<checkout>/widgets/vis2-materialdesign/assets/<name>` then passes Windows'
+        // 260-character MAX_PATH, and `git add` fails with "Filename too long" — on the artifacts
+        // that ship. The hash keeps truncated names distinct.
+        chunkFileNames: (chunk: { name: string }): string =>
+          `assets/${chunk.name.slice(0, 60)}-[hash].js`,
+      },
       onwarn(
         warning: { code: string },
         warn: (warning: { code: string }) => void,
