@@ -58,6 +58,28 @@ describe('shared button actions', () => {
         ]);
     });
 
+    it('ignores releases without a press so a loading view writes nothing', () => {
+        const { instance, setValue } = widget('toggle');
+        const push = fixture<{
+            press: (data: Record<string, unknown>) => void;
+            release: (data: Record<string, unknown>, current: ioBroker.StateValue | undefined) => void;
+            cancelPress: (data: Record<string, unknown>) => void;
+        }>(instance);
+        const data = { oid: 'test.0.push', pushButton: true };
+
+        push.release(data, false);
+        push.cancelPress(data);
+        expect(setValue).not.toHaveBeenCalled();
+
+        push.press(data);
+        push.press(data);
+        push.release(data, true);
+        expect(setValue.mock.calls).toEqual([
+            ['test.0.push', true],
+            ['test.0.push', false],
+        ]);
+    });
+
     it('writes indexed multi-state values and cancels delayed writes on unmount', () => {
         vi.useFakeTimers();
         const { instance, setValue } = widget('multiState');

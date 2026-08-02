@@ -437,6 +437,7 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
         private readonly actionTimers = new Set<number>();
         private lastTouchAt = 0;
         private lastSliderAt = 0;
+        private pressed = false;
 
         constructor(props: VisRxWidgetProps) {
             super(props);
@@ -504,6 +505,41 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
             execute(def, this.props, data, current, this.schedule);
         }
 
+        // A release only acts on a press this button itself saw. The browser delivers orphan
+        // releases - mouse-up or key-up landing on a widget that appears under the pointer or takes
+        // focus while the view loads, mouse-leave after a plain hover - and without this gate every
+        // one of them wrote the state on view load.
+        press(data: ButtonData): void {
+            if (this.pressed) {
+                return;
+            }
+            this.pressed = true;
+            this.pushDown(data);
+        }
+
+        release(data: ButtonData, current: ioBroker.StateValue | undefined): void {
+            if (!this.takePress()) {
+                return;
+            }
+            if (data.pushButton) {
+                this.pushUp(data);
+            } else {
+                this.activate(data, current);
+            }
+        }
+
+        cancelPress(data: ButtonData): void {
+            if (this.takePress() && data.pushButton) {
+                this.pushUp(data);
+            }
+        }
+
+        private takePress(): boolean {
+            const pressed = this.pressed;
+            this.pressed = false;
+            return pressed;
+        }
+
         pushDown(data: ButtonData): void {
             if (def.kind !== 'toggle' || data.readOnly || !data.pushButton) {
                 return;
@@ -511,6 +547,8 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
             feedback(data);
             if (this.isLocked(data)) {
                 this.unlock(data);
+                // The unlocking press wrote nothing, so its release must not write the off value.
+                this.pressed = false;
                 return;
             }
             const onValue = data.toggleType === 'value' ? parseActionValue(String(data.valueOn ?? true)) : true;
@@ -569,7 +607,6 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
             const lockElementSize = lockSize * Math.max(1, numeric(data.lockBackgroundSizeFactor, 1));
             const direction = isVertical ? 'column' : 'row';
             const gap = numeric(data.distanceBetweenTextAndImage, isVertical ? 2 : 4);
-            const click = (): void => this.activate(data, current);
             const sliderMin = numeric(data.valueOff, 0);
             const sliderMax = numeric(data.valueOn, 100);
             const sliderValue = Math.min(sliderMax, Math.max(sliderMin, numeric(current, sliderMin)));
@@ -628,9 +665,7 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
                         }}
                         onMouseEnter={() => this.setState({ hovered: true })}
                         onMouseLeave={() => {
-                            if (data.pushButton) {
-                                this.pushUp(data);
-                            }
+                            this.cancelPress(data);
                             this.setState({ active: false, hovered: false });
                         }}
                         onMouseDown={() => {
@@ -638,58 +673,42 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
                                 return;
                             }
                             this.setState({ active: true });
-                            this.pushDown(data);
+                            this.press(data);
                         }}
                         onMouseUp={() => {
                             if (Date.now() - this.lastTouchAt < 700 || Date.now() - this.lastSliderAt < 700) {
                                 return;
                             }
                             this.setState({ active: false });
-                            if (data.pushButton) {
-                                this.pushUp(data);
-                            } else {
-                                click();
-                            }
+                            this.release(data, current);
                         }}
                         onKeyDown={event => {
                             if (event.key === 'Enter' || event.key === ' ') {
                                 event.preventDefault();
                                 this.setState({ active: true });
-                                if (data.pushButton && !event.repeat) {
-                                    this.pushDown(data);
-                                }
+                                this.press(data);
                             }
                         }}
                         onKeyUp={event => {
                             if (event.key === 'Enter' || event.key === ' ') {
                                 event.preventDefault();
                                 this.setState({ active: false });
-                                if (data.pushButton) {
-                                    this.pushUp(data);
-                                } else {
-                                    click();
-                                }
+                                this.release(data, current);
                             }
                         }}
                         onTouchStart={() => {
                             this.lastTouchAt = Date.now();
                             this.setState({ active: true });
-                            this.pushDown(data);
+                            this.press(data);
                         }}
                         onTouchEnd={() => {
                             this.lastTouchAt = Date.now();
                             this.setState({ active: false });
-                            if (data.pushButton) {
-                                this.pushUp(data);
-                            } else {
-                                click();
-                            }
+                            this.release(data, current);
                         }}
                         onTouchCancel={() => {
                             this.lastTouchAt = Date.now();
-                            if (data.pushButton) {
-                                this.pushUp(data);
-                            }
+                            this.cancelPress(data);
                             this.setState({ active: false });
                         }}
                     >
