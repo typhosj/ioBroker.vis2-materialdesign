@@ -1,1 +1,1 @@
-import{n as e,t}from"./assets/virtual_mf-REMOTE_ENTRY_ID___mfe_internal__vis2MaterialDesig-lebx2i_k.js";export{t as get,e as init};
+import{n as e,t}from"./assets/virtual_mf-REMOTE_ENTRY_ID___mfe_internal__vis2MaterialDesig-BiYN80LR.js";export{t as get,e as init};
