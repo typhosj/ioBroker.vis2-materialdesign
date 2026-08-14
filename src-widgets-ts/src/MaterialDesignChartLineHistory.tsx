@@ -125,6 +125,10 @@ const attrs: RxWidgetInfo["visAttrs"] = [
       color("colorBackground"), color("colorTitleSectionBackground"), color("colorTextSectionBackground"), color("colorTitle"),
     ],
   },
+  // One group per data set: object id, line layout and its own y-axis together. vis-2 expands only
+  // the FIRST indexed group of a widget — the rescan for the next one tests `group.indexFrom` for
+  // truthiness (visWidgetsCatalog.tsx) and ours start at index 0 — so every further indexed group
+  // rendered once, with unindexed field names. Field names are unchanged, saved charts keep values.
   {
     name: "oids",
     label: "group_oids",
@@ -140,26 +144,6 @@ const attrs: RxWidgetInfo["visAttrs"] = [
       num("maxDataPoints"),
       num("minTimeInterval"),
       num("multiply"),
-    ]),
-  },
-  {
-    name: "lineLayout",
-    label: "group_lineLayout",
-    fields: [
-      {
-        name: "colorScheme",
-        label: "colorScheme",
-        type: "select",
-        options: Object.keys(colorSchemes),
-      },
-      color("globalColor"),
-      num("pointSize"),
-    ],
-  },
-  {
-    name: "layoutForData",
-    label: "group_layoutForData",
-    ...rows([
       {
         name: "lineSpanGaps",
         label: "lineSpanGaps",
@@ -181,7 +165,22 @@ const attrs: RxWidgetInfo["visAttrs"] = [
       color("valuesFontColor"),
       { name: "valuesFontFamily", label: "valuesFontFamily", type: "fontname" },
       num("valuesFontSize"),
+      { name: "showYAxis", label: "showYAxis", type: "checkbox", default: true }, { name: "yAxisPosition", label: "yAxisPosition", type: "select", options: ["left", "right"], default: "left" }, { name: "yAxisTitle", label: "yAxisTitle", type: "text" }, num("yAxisMinValue"), num("yAxisMaxValue"), num("yAxisStep"), color("yAxisGridLinesColor"),
     ]),
+  },
+  {
+    name: "lineLayout",
+    label: "group_lineLayout",
+    fields: [
+      {
+        name: "colorScheme",
+        label: "colorScheme",
+        type: "select",
+        options: Object.keys(colorSchemes),
+      },
+      color("globalColor"),
+      num("pointSize"),
+    ],
   },
   {
     name: "legendLayout",
@@ -237,11 +236,6 @@ const attrs: RxWidgetInfo["visAttrs"] = [
     name: "yAxisLayout",
     label: "group_yAxisLayout",
     fields: [color("yAxisTitleColor"), { name: "yAxisTitleFontFamily", label: "yAxisTitleFontFamily", type: "fontname" }, num("yAxisTitleFontSize"), color("yAxisValueLabelColor"), { name: "yAxisValueFontFamily", label: "yAxisValueFontFamily", type: "fontname" }, num("yAxisValueFontSize")],
-  },
-  {
-    name: "yAxisLayoutForData",
-    label: "group_yAxisLayoutForData",
-    ...rows([{ name: "showYAxis", label: "showYAxis", type: "checkbox", default: true }, { name: "yAxisPosition", label: "yAxisPosition", type: "select", options: ["left", "right"], default: "left" }, { name: "yAxisTitle", label: "yAxisTitle", type: "text" }, num("yAxisMinValue"), num("yAxisMaxValue"), num("yAxisStep"), color("yAxisGridLinesColor")]),
   },
 ];
 
