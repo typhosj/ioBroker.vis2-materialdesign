@@ -19,6 +19,9 @@ describe('dialog trigger button style', () => {
         const outlined = render({ buttonStyle: 'outlined' });
         expect(outlined).toContain('background:transparent');
         expect(outlined).toContain('border:1px solid #44739e');
+        expect(render({ buttonStyle: 'raised' })).toContain('box-shadow');
+        expect(render({ buttonStyle: 'unelevated' })).not.toContain('box-shadow');
+        expect(render({ buttonStyle: 'icon' })).toContain('border-radius:50%');
     });
 
     it('maps the style onto the shared M3 button variants', () => {

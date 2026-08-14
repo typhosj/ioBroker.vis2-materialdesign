@@ -489,7 +489,8 @@ export class MaterialDesignDialog extends VisWidget {
               // outlined all rendered the same filled button.
               background: triggerFlat ? "transparent" : s(d.mdwButtonPrimaryColor, isM3 ? undefined : "#44739e"),
               border: triggerOutlined ? `1px solid ${s(d.mdwButtonSecondaryColor, isM3 ? "var(--md-sys-color-outline)" : "#44739e")}` : 0,
-              borderRadius: isM3 ? undefined : 4,
+              borderRadius: isM3 ? undefined : triggerIsIcon ? "50%" : 4,
+              boxShadow: !isM3 && triggerStyle === "raised" ? "0 3px 1px -2px rgba(0,0,0,.2),0 2px 2px 0 rgba(0,0,0,.14),0 1px 5px 0 rgba(0,0,0,.12)" : undefined,
               color: s(d.mdwButtonSecondaryColor, isM3 ? undefined : triggerFlat ? "#44739e" : "#fff"),
               fontFamily: s(d.textFontFamily),
               fontSize: d.textFontSize ? sizeCss(d.textFontSize, 14) : undefined,

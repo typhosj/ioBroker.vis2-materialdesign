@@ -614,6 +614,7 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
             const isVertical = def.layout === 'vertical';
             const isIcon = def.layout === 'icon';
             const isSliderIcon = isIcon && def.kind === 'slider';
+            const flatButton = data.buttonStyle === 'text' || data.buttonStyle === 'outlined';
             const background = !isSliderIcon && (pressState.active || pressState.hovered) ? pressed : primary;
             const image = on && data.imageTrue ? data.imageTrue : data.image || def.icon;
             const imageColorSet = !!(on && data.imageTrue ? data.imageTrueColor : data.imageColor);
@@ -682,10 +683,12 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
                         style={{
                             width: '100%',
                             height: '100%',
-                            border: isM3 ? (m3Outlined && fgExplicit ? `1px solid ${secondary}` : undefined) : data.buttonStyle === 'outlined' ? `1px solid ${secondary}` : 0,
+                            border: isM3 ? (m3Outlined && fgExplicit ? `1px solid ${secondary}` : undefined) : data.buttonStyle === 'outlined' && !isIcon ? `1px solid ${primary}` : 0,
                             borderRadius: isIcon ? '50%' : isM3 ? undefined : 4,
-                            background: isM3 ? (bgExplicit ? primary : undefined) : data.buttonStyle === 'text' || data.buttonStyle === 'outlined' ? 'transparent' : background,
-                            color: isM3 ? (fgExplicit ? secondary : undefined) : secondary,
+                            background: isM3 ? (bgExplicit ? primary : undefined) : flatButton ? 'transparent' : background,
+                            // Without a fill the primary color has to move to border and label — the on-primary
+                            // color (white by default) would be invisible on the view background.
+                            color: isM3 ? (fgExplicit ? secondary : undefined) : flatButton && !isIcon ? primary : secondary,
                             cursor: data.readOnly ? 'default' : 'pointer',
                             padding: isIcon ? 0 : '0 8px',
                             display: 'flex',
