@@ -5,7 +5,7 @@ import { squarePreview ,
   createInfo,
   setStateValue,
   sizeCss,
-  stateValue, sanitizeHtml, iconField } from './widgetUtils';
+  stateValue, sanitizeHtml, iconField, liftWidgetLayer } from './widgetUtils';
 import type { RxWidgetInfo } from "@iobroker/types-vis-2";
 import { renderIcon } from "./MaterialDesignButtons";
 
@@ -421,6 +421,7 @@ export class MaterialDesignDialog extends VisWidget {
     return (
       <div
         className="materialdesign-widget materialdesign-vuetify-dialog"
+        ref={(element) => liftWidgetLayer(element, visible ? n(d.z_index, 202) : null)}
         style={{ height: "100%", width: "100%" }}
       >
         {!byState ? (

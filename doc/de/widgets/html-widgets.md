@@ -29,3 +29,7 @@ Persistenzeinstellungen für bis zu acht Zuordnungen.
 
 Sollen mehrere Child Views gleichzeitig angeordnet werden, stattdessen
 [Responsives Layout](responsive-layout.md) verwenden.
+
+Der State, der die Ansicht auswählt, kommt typischerweise aus einem Menü: die
+[Top App Bar](top-app-bar.md) schreibt den Index des gewählten Menüeintrags,
+dieses Widget zeigt die Ansicht dazu.
