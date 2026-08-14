@@ -1,0 +1,1 @@
+import{t as e}from"./MaterialDesignButtons-CuhwFd_r.js";var t=e({id:`tplVis2-materialdesign-Button-Adition`,name:`Button Addition`,kind:`addition`,layout:`default`,label:`&nbsp;Addition`,icon:`plus`});export{t as default};
