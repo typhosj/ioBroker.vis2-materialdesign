@@ -308,7 +308,10 @@ const attrs: RxWidgetInfo['visAttrs'] = [
         label: 'group_menuItems',
         indexFrom: 0,
         indexTo: 'countSelectItems',
-        hidden: (data: SelectData, index?: number) => (index ?? 0) >= itemCount(data.countSelectItems),
+        // The entries only come from the editor in 'inputPerEditor'; the other modes read them from a
+        // state, where these fields would be dead.
+        hidden: (data: SelectData, index?: number) =>
+            (data.listDataMethod ?? 'inputPerEditor') !== 'inputPerEditor' || (index ?? 0) >= itemCount(data.countSelectItems),
         fields: [
             { name: 'value', label: 'value', type: 'text' },
             { name: 'label', label: 'label', type: 'text' },
