@@ -1,5 +1,5 @@
 import React from "react";
-import { MAX_DYNAMIC_ITEMS, squarePreview, boundedCount, createInfo, RenderProps, stateValue, VisWidget } from './widgetUtils';
+import { MAX_DYNAMIC_ITEMS, squarePreview, boundedCount, createInfo, itemCount, RenderProps, stateValue, VisWidget } from './widgetUtils';
 import type { RxWidgetInfo } from "@iobroker/types-vis-2";
 
 type Kind = "state" | "state8";
@@ -54,6 +54,7 @@ export function advancedViewInfo(kind: Kind): RxWidgetInfo {
               label: "group_views",
               indexFrom: 0,
               indexTo: "count",
+              hidden: (data: Data, index?: number) => (index ?? 0) >= itemCount(data.count),
               fields: [
                 {
                   name: "contains_view_",
@@ -115,6 +116,7 @@ export function advancedViewInfo(kind: Kind): RxWidgetInfo {
               label: "group_renderViewsOnLoad",
               indexFrom: 0,
               indexTo: "countRenderViewsOnLoad",
+              hidden: (data: Data, index?: number) => (index ?? 0) >= boundedCount(data.countRenderViewsOnLoad, 0, MAX_DYNAMIC_ITEMS),
               fields: [{ name: "View", label: "View", type: "views" }],
             },
           ],
@@ -163,7 +165,7 @@ export class MaterialDesignAdvancedView extends VisWidget {
       return Array.from(
         new Set(
           Array.from(
-            { length: boundedCount(data.count, 1, MAX_DYNAMIC_ITEMS - 1) + 1 },
+            { length: itemCount(data.count) },
             (_, index) => s(data[`contains_view_${index}`]),
           ).filter(Boolean),
         ),
@@ -175,7 +177,7 @@ export class MaterialDesignAdvancedView extends VisWidget {
           this.selected(data),
           ...Array.from(
             {
-              length: boundedCount(data.countRenderViewsOnLoad, 0, MAX_DYNAMIC_ITEMS - 1) + 1,
+              length: boundedCount(data.countRenderViewsOnLoad, 0, MAX_DYNAMIC_ITEMS),
             },
             (_, index) => s(data[`View${index}`]),
           ),

@@ -3,7 +3,7 @@ import React from 'react';
 import type { RxWidgetInfo, VisRxWidgetProps } from '@iobroker/types-vis-2';
 import { symbolName } from './IconFilePicker';
 
-import { MAX_DYNAMIC_ITEMS, squarePreview, PressState, RenderProps, VisWidget, boundedCount, createInfo, designStyle, designStyleClasses, iconField, parseActionValue, safeWidgetUrl, setStateValue, sizeCss, stateValue, sanitizeHtml, stringValue } from './widgetUtils';
+import { squarePreview, PressState, RenderProps, VisWidget, createInfo, itemCount, designStyle, designStyleClasses, iconField, parseActionValue, safeWidgetUrl, setStateValue, sizeCss, stateValue, sanitizeHtml, stringValue } from './widgetUtils';
 
 type ButtonKind = 'navigation' | 'link' | 'state' | 'multiState' | 'addition' | 'toggle' | 'slider';
 type ButtonLayout = 'default' | 'vertical' | 'icon';
@@ -189,6 +189,7 @@ function attrs(def: ButtonDefinition): RxWidgetInfo['visAttrs'] {
                       label: 'group.buttonOids',
                       indexFrom: 0,
                       indexTo: 'countOids',
+                      hidden: (data: ButtonData, index?: number) => (index ?? 0) >= itemCount(data.countOids),
                       fields: [
                           { name: 'oid', label: 'oid', type: 'id' },
                           { name: 'value', label: 'value', type: 'text' },
@@ -381,8 +382,8 @@ function indexedValue(data: ButtonData, name: string, index: number): unknown {
 }
 
 function writeMultiState(props: VisRxWidgetProps, data: ButtonData, schedule: (callback: () => void, delay: number) => void): void {
-    const count = boundedCount(data.countOids, 1, MAX_DYNAMIC_ITEMS - 1);
-    for (let index = 0; index <= count; index++) {
+    const count = itemCount(data.countOids);
+    for (let index = 0; index < count; index++) {
         const oid = stringValue(indexedValue(data, 'oid', index));
         const value = parseActionValue(stringValue(indexedValue(data, 'value', index)));
         const delay = Math.min(2_147_483_647, Math.max(0, numeric(indexedValue(data, 'delayInMs', index), 0)));

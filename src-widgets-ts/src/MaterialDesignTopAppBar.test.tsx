@@ -26,7 +26,7 @@ describe('top app bar dynamic items', () => {
         widget.state = fixture<typeof widget.state>({
             rxData: {
                 drawerLayout: 'permanent',
-                navItemCount: 2,
+                navItemCount: 3,
                 oid: 'test.0.selected',
                 selectedItemName_oid: 'test.0.selectedName',
                 labels0: 'Alpha',
