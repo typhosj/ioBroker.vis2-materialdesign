@@ -14,6 +14,11 @@ function collectByClass(node: React.ReactNode, className: string): Array<React.R
     return [...own, ...collectByClass(element.props.children as React.ReactNode, className)];
 }
 
+// React 18 keeps `ref` out of `props`; reading it there warns and yields undefined.
+function applyRef(element: React.ReactElement, node: HTMLElement): void {
+    (element as unknown as { ref: (target: HTMLElement) => void }).ref(node);
+}
+
 describe('top app bar dynamic items', () => {
     it('hides empty editor rows while preserving their persisted action index', () => {
         const setValue = vi.fn();
@@ -44,6 +49,32 @@ describe('top app bar dynamic items', () => {
             ['test.0.selected', 2],
             ['test.0.selectedName', 'gamma'],
         ]);
+    });
+
+    it('lets clicks through the empty part of the widget box and lifts the wrapper for the modal drawer', () => {
+        const widget = new MaterialDesignTopAppBar(fixture<ConstructorParameters<typeof MaterialDesignTopAppBar>[0]>({ context: {} }));
+        widget.state = fixture<typeof widget.state>({ rxData: { navItemCount: 1, labels0: 'Alpha' }, values: {} });
+        const closed = widget.renderWidgetBody(fixture<Parameters<MaterialDesignTopAppBar['renderWidgetBody']>[0]>({})) as React.ReactElement<Record<string, unknown>>;
+        expect((closed.props.style as React.CSSProperties).pointerEvents).toBe('none');
+        expect((collectByClass(closed, 'mdc-top-app-bar')[0].props.style as React.CSSProperties).pointerEvents).toBe('auto');
+
+        const wrapper = document.createElement('div');
+        const root = document.createElement('div');
+        wrapper.appendChild(root);
+        wrapper.style.zIndex = '5';
+        applyRef(closed, root);
+        expect(wrapper.style.zIndex).toBe('5');
+
+        (widget as unknown as { open: boolean }).open = true;
+        const open = widget.renderWidgetBody(fixture<Parameters<MaterialDesignTopAppBar['renderWidgetBody']>[0]>({})) as React.ReactElement<Record<string, unknown>>;
+        applyRef(open, root);
+        expect(wrapper.style.zIndex).toBe('1000');
+        expect((collectByClass(open, 'mdc-drawer')[0].props.style as React.CSSProperties).pointerEvents).toBe('auto');
+        expect((collectByClass(open, 'mdc-drawer-scrim')[0].props.style as React.CSSProperties).pointerEvents).toBe('auto');
+
+        (widget as unknown as { open: boolean }).open = false;
+        applyRef(widget.renderWidgetBody(fixture<Parameters<MaterialDesignTopAppBar['renderWidgetBody']>[0]>({})) as React.ReactElement, root);
+        expect(wrapper.style.zIndex).toBe('5');
     });
 
     it('bounds JSON input and renders a visible error item for malformed data', () => {

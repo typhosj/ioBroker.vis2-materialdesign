@@ -51,3 +51,15 @@ icon-only drawer.
 The same widgets with the dark theme switched on:
 
 <img src="../../media/vis2_top_app_bar_styles_dark.png" alt="Top App Bar in the Classic and the Material 3 style, dark theme">
+## Switching views
+
+The top app bar does not navigate by itself. It only writes the index of the
+selected entry into its **object id** (entry 0 → `0`, entry 1 → `1`, submenus
+count in the same order). A second widget reading that same object id performs
+the view change: [Advanced View in Widget](html-widgets.md), the `8` variant,
+with one embedded view per index.
+
+The usual setup: the top app bar and, below it, the Advanced View in Widget 8 —
+both on the same view, both with the same object id. The bar widget has to be as
+tall as the drawer it opens; the empty rest of its box lets clicks through to the
+widgets underneath.

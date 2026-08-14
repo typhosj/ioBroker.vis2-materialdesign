@@ -51,3 +51,16 @@ Symbolen.
 Dieselben Widgets bei eingeschaltetem Dark-Theme:
 
 <img src="../../media/vis2_top_app_bar_styles_dark.png" alt="Top App Bar im klassischen und im Material-3-Stil, dunkel">
+## Zwischen Ansichten umschalten
+
+Die Top App Bar navigiert nicht selbst. Sie schreibt nur den Index des gewählten
+Eintrags in ihre **Objekt-ID** (Eintrag 0 → `0`, Eintrag 1 → `1`, Untermenüs
+zählen in derselben Reihenfolge mit). Den Wechsel der Ansicht übernimmt ein
+zweites Widget, das dieselbe Objekt-ID liest:
+[Advanced View in Widget](html-widgets.md) in der `8`-Variante, mit einer
+eingebetteten Ansicht je Index.
+
+Der übliche Aufbau: die Top App Bar und darunter das Advanced View in Widget 8,
+beide auf derselben Ansicht, beide mit derselben Objekt-ID. Das Widget muss so
+hoch sein wie der Drawer, den es aufklappen soll — der leere Rest seines Rahmens
+lässt Klicks zu den darunterliegenden Widgets durch.

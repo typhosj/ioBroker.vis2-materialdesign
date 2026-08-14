@@ -30,3 +30,7 @@ settings for up to eight mappings.
 
 Use [Responsive Layout](responsive-layout.md) instead when multiple child views
 must be arranged at the same time.
+
+The state that selects the view usually comes from a menu: the
+[Top App Bar](top-app-bar.md) writes the index of the selected menu entry, and
+this widget shows the matching view.

@@ -267,6 +267,28 @@ export function parseActionValue(value: string): ioBroker.StateValue {
     return value;
 }
 
+// An overlay (drawer, dialog) can never beat a sibling widget with its own z-index: as soon as the
+// user sets "z-index" in the widget's CSS-general settings, the vis-2 wrapper element becomes a
+// stacking context and every z-index inside it is only sorted against its own siblings. So the
+// wrapper itself has to be lifted while the overlay is open — it is vis-2's element, hence the walk
+// up from our own root node.
+// ponytail: vis-2 re-rendering the wrapper drops the lift again; re-apply on our next render is
+// enough in practice. Move the overlay into a portal if that ever proves too weak.
+export function liftWidgetLayer(root: HTMLElement | null, zIndex: number | null): void {
+    const wrapper = root?.parentElement;
+    if (!wrapper) return;
+    // The wrapper usually carries the z-index the user set in the widget's CSS-general settings, so
+    // closing has to put that value back — clearing the property would drop the widget's own layer.
+    if (zIndex === null) {
+        if (wrapper.dataset.mdwLiftedFrom === undefined) return;
+        wrapper.style.zIndex = wrapper.dataset.mdwLiftedFrom;
+        delete wrapper.dataset.mdwLiftedFrom;
+        return;
+    }
+    if (wrapper.dataset.mdwLiftedFrom === undefined) wrapper.dataset.mdwLiftedFrom = wrapper.style.zIndex;
+    wrapper.style.zIndex = String(zIndex);
+}
+
 export function card(children: React.ReactNode): React.JSX.Element {
     return <div style={{ boxSizing: 'border-box', width: '100%', height: '100%', padding: 8 }}>{children}</div>;
 }
