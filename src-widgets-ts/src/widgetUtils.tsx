@@ -76,6 +76,14 @@ export function stringValue(value: unknown, fallback = ''): string {
           : fallback;
 }
 
+// How many indexed rows a "count" option asks for. VIS 1 stored the LAST INDEX in these options, so
+// its "number of data sets = 3" drew four — the label promised one thing and the loop `i <= count`
+// did another. Here the number means the number of rows, and the editor hides the row at index
+// `count` (vis-2 always expands 0..count, one more than we want).
+export function itemCount(value: unknown, fallback = 1): number {
+    return Math.max(1, boundedCount(value, fallback, MAX_DYNAMIC_ITEMS));
+}
+
 export function boundedCount(value: unknown, fallback = 0, max = MAX_DYNAMIC_ITEMS): number {
     const parsed = Number(value);
     return Math.min(max, Math.max(0, Math.floor(Number.isFinite(parsed) ? parsed : fallback)));

@@ -1,5 +1,5 @@
 import React from "react";
-import { MAX_DYNAMIC_ITEMS, squarePreview, boundedCount, RenderProps, VisWidget, createInfo, stateValue, sanitizeHtml } from './widgetUtils';
+import { MAX_DYNAMIC_ITEMS, squarePreview, itemCount, RenderProps, VisWidget, createInfo, stateValue, sanitizeHtml } from './widgetUtils';
 import type { RxWidgetInfo } from "@iobroker/types-vis-2";
 import { colorSchemes, scheme } from "./MaterialDesignColorScheme";
 import { MaterialDesignChartCanvas } from "./MaterialDesignChartCanvas";
@@ -130,8 +130,10 @@ const attrs: RxWidgetInfo["visAttrs"] = [
     label: "group_oids",
     indexFrom: 0,
     indexTo: "dataCount",
-    hidden: (data: Data) =>
-      s(data.chartDataMethod, "inputPerEditor") !== "inputPerEditor",
+    // vis-2 expands 0..dataCount, one row more than the count asks for; the last one is hidden.
+    hidden: (data: Data, index?: number) =>
+      s(data.chartDataMethod, "inputPerEditor") !== "inputPerEditor" ||
+      (index ?? 0) >= itemCount(data.dataCount),
     fields: [
       { name: "oid", label: "oid", type: "id" },
       { name: "dataColor", label: "dataColor", type: "color" },
@@ -466,7 +468,7 @@ export default class MaterialDesignChartBar extends VisWidget {
       : null;
     const count = source
       ? Math.min(source.length, MAX_DYNAMIC_ITEMS)
-      : boundedCount(data.dataCount, 1, MAX_DYNAMIC_ITEMS - 1) + 1;
+      : itemCount(data.dataCount);
     const colors = s(data.colorScheme)
       ? scheme(s(data.colorScheme), count)
       : [];

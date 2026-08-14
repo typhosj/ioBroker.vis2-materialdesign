@@ -21,7 +21,7 @@ describe('line history loading', () => {
             rxData: {
                 historyAdapterInstance: 'history.0',
                 refreshMethod: 'byObject',
-                dataCount: 0,
+                dataCount: 1,
                 oid: 'test.0.value',
                 aggregate: 'average',
                 maxDataPoints: 20,
@@ -50,7 +50,7 @@ describe('line history loading', () => {
         const widget = new MaterialDesignChartLineHistory(fixture<ConstructorParameters<typeof MaterialDesignChartLineHistory>[0]>({ context: { socket: { getHistory, subscribeState: vi.fn().mockResolvedValue(undefined), unsubscribeState: vi.fn() } } }));
         const inspection = fixture<HistoryInspection>(widget);
         widget.state = fixture<typeof widget.state>({
-            rxData: { historyAdapterInstance: 'history.0', refreshMethod: 'byObject', dataCount: 0, oid: 'test.0.value' },
+            rxData: { historyAdapterInstance: 'history.0', refreshMethod: 'byObject', dataCount: 1, oid: 'test.0.value' },
             values: {},
         });
         widget.componentDidMount();
