@@ -14,7 +14,9 @@ Four native VIS 2 charts for different data sources.
 - [Line history chart](chart-line-history.md) – load time series directly from a history instance.
 
 Bar and Pie can read values from indexed editor datasets or from one shared JSON
-state. JSON Chart uses a separate multi-dataset format. Line History queries
+state. **Number of data sets** is a count: 3 gives three data sets, in the groups
+Data set [0] to [2]. VIS 1 stored the last index there, where 3 meant four data
+sets — so check the value once when rebuilding an old chart. JSON Chart uses a separate multi-dataset format. Line History queries
 historic values through the selected history adapter instance.
 
 ## Shared settings

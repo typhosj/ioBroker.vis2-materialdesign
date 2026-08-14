@@ -1,1 +1,0 @@
-import{t as e}from"./MaterialDesignToggleControls-CFoK1sWb.js";var t=e({id:`tplVis2-materialdesign-Switch`,name:`Switch`,kind:`switch`});export{t as default};

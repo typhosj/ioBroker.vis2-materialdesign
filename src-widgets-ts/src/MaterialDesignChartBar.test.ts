@@ -22,9 +22,9 @@ describe('barCount', () => {
         const source = Array.from({ length: 999 }, () => ({}));
         expect(barCount({}, source)).toBeLessThan(999);
     });
-    it('falls back to dataCount + 1 (0-based indexFrom) without a source', () => {
-        expect(barCount({ dataCount: 2 }, null)).toBe(3);
-        expect(barCount({}, null)).toBe(2); // default dataCount 1 -> count 2
+    it('takes dataCount as the number of data sets without a source', () => {
+        expect(barCount({ dataCount: 2 }, null)).toBe(2);
+        expect(barCount({}, null)).toBe(1); // nothing configured -> one row to edit
     });
 });
 

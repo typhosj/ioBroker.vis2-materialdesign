@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { VisRxWidgetState, WidgetData } from '@iobroker/types-vis-2';
 import { pickerValueName } from './IconFilePicker';
-import { DEFAULT_DARK_THEME_OID, M3_FONT_OID, M3_SCHEME_OID, M3_TOKEN_ROLES, MAX_DYNAMIC_ITEMS, VisWidget, accessibleText, applyM3SeedVariables, applyThemeVariables, boundedCount, createInfo, darkThemeOid, designStyle, designStyleClasses, editorDialogPalette, formatDurationTokens, formatMoment, humanizeDuration, iconFieldDataKey, m3SeedOids, parseActionValue, parseM3Scheme, safeWidgetUrl, sanitizeHtml, setProjectDesignStyle, setStateValue, sliderKeyValue, stateValue, stringValue } from './widgetUtils';
+import { DEFAULT_DARK_THEME_OID, M3_FONT_OID, M3_SCHEME_OID, M3_TOKEN_ROLES, MAX_DYNAMIC_ITEMS, VisWidget, accessibleText, applyM3SeedVariables, applyThemeVariables, boundedCount, createInfo, itemCount, darkThemeOid, designStyle, designStyleClasses, editorDialogPalette, formatDurationTokens, formatMoment, humanizeDuration, iconFieldDataKey, m3SeedOids, parseActionValue, parseM3Scheme, safeWidgetUrl, sanitizeHtml, setProjectDesignStyle, setStateValue, sliderKeyValue, stateValue, stringValue } from './widgetUtils';
 
 function fixture<T>(value: unknown): T { return value as T; }
 
@@ -314,6 +314,16 @@ describe('widget utilities', () => {
         expect(boundedCount('invalid', 3)).toBe(3);
         expect(boundedCount(Infinity, 3)).toBe(3);
         expect(boundedCount(MAX_DYNAMIC_ITEMS + 1)).toBe(MAX_DYNAMIC_ITEMS);
+    });
+
+    it('reads a count option as the number of rows, never as the last index', () => {
+        expect(itemCount(3)).toBe(3);
+        expect(itemCount(1)).toBe(1);
+        expect(itemCount('4')).toBe(4);
+        // Nothing configured, an empty field or a zero still leaves one row to edit.
+        expect(itemCount(undefined)).toBe(1);
+        expect(itemCount('')).toBe(1);
+        expect(itemCount(0)).toBe(1);
     });
 
     it('stringifies primitives without leaking object default strings', () => {

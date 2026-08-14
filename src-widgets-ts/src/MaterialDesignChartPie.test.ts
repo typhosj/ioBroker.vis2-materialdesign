@@ -19,9 +19,9 @@ describe('pieCount', () => {
     it('uses the source array length when using jsonStringObject data', () => {
         expect(pieCount({}, [{}, {}])).toBe(2);
     });
-    it('falls back to dataCount + 1 without a source', () => {
-        expect(pieCount({ dataCount: 3 }, null)).toBe(4);
-        expect(pieCount({}, null)).toBe(2);
+    it('takes dataCount as the number of data sets without a source', () => {
+        expect(pieCount({ dataCount: 3 }, null)).toBe(3);
+        expect(pieCount({}, null)).toBe(1);
     });
 });
 

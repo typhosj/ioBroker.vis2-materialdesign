@@ -14,7 +14,10 @@ Vier native VIS-2-Diagramme für unterschiedliche Datenquellen.
 - [Linienverlaufsdiagramm](chart-line-history.md) – Zeitreihen direkt aus einer History-Instanz laden.
 
 Bar und Pie können ihre Werte entweder aus indizierten Editor-Datensätzen oder
-aus einem gemeinsamen JSON-State lesen. JSON Chart erwartet ein eigenes
+aus einem gemeinsamen JSON-State lesen. **Anzahl der Datensätze** ist die Anzahl:
+3 ergibt drei Datensätze mit den Gruppen Datensatz [0] bis [2]. In VIS 1 war der
+Wert der letzte Index, dort ergab 3 vier Datensätze — beim Übernehmen eines alten
+Diagramms den Wert also einmal prüfen. JSON Chart erwartet ein eigenes
 Mehrreihenformat. Line History fragt historische Werte über die ausgewählte
 History-Adapterinstanz ab.
 

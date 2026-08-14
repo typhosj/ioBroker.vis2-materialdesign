@@ -1,5 +1,5 @@
 import React from "react";
-import { MAX_DYNAMIC_ITEMS, squarePreview, boundedCount, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, stateValue, sanitizeHtml } from './widgetUtils';
+import { MAX_DYNAMIC_ITEMS, squarePreview, itemCount, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, stateValue, sanitizeHtml } from './widgetUtils';
 import type { RxWidgetInfo } from "@iobroker/types-vis-2";
 import { colorSchemes, scheme } from "./MaterialDesignColorScheme";
 import { MaterialDesignChartCanvas, datalabelsConfig } from "./MaterialDesignChartCanvas";
@@ -40,7 +40,7 @@ export interface PieValue {
 }
 
 export function pieCount(data: Data, source: Record<string, unknown>[] | null): number {
-  return source ? Math.min(source.length, MAX_DYNAMIC_ITEMS) : boundedCount(data.dataCount, 1, MAX_DYNAMIC_ITEMS - 1) + 1;
+  return source ? Math.min(source.length, MAX_DYNAMIC_ITEMS) : itemCount(data.dataCount);
 }
 
 export function buildPieValues(data: Data, source: Record<string, unknown>[] | null, count: number, colors: string[], valueForIndex: (index: number) => number): PieValue[] {
@@ -151,8 +151,10 @@ const attrs: RxWidgetInfo["visAttrs"] = [
     label: "group_oids",
     indexFrom: 0,
     indexTo: "dataCount",
-    hidden: (data: Data) =>
-      s(data.chartDataMethod, "inputPerEditor") !== "inputPerEditor",
+    // vis-2 expands 0..dataCount, one row more than the count asks for; the last one is hidden.
+    hidden: (data: Data, index?: number) =>
+      s(data.chartDataMethod, "inputPerEditor") !== "inputPerEditor" ||
+      (index ?? 0) >= itemCount(data.dataCount),
     fields: [
       { name: "oid", label: "oid", type: "id" },
       color("dataColor"),

@@ -1,5 +1,5 @@
 import React from "react";
-import { MAX_DYNAMIC_ITEMS, squarePreview, boundedCount, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, formatMoment, visLocale, stateValue, sanitizeHtml } from './widgetUtils';
+import { squarePreview, itemCount, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, formatMoment, visLocale, stateValue, sanitizeHtml } from './widgetUtils';
 import type { RxWidgetInfo, VisRxWidgetState } from "@iobroker/types-vis-2";
 import { colorSchemes, scheme } from "./MaterialDesignColorScheme";
 import { MaterialDesignChartCanvas, datalabelsConfig } from "./MaterialDesignChartCanvas";
@@ -62,9 +62,11 @@ export function distinctAxisRows(rowIdx: number[], d: Data): number[] {
 }
 const color = (name: string) => ({ name, label: name, type: "color" as const });
 const num = (name: string) => ({ name, label: name, type: "number" as const });
+// vis-2 expands 0..dataCount, one row more than the count asks for; the last one is hidden.
 const rows = (fields: RxWidgetInfo["visAttrs"][number]["fields"]) => ({
   indexFrom: 0,
   indexTo: "dataCount",
+  hidden: (data: Data, index?: number) => (index ?? 0) >= itemCount(data.dataCount),
   fields,
 });
 const attrs: RxWidgetInfo["visAttrs"] = [
@@ -286,7 +288,7 @@ export default class MaterialDesignChartLineHistory extends VisWidget {
     super.componentWillUnmount?.();
   }
   private signature(d: Data): string {
-    const count = boundedCount(d.dataCount, 1, MAX_DYNAMIC_ITEMS - 1);
+    const count = itemCount(d.dataCount);
     return JSON.stringify({
       d,
       time: stateValue(this.state, s(d.time_interval_oid)),
@@ -294,7 +296,7 @@ export default class MaterialDesignChartLineHistory extends VisWidget {
         this.state,
         s(d.manualRefreshTrigger),
       ),
-      values: Array.from({ length: count + 1 }, (_, i) =>
+      values: Array.from({ length: count }, (_, i) =>
         stateValue(this.state as VisRxWidgetState, s(item(d, "oid", i))),
       ),
     });
@@ -320,7 +322,7 @@ export default class MaterialDesignChartLineHistory extends VisWidget {
   }
   private async load(d: Data): Promise<void> {
     const socket = this.props.context?.socket as unknown as Socket | undefined,
-      count = boundedCount(d.dataCount, 1, MAX_DYNAMIC_ITEMS - 1),
+      count = itemCount(d.dataCount),
       controlled = stateValue(
         this.state,
         s(d.time_interval_oid),
@@ -338,7 +340,7 @@ export default class MaterialDesignChartLineHistory extends VisWidget {
     }
     const all = await Promise.all(
       Array.from(
-        { length: count + 1 },
+        { length: count },
         async (_, i): Promise<Series | null> => {
           const oid = s(item(d, "oid", i));
           if (!oid) return null;
@@ -396,7 +398,7 @@ export default class MaterialDesignChartLineHistory extends VisWidget {
     // Axes come from the configured data rows, not the loaded series — an empty history range would
     // otherwise leave chart.js on a default axis that ignores show/position.
     const on = (v: unknown): number | undefined => (v === undefined || v === null || v === "" || !Number.isFinite(Number(v)) ? undefined : Number(v));
-    const rowIdx = Array.from({ length: boundedCount(d.dataCount, 1, MAX_DYNAMIC_ITEMS - 1) + 1 }, (_v, i) => i);
+    const rowIdx = Array.from({ length: itemCount(d.dataCount) }, (_v, i) => i);
     const yAxisIdOf = (i: number) => rowAxisId(d, i);
     const yEntries = distinctAxisRows(rowIdx, d)
       .map((i): [string, Record<string, unknown>] => [yAxisIdOf(i), chartAxis({
