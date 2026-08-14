@@ -60,6 +60,10 @@ function mdiNames(): string[] {
     return MDI_CACHE;
 }
 
+const PAGE = 400;
+export function nextLimit(box: { scrollHeight: number; scrollTop: number; clientHeight: number }, limit: number): number {
+    return box.scrollHeight - box.scrollTop - box.clientHeight < 200 ? limit + PAGE : limit;
+}
 const IMG_RE = /\.(gif|png|bmp|jpe?g|tiff?|svg)(\?|$)/i;
 const isImg = (v: string): boolean => IMG_RE.test(v) || /^https?:\/\//.test(v) || v.startsWith('data:image/');
 
@@ -139,10 +143,19 @@ export function IconFilePicker({ value, onChange, socket, label, texts, theme }:
     }, [open]);
 
     const names = React.useMemo(() => mdiNames(), []);
-    const filtered = React.useMemo(() => {
+    const matches = React.useMemo(() => {
         const q = search.trim().toLowerCase();
-        return (q ? names.filter(n => n.includes(q)) : names).slice(0, 400);
+        return q ? names.filter(n => n.includes(q)) : names;
     }, [names, search]);
+    // Drawing all 7000+ glyphs at once takes seconds, so the grid grows while the user scrolls
+    // instead. Without the reset a new search would keep the previously scrolled-to length.
+    const [limit, setLimit] = React.useState(PAGE);
+    React.useEffect(() => setLimit(PAGE), [search]);
+    const filtered = React.useMemo(() => matches.slice(0, limit), [matches, limit]);
+    const growOnScroll = (event: React.UIEvent<HTMLDivElement>): void => {
+        const box = event.currentTarget;
+        setLimit(current => nextLimit(box, current));
+    };
 
     const choose = (): void => {
         onChange(candidate);
@@ -230,7 +243,7 @@ export function IconFilePicker({ value, onChange, socket, label, texts, theme }:
                     </div>
 
                     {/* content */}
-                    <div style={{ flex: '1 1 auto', overflowY: 'auto', padding: '0 20px 8px' }}>
+                    <div onScroll={tab === 'icon' ? growOnScroll : undefined} style={{ flex: '1 1 auto', overflowY: 'auto', padding: '0 20px 8px' }}>
                         {tab === 'icon' ? (
                             <>
                                 <input autoFocus onChange={e => setSearch(e.target.value)} placeholder={texts.search} style={{ ...inputStyle, marginBottom: 12, width: '100%' }} value={search} />
@@ -241,7 +254,7 @@ export function IconFilePicker({ value, onChange, socket, label, texts, theme }:
                                         </button>
                                     ))}
                                 </div>
-                                <div style={{ color: subText, fontSize: 12, padding: '10px 0' }}>{filtered.length} / {names.length}</div>
+                                <div style={{ color: subText, fontSize: 12, padding: '10px 0' }}>{filtered.length} / {matches.length}</div>
                             </>
                         ) : (
                             <>
