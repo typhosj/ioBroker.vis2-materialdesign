@@ -350,6 +350,9 @@ export class MaterialDesignDialog extends VisWidget {
   renderWidgetBody(props: RenderProps): React.JSX.Element {
     super.renderWidgetBody(props);
     const d = this.state.rxData as unknown as Data;
+    const buttonStyle = s(d.buttonStyle, "raised");
+    const flatButton = buttonStyle === "text" || buttonStyle === "outlined" || buttonStyle === "icon";
+    const buttonPrimary = s(d.mdwButtonPrimaryColor, "#44739e");
     const byState = s(d.showDialogMethod) === "datapoint";
     const stateOpen = b(
       stateValue(this.state, s(d.showDialogOid)),
@@ -426,12 +429,16 @@ export class MaterialDesignDialog extends VisWidget {
       >
         {!byState ? (
           <button
-            className={`materialdesign-${s(d.buttonStyle) === "icon" ? "icon-" : ""}button`}
+            className={`materialdesign-${buttonStyle === "icon" ? "icon-" : ""}button`}
             onClick={show}
             style={{
-              background: s(d.mdwButtonPrimaryColor, "#44739e"),
-              border: 0,
-              color: s(d.mdwButtonSecondaryColor, "#fff"),
+              background: flatButton ? "transparent" : buttonPrimary,
+              border: buttonStyle === "outlined" ? `1px solid ${buttonPrimary}` : 0,
+              borderRadius: buttonStyle === "icon" ? "50%" : 4,
+              boxShadow: buttonStyle === "raised" ? "0 3px 1px -2px rgba(0,0,0,.2),0 2px 2px 0 rgba(0,0,0,.14),0 1px 5px 0 rgba(0,0,0,.12)" : undefined,
+              // A button without a fill carries the primary color in its label; the on-primary color
+              // would paint white text onto the view background.
+              color: flatButton ? buttonPrimary : s(d.mdwButtonSecondaryColor, "#fff"),
               fontFamily: s(d.textFontFamily),
               fontSize: d.textFontSize ? sizeCss(d.textFontSize, 14) : undefined,
               height: "100%",
