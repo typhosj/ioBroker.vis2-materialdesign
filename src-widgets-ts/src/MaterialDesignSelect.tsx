@@ -4,7 +4,7 @@ import type { RxWidgetInfo } from '@iobroker/types-vis-2';
 
 import { renderIcon } from './MaterialDesignButtons';
 import { cleanColor, num } from './MaterialDesignProgress';
-import { MAX_DYNAMIC_ITEMS, squarePreview, RenderProps, VisWidget, boundedCount, createInfo, iconField, setStateValue, sizeCss, stateValue, stringValue } from './widgetUtils';
+import { squarePreview, RenderProps, VisWidget, createInfo, itemCount, iconField, setStateValue, sizeCss, stateValue, stringValue } from './widgetUtils';
 
 interface SelectData {
     oid?: string;
@@ -303,13 +303,16 @@ const attrs: RxWidgetInfo['visAttrs'] = [
     {
         name: 'menuItems',
         label: 'group_menuItems',
+        indexFrom: 0,
+        indexTo: 'countSelectItems',
+        hidden: (data: SelectData, index?: number) => (index ?? 0) >= itemCount(data.countSelectItems),
         fields: [
-            { name: 'value', label: 'value', type: 'text', index: 0 },
-            { name: 'label', label: 'label', type: 'text', index: 0 },
-            { name: 'subLabel', label: 'subLabel', type: 'text', index: 0 },
-            { ...iconField('listIcon', 'listIcon'), index: 0 },
-            { name: 'listIconColor', label: 'listIconColor', type: 'color', index: 0 },
-            { name: 'imageColorSelectedTextField', label: 'imageColorSelectedTextField', type: 'color', index: 0 },
+            { name: 'value', label: 'value', type: 'text' },
+            { name: 'label', label: 'label', type: 'text' },
+            { name: 'subLabel', label: 'subLabel', type: 'text' },
+            iconField('listIcon', 'listIcon'),
+            { name: 'listIconColor', label: 'listIconColor', type: 'color' },
+            { name: 'imageColorSelectedTextField', label: 'imageColorSelectedTextField', type: 'color' },
         ],
     },
 ];
@@ -384,8 +387,7 @@ function items(data: SelectData, objects: Record<string, ioBroker.Object>): Sele
         }
         return [];
     }
-    const count = boundedCount(data.countSelectItems, 1, MAX_DYNAMIC_ITEMS - 1);
-    return Array.from({ length: count + 1 }, (_, index) => {
+    return Array.from({ length: itemCount(data.countSelectItems) }, (_, index) => {
         const value = data[`value${index}`];
         return value === undefined || value === null
             ? null

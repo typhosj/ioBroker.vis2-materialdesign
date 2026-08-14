@@ -1,5 +1,5 @@
 import React from "react";
-import { MAX_DYNAMIC_ITEMS, squarePreview, boundedCount, createInfo, RenderProps, stateValue, VisWidget } from './widgetUtils';
+import { squarePreview, boundedCount, createInfo, itemCount, RenderProps, stateValue, VisWidget } from './widgetUtils';
 import type { RxWidgetInfo } from "@iobroker/types-vis-2";
 
 type Kind = "masonry" | "grid";
@@ -354,6 +354,7 @@ export function viewsInfo(kind: Kind): RxWidgetInfo {
           label: "group_View",
           indexFrom: 0,
           indexTo: "countViews",
+          hidden: (data: Data, index?: number) => (index ?? 0) >= itemCount(data.countViews, 3),
           fields: itemFields,
         },
       ],
@@ -506,8 +507,7 @@ export class MaterialDesignViews extends VisWidget {
     this.widgetId = props.id;
     const d = this.state.rxData as unknown as Data;
     const layout = this.layout(d);
-    const count = boundedCount(d.countViews, 3, MAX_DYNAMIC_ITEMS - 1);
-    const items = Array.from({ length: count + 1 }, (_, index) => ({
+    const items = Array.from({ length: itemCount(d.countViews, 3) }, (_, index) => ({
       index,
       sort: n(d[`viewSortOrder${index}`], index),
     })).sort((a, b) => a.sort - b.sort);

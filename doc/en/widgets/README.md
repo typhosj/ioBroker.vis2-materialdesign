@@ -9,6 +9,11 @@ Historical template IDs remain stable for existing projects. Names such as
 `Adition`, `Vuetify` or `view-in-widget8` do not describe current dependencies
 and must not be changed.
 
+Every option that names a **count** — data sets, menu entries, columns, list
+items, select values, object ids, views — is a count: 3 gives three entries, in
+the groups [0] to [2]. VIS 1 stored the last index there, where 3 meant four
+entries, so check the value once when rebuilding a VIS 1 widget.
+
 ## Switch and navigate
 
 - [Buttons](buttons.md) – open a view or link, or write a state

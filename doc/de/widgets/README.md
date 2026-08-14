@@ -9,6 +9,12 @@ Historische Template-IDs bleiben für stabile Projekte erhalten. Schreibweisen
 wie `Adition`, `Vuetify` oder `view-in-widget8` bezeichnen keine aktuelle
 Abhängigkeit und sollten nicht geändert werden.
 
+Jede Option, die eine **Anzahl** benennt — Datensätze, Menüeinträge, Spalten,
+Listeneinträge, Auswahlwerte, Objekt-IDs, Ansichten — ist auch die Anzahl: 3
+ergibt drei Einträge mit den Gruppen [0] bis [2]. In VIS 1 stand dort der letzte
+Index, dort ergab 3 vier Einträge. Beim Nachbauen eines VIS-1-Widgets den Wert
+also einmal prüfen.
+
 ## Schalten und navigieren
 
 - [Buttons](buttons.md) – View öffnen, Link aufrufen oder State schreiben
