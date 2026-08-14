@@ -140,6 +140,12 @@ const attrs: RxWidgetInfo["visAttrs"] = [
       color("colorTitle"),
     ],
   },
+  // One group per data set, holding its object id AND its layout. VIS 1 had those as two separate
+  // indexed groups, but vis-2 expands only the FIRST indexed group of a widget: its rescan for the
+  // next one tests `group.indexFrom` for truthiness (visWidgetsCatalog.tsx), and ours start at index
+  // 0. A second indexed group therefore renders exactly once, with unindexed field names — which is
+  // how the per-data-set layout went missing. Field names are unchanged, so saved charts keep every
+  // value.
   {
     name: "oids",
     label: "group_oids",
@@ -147,7 +153,15 @@ const attrs: RxWidgetInfo["visAttrs"] = [
     indexTo: "dataCount",
     hidden: (data: Data) =>
       s(data.chartDataMethod, "inputPerEditor") !== "inputPerEditor",
-    fields: [{ name: "oid", label: "oid", type: "id" }],
+    fields: [
+      { name: "oid", label: "oid", type: "id" },
+      color("dataColor"),
+      { name: "label", label: "label", type: "text" },
+      color("valueTextColor"),
+      { name: "labelValueAppend", label: "labelValueAppend", type: "text" },
+      { name: "tooltipTitle", label: "tooltipTitle", type: "text" },
+      { name: "tooltipText", label: "tooltipText", type: "text" },
+    ],
   },
   {
     name: "pieLayout",
@@ -165,22 +179,6 @@ const attrs: RxWidgetInfo["visAttrs"] = [
       color("hoverBorderColor"),
       number("borderWidth"),
       number("hoverBorderWidth"),
-    ],
-  },
-  {
-    name: "layoutForData",
-    label: "group_layoutForData",
-    indexFrom: 0,
-    indexTo: "dataCount",
-    hidden: (data: Data) =>
-      s(data.chartDataMethod, "inputPerEditor") !== "inputPerEditor",
-    fields: [
-      color("dataColor"),
-      { name: "label", label: "label", type: "text" },
-      color("valueTextColor"),
-      { name: "labelValueAppend", label: "labelValueAppend", type: "text" },
-      { name: "tooltipTitle", label: "tooltipTitle", type: "text" },
-      { name: "tooltipText", label: "tooltipText", type: "text" },
     ],
   },
   {

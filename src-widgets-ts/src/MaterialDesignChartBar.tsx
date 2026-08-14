@@ -173,6 +173,12 @@ const attrs: RxWidgetInfo["visAttrs"] = [
       ].map((name) => ({ name, label: name, type: "color" as const })),
     ],
   },
+  // One group per data set, holding its object id AND its layout. VIS 1 had those as two separate
+  // indexed groups, but vis-2 expands only the FIRST indexed group of a widget: its rescan for the
+  // next one tests `group.indexFrom` for truthiness (visWidgetsCatalog.tsx), and ours start at index
+  // 0. A second indexed group therefore renders exactly once, with unindexed field names — which is
+  // how the per-data-set layout went missing. Field names are unchanged, so saved charts keep every
+  // value.
   {
     name: "oids",
     label: "group_oids",
@@ -180,7 +186,16 @@ const attrs: RxWidgetInfo["visAttrs"] = [
     indexTo: "dataCount",
     hidden: (data: Data) =>
       s(data.chartDataMethod, "inputPerEditor") !== "inputPerEditor",
-    fields: [{ name: "oid", label: "oid", type: "id" }],
+    fields: [
+      { name: "oid", label: "oid", type: "id" },
+      { name: "dataColor", label: "dataColor", type: "color" },
+      { name: "label", label: "label", type: "text" },
+      { name: "valueText", label: "valueText", type: "text" },
+      { name: "valueTextColor", label: "valueTextColor", type: "color" },
+      { name: "labelValueAppend", label: "labelValueAppend", type: "text" },
+      { name: "tooltipTitle", label: "tooltipTitle", type: "text" },
+      { name: "tooltipText", label: "tooltipText", type: "text" },
+    ],
   },
   {
     name: "barLayout",
@@ -206,23 +221,6 @@ const attrs: RxWidgetInfo["visAttrs"] = [
         step: 1,
         default: 80,
       },
-    ],
-  },
-  {
-    name: "layoutForData",
-    label: "group_layoutForData",
-    indexFrom: 0,
-    indexTo: "dataCount",
-    hidden: (data: Data) =>
-      s(data.chartDataMethod, "inputPerEditor") !== "inputPerEditor",
-    fields: [
-      { name: "dataColor", label: "dataColor", type: "color" },
-      { name: "label", label: "label", type: "text" },
-      { name: "valueText", label: "valueText", type: "text" },
-      { name: "valueTextColor", label: "valueTextColor", type: "color" },
-      { name: "labelValueAppend", label: "labelValueAppend", type: "text" },
-      { name: "tooltipTitle", label: "tooltipTitle", type: "text" },
-      { name: "tooltipText", label: "tooltipText", type: "text" },
     ],
   },
   {
