@@ -494,6 +494,25 @@ export function sliderKeyValue(key: string, value: number, min: number, max: num
     return next === value ? null : next;
 }
 
+// vis-2 expands an indexed group from 0 to the count INCLUSIVE and puts the clone, delete and add
+// buttons on that last group, so hiding the group takes the only way to add an entry with it (a
+// typed count dispatches no `recalculateFields` and rebuilds nothing). Hiding its fields instead
+// leaves the group as the add bar and keeps the count meaning the number of entries.
+export function indexedFields(
+    fields: readonly RxWidgetInfoAttributesField[],
+    count: (data: WidgetData) => number,
+): RxWidgetInfoAttributesField[] {
+    return fields.map(field => {
+        // A field's own `hidden` is kept only in its function form; none of these groups uses the
+        // string form, which only the editor can evaluate.
+        const own = typeof field.hidden === 'function' ? field.hidden : undefined;
+        return {
+            ...field,
+            hidden: (data: WidgetData, index: number): boolean => index >= count(data) || !!own?.(data, index),
+        };
+    });
+}
+
 // Older editor builds keep the base name and expose the row as `field.index`; support both shapes.
 export function iconFieldDataKey(name: string, field: { name?: string; index?: number }): string {
     const fieldName = field.name ?? name;

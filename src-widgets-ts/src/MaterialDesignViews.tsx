@@ -1,5 +1,5 @@
 import React from "react";
-import { squarePreview, boundedCount, createInfo, itemCount, designStyle, designStyleClasses, RenderProps, stateValue, VisWidget } from './widgetUtils';
+import { squarePreview, boundedCount, createInfo, indexedFields, itemCount, designStyle, designStyleClasses, RenderProps, stateValue, VisWidget } from './widgetUtils';
 import type { RxWidgetInfo } from "@iobroker/types-vis-2";
 
 type Kind = "masonry" | "grid";
@@ -354,7 +354,7 @@ export function viewsInfo(kind: Kind): RxWidgetInfo {
           label: "group_View",
           indexFrom: 0,
           indexTo: "countViews",
-          fields: itemFields,
+          fields: indexedFields(itemFields, data => itemCount(data.countViews, 3)),
         },
       ],
       ["handySettings", "tabletSettings"],

@@ -1,5 +1,5 @@
 import React from "react";
-import { squarePreview, itemCount, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, formatMoment, visLocale, stateValue, sanitizeHtml } from './widgetUtils';
+import { squarePreview, indexedFields, itemCount, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, formatMoment, visLocale, stateValue, sanitizeHtml } from './widgetUtils';
 import type { RxWidgetInfo, VisRxWidgetState } from "@iobroker/types-vis-2";
 import { colorSchemes, scheme } from "./MaterialDesignColorScheme";
 import { MaterialDesignChartCanvas, datalabelsConfig } from "./MaterialDesignChartCanvas";
@@ -67,7 +67,7 @@ const num = (name: string) => ({ name, label: name, type: "number" as const });
 const rows = (fields: RxWidgetInfo["visAttrs"][number]["fields"]) => ({
   indexFrom: 0,
   indexTo: "dataCount",
-  fields,
+  fields: indexedFields(fields, data => itemCount(data.dataCount)),
 });
 const attrs: RxWidgetInfo["visAttrs"] = [
   {

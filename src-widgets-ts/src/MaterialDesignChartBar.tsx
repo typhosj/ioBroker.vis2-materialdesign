@@ -1,5 +1,5 @@
 import React from "react";
-import { MAX_DYNAMIC_ITEMS, squarePreview, itemCount, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, stateValue, sanitizeHtml } from './widgetUtils';
+import { MAX_DYNAMIC_ITEMS, squarePreview, indexedFields, itemCount, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, stateValue, sanitizeHtml } from './widgetUtils';
 import type { RxWidgetInfo } from "@iobroker/types-vis-2";
 import { colorSchemes, scheme } from "./MaterialDesignColorScheme";
 import { MaterialDesignChartCanvas, datalabelsConfig } from "./MaterialDesignChartCanvas";
@@ -187,16 +187,19 @@ const attrs: RxWidgetInfo["visAttrs"] = [
     // vis-2 expands 0..dataCount, one row more than the count asks for, and puts the clone, delete
     // and add buttons on that last row — hiding it left no way to add a data set at all.
     hidden: (data: Data) => s(data.chartDataMethod, "inputPerEditor") !== "inputPerEditor",
-    fields: [
-      { name: "oid", label: "oid", type: "id" },
-      { name: "dataColor", label: "dataColor", type: "color" },
-      { name: "label", label: "label", type: "text" },
-      { name: "valueText", label: "valueText", type: "text" },
-      { name: "valueTextColor", label: "valueTextColor", type: "color" },
-      { name: "labelValueAppend", label: "labelValueAppend", type: "text" },
-      { name: "tooltipTitle", label: "tooltipTitle", type: "text" },
-      { name: "tooltipText", label: "tooltipText", type: "text" },
-    ],
+    fields: indexedFields(
+      [
+        { name: "oid", label: "oid", type: "id" },
+        { name: "dataColor", label: "dataColor", type: "color" },
+        { name: "label", label: "label", type: "text" },
+        { name: "valueText", label: "valueText", type: "text" },
+        { name: "valueTextColor", label: "valueTextColor", type: "color" },
+        { name: "labelValueAppend", label: "labelValueAppend", type: "text" },
+        { name: "tooltipTitle", label: "tooltipTitle", type: "text" },
+        { name: "tooltipText", label: "tooltipText", type: "text" },
+      ],
+      data => itemCount(data.dataCount),
+    ),
   },
   {
     name: "barLayout",

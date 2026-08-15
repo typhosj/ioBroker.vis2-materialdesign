@@ -35,7 +35,7 @@ Einstellungen sind selbsterklärend.
 **Menüpunkt**
 
 - Pro Eintrag **Wert**, **Text**, **Untertext**, **Icon** und **Icon-Farbe**, wenn die Einträge im Editor gepflegt werden.
-- Einen Eintrag legt der **+**-Knopf in der Kopfzeile der letzten Gruppe **Menüpunkt** an, kopieren und löschen die beiden Knöpfe daneben. Die Gruppe hinter dem letzten gefüllten Eintrag ist der freie Platz für den nächsten; leer bleibt sie in der Runtime unsichtbar.
+- Einen Eintrag legt der **+**-Knopf in der Kopfzeile der letzten Gruppe **Menüpunkt** an, kopieren und löschen die beiden Knöpfe daneben. Diese letzte Gruppe zeigt nur ihre Kopfzeile — sie ist die Hinzufügen-Leiste, kein Eintrag.
 - Ein Eintrag ohne **Wert** übernimmt seinen **Text** als Wert, der ins Objekt geschrieben wird.
 
 Die Gruppe **Layout Eingabe** (outlined / filled / solo, rounded / shaped)

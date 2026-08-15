@@ -1,5 +1,5 @@
 import React from "react";
-import { MAX_DYNAMIC_ITEMS, squarePreview, boundedCount, createInfo, itemCount, RenderProps, stateValue, VisWidget } from './widgetUtils';
+import { MAX_DYNAMIC_ITEMS, squarePreview, boundedCount, createInfo, indexedFields, itemCount, RenderProps, stateValue, VisWidget } from './widgetUtils';
 import type { RxWidgetInfo } from "@iobroker/types-vis-2";
 
 type Kind = "state" | "state8";
@@ -54,13 +54,16 @@ export function advancedViewInfo(kind: Kind): RxWidgetInfo {
               label: "group_views",
               indexFrom: 0,
               indexTo: "count",
-              fields: [
-                {
-                  name: "contains_view_",
-                  label: "contains_view_",
-                  type: "views",
-                },
-              ],
+              fields: indexedFields(
+                [
+                  {
+                    name: "contains_view_",
+                    label: "contains_view_",
+                    type: "views",
+                  },
+                ],
+                data => itemCount(data.count),
+              ),
             },
           ]
         : [
@@ -115,7 +118,9 @@ export function advancedViewInfo(kind: Kind): RxWidgetInfo {
               label: "group_renderViewsOnLoad",
               indexFrom: 0,
               indexTo: "countRenderViewsOnLoad",
-              fields: [{ name: "View", label: "View", type: "views" }],
+              fields: indexedFields([{ name: "View", label: "View", type: "views" }], data =>
+                boundedCount(data.countRenderViewsOnLoad, 0, MAX_DYNAMIC_ITEMS),
+              ),
             },
           ],
     ),

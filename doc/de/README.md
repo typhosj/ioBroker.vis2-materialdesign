@@ -118,9 +118,11 @@ enthält, zeigt sie auch ohne den Schalter.
   jeweiligen Widget-Seite prüfen.
 - **Eine wiederholte Gruppe (Menüpunkt, Datensatz, Spalte, View) wächst nicht:**
   den **+**-Knopf in der Kopfzeile der letzten dieser Gruppen benutzen. Eine
-  getippte Zahl im zugehörigen Anzahl-Feld baut die Gruppen nicht neu auf — VIS 2
-  zeichnet sie nur über den Knopf neu. Die Gruppe hinter der letzten gefüllten
-  ist der freie Platz für den nächsten Eintrag.
+  getippte Zahl im zugehörigen Anzahl-Feld baut die Gruppen nicht sofort neu auf —
+  VIS 2 zeichnet sie nur über den Knopf oder nach einem Wechsel der Auswahl neu.
+  Die letzte Gruppe zeigt nur ihre Kopfzeile mit den Knöpfen: sie ist die
+  Hinzufügen-Leiste, kein Eintrag. Die Anzahl bleibt damit immer die Anzahl der
+  Einträge.
 
 ## Browserhinweis
 

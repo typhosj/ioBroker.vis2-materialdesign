@@ -64,17 +64,20 @@ describe('select data sources and writes', () => {
         expect(valueListHtml).toContain('Two');
     });
 
-    it('takes editor entries that only got a label, and the slot past the count', () => {
+    it('takes editor entries that only got a label, and renders exactly the count', () => {
         const select = new MaterialDesignSelect(fixture<ConstructorParameters<typeof MaterialDesignSelect>[0]>({ context: {} }));
         select.state = fixture<typeof select.state>({
             rxData: {
-                countSelectItems: 2,
+                countSelectItems: 3,
                 label0: 'Living room',
                 value0: null,
                 value1: 'kitchen',
                 label1: 'Kitchen',
                 label2: 'Bath',
                 value2: null,
+                // The group past the count is the add bar, so nothing here may reach the list.
+                label3: 'Attic',
+                value3: 'attic',
             },
             values: {},
         });
@@ -82,6 +85,7 @@ describe('select data sources and writes', () => {
         expect(html).toContain('Living room');
         expect(html).toContain('Kitchen');
         expect(html).toContain('Bath');
+        expect(html).not.toContain('Attic');
         expect(html.match(/materialdesign-v-list-item-title/g)).toHaveLength(3);
     });
 

@@ -4,7 +4,7 @@ import type { RxWidgetInfo } from '@iobroker/types-vis-2';
 
 import { m3ColorExplicit, renderIcon } from './MaterialDesignButtons';
 import { cleanColor, num } from './MaterialDesignProgress';
-import { squarePreview, RenderProps, VisWidget, createInfo, itemCount, designStyle, designStyleClasses, iconField, setStateValue, sizeCss, stateValue, stringValue } from './widgetUtils';
+import { squarePreview, RenderProps, VisWidget, createInfo, indexedFields, itemCount, designStyle, designStyleClasses, iconField, setStateValue, sizeCss, stateValue, stringValue } from './widgetUtils';
 
 interface SelectData {
     oid?: string;
@@ -308,20 +308,20 @@ const attrs: RxWidgetInfo['visAttrs'] = [
         label: 'group_menuItems',
         indexFrom: 0,
         indexTo: 'countSelectItems',
-        // vis-2 expands 0..countSelectItems, one group more than the count asks for, and puts the
-        // clone/delete/add buttons on that LAST group. Hiding it (which this did) left no way at all
-        // to add an entry, because a typed count does not rebuild the groups either.
         // The entries only come from the editor in 'inputPerEditor'; the other modes read them from a
         // state, where these fields would be dead.
         hidden: (data: SelectData) => (data.listDataMethod ?? 'inputPerEditor') !== 'inputPerEditor',
-        fields: [
-            { name: 'value', label: 'value', type: 'text' },
-            { name: 'label', label: 'label', type: 'text' },
-            { name: 'subLabel', label: 'subLabel', type: 'text' },
-            iconField('listIcon', 'listIcon'),
-            { name: 'listIconColor', label: 'listIconColor', type: 'color' },
-            { name: 'imageColorSelectedTextField', label: 'imageColorSelectedTextField', type: 'color' },
-        ],
+        fields: indexedFields(
+            [
+                { name: 'value', label: 'value', type: 'text' },
+                { name: 'label', label: 'label', type: 'text' },
+                { name: 'subLabel', label: 'subLabel', type: 'text' },
+                iconField('listIcon', 'listIcon'),
+                { name: 'listIconColor', label: 'listIconColor', type: 'color' },
+                { name: 'imageColorSelectedTextField', label: 'imageColorSelectedTextField', type: 'color' },
+            ],
+            data => itemCount(data.countSelectItems),
+        ),
     },
 ];
 
@@ -394,9 +394,7 @@ function items(data: SelectData, states?: unknown): SelectItem[] {
         }
         return [];
     }
-    // One slot more than the count, matching the group vis-2 renders on top of it; empty slots drop
-    // out below. Without the fallback an entry that only got a label stayed invisible.
-    return Array.from({ length: itemCount(data.countSelectItems) + 1 }, (_, index) => {
+    return Array.from({ length: itemCount(data.countSelectItems) }, (_, index) => {
         // An entry that only got a label is still an entry: the editor stores an untouched value
         // field as null, which dropped the whole entry.
         const value = data[`value${index}`] ?? (stringValue(data[`label${index}`]) || null);
