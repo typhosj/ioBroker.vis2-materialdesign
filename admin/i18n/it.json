@@ -1163,5 +1163,6 @@
     "top": "in alto",
     "total": "totale",
     "vertical": "verticale",
-    "write": "scrivi"
+    "write": "scrivi",
+    "indexedAddHint": "Questo gruppo è la barra di aggiunta, non una voce: usa + per crearne una, i pulsanti accanto copiano o eliminano la voce sopra."
 }

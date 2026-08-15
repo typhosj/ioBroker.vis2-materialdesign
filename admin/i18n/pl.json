@@ -1163,5 +1163,6 @@
     "top": "na górze",
     "total": "suma",
     "vertical": "pionowo",
-    "write": "zapis"
+    "write": "zapis",
+    "indexedAddHint": "Ta grupa to pasek dodawania, nie wpis: użyj +, aby go utworzyć, a przyciski obok kopiują lub usuwają wpis powyżej."
 }

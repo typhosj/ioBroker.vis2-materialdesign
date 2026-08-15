@@ -1163,5 +1163,6 @@
     "top": "top",
     "total": "total",
     "vertical": "vertical",
-    "write": "write"
+    "write": "write",
+    "indexedAddHint": "This group is the add bar, not an entry: use + to add one, the buttons next to it clone or delete the entry above."
 }

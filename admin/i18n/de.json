@@ -1163,5 +1163,6 @@
     "top": "oben",
     "total": "Summe",
     "vertical": "vertikal",
-    "write": "schreiben"
+    "write": "schreiben",
+    "indexedAddHint": "Diese Gruppe ist die Hinzufügen-Leiste, kein Eintrag: mit + einen anlegen, die Knöpfe daneben kopieren oder löschen den Eintrag darüber."
 }

@@ -1163,5 +1163,6 @@
     "top": "em cima",
     "total": "total",
     "vertical": "vertical",
-    "write": "escrever"
+    "write": "escrever",
+    "indexedAddHint": "Este grupo é a barra de adicionar, não uma entrada: use + para criar uma; os botões ao lado copiam ou eliminam a entrada acima."
 }
