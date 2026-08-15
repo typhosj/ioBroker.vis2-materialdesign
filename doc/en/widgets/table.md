@@ -44,6 +44,11 @@ Display order follows the JSON property order.
 
 Use a JSON object with the same property order for every row.
 
+The table shows only what that JSON contains. To list individual states below
+each other without building a JSON first, the [List](list.md) with bindings in
+its row texts is the shorter way, see
+[Show values inside texts](../README.md#show-values-inside-texts).
+
 ## Design style
 
 The **Classic** (left) and **Material 3** (right) style side by side, see

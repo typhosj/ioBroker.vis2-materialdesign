@@ -30,7 +30,9 @@ Jede Zeile wird in ihrer eigenen indizierten Gruppe **Layout des Listenelements 
 
 <img src="../../media/vis2_list_editor_2.png" width="340" alt="Indizierter Listeneintrag">
 
-- **Objekt-ID** – der in der Zeile gezeigte/gesteuerte State.
+- **Objekt-ID** – der von der Zeile gesteuerte State (Switch, Checkbox, Button).
+  Sie zeigt keinen Wert an — dafür eine Bindung in einen der Texte schreiben,
+  siehe [Werte in Texten anzeigen](../README.md#werte-in-texten-anzeigen).
 - **Beschriftung / Unterzeile / rechte Beschriftung** – Haupt-, Neben- und rechtsbündiger Text.
 - **Icon + Aktiv-Farbe** – Zeilen-Icon und seine Ein-Zustand-Farbe.
 - **Button-/Toggle-Werte** – die von den Button-/Toggle-Listentypen geschriebenen Werte.

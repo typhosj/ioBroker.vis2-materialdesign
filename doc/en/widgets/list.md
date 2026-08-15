@@ -31,7 +31,9 @@ Each row is configured in its own indexed **List item [n]** group:
 
 <img src="../../media/vis2_list_editor_2.png" width="340" alt="Indexed list item entry">
 
-- **object id** – state shown/controlled by the row.
+- **object id** – state controlled by the row (switch, checkbox, button). It
+  does not display a value — put a binding into one of the texts for that, see
+  [Show values inside texts](../README.md#show-values-inside-texts).
 - **label / subLabel / right label** – primary, secondary and right-aligned text.
 - **icon + active color** – row icon and its on-state color.
 - **button / toggle values** – the value(s) written by the button/toggle list types.

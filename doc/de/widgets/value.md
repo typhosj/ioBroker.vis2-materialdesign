@@ -6,6 +6,10 @@ Zeigt einen ioBroker-Zustand als Text, Zahl, Bool-Wert oder verknüpften Wert an
 mit Formatierung, Präfix/Suffix und optionalem Icon. Template-ID:
 `tplVis2-materialdesign-value`.
 
+Ein Widget zeigt genau einen State. Für mehrere Werte untereinander in einem
+Widget die [Liste](list.md) mit Bindungen in den Zeilentexten benutzen, siehe
+[Werte in Texten anzeigen](../README.md#werte-in-texten-anzeigen).
+
 <img src="../../media/vis2_value_runtime.png" alt="Material-Design-Wertanzeige in VIS 2">
 
 ## Editor-Einstellungen

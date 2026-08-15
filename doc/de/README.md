@@ -104,6 +104,28 @@ enthält, zeigt sie auch ohne den Schalter.
 
 [Vollständiger Widget-Katalog](widgets/README.md)
 
+## Werte in Texten anzeigen
+
+Die Objekt-ID eines Widgets steuert seinen Zustand — sie schreibt keinen Wert in
+den Text. Werte kommen über die Bindung von VIS 2: eine Objekt-ID in geschweiften
+Klammern in einem Text- oder HTML-Feld wird zur Laufzeit durch den Wert des
+States ersetzt.
+
+```
+Temperatur: {0_userdata.0.temp}°C
+```
+
+Das gilt in jedem Text- und HTML-Feld dieser Widgets, also auch in der
+Beschriftung, der Unterzeile und der rechten Beschriftung jeder Listenzeile, in
+den Zellen der Tabelle und im HTML der [HTML Card](widgets/html-card.md). So
+zeigt eine [Liste](widgets/list.md) mehrere Werte untereinander, wofür sonst
+mehrere [Wertanzeigen](widgets/value.md) nötig wären.
+
+Die Bindung wertet VIS 2 aus, nicht dieser Adapter. Das Ketten-Symbol neben dem
+Feldnamen (**Feld als Bindung verwenden**) schaltet das Feld auf den
+Bindungseditor von VIS 2 um, der beim Formatieren hilft (Nachkommastellen,
+Umrechnung, Bedingungen).
+
 ## Fehlerbehebung
 
 - **Widget-Gruppe fehlt:** Installation von `vis2-materialdesign` und VIS 2
@@ -116,6 +138,9 @@ enthält, zeigt sie auch ohne den Schalter.
   und Verriegelung des Widgets prüfen.
 - **Liste, Tabelle, Kalender oder Diagramm leer:** JSON gegen das Beispiel der
   jeweiligen Widget-Seite prüfen.
+- **Zeile zeigt die Beschriftung, aber keinen Wert:** die Objekt-ID einer Zeile
+  steuert nur ihren Zustand. Werte kommen über
+  [Werte in Texten anzeigen](#werte-in-texten-anzeigen).
 - **Eine wiederholte Gruppe (Menüpunkt, Datensatz, Spalte, View) wächst nicht:**
   den **+**-Knopf in der Kopfzeile der letzten dieser Gruppen benutzen. Eine
   getippte Zahl im zugehörigen Anzahl-Feld baut die Gruppen nicht sofort neu auf —

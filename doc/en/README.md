@@ -101,6 +101,26 @@ them without the switch.
 
 [Complete widget catalog](widgets/README.md)
 
+## Show values inside texts
+
+The object id of a widget controls its state — it does not write a value into
+the text. Values come from a VIS 2 binding: an object id in curly braces inside
+a text or HTML field is replaced by the value of that state at runtime.
+
+```
+Temperature: {0_userdata.0.temp}°C
+```
+
+This works in every text and HTML field of these widgets, so also in the label,
+the sub label and the right label of each list row, in the cells of the table
+and in the HTML of the [HTML Card](widgets/html-card.md). That is how a
+[List](widgets/list.md) shows several values below each other, which otherwise
+needs one [Value](widgets/value.md) widget per state.
+
+The binding is evaluated by VIS 2, not by this adapter. The chain icon next to
+the field name (**Use field as binding**) switches the field to the VIS 2
+binding editor, which helps with formatting (decimals, conversion, conditions).
+
 ## Troubleshooting
 
 - **Widget set is missing:** verify that `vis2-materialdesign` and VIS 2 are
@@ -113,6 +133,9 @@ them without the switch.
   read-only mode or widget locking is active.
 - **List, table, calendar or chart is empty:** compare its JSON with the example
   on the widget page.
+- **A row shows its label but no value:** the object id of a row only controls
+  its state. Values come from
+  [Show values inside texts](#show-values-inside-texts).
 - **A repeating group (menu item, data set, column, view) does not grow:** use
   the **+** button in the header of the last of these groups. Typing a number
   into the matching count field does not rebuild the groups right away — VIS 2

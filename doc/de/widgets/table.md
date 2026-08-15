@@ -43,6 +43,11 @@ Die Anzeige folgt der JSON-Eigenschaftsreihenfolge.
 
 In jeder Zeile dieselbe JSON-Eigenschaftsreihenfolge verwenden.
 
+Die Tabelle zeigt nur, was in diesem JSON steht. Sollen einzelne Datenpunkte
+untereinander erscheinen, ohne sie vorher in ein JSON zu schreiben, ist die
+[Liste](list.md) mit Bindungen in den Zeilentexten der kürzere Weg, siehe
+[Werte in Texten anzeigen](../README.md#werte-in-texten-anzeigen).
+
 ## Gestaltungsstil
 
 Die Stile **Klassisch** (links) und **Material 3** (rechts) nebeneinander, siehe

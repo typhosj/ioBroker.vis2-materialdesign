@@ -145,6 +145,7 @@ a reason to wait with an upgrade.
 - (typhosj) Fixed the per-data-set options of the Bar, Pie and Line History charts being editable only for the first data set: bar color, label, value text, tooltip text — and the per-series line and y-axis settings of the Line History chart — appeared once instead of once per data set, so a chart with several data sets could not be styled per series like in VIS 1. Each data set now has one group holding its object id and all of its options; existing charts keep every saved value (reported in the forum)
 - (typhosj) Fixed the icon picker showing only the first 400 of the 6809 icons with no way to reach the rest — the grid ends there and neither scrolling nor paging went further, so an icon whose name you did not know was unreachable. The grid now keeps loading while you scroll (issue #4)
 - (typhosj) Documented how the Top App Bar switches views — it writes the selected menu index into its object id, and an [Advanced View in Widget 8](doc/en/widgets/html-widgets.md) with the same object id shows the matching view (reported in the forum)
+- (typhosj) Documented how a widget shows the value of a state inside its texts — an object id in curly braces in any text or HTML field, which is what makes a List show several values below each other instead of one Value widget per state. The object id of a list row only controls that row (reported in the forum)
 
 ### 0.3.3 (2026-07-24)
 

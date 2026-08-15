@@ -6,6 +6,10 @@ Displays an ioBroker state as text, number, boolean or linked value, with
 formatting, prefix/suffix and optional icon. Template id:
 `tplVis2-materialdesign-value`.
 
+One widget shows exactly one state. For several values below each other in a
+single widget use the [List](list.md) with bindings in its row texts, see
+[Show values inside texts](../README.md#show-values-inside-texts).
+
 <img src="../../media/vis2_value_runtime.png" alt="Material Design value in VIS 2">
 
 ## Editor settings
