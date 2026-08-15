@@ -308,10 +308,12 @@ const attrs: RxWidgetInfo['visAttrs'] = [
         label: 'group_menuItems',
         indexFrom: 0,
         indexTo: 'countSelectItems',
+        // vis-2 expands 0..countSelectItems, one group more than the count asks for, and puts the
+        // clone/delete/add buttons on that LAST group. Hiding it (which this did) left no way at all
+        // to add an entry, because a typed count does not rebuild the groups either.
         // The entries only come from the editor in 'inputPerEditor'; the other modes read them from a
         // state, where these fields would be dead.
-        hidden: (data: SelectData, index?: number) =>
-            (data.listDataMethod ?? 'inputPerEditor') !== 'inputPerEditor' || (index ?? 0) >= itemCount(data.countSelectItems),
+        hidden: (data: SelectData) => (data.listDataMethod ?? 'inputPerEditor') !== 'inputPerEditor',
         fields: [
             { name: 'value', label: 'value', type: 'text' },
             { name: 'label', label: 'label', type: 'text' },
@@ -343,7 +345,7 @@ function itemFromData(
     };
 }
 
-function items(data: SelectData, objects: Record<string, ioBroker.Object>): SelectItem[] {
+function items(data: SelectData, states?: unknown): SelectItem[] {
     if (data.listDataMethod === 'jsonStringObject') {
         try {
             const parsed = JSON.parse(String(data.jsonStringObject || '[]')) as Array<Record<string, unknown>>;
@@ -376,7 +378,6 @@ function items(data: SelectData, objects: Record<string, ioBroker.Object>): Sele
         }));
     }
     if (data.listDataMethod === 'multistatesObject') {
-        const states = objects[data.oid || '']?.common?.states;
         if (typeof states === 'string') {
             return states
                 .split(';')
@@ -393,8 +394,12 @@ function items(data: SelectData, objects: Record<string, ioBroker.Object>): Sele
         }
         return [];
     }
-    return Array.from({ length: itemCount(data.countSelectItems) }, (_, index) => {
-        const value = data[`value${index}`];
+    // One slot more than the count, matching the group vis-2 renders on top of it; empty slots drop
+    // out below. Without the fallback an entry that only got a label stayed invisible.
+    return Array.from({ length: itemCount(data.countSelectItems) + 1 }, (_, index) => {
+        // An entry that only got a label is still an entry: the editor stores an untouched value
+        // field as null, which dropped the whole entry.
+        const value = data[`value${index}`] ?? (stringValue(data[`label${index}`]) || null);
         return value === undefined || value === null
             ? null
             : itemFromData(data, index, value as string | number | boolean, stringValue(value));
@@ -416,6 +421,23 @@ export default class MaterialDesignSelect extends VisWidget {
     private readonly rootRef = React.createRef<HTMLDivElement>();
     protected isAutocomplete = false;
     private filterText: string | undefined;
+    private statesOid: string | undefined;
+    private objectStates: unknown;
+
+    // `context` carries no object cache, so the states of the bound object have to be read once.
+    private loadObjectStates(oid: string): void {
+        if (this.statesOid === oid) return;
+        this.statesOid = oid;
+        this.objectStates = undefined;
+        void this.props.context?.socket
+            ?.getObject(oid)
+            .then(obj => {
+                if (this.statesOid !== oid) return;
+                this.objectStates = (obj?.common as ioBroker.StateCommon | undefined)?.states;
+                this.forceUpdate();
+            })
+            .catch((e: unknown) => console.error(`Cannot read ${oid}: ${String(e)}`));
+    }
 
     private commitValue(value: ioBroker.StateValue, oid: string): void {
         this.localValue = value;
@@ -487,7 +509,8 @@ export default class MaterialDesignSelect extends VisWidget {
     renderWidgetBody(props: RenderProps): React.JSX.Element {
         super.renderWidgetBody(props);
         const data = this.state.rxData as unknown as SelectData;
-        const list = items(data, (this.props.context as unknown as { objects?: Record<string, ioBroker.Object> })?.objects || {});
+        if (data.listDataMethod === 'multistatesObject' && data.oid) this.loadObjectStates(data.oid);
+        const list = items(data, this.objectStates);
         const state = stateValue(this.state, data.oid || '');
         if (state !== this.seenStateValue) {
             this.seenStateValue = state;

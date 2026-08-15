@@ -119,6 +119,9 @@ a reason to wait with an upgrade.
 - (typhosj) Added the missing translations for 42 widget options that showed their raw key in the editor (fade-in/out duration, fade effect, scrolling, pre-rendering, tick source and others), in all 11 languages
 - (typhosj) Fixed the "use card" option of all four charts cutting the card off: the card filled the widget box, so its shadow and rounded edge sat outside the area VIS 2 draws
 - (typhosj) Added the hint text and the entry counter to the Select and Autocomplete widgets: both options sat in the editor without any effect. The hint follows "show input message always" — off, it only appears while the list is open; the counter shows the number of entries and is opt-in (its editor default claimed otherwise)
+- (typhosj) Fixed the Select and Autocomplete widgets not letting any menu entry be added in the editor: the group carrying the add, clone and delete buttons was hidden, and typing a number into "count of select items" does not rebuild the groups either (issue #7)
+- (typhosj) Fixed the Select and Autocomplete widgets dropping every menu entry that was given a label but no value — which is what the editor stores for a freshly added entry. Such an entry now uses its label as the value written to the object (issue #7)
+- (typhosj) Fixed the Select and Autocomplete data method "states of the object" never showing a single entry: the widget read the states from an object cache that VIS 2 does not hand to widgets, so it always saw nothing (issue #7)
 - (typhosj) Fixed the Table widget drawing a divider under the LAST row, which stuck out over the rounded edge of the card layouts
 - (typhosj) Fixed the calendar day button being cut off in the week and day view: it was a fixed 56 px circle, and now fits the column width (Material 3: 40 px)
 - (typhosj) Fixed the List widget's "card" and "card outlined" layouts losing their shadow and border: the card filled the widget box edge to edge and VIS 2 clips there

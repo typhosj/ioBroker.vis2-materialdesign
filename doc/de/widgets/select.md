@@ -35,6 +35,8 @@ Einstellungen sind selbsterklärend.
 **Menüpunkt**
 
 - Pro Eintrag **Wert**, **Text**, **Untertext**, **Icon** und **Icon-Farbe**, wenn die Einträge im Editor gepflegt werden.
+- Einen Eintrag legt der **+**-Knopf in der Kopfzeile der letzten Gruppe **Menüpunkt** an, kopieren und löschen die beiden Knöpfe daneben. Die Gruppe hinter dem letzten gefüllten Eintrag ist der freie Platz für den nächsten; leer bleibt sie in der Runtime unsichtbar.
+- Ein Eintrag ohne **Wert** übernimmt seinen **Text** als Wert, der ins Objekt geschrieben wird.
 
 Die Gruppe **Layout Eingabe** (outlined / filled / solo, rounded / shaped)
 entspricht dem [Eingabe](input.md)-Widget. Beschriftungen, Löschen-/Aufklapp-Icons

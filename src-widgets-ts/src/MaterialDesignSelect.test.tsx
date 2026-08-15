@@ -38,14 +38,19 @@ describe('select data sources and writes', () => {
         expect(renderToStaticMarkup(open(select))).not.toContain('One');
     });
 
-    it('reads value-list and object-state labels', () => {
+    it('reads value-list and object-state labels', async () => {
+        const getObject = vi.fn().mockResolvedValue({ common: { states: { off: 'Off', on: 'On' } } });
         const select = new MaterialDesignSelect(fixture<ConstructorParameters<typeof MaterialDesignSelect>[0]>({
-            context: { objects: { 'test.0.mode': { common: { states: { off: 'Off', on: 'On' } } } } },
+            context: { socket: { getObject } },
         }));
         select.state = fixture<typeof select.state>({
             rxData: { oid: 'test.0.mode', listDataMethod: 'multistatesObject' },
             values: {},
         });
+        open(select);
+        await Promise.resolve();
+        await Promise.resolve();
+        expect(getObject).toHaveBeenCalledWith('test.0.mode');
         const statesHtml = renderToStaticMarkup(open(select));
         expect(statesHtml).toContain('Off');
         expect(statesHtml).toContain('On');
@@ -57,6 +62,27 @@ describe('select data sources and writes', () => {
         const valueListHtml = renderToStaticMarkup(open(select));
         expect(valueListHtml).toContain('One');
         expect(valueListHtml).toContain('Two');
+    });
+
+    it('takes editor entries that only got a label, and the slot past the count', () => {
+        const select = new MaterialDesignSelect(fixture<ConstructorParameters<typeof MaterialDesignSelect>[0]>({ context: {} }));
+        select.state = fixture<typeof select.state>({
+            rxData: {
+                countSelectItems: 2,
+                label0: 'Living room',
+                value0: null,
+                value1: 'kitchen',
+                label1: 'Kitchen',
+                label2: 'Bath',
+                value2: null,
+            },
+            values: {},
+        });
+        const html = renderToStaticMarkup(open(select));
+        expect(html).toContain('Living room');
+        expect(html).toContain('Kitchen');
+        expect(html).toContain('Bath');
+        expect(html.match(/materialdesign-v-list-item-title/g)).toHaveLength(3);
     });
 
     it('autocomplete commits a matching item or a free write-mode value', () => {
