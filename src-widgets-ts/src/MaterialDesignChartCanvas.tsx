@@ -86,6 +86,45 @@ export function datalabelsConfig(
   };
 }
 
+// chart.js paints the canvas, never the plot rectangle, so `chartAreaBackgroundColor` needs a plugin
+// of its own. Reads `options.plugins.mdwChartArea.color`.
+const chartAreaBackground = {
+  id: "mdwChartArea",
+  beforeDraw(chart: Chart, _args: unknown, options: { color?: unknown }): void {
+    const color = typeof options?.color === "string" ? options.color : "";
+    const area = chart.chartArea;
+    if (!color || !area) return;
+    const ctx = chart.ctx;
+    ctx.save();
+    ctx.fillStyle = color;
+    ctx.fillRect(area.left, area.top, area.right - area.left, area.bottom - area.top);
+    ctx.restore();
+  },
+};
+
+// The tooltip options were declared on every chart widget but never handed to chart.js, so only
+// `showTooltip` did anything. Unset entries are left out, otherwise they overwrite chart.js defaults.
+export function tooltipConfig(data: Record<string, unknown>, callbacks?: object): object {
+  const num = (value: unknown): number | undefined => (value === "" || value === null || value === undefined || !Number.isFinite(Number(value)) ? undefined : Number(value));
+  const str = (value: unknown): string | undefined => (typeof value === "string" && value ? value : undefined);
+  const enabled = data.showTooltip === undefined || data.showTooltip === null || data.showTooltip === ""
+    ? true
+    : data.showTooltip === true || data.showTooltip === "true" || data.showTooltip === 1 || data.showTooltip === "1";
+  const config: Record<string, unknown> = { enabled, mode: str(data.tooltipMode) || "nearest" };
+  const put = (key: string, value: unknown): void => { if (value !== undefined) config[key] = value; };
+  put("position", str(data.tooltipPosition));
+  put("bodyAlign", str(data.tooltipBodyAlignment));
+  put("backgroundColor", str(data.tooltipBackgroundColor));
+  put("titleColor", str(data.tooltipTitleFontColor));
+  put("bodyColor", str(data.tooltipBodyFontColor));
+  const titleFont = { family: str(data.tooltipTitleFontFamily), size: num(data.tooltipTitleFontSize) };
+  const bodyFont = { family: str(data.tooltipBodyFontFamily), size: num(data.tooltipBodyFontSize) };
+  if (titleFont.family || titleFont.size) config.titleFont = titleFont;
+  if (bodyFont.family || bodyFont.size) config.bodyFont = bodyFont;
+  if (callbacks) config.callbacks = callbacks;
+  return config;
+}
+
 // Callers build chart.js configs whose runtime shape (null points for gaps, numeric stack ids) is
 // wider than the strict types; strict typing is re-applied at `new Chart`.
 type Props = { type: string; data: object; options: object };
@@ -101,7 +140,7 @@ export function MaterialDesignChartCanvas({ type, data, options }: Props): React
         type: type as never,
         data: data as never,
         options,
-        plugins: [ChartDataLabels],
+        plugins: [ChartDataLabels, chartAreaBackground],
       });
     } catch (error) {
       // A malformed config must not white-screen the whole vis view; log the shape that failed.

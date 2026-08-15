@@ -2,7 +2,7 @@ import React from "react";
 import { MAX_DYNAMIC_ITEMS, squarePreview, indexedFields, itemCount, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, stateValue, sanitizeHtml } from './widgetUtils';
 import type { RxWidgetInfo } from "@iobroker/types-vis-2";
 import { colorSchemes, scheme } from "./MaterialDesignColorScheme";
-import { MaterialDesignChartCanvas, datalabelsConfig } from "./MaterialDesignChartCanvas";
+import { MaterialDesignChartCanvas, datalabelsConfig, tooltipConfig } from "./MaterialDesignChartCanvas";
 import { m3ChartColors } from "./chartAxis";
 
 type Data = Record<string, unknown> & {
@@ -383,10 +383,10 @@ export default class MaterialDesignChartPie extends VisWidget {
     // inside the slice, but on a doughnut the band is narrow and its middle already sits near the
     // outer edge — the labels ended up outside the colored ring, the wider the cut-out the further
     // out. Doughnuts centre the label in the band instead; `valuesPositionAlign` still overrides.
-    }, { align: s(data.chartType) === "doughnut" ? "center" : "end", anchor: "center" }), legend: { display: false }, tooltip: { enabled: b(data.showTooltip, true), callbacks: {
+    }, { align: s(data.chartType) === "doughnut" ? "center" : "end", anchor: "center" }), legend: { display: false }, mdwChartArea: { color: s(data.chartAreaBackgroundColor) }, tooltip: tooltipConfig(data, {
       title: (items: { dataIndex?: number }[]) => { const item = values[n(items[0]?.dataIndex)]; return item?.tooltipTitle ? item.tooltipTitle.split("\\n") : ""; },
       label: (item: { dataIndex?: number }) => { const v = values[n(item.dataIndex)]; if (v?.tooltipText) return v.tooltipText.split("\\n"); const num = n(v?.value).toLocaleString(undefined, { minimumFractionDigits: Math.max(0, n(data.tooltipValueMinDecimals)), maximumFractionDigits: Math.max(0, n(data.tooltipValueMaxDecimals)) }); return `${s(v?.label)}: ${num}${s(v?.appendix)}`; },
-    } } } }} />;
+    }) } }} />;
     const chartBox = (
       <div style={{ flex: 1, minWidth: 0, minHeight: 0, position: "relative" }}>{chartjs}</div>
     );
@@ -434,7 +434,8 @@ export default class MaterialDesignChartPie extends VisWidget {
               }}
               dangerouslySetInnerHTML={{ __html: sanitizeHtml(s(data.title)) }}
             />
-            {body}
+            {/* Own box so the card text section can carry its background color. */}
+            <div style={{ background: s(data.colorTextSectionBackground), display: "flex", flex: "1 1 0", flexDirection: "column", minHeight: 0 }}>{body}</div>
           </div>
         ) : (
           body

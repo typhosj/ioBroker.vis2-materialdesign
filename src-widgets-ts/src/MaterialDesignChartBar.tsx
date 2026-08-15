@@ -2,7 +2,7 @@ import React from "react";
 import { MAX_DYNAMIC_ITEMS, squarePreview, indexedFields, itemCount, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, stateValue, sanitizeHtml } from './widgetUtils';
 import type { RxWidgetInfo } from "@iobroker/types-vis-2";
 import { colorSchemes, scheme } from "./MaterialDesignColorScheme";
-import { MaterialDesignChartCanvas, datalabelsConfig } from "./MaterialDesignChartCanvas";
+import { MaterialDesignChartCanvas, datalabelsConfig, tooltipConfig } from "./MaterialDesignChartCanvas";
 import { chartAxis, m3ChartColors } from "./chartAxis";
 
 type Data = Record<string, unknown> & {
@@ -562,10 +562,10 @@ export default class MaterialDesignChartBar extends VisWidget {
     valueAxis.type = "linear"; valueAxis.min = min; valueAxis.max = max;
     const catAxis = axisOf(horizontal ? "y" : "x");
     const scales = { [horizontal ? "x" : "y"]: valueAxis, [horizontal ? "y" : "x"]: catAxis };
-    const chartjs = <MaterialDesignChartCanvas type="bar" data={{ labels: bars.map(bar => bar.label), datasets: [{ data: bars.map(bar => bar.value), backgroundColor: bars.map(bar => isM3 && bar.color === "#44739e" ? m3.primary : bar.color), borderColor: s(data.hoverBorderColor), borderWidth: n(data.hoverBorderWidth) }] }} options={{ indexAxis: horizontal ? "y" : "x", responsive: true, maintainAspectRatio: false, animation: { duration: n(data.animationDuration, 1000) }, scales, plugins: { datalabels: datalabelsConfig(data, index => { const bar = bars[index]; return { color: bar?.valueColor, text: `${s(bar?.valueText)}${s(bar?.appendix)}` }; }, { align: "top", anchor: "end" }), legend: { display: false }, tooltip: { enabled: b(data.showTooltip, true), callbacks: {
+    const chartjs = <MaterialDesignChartCanvas type="bar" data={{ labels: bars.map(bar => bar.label), datasets: [{ data: bars.map(bar => bar.value), backgroundColor: bars.map(bar => isM3 && bar.color === "#44739e" ? m3.primary : bar.color), borderColor: s(data.hoverBorderColor), borderWidth: n(data.hoverBorderWidth) }] }} options={{ indexAxis: horizontal ? "y" : "x", responsive: true, maintainAspectRatio: false, animation: { duration: n(data.animationDuration, 1000) }, scales, plugins: { datalabels: datalabelsConfig(data, index => { const bar = bars[index]; return { color: bar?.valueColor, text: `${s(bar?.valueText)}${s(bar?.appendix)}` }; }, { align: "top", anchor: "end" }), legend: { display: false }, mdwChartArea: { color: s(data.chartAreaBackgroundColor) }, tooltip: tooltipConfig(data, {
       title: (items: { dataIndex?: number }[]) => { const bar = bars[n(items[0]?.dataIndex)]; return bar?.tooltipTitle ? bar.tooltipTitle.split("\\n") : s(bar?.label); },
       label: (item: { dataIndex?: number }) => { const bar = bars[n(item.dataIndex)]; return bar?.tooltipText ? bar.tooltipText.split("\\n") : `${s(bar?.valueText)}${s(bar?.appendix)}`; },
-    } } } }} />;
+    }) } }} />;
     return (
       <div
         className={`materialdesign-widget materialdesign-chart${isM3 ? ` ${designStyleClasses(data, this.isDarkTheme())}` : ""}`}
@@ -602,7 +602,7 @@ export default class MaterialDesignChartBar extends VisWidget {
             />
             {/* The canvas is height:100%, so in a plain block card it kept the FULL card height and
                 the title pushed its bottom axis out of the widget. Flex row that takes the rest. */}
-            <div style={{ flex: "1 1 0", minHeight: 0 }}>{chartjs}</div>
+            <div style={{ background: s(data.colorTextSectionBackground), flex: "1 1 0", minHeight: 0 }}>{chartjs}</div>
           </div>
         ) : (
           chartjs
