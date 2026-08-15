@@ -2,7 +2,7 @@ import React from "react";
 import { indexedFields, squarePreview, itemCount, RenderProps, VisWidget, createInfo, stateValue, sanitizeHtml } from './widgetUtils';
 import type { RxWidgetInfo, VisRxWidgetState } from "@iobroker/types-vis-2";
 import { colorSchemes, scheme } from "./MaterialDesignColorScheme";
-import { MaterialDesignChartCanvas } from "./MaterialDesignChartCanvas";
+import { MaterialDesignChartCanvas, tooltipConfig } from "./MaterialDesignChartCanvas";
 import { chartAxis } from "./chartAxis";
 
 type Data = Record<string, unknown>;
@@ -413,7 +413,16 @@ export default class MaterialDesignChartLineHistory extends VisWidget {
       gridColor: s(d.xAxisGridLinesColor),
       time: timeFmt ? { tooltipFormat: "lll", displayFormats: { second: timeFmt, minute: timeFmt, hour: timeFmt, day: timeFmt } } : { tooltipFormat: "lll" },
     })];
-    const chartjs = <MaterialDesignChartCanvas type="line" data={{ datasets: this.series.map((series, i) => ({ label: s(item(d, "legendText", i), series.oid), data: series.points.filter(point => point.val !== null).map(point => ({ t: point.ts, y: point.val })), borderColor: s(item(d, "dataColor", i), colors[i] || s(d.globalColor, "#44739e")), backgroundColor: b(item(d, "useFillColor", i)) ? s(item(d, "fillColor", i), `${s(item(d, "dataColor", i), colors[i] || s(d.globalColor, "#44739e"))}33`) : "transparent", fill: b(item(d, "useFillColor", i)), borderWidth: n(item(d, "lineThikness", i), 2), steppedLine: b(item(d, "steppedLine", i)), lineTension: 0, pointBackgroundColor: s(item(d, "pointColor", i)), pointRadius: n(d.pointSize, 3), yAxisID: yAxisIdOf(i) })) }} options={{ responsive: true, maintainAspectRatio: false, animation: { duration: n(d.animationDuration, 1000) }, legend: { display: false }, plugins: { datalabels: { display: false } }, tooltips: { enabled: b(d.showTooltip, true) }, scales: { xAxes, yAxes } }} />;
+    // Without a label callback the tooltip prints chart.js' raw default, so the decimals and the
+    // appended unit configured right next to it stayed dead.
+    const tipMin = Math.max(0, n(d.tooltipValueMinDecimals));
+    const tipMax = Math.max(tipMin, n(d.tooltipValueMaxDecimals, 2));
+    const tooltipLabel = (tip: { datasetIndex?: number; yLabel?: number; value?: string }, chartData: { datasets?: { label?: string }[] }): string => {
+      const raw = tip.yLabel !== undefined ? Number(tip.yLabel) : Number(tip.value);
+      const value = (Number.isFinite(raw) ? raw : 0).toLocaleString(undefined, { maximumFractionDigits: tipMax, minimumFractionDigits: tipMin });
+      return `${s(chartData.datasets?.[n(tip.datasetIndex)]?.label)}: ${value}${s(d.tooltipBodyAppend)}`;
+    };
+    const chartjs = <MaterialDesignChartCanvas type="line" data={{ datasets: this.series.map((series, i) => ({ label: s(item(d, "legendText", i), series.oid), data: series.points.filter(point => point.val !== null).map(point => ({ t: point.ts, y: point.val })), borderColor: s(item(d, "dataColor", i), colors[i] || s(d.globalColor, "#44739e")), backgroundColor: b(item(d, "useFillColor", i)) ? s(item(d, "fillColor", i), `${s(item(d, "dataColor", i), colors[i] || s(d.globalColor, "#44739e"))}33`) : "transparent", fill: b(item(d, "useFillColor", i)), borderWidth: n(item(d, "lineThikness", i), 2), steppedLine: b(item(d, "steppedLine", i)), lineTension: 0, pointBackgroundColor: s(item(d, "pointColor", i), s(item(d, "dataColor", i), colors[i] || s(d.globalColor, "#44739e"))), pointRadius: n(d.pointSize, 3), yAxisID: yAxisIdOf(i) })) }} options={{ responsive: true, maintainAspectRatio: false, animation: { duration: n(d.animationDuration, 1000) }, legend: { display: false }, plugins: { datalabels: { display: false }, mdwChartArea: { color: s(d.chartAreaBackgroundColor) } }, tooltips: tooltipConfig(d, { label: tooltipLabel }), scales: { xAxes, yAxes } }} />;
     const legend = b(d.showLegend, true) ? (
       <div
         style={{
@@ -445,7 +454,7 @@ export default class MaterialDesignChartLineHistory extends VisWidget {
     const chartMain = b(d.cardUse) ? (
       <div className="materialdesign-html-card-container mdc-card" style={{ background: s(d.colorBackground), boxSizing: "border-box", display: "flex", flexDirection: "column", height: "100%", padding: n(d.borderDistance, 8), width: "100%" }}>
         <div style={{ background: s(d.colorTitleSectionBackground), color: s(d.colorTitle), fontFamily: s(d.titleFontFamily) }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(s(d.title)) }} />
-        {chartjs}
+        <div style={{ background: s(d.colorTextSectionBackground), flex: "1 1 0", minHeight: 0 }}>{chartjs}</div>
       </div>
     ) : chartjs;
     // shrink chart so the legend stays inside the widget frame.
