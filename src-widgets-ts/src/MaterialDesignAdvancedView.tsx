@@ -100,11 +100,8 @@ export function advancedViewInfo(kind: Kind): RxWidgetInfo {
                   label: "countRenderViewsOnLoad",
                   type: "number",
                 },
-                {
-                  name: "slowConnection",
-                  label: "slowConnection",
-                  type: "checkbox",
-                },
+                // `slowConnection` is gone: it delayed the legacy `vis.renderView` network path,
+                // which VIS2 does not have — views are embedded from the loaded project.
                 {
                   name: "hideErrorMessage",
                   label: "hideErrorMessage",
@@ -129,8 +126,16 @@ export function advancedViewInfo(kind: Kind): RxWidgetInfo {
   };
 }
 
+const fadeCss = `@keyframes mdw-view-fade-in{from{opacity:0}to{opacity:1}}@keyframes mdw-view-fade-out{from{opacity:1}to{opacity:0}}`;
+// jQuery easings, kept as option values for the old configs; `swing` is no CSS timing function, and
+// an invalid one drops the whole animation.
+const easings: Record<string, string> = { linear: "linear", swing: "ease-in-out" };
+
 export class MaterialDesignAdvancedView extends VisWidget {
   private widgetId = "materialdesign-advanced-view";
+  private shown = "";
+  private outgoing = "";
+  private fadeTimer?: number;
   constructor(
     props: any,
     private readonly kind: Kind,
@@ -139,6 +144,10 @@ export class MaterialDesignAdvancedView extends VisWidget {
   }
   getWidgetInfo(): RxWidgetInfo {
     return advancedViewInfo(this.kind);
+  }
+  componentWillUnmount(): void {
+    if (this.fadeTimer) window.clearTimeout(this.fadeTimer);
+    super.componentWillUnmount();
   }
   // legacy vis.renderView is a stub in VIS2.
   private embed(view: string): React.JSX.Element {
@@ -165,14 +174,17 @@ export class MaterialDesignAdvancedView extends VisWidget {
   }
   private candidates(data: Data): string[] {
     if (this.kind === "state8")
-      return Array.from(
-        new Set(
-          Array.from(
-            { length: itemCount(data.count) },
-            (_, index) => s(data[`contains_view_${index}`]),
-          ).filter(Boolean),
-        ),
-      );
+      // Without `persistent` only the selected view is mounted; the others are built on demand.
+      return b(data.persistent)
+        ? Array.from(
+            new Set(
+              Array.from(
+                { length: itemCount(data.count) },
+                (_, index) => s(data[`contains_view_${index}`]),
+              ).filter(Boolean),
+            ),
+          )
+        : [this.selected(data)].filter(Boolean);
     if (!b(data.renderAlways)) return [this.selected(data)].filter(Boolean);
     return Array.from(
       new Set(
@@ -192,21 +204,57 @@ export class MaterialDesignAdvancedView extends VisWidget {
     super.renderWidgetBody(props);
     this.widgetId = props.id;
     const data = this.state.rxData as unknown as Data;
+    // A hidden widget keeps its child views mounted and running; `notIfInvisible` drops them.
+    if (b(data.notIfInvisible) && !this.state.visible) {
+      this.shown = "";
+      this.outgoing = "";
+      return <div style={{ height: "100%", width: "100%" }} />;
+    }
     const selected = this.selected(data);
-    const views = this.candidates(data);
-    const duration = Math.max(0, n(data.fadeInDuration, 50));
+    const fadeIn = Math.max(0, n(data.fadeInDuration, 50));
+    const fadeOut = Math.max(0, n(data.fadeOutDuration, 50));
+    const easing = easings[s(data.fadeEffect, "swing")] || "ease-in-out";
+    if (selected !== this.shown) {
+      if (b(data.debug))
+        console.log(
+          `materialdesign ${props.id}: ${s(data.oid) || "no oid"} = ${JSON.stringify(stateValue(this.state, s(data.oid)))} -> view ${selected ? `"${selected}"` : "not found"}`,
+        );
+      // The view that just lost the state stays mounted until its fade-out ended.
+      this.outgoing = this.shown;
+      this.shown = selected;
+      if (this.fadeTimer) window.clearTimeout(this.fadeTimer);
+      this.fadeTimer = this.outgoing
+        ? window.setTimeout(() => {
+            this.fadeTimer = undefined;
+            this.outgoing = "";
+            this.forceUpdate();
+          }, fadeOut)
+        : undefined;
+    }
+    const candidates = this.candidates(data);
+    const views = this.outgoing && !candidates.includes(this.outgoing) ? [...candidates, this.outgoing] : candidates;
     return (
-      <div style={{ height: "100%", width: "100%", overflow: "hidden" }}>
+      <div style={{ height: "100%", position: "relative", width: "100%", overflow: "hidden" }}>
+        <style>{fadeCss}</style>
         {views.length ? (
           views.map((view, index) => (
             <div
-              key={`${index}:${view}`}
+              // Keyed by name, not by position: the outgoing view moves in the list and must not remount.
+              key={view}
               id={`${this.widgetId}-${index}`}
               style={{
-                display: view === selected ? "block" : "none",
+                // Stacked, not toggled through `display`, which cannot animate at all.
+                animation: view === selected
+                  ? `mdw-view-fade-in ${fadeIn}ms ${easing} both`
+                  : view === this.outgoing
+                    ? `mdw-view-fade-out ${fadeOut}ms ${easing} both`
+                    : undefined,
                 height: "100%",
-                opacity: view === selected ? 1 : 0,
-                transition: `opacity ${duration}ms ${s(data.fadeEffect, "ease")}`,
+                inset: 0,
+                opacity: view === selected || view === this.outgoing ? undefined : 0,
+                pointerEvents: view === selected ? undefined : "none",
+                position: "absolute",
+                visibility: view === selected || view === this.outgoing ? undefined : "hidden",
               }}
             >
               {this.embed(view)}
