@@ -11,7 +11,7 @@ type Group = {
     indexFrom?: unknown;
     indexTo?: unknown;
     hidden?: unknown;
-    fields?: Array<{ name?: string; indexFrom?: unknown; hidden?: unknown }>;
+    fields?: Array<{ name?: string; type?: string; indexFrom?: unknown; hidden?: unknown }>;
 };
 type WidgetModule = { default?: { getWidgetInfo?: () => { visAttrs?: Group[]; id?: string } } };
 
@@ -47,13 +47,18 @@ describe('indexed attribute groups', () => {
         if (typeof groupHidden === 'function') {
             expect(groupHidden(data, count), `group ${group.name} hides index ${count}`).toBe(false);
         }
-        const at = (index: number): boolean[] =>
-            (group.fields || []).map(field => {
-                const hidden = field.hidden as ((data: Record<string, unknown>, index: number) => boolean) | undefined;
-                expect(typeof hidden, `${group.name}.${field.name} has no hidden guard`).toBe('function');
-                return typeof hidden === 'function' ? hidden(data, index) : false;
-            });
-        expect(at(count), `${group.name} is editable past the count`).not.toContain(false);
-        expect(at(count - 1), `${group.name} hides its last entry`).not.toContain(true);
+        // The one field left visible past the count is the hint that names the add bar.
+        const at = (index: number, kind: 'entry' | 'hint'): boolean[] =>
+            (group.fields || [])
+                .filter(field => (field.type === 'help') === (kind === 'hint'))
+                .map(field => {
+                    const hidden = field.hidden as ((data: Record<string, unknown>, index: number) => boolean) | undefined;
+                    expect(typeof hidden, `${group.name}.${field.name} has no hidden guard`).toBe('function');
+                    return typeof hidden === 'function' ? hidden(data, index) : false;
+                });
+        expect(at(count, 'entry'), `${group.name} is editable past the count`).not.toContain(false);
+        expect(at(count - 1, 'entry'), `${group.name} hides its last entry`).not.toContain(true);
+        expect(at(count, 'hint'), `${group.name} has no add-bar hint`).toEqual([false]);
+        expect(at(count - 1, 'hint'), `${group.name} hints on a real entry`).toEqual([true]);
     });
 });

@@ -1057,5 +1057,6 @@
     "yes": "montrer lorsqu'il est utilisé",
     "yesRotate": "Oui",
     "Yesterday": "Hier",
-    "z_index": "z-index"
+    "z_index": "z-index",
+    "indexedAddHint": "Ce groupe est la barre d’ajout, pas une entrée : utilisez + pour en créer une, les boutons voisins copient ou suppriment l’entrée au-dessus."
 }

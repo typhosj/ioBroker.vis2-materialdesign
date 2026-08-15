@@ -1057,5 +1057,6 @@
     "yes": "pokaż po uruchomieniu",
     "yesRotate": "tak",
     "Yesterday": "Wczoraj",
-    "z_index": "Indeks z"
+    "z_index": "Indeks z",
+    "indexedAddHint": "Ta grupa to pasek dodawania, nie wpis: użyj +, aby go utworzyć, a przyciski obok kopiują lub usuwają wpis powyżej."
 }

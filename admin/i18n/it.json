@@ -1057,5 +1057,6 @@
     "yes": "mostra quando operato",
     "yesRotate": "sì",
     "Yesterday": "Ieri",
-    "z_index": "z-index"
+    "z_index": "z-index",
+    "indexedAddHint": "Questo gruppo è la barra di aggiunta, non una voce: usa + per crearne una, i pulsanti accanto copiano o eliminano la voce sopra."
 }

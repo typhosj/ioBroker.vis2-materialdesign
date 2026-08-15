@@ -1057,5 +1057,6 @@
     "yes": "tonen wanneer bediend",
     "yesRotate": "Ja",
     "Yesterday": "Gisteren",
-    "z_index": "z-index"
+    "z_index": "z-index",
+    "indexedAddHint": "Deze groep is de toevoegbalk, geen item: gebruik + om er een aan te maken; de knoppen ernaast kopiëren of verwijderen het item erboven."
 }

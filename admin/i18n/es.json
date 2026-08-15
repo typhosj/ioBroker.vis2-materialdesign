@@ -1057,5 +1057,6 @@
     "yes": "mostrar cuando operado",
     "yesRotate": "sí",
     "Yesterday": "Ayer",
-    "z_index": "Índice z"
+    "z_index": "Índice z",
+    "indexedAddHint": "Este grupo es la barra de añadir, no una entrada: use + para crear una; los botones contiguos copian o eliminan la entrada anterior."
 }

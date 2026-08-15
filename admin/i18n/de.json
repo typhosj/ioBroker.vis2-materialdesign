@@ -1057,5 +1057,6 @@
     "yes": "anzeigen bei Bedienung",
     "yesRotate": "Ja",
     "Yesterday": "Gestern",
-    "z_index": "z-Index"
+    "z_index": "z-Index",
+    "indexedAddHint": "Diese Gruppe ist die Hinzufügen-Leiste, kein Eintrag: mit + einen anlegen, die Knöpfe daneben kopieren oder löschen den Eintrag darüber."
 }

@@ -1057,5 +1057,6 @@
     "yes": "show when operated",
     "yesRotate": "yes",
     "Yesterday": "Yesterday",
-    "z_index": "z-Index"
+    "z_index": "z-Index",
+    "indexedAddHint": "This group is the add bar, not an entry: use + to add one, the buttons next to it clone or delete the entry above."
 }

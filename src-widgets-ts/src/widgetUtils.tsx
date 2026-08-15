@@ -366,7 +366,7 @@ export function indexedFields(
     fields: readonly RxWidgetInfoAttributesField[],
     count: (data: WidgetData) => number,
 ): RxWidgetInfoAttributesField[] {
-    return fields.map(field => {
+    const entryFields = fields.map(field => {
         // A field's own `hidden` is kept only in its function form; none of these groups uses the
         // string form, which only the editor can evaluate.
         const own = typeof field.hidden === 'function' ? field.hidden : undefined;
@@ -375,6 +375,18 @@ export function indexedFields(
             hidden: (data: WidgetData, index: number): boolean => index >= count(data) || !!own?.(data, index),
         };
     });
+    // The add bar carries no editable field, and the editor ticks its checkbox anyway: adding an
+    // entry writes a null for every field of the group that follows it. Opening it would show an
+    // empty box, so it says what it is instead.
+    return [
+        ...entryFields,
+        {
+            name: 'addBarHint',
+            type: 'help',
+            text: 'indexedAddHint',
+            hidden: (data: WidgetData, index: number): boolean => index < count(data),
+        },
+    ];
 }
 
 
