@@ -62,11 +62,11 @@ export function distinctAxisRows(rowIdx: number[], d: Data): number[] {
 }
 const color = (name: string) => ({ name, label: name, type: "color" as const });
 const num = (name: string) => ({ name, label: name, type: "number" as const });
-// vis-2 expands 0..dataCount, one row more than the count asks for; the last one is hidden.
+// vis-2 expands 0..dataCount, one row more than the count asks for, and puts the clone, delete and
+// add buttons on that last row — hiding it left no way to add a data set at all.
 const rows = (fields: RxWidgetInfo["visAttrs"][number]["fields"]) => ({
   indexFrom: 0,
   indexTo: "dataCount",
-  hidden: (data: Data, index?: number) => (index ?? 0) >= itemCount(data.dataCount),
   fields,
 });
 const attrs: RxWidgetInfo["visAttrs"] = [

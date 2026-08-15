@@ -6,7 +6,13 @@ import { describe, expect, it } from 'vitest';
 // (visWidgetsCatalog.tsx). A second indexed group renders once, with unindexed field names — the
 // whole group silently loses its per-index editing. Indexed FIELDS are tested for truthiness on the
 // very first pass, so `indexFrom: 0` never expands there at all.
-type Group = { name?: string; indexFrom?: unknown; fields?: Array<{ name?: string; indexFrom?: unknown }> };
+type Group = {
+    name?: string;
+    indexFrom?: unknown;
+    indexTo?: unknown;
+    hidden?: unknown;
+    fields?: Array<{ name?: string; indexFrom?: unknown }>;
+};
 type WidgetModule = { default?: { getWidgetInfo?: () => { visAttrs?: Group[]; id?: string } } };
 
 const modules = import.meta.glob<WidgetModule>('./MaterialDesign*.tsx', { eager: true });
@@ -26,5 +32,17 @@ describe('indexed attribute groups', () => {
         expect(indexed.length, `indexed groups: ${indexed.join(', ')}`).toBeLessThanOrEqual(1);
         const indexedFields = groups.flatMap(group => (group.fields || []).filter(field => field.indexFrom !== undefined).map(field => `${group.name}.${field.name}`));
         expect(indexedFields).toEqual([]);
+    });
+
+    // vis-2 expands 0..count inclusive and puts the clone, delete and add buttons on that last
+    // group. Hiding it leaves no way to add an entry, because a typed count does not rebuild the
+    // groups either (a number field dispatches no `recalculateFields`).
+    it.each(widgets.map(w => [w.file, w] as const))('%s keeps the last indexed group, which carries the add button', (_file, widget) => {
+        const group = (widget.info.visAttrs || []).find(entry => entry.indexFrom !== undefined);
+        if (!group || typeof group.hidden !== 'function') return;
+        const hidden = group.hidden as (data: Record<string, unknown>, index?: number) => boolean;
+        const count = 3;
+        const data = { [String(group.indexTo)]: count };
+        expect(hidden(data, count), `group ${group.name} hides index ${count}`).toBe(false);
     });
 });

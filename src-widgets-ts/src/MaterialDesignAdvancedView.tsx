@@ -54,7 +54,6 @@ export function advancedViewInfo(kind: Kind): RxWidgetInfo {
               label: "group_views",
               indexFrom: 0,
               indexTo: "count",
-              hidden: (data: Data, index?: number) => (index ?? 0) >= itemCount(data.count),
               fields: [
                 {
                   name: "contains_view_",
@@ -116,7 +115,6 @@ export function advancedViewInfo(kind: Kind): RxWidgetInfo {
               label: "group_renderViewsOnLoad",
               indexFrom: 0,
               indexTo: "countRenderViewsOnLoad",
-              hidden: (data: Data, index?: number) => (index ?? 0) >= boundedCount(data.countRenderViewsOnLoad, 0, MAX_DYNAMIC_ITEMS),
               fields: [{ name: "View", label: "View", type: "views" }],
             },
           ],

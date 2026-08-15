@@ -116,6 +116,11 @@ enthält, zeigt sie auch ohne den Schalter.
   und Verriegelung des Widgets prüfen.
 - **Liste, Tabelle, Kalender oder Diagramm leer:** JSON gegen das Beispiel der
   jeweiligen Widget-Seite prüfen.
+- **Eine wiederholte Gruppe (Menüpunkt, Datensatz, Spalte, View) wächst nicht:**
+  den **+**-Knopf in der Kopfzeile der letzten dieser Gruppen benutzen. Eine
+  getippte Zahl im zugehörigen Anzahl-Feld baut die Gruppen nicht neu auf — VIS 2
+  zeichnet sie nur über den Knopf neu. Die Gruppe hinter der letzten gefüllten
+  ist der freie Platz für den nächsten Eintrag.
 
 ## Browserhinweis
 

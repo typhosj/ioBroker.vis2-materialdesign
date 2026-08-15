@@ -151,10 +151,9 @@ const attrs: RxWidgetInfo["visAttrs"] = [
     label: "group_oids",
     indexFrom: 0,
     indexTo: "dataCount",
-    // vis-2 expands 0..dataCount, one row more than the count asks for; the last one is hidden.
-    hidden: (data: Data, index?: number) =>
-      s(data.chartDataMethod, "inputPerEditor") !== "inputPerEditor" ||
-      (index ?? 0) >= itemCount(data.dataCount),
+    // vis-2 expands 0..dataCount, one row more than the count asks for, and puts the clone, delete
+    // and add buttons on that last row — hiding it left no way to add a data set at all.
+    hidden: (data: Data) => s(data.chartDataMethod, "inputPerEditor") !== "inputPerEditor",
     fields: [
       { name: "oid", label: "oid", type: "id" },
       color("dataColor"),

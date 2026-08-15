@@ -189,7 +189,6 @@ function attrs(def: ButtonDefinition): RxWidgetInfo['visAttrs'] {
                       label: 'group.buttonOids',
                       indexFrom: 0,
                       indexTo: 'countOids',
-                      hidden: (data: ButtonData, index?: number) => (index ?? 0) >= itemCount(data.countOids),
                       fields: [
                           { name: 'oid', label: 'oid', type: 'id' },
                           { name: 'value', label: 'value', type: 'text' },
