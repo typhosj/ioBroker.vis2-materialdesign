@@ -67,6 +67,12 @@ directly.
   read-only mode or widget locking is active.
 - **List, table, calendar or chart is empty:** compare its JSON with the example
   on the widget page.
+- **A repeating group (menu item, data set, column, view) does not grow:** use
+  the **+** button in the header of the last of these groups. Typing a number
+  into the matching count field does not rebuild the groups right away — VIS 2
+  redraws them on the button or after the selection changes. The last group
+  shows only its header with the buttons: it is the add bar, not an entry, which
+  keeps the count meaning the number of entries.
 
 ## Browser note
 

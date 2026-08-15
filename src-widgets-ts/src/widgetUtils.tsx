@@ -2,7 +2,7 @@ import React from 'react';
 import '@fontsource/jura/files/jura-latin-400-normal.woff2';
 import '@fontsource/roboto-condensed/files/roboto-condensed-latin-400-normal.woff2';
 
-import type { RxRenderWidgetProps, RxWidgetInfo, RxWidgetInfoAttributesField, VisRxWidgetProps, VisRxWidgetState } from '@iobroker/types-vis-2';
+import type { RxRenderWidgetProps, RxWidgetInfo, RxWidgetInfoAttributesField, VisRxWidgetProps, VisRxWidgetState, WidgetData } from '@iobroker/types-vis-2';
 import { IconFilePicker, type PickerSocket, type PickerTexts, type PickerTheme } from './IconFilePicker';
 import type VisRxWidget from '@iobroker/types-vis-2/visRxWidget';
 import colors from '../../admin/lib/colors.json';
@@ -357,6 +357,26 @@ export function createInfo(id: string, name: string, attrs: RxWidgetInfo['visAtt
         ],
     };
 }
+
+// vis-2 expands an indexed group from 0 to the count INCLUSIVE and puts the clone, delete and add
+// buttons on that last group, so hiding the group takes the only way to add an entry with it (a
+// typed count dispatches no `recalculateFields` and rebuilds nothing). Hiding its fields instead
+// leaves the group as the add bar and keeps the count meaning the number of entries.
+export function indexedFields(
+    fields: readonly RxWidgetInfoAttributesField[],
+    count: (data: WidgetData) => number,
+): RxWidgetInfoAttributesField[] {
+    return fields.map(field => {
+        // A field's own `hidden` is kept only in its function form; none of these groups uses the
+        // string form, which only the editor can evaluate.
+        const own = typeof field.hidden === 'function' ? field.hidden : undefined;
+        return {
+            ...field,
+            hidden: (data: WidgetData, index: number): boolean => index >= count(data) || !!own?.(data, index),
+        };
+    });
+}
+
 
 // Combined icon+file picker as a `type:'custom'` field (replaces plain `type:'icon'`): lets the
 // user pick an MDI font icon OR browse an ioBroker file, both stored in the same data key. In counted

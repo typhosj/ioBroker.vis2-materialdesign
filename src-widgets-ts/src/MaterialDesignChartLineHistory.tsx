@@ -1,5 +1,5 @@
 import React from "react";
-import { squarePreview, itemCount, RenderProps, VisWidget, createInfo, stateValue, sanitizeHtml } from './widgetUtils';
+import { indexedFields, squarePreview, itemCount, RenderProps, VisWidget, createInfo, stateValue, sanitizeHtml } from './widgetUtils';
 import type { RxWidgetInfo, VisRxWidgetState } from "@iobroker/types-vis-2";
 import { colorSchemes, scheme } from "./MaterialDesignColorScheme";
 import { MaterialDesignChartCanvas } from "./MaterialDesignChartCanvas";
@@ -55,12 +55,12 @@ const b = (v: unknown, d = false) =>
 const item = (d: Data, key: string, i: number) => { const v = d[`${key}${i}`]; return v !== undefined ? v : (i === 0 ? d[key] : undefined); };
 const color = (name: string) => ({ name, label: name, type: "color" as const });
 const num = (name: string) => ({ name, label: name, type: "number" as const });
-// vis-2 expands 0..dataCount, one row more than the count asks for; the last one is hidden.
+// vis-2 expands 0..dataCount, one row more than the count asks for, and puts the clone, delete and
+// add buttons on that last row — hiding it left no way to add a data set at all.
 const rows = (fields: RxWidgetInfo["visAttrs"][number]["fields"]) => ({
   indexFrom: 0,
   indexTo: "dataCount",
-  hidden: (data: Data, index?: number) => (index ?? 0) >= itemCount(data.dataCount),
-  fields,
+  fields: indexedFields(fields, data => itemCount(data.dataCount)),
 });
 const attrs: RxWidgetInfo["visAttrs"] = [
   {

@@ -2,7 +2,7 @@ import React from 'react';
 
 import type { RxWidgetInfo, VisRxWidgetProps } from '@iobroker/types-vis-2';
 
-import { squarePreview, PressState, RenderProps, VisWidget, createInfo, itemCount, iconField, parseActionValue, safeWidgetUrl, setStateValue, sizeCss, stateValue, sanitizeHtml, stringValue } from './widgetUtils';
+import { indexedFields, squarePreview, PressState, RenderProps, VisWidget, createInfo, itemCount, iconField, parseActionValue, safeWidgetUrl, setStateValue, sizeCss, stateValue, sanitizeHtml, stringValue } from './widgetUtils';
 
 type ButtonKind = 'navigation' | 'link' | 'state' | 'multiState' | 'addition' | 'toggle' | 'slider';
 type ButtonLayout = 'default' | 'vertical' | 'icon';
@@ -184,12 +184,14 @@ function attrs(def: ButtonDefinition): RxWidgetInfo['visAttrs'] {
                       label: 'group.buttonOids',
                       indexFrom: 0,
                       indexTo: 'countOids',
-                      hidden: (data: ButtonData, index?: number) => (index ?? 0) >= itemCount(data.countOids),
-                      fields: [
-                          { name: 'oid', label: 'oid', type: 'id' },
-                          { name: 'value', label: 'value', type: 'text' },
-                          { name: 'delayInMs', label: 'delayInMs', type: 'number', default: 0 },
-                      ],
+                      fields: indexedFields(
+                          [
+                              { name: 'oid', label: 'oid', type: 'id' },
+                              { name: 'value', label: 'value', type: 'text' },
+                              { name: 'delayInMs', label: 'delayInMs', type: 'number', default: 0 },
+                          ],
+                          data => itemCount(data.countOids),
+                      ),
                   },
               ]
             : [];

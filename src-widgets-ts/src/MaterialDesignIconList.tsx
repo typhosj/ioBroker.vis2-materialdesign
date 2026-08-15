@@ -3,7 +3,7 @@ import React from 'react';
 import type { RxWidgetInfo, WidgetData } from '@iobroker/types-vis-2';
 
 import { renderIcon } from './MaterialDesignButtons';
-import { MAX_DYNAMIC_ITEMS, squarePreview, RenderProps, VisWidget, accessibleText, boundedCount, createInfo, iconField, parseActionValue, safeWidgetUrl, setStateValue, stateValue, sanitizeHtml, stringValue } from './widgetUtils';
+import { indexedFields, MAX_DYNAMIC_ITEMS, squarePreview, RenderProps, VisWidget, accessibleText, boundedCount, createInfo, iconField, itemCount, parseActionValue, safeWidgetUrl, setStateValue, stateValue, sanitizeHtml, stringValue } from './widgetUtils';
 
 type Data = Record<string, unknown> & {
     listItemDataMethod?: string;
@@ -117,11 +117,10 @@ const attrs: RxWidgetInfo['visAttrs'] = [
     ] },
     { name: 'listItemData', fields: [
         { name: 'listItemDataMethod', label: 'listItemDataMethod', type: 'select', options: ['inputPerEditor', 'jsonStringObject'], default: 'inputPerEditor' },
-        { name: 'countListItems', label: 'countListItems', type: 'number', default: 1, onChange: (_field, data, changeData) => { changeData({ ...data, lastListItemIndex: Math.max(0, Math.floor(Number(data.countListItems) || 1) - 1) }); return Promise.resolve(); } },
-        { name: 'lastListItemIndex', type: 'number', default: 0, hidden: () => true },
+        { name: 'countListItems', label: 'countListItems', type: 'number', default: 1 },
         { name: 'json_string_oid', label: 'json_string_oid', type: 'id' },
     ] },
-    { name: 'rows', label: 'group_rows', indexFrom: 0, indexTo: 'lastListItemIndex', hidden: (data: WidgetData) => !!data.listItemDataMethod && data.listItemDataMethod !== 'inputPerEditor', fields: [
+    { name: 'rows', label: 'group_rows', indexFrom: 0, indexTo: 'countListItems', hidden: (data: WidgetData) => !!data.listItemDataMethod && data.listItemDataMethod !== 'inputPerEditor', fields: indexedFields([
         { name: 'listType', label: 'listType', type: 'select', options: ['text', 'buttonState', 'buttonToggle', 'buttonToggleValueTrue', 'buttonToggleValueFalse', 'buttonNav', 'buttonLink'], default: 'text' },
         { name: 'oid', label: 'oid', type: 'id' },
         { name: 'minWidth', label: 'minWidth', type: 'dimension' },
@@ -151,7 +150,7 @@ const attrs: RxWidgetInfo['visAttrs'] = [
         { name: 'visibilityOid', label: 'visibilityOid', type: 'id' },
         { name: 'visibilityCondition', label: 'visibilityCondition', type: 'text', default: '==' },
         { name: 'visibilityConditionValue', label: 'visibilityConditionValue', type: 'text' },
-    ] },
+    ], data => itemCount(data.countListItems)) },
 ];
 
 const css = `

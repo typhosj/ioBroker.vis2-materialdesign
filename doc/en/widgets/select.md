@@ -36,6 +36,8 @@ screenshots are German.
 **Menu item**
 
 - Per-entry **value**, **label**, **subLabel**, **icon** and **icon color** when the entries are configured in the editor.
+- The **+** button in the header of the last **menu item** group adds an entry, the two buttons next to it clone and delete one. That last group shows only its header — it is the add bar, not an entry.
+- An entry without a **value** uses its **label** as the value written to the object.
 
 The **Input layout** group (outlined / filled / solo, rounded / shaped) matches the
 [Input](input.md) widget. Labels, clear / collapse icons and colors live in their

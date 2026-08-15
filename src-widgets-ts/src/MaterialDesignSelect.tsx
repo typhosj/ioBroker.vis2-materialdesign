@@ -4,7 +4,7 @@ import type { RxWidgetInfo } from '@iobroker/types-vis-2';
 
 import { renderIcon } from './MaterialDesignButtons';
 import { cleanColor, num } from './MaterialDesignProgress';
-import { squarePreview, RenderProps, VisWidget, createInfo, itemCount, iconField, setStateValue, sizeCss, stateValue, stringValue } from './widgetUtils';
+import { indexedFields, squarePreview, RenderProps, VisWidget, createInfo, itemCount, iconField, setStateValue, sizeCss, stateValue, stringValue } from './widgetUtils';
 
 interface SelectData {
     oid?: string;
@@ -307,16 +307,18 @@ const attrs: RxWidgetInfo['visAttrs'] = [
         indexTo: 'countSelectItems',
         // The entries only come from the editor in 'inputPerEditor'; the other modes read them from a
         // state, where these fields would be dead.
-        hidden: (data: SelectData, index?: number) =>
-            (data.listDataMethod ?? 'inputPerEditor') !== 'inputPerEditor' || (index ?? 0) >= itemCount(data.countSelectItems),
-        fields: [
-            { name: 'value', label: 'value', type: 'text' },
-            { name: 'label', label: 'label', type: 'text' },
-            { name: 'subLabel', label: 'subLabel', type: 'text' },
-            iconField('listIcon', 'listIcon'),
-            { name: 'listIconColor', label: 'listIconColor', type: 'color' },
-            { name: 'imageColorSelectedTextField', label: 'imageColorSelectedTextField', type: 'color' },
-        ],
+        hidden: (data: SelectData) => (data.listDataMethod ?? 'inputPerEditor') !== 'inputPerEditor',
+        fields: indexedFields(
+            [
+                { name: 'value', label: 'value', type: 'text' },
+                { name: 'label', label: 'label', type: 'text' },
+                { name: 'subLabel', label: 'subLabel', type: 'text' },
+                iconField('listIcon', 'listIcon'),
+                { name: 'listIconColor', label: 'listIconColor', type: 'color' },
+                { name: 'imageColorSelectedTextField', label: 'imageColorSelectedTextField', type: 'color' },
+            ],
+            data => itemCount(data.countSelectItems),
+        ),
     },
 ];
 
@@ -340,7 +342,7 @@ function itemFromData(
     };
 }
 
-function items(data: SelectData, objects: Record<string, ioBroker.Object>): SelectItem[] {
+function items(data: SelectData, states?: unknown): SelectItem[] {
     if (data.listDataMethod === 'jsonStringObject') {
         try {
             const parsed = JSON.parse(String(data.jsonStringObject || '[]')) as Array<Record<string, unknown>>;
@@ -373,7 +375,6 @@ function items(data: SelectData, objects: Record<string, ioBroker.Object>): Sele
         }));
     }
     if (data.listDataMethod === 'multistatesObject') {
-        const states = objects[data.oid || '']?.common?.states;
         if (typeof states === 'string') {
             return states
                 .split(';')
@@ -391,7 +392,9 @@ function items(data: SelectData, objects: Record<string, ioBroker.Object>): Sele
         return [];
     }
     return Array.from({ length: itemCount(data.countSelectItems) }, (_, index) => {
-        const value = data[`value${index}`];
+        // An entry that only got a label is still an entry: the editor stores an untouched value
+        // field as null, which dropped the whole entry.
+        const value = data[`value${index}`] ?? (stringValue(data[`label${index}`]) || null);
         return value === undefined || value === null
             ? null
             : itemFromData(data, index, value as string | number | boolean, stringValue(value));
@@ -414,6 +417,23 @@ export default class MaterialDesignSelect extends VisWidget {
     // Autocomplete subclass sets this true to render a typeable filter input.
     protected isAutocomplete = false;
     private filterText: string | undefined;
+    private statesOid: string | undefined;
+    private objectStates: unknown;
+
+    // `context` carries no object cache, so the states of the bound object have to be read once.
+    private loadObjectStates(oid: string): void {
+        if (this.statesOid === oid) return;
+        this.statesOid = oid;
+        this.objectStates = undefined;
+        void this.props.context?.socket
+            ?.getObject(oid)
+            .then(obj => {
+                if (this.statesOid !== oid) return;
+                this.objectStates = (obj?.common as ioBroker.StateCommon | undefined)?.states;
+                this.forceUpdate();
+            })
+            .catch((e: unknown) => console.error(`Cannot read ${oid}: ${String(e)}`));
+    }
 
     private commitValue(value: ioBroker.StateValue, oid: string): void {
         this.localValue = value;
@@ -485,7 +505,8 @@ export default class MaterialDesignSelect extends VisWidget {
     renderWidgetBody(props: RenderProps): React.JSX.Element {
         super.renderWidgetBody(props);
         const data = this.state.rxData as unknown as SelectData;
-        const list = items(data, (this.props.context as unknown as { objects?: Record<string, ioBroker.Object> })?.objects || {});
+        if (data.listDataMethod === 'multistatesObject' && data.oid) this.loadObjectStates(data.oid);
+        const list = items(data, this.objectStates);
         const state = stateValue(this.state, data.oid || '');
         if (state !== this.seenStateValue) {
             this.seenStateValue = state;
