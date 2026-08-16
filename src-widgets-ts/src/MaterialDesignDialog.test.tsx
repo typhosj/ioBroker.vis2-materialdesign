@@ -27,6 +27,14 @@ describe('dialog opening button', () => {
         expect(unelevated.boxShadow).toBeUndefined();
     });
 
+    // A shadow drawn on the edge of the widget box is clipped away by VIS2 and stays invisible.
+    it('gives the raised style room for its shadow', () => {
+        expect(trigger({ buttonStyle: 'raised' }).margin).toBe(4);
+        expect(trigger({ buttonStyle: 'raised' }).height).toBe('calc(100% - 8px)');
+        expect(trigger({ buttonStyle: 'unelevated' }).margin).toBeUndefined();
+        expect(trigger({ buttonStyle: 'unelevated' }).height).toBe('100%');
+    });
+
     it('drops the fill for text, outlined and icon and moves the primary color into the label', () => {
         for (const buttonStyle of ['text', 'outlined', 'icon']) {
             const style = trigger({ buttonStyle, mdwButtonPrimaryColor: '#123456' });

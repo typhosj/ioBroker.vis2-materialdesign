@@ -441,8 +441,10 @@ export class MaterialDesignDialog extends VisWidget {
               color: flatButton ? buttonPrimary : s(d.mdwButtonSecondaryColor, "#fff"),
               fontFamily: s(d.textFontFamily),
               fontSize: d.textFontSize ? sizeCss(d.textFontSize, 14) : undefined,
-              height: "100%",
-              width: "100%",
+              // VIS2 clips the widget at its box, so the raised shadow needs room inside it.
+              height: buttonStyle === "raised" ? "calc(100% - 8px)" : "100%",
+              margin: buttonStyle === "raised" ? 4 : undefined,
+              width: buttonStyle === "raised" ? "calc(100% - 8px)" : "100%",
             }}
           >
             {s(d.iconPosition, "left") === "left"
