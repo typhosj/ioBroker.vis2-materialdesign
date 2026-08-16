@@ -65,6 +65,24 @@ describe('shared button actions', () => {
         ]);
     });
 
+    // Upstream #12: a single bound read as a minimum made "max 50" jump the state up to 50 and then
+    // count on without a limit, and an empty field made 0 the minimum.
+    it('reads a single bound in the direction of the step', () => {
+        const { instance, setValue } = widget('addition');
+        instance.activate({ oid: 'test.0.value', value: 5, minmax: '50' }, 10);
+        instance.activate({ oid: 'test.0.value', value: 5, minmax: '50' }, 48);
+        instance.activate({ oid: 'test.0.value', value: -1, minmax: '5' }, 10);
+        instance.activate({ oid: 'test.0.value', value: -1, minmax: '5' }, 5);
+        instance.activate({ oid: 'test.0.value', value: -1, minmax: '' }, 0);
+        expect(setValue.mock.calls).toEqual([
+            ['test.0.value', 15],
+            ['test.0.value', 50],
+            ['test.0.value', 9],
+            ['test.0.value', 5],
+            ['test.0.value', -1],
+        ]);
+    });
+
     it('supports boolean/value toggles and honors read-only', () => {
         const { instance, setValue } = widget('toggle');
         instance.activate({ oid: 'test.0.bool' }, false);

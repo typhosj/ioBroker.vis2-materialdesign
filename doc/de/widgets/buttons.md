@@ -23,7 +23,7 @@ Variante im Widget-Set **Material Design** wählen, markieren und den Reiter
 - **Navigation** – zu öffnende VIS-2-Zielansicht.
 - **Link** – URL und *in neuem Fenster öffnen*.
 - **State** – Objekt-ID und der beim Klick geschriebene Wert.
-- **Addition** – Schrittweite (`+`/`-`) mit optionaler Min-/Max-Begrenzung.
+- **Addition** – *Wert* ist die Schrittweite, als Zahl ohne Vorzeichen für aufwärts und mit `-` für abwärts. *Min/Max* begrenzt das Ergebnis: `0;100` setzt beide Enden, eine einzelne Zahl begrenzt die Richtung der Schrittweite – bei `5` als Schritt ist `50` das Maximum, bei `-1` als Schritt ist `5` das Minimum. Leer heißt unbegrenzt.
 - **Toggle** – *Umschalttyp* (`boolean` oder eigene Aus-/Ein-Werte) und *Taster* (bei Drücken und Loslassen schreiben).
 
 **Beschriftung**
