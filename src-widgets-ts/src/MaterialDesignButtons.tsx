@@ -347,7 +347,12 @@ function isOn(current: ioBroker.StateValue | undefined, data: ButtonData): boole
     return current === true || current === 'true' || current === 1 || current === '1';
 }
 
-function isActive(def: ButtonDefinition, current: ioBroker.StateValue | undefined, data: ButtonData): boolean {
+function isActive(def: ButtonDefinition, current: ioBroker.StateValue | undefined, data: ButtonData, activeView?: string): boolean {
+    // A navigation button has no object to read, so its only true state is "my target view is the
+    // one on screen" - without this every true/active option of the navigation variants was dead.
+    if (def.kind === 'navigation') {
+        return !!data.nav_view && data.nav_view === activeView;
+    }
     if (def.kind === 'state') {
         return current === parseActionValue(String(data.value ?? ''));
     }
@@ -604,7 +609,7 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
             const data = this.state.rxData as unknown as ButtonData;
             const pressState = this.state as PressState;
             const current = stateValue(this.state, data.oid || '');
-            const on = isActive(def, current, data);
+            const on = isActive(def, current, data, this.props.context?.activeView);
             const locked = this.isLocked(data);
             const primary = color(on ? data.colorBgTrue : data.mdwButtonPrimaryColor || data.colorBgFalse, def.layout === 'icon' ? 'transparent' : '#44739e');
             // `outlined` and `text` drop the container, where a white label is invisible on the page
@@ -646,6 +651,9 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
             const sliderTrackDash = `${sliderArcLength} ${sliderCircumference}`;
             const sliderRotation = numeric(data.angleOffset, 0) - 90;
             const m3Standard = isM3 && !isIcon;
+            // `raised` is the only legacy style carrying an elevation - the shadow is the whole
+            // difference to `unelevated`, which is the same filled container without one.
+            const raisedLegacy = !isM3 && !isIcon && (data.buttonStyle ?? 'raised') === 'raised';
             const m3Variant = stringValue(data.md3ButtonVariant) || 'filled';
             const m3IconVariant = stringValue(data.md3IconButtonVariant) || 'standard';
             const m3Outlined = isM3 && (isIcon ? m3IconVariant === 'outlined' : m3Variant === 'outlined');
@@ -674,7 +682,7 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
             // edge to edge, so the elevated variant's drop shadow was cut off on all four sides. It is
             // the only variant carrying one, so it is the only one that gives up the 4 px.
             return (
-                <div className={isM3 ? `materialdesign-widget ${designStyleClasses(data, this.isDarkTheme())}` : undefined} style={{ boxSizing: 'border-box', width: '100%', height: '100%', padding: m3Standard && m3Variant === 'elevated' ? 4 : 0 }}>
+                <div className={isM3 ? `materialdesign-widget ${designStyleClasses(data, this.isDarkTheme())}` : undefined} style={{ boxSizing: 'border-box', width: '100%', height: '100%', padding: (m3Standard && m3Variant === 'elevated') || raisedLegacy ? 4 : 0 }}>
                     <button
                         type="button"
                         aria-pressed={on}
@@ -688,6 +696,7 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
                             border: isM3 ? (m3Outlined && fgExplicit ? `1px solid ${secondary}` : undefined) : data.buttonStyle === 'outlined' && !isIcon ? `1px solid ${primary}` : 0,
                             borderRadius: isIcon ? '50%' : isM3 ? undefined : 4,
                             background: isM3 ? (bgExplicit ? primary : undefined) : flatButton ? 'transparent' : background,
+                            boxShadow: raisedLegacy ? (pressState.active ? '0 5px 5px -3px rgba(0,0,0,.2), 0 8px 10px 1px rgba(0,0,0,.14), 0 3px 14px 2px rgba(0,0,0,.12)' : '0 3px 1px -2px rgba(0,0,0,.2), 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12)') : undefined,
                             // Without a fill the primary color has to move to border and label — the on-primary
                             // color (white by default) would be invisible on the view background.
                             color: isM3 ? (fgExplicit ? secondary : undefined) : flatButton && !isIcon ? primary : secondary,
@@ -699,7 +708,7 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
                             justifyContent: 'center',
                             gap,
                             transform: isM3 ? undefined : pressState.active ? 'translateY(1px)' : 'none',
-                            transition: isM3 ? undefined : 'background 120ms ease, transform 80ms ease',
+                            transition: isM3 ? undefined : 'background 120ms ease, box-shadow 120ms ease, transform 80ms ease',
                             position: 'relative',
                         }}
                         onMouseEnter={() => this.setState({ hovered: true })}

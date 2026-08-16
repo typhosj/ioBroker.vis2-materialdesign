@@ -42,6 +42,26 @@ a separate on-state color), **Colors** overrides the theme, **Feedback** adds
 haptics and a click sound, and **Locking** requires an unlock click before the
 action runs.
 
+**Button style** (*Classic* style only)
+
+- **raised** – filled container with a shadow.
+- **unelevated** – the same filled container without the shadow.
+- **outlined** – outline only, transparent container.
+- **text** – label only, neither outline nor container.
+
+**On state** – *label true*, *active label color*, *active background*, *active
+image* and *active image color* apply while the button is active. Active means
+"the object holds the written value" for *State*, "switched on" for *Toggle* and
+"the target view is the one on screen" for *Navigation*, which is what highlights
+the current page in a navigation bar. *Link*, *Addition* and *Multi State* have no
+on state.
+
+**Color precedence** – two groups can paint the same surface, the color from
+**Colors** wins:
+
+- *primary color* overrides *background*; while active *active background* wins.
+- *secondary color* overrides *image color* (and the label color as long as none is set).
+
 ## Design style
 
 The **Classic** (left) and **Material 3** (right) style side by side, see
