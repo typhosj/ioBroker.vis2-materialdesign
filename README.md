@@ -132,6 +132,9 @@ a reason to wait with an upgrade.
 - (typhosj) Added background color, border color, border width and corner radius for the value labels of the Bar, Pie and Line History charts (upstream wish #68)
 - (typhosj) Fixed the Line History chart never drawing its value labels: the widget's per-series "show values" options had no effect at all, and now format the point value with the configured decimals and append text. A chart that never set the option shows labels again, as it does in the original adapter
 - (typhosj) Documented how a widget shows the value of a state inside its texts — an object id in curly braces in any text or HTML field, which is what makes a List show several values below each other instead of one Value widget per state. The object id of a list row only controls that row (reported in the forum)
+- (typhosj) Fixed all-day and multi-day appointments of the **Calendar** covering one day too many: an all-day end is exclusive, and the ical adapter writes it as midnight of the following day, which the widget still counted as a day of its own. An end at midnight now ends the appointment on the previous day, whether it is written as a date or as a timestamp (reported in the forum)
+- (typhosj) Fixed the month view of the **Calendar** dropping the start time of an appointment that has one; it shows the time in front of the name again, like VIS 1 (reported in the forum)
+- (typhosj) Fixed the Calendar option **font color for past days** doing nothing: past days are dimmed with it again, in the month grid and in the day header of the week and day view (reported in the forum)
 
 ### 0.3.4 (2026-08-16)
 
