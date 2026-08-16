@@ -1,5 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import MaterialDesignCalendar, { calendarDayCount, calendarEvent, calendarEventHasTime, calendarEventOccursOnDate, calendarEventSlot, calendarGridStart, eventMinutes, formatCalendarShortTime, formatCalendarTime, formatMoment, isoDate, localTimestamp, weekNumber } from './MaterialDesignCalendar';
+import MaterialDesignCalendar, { calendarDayCount, calendarEvent, calendarEventHasTime, calendarEventLanes, calendarEventOccursOnDate, calendarEventSlot, calendarGridStart, eventMinutes, formatCalendarShortTime, formatCalendarTime, formatMoment, isoDate, localTimestamp, weekNumber } from './MaterialDesignCalendar';
+
+describe('MaterialDesignCalendar overlapping events', () => {
+    it('gives overlapping events their own lane and leaves separate events full width', () => {
+        expect(calendarEventLanes([{ row: 0, span: 2 }, { row: 1, span: 2 }, { row: 6, span: 1 }])).toEqual([{ index: 0, total: 2 }, { index: 1, total: 2 }, { index: 0, total: 1 }]);
+    });
+
+    it('reuses a lane that ended and counts the widest point of a cluster', () => {
+        // The short event frees lane 0 at row 1, so the event starting at row 2 takes it back.
+        expect(calendarEventLanes([{ row: 0, span: 4 }, { row: 0, span: 1 }, { row: 2, span: 2 }])).toEqual([{ index: 1, total: 2 }, { index: 0, total: 2 }, { index: 0, total: 2 }]);
+    });
+});
 
 describe('MaterialDesignCalendar time format', () => {
     it('formats explicit 24-hour and 12-hour times independently from locale', () => {

@@ -33,7 +33,10 @@ Event display and date formats have their own groups:
 
 <img src="../../media/vis2_calendar_editor_2.png" width="340" alt="Calendar event and date-format options">
 
-- **event overlap mode** – how simultaneous events are arranged (stack or side by side).
+- **event overlap mode** – how simultaneous events are arranged in the week and
+  day view: *column* splits the width between them, *stack* offsets them on top
+  of each other. Month view lists events below each other anyway, so the setting
+  has no effect there.
 - **event height / fonts** – size and typography of events.
 - **custom date formats** – per-view header and day format strings using date tokens (e.g. `dddd`, `D. MMMM`).
 
@@ -41,7 +44,10 @@ The header, week-number, controls and time-axis layout groups style the
 remaining calendar chrome. Two settings there are not self-explanatory:
 
 - **show calendar week** – a week-number column on the left in month view, and
-  the week number above the time axis in week view.
+  the week number in the corner above the time axis in the week and day view;
+  font and color come from the same group.
+- **… go to** – the day number switches to the configured view and takes the
+  clicked day with it.
 - **show current time / current time color** – a line on the current time in the
   week and day view, moved on every minute.
 - **time axis background / time axis header background** – the first colors the
