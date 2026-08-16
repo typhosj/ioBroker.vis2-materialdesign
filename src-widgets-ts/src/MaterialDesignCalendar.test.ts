@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import MaterialDesignCalendar, { calendarEventHasTime, calendarEventOccursOnDate, formatCalendarTime, formatMoment } from './MaterialDesignCalendar';
+import MaterialDesignCalendar, { calendarEventHasTime, calendarEventOccursOnDate, formatCalendarShortTime, formatCalendarTime, formatMoment } from './MaterialDesignCalendar';
 
 describe('MaterialDesignCalendar time format', () => {
     it('formats explicit 24-hour and 12-hour times independently from locale', () => {
@@ -21,6 +21,23 @@ describe('MaterialDesignCalendar time format', () => {
         expect(calendarEventOccursOnDate(holiday, '2026-08-08')).toBe(true);
         expect(calendarEventOccursOnDate(holiday, '2026-08-09')).toBe(false);
         expect(calendarEventOccursOnDate({ start: '2026-07-25' }, '2026-07-25')).toBe(true);
+    });
+
+    it('treats a midnight end timestamp (ical adapter all-day) as exclusive too', () => {
+        const holiday = { start: '2026-08-10T00:00:00', end: '2026-08-13T00:00:00', name: 'Holiday' };
+        expect(calendarEventOccursOnDate(holiday, '2026-08-10')).toBe(true);
+        expect(calendarEventOccursOnDate(holiday, '2026-08-12')).toBe(true);
+        expect(calendarEventOccursOnDate(holiday, '2026-08-13')).toBe(false);
+        const timed = { start: '2026-08-10T09:00:00', end: '2026-08-11T17:00:00', name: 'Trip' };
+        expect(calendarEventOccursOnDate(timed, '2026-08-11')).toBe(true);
+    });
+
+    it('formats a month-view event start like the legacy summary (minutes only when set)', () => {
+        expect(formatCalendarShortTime(12 * 60, '24h')).toBe('12');
+        expect(formatCalendarShortTime(9 * 60 + 30, '24h')).toBe('09:30');
+        expect(formatCalendarShortTime(12 * 60, '12h')).toBe('12 PM');
+        expect(formatCalendarShortTime(9 * 60 + 30, '12h')).toBe('9:30 AM');
+        expect(formatCalendarShortTime(12 * 60, 'locale', 'de-DE')).toBe('12 Uhr');
     });
 
     it('exposes an explicit time-format selector in the time-axis group', () => {
