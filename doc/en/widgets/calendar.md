@@ -44,6 +44,8 @@ remaining calendar chrome. Two settings there are not self-explanatory:
   the week number above the time axis in week view.
 - **show current time / current time color** – a line on the current time in the
   week and day view, moved on every minute.
+- **time axis background / time axis header background** – the first colors the
+  time column, the second the cell above it; together the whole column.
 
 ```json
 [

@@ -43,6 +43,8 @@ Die Gruppen für Kopfzeile, Kalenderwochen, Bedienung und Zeitachse gestalten di
   über der Zeitachse.
 - **aktuelle Uhrzeit anzeigen / Farbe** – Linie auf der aktuellen Uhrzeit in
   Wochen- und Tagesansicht, minütlich nachgeführt.
+- **Zeitachse: Hintergrundfarbe / Kopf-Hintergrundfarbe** – die erste färbt die
+  Uhrzeit-Spalte, die zweite die Zelle darüber; zusammen die ganze Spalte.
 
 ```json
 [
