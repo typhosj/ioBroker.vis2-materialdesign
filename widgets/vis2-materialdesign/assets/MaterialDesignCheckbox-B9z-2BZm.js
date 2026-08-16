@@ -1,0 +1,1 @@
+import{t as e}from"./MaterialDesignToggleControls-C82i7PEt.js";var t=e({id:`tplVis2-materialdesign-CheckBox`,name:`Checkbox`,kind:`checkbox`});export{t as default};
