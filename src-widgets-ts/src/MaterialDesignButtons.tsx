@@ -333,7 +333,12 @@ function isOn(current: ioBroker.StateValue | undefined, data: ButtonData): boole
     return current === true || current === 'true' || current === 1 || current === '1';
 }
 
-function isActive(def: ButtonDefinition, current: ioBroker.StateValue | undefined, data: ButtonData): boolean {
+function isActive(def: ButtonDefinition, current: ioBroker.StateValue | undefined, data: ButtonData, activeView?: string): boolean {
+    // A navigation button reads no object, so its only true state is "my target view is the one on
+    // screen" - without this every true/active option of the navigation variants was dead.
+    if (def.kind === 'navigation') {
+        return !!data.nav_view && data.nav_view === activeView;
+    }
     if (def.kind === 'state') {
         return current === parseActionValue(String(data.value ?? ''));
     }
@@ -591,7 +596,7 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
             const data = this.state.rxData as unknown as ButtonData;
             const pressState = this.state as PressState;
             const current = stateValue(this.state, data.oid || '');
-            const on = isActive(def, current, data);
+            const on = isActive(def, current, data, this.props.context?.activeView);
             const locked = this.isLocked(data);
             const primary = color(on ? data.colorBgTrue : data.mdwButtonPrimaryColor || data.colorBgFalse, def.layout === 'icon' ? 'transparent' : '#44739e');
             const secondary = color(on ? data.imageTrueColor || data.mdwButtonSecondaryColor : data.mdwButtonSecondaryColor || data.imageColor, def.layout === 'icon' ? '#44739e' : '#fff');
@@ -601,6 +606,9 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
             const isIcon = def.layout === 'icon';
             const isSliderIcon = isIcon && def.kind === 'slider';
             const flatButton = data.buttonStyle === 'text' || data.buttonStyle === 'outlined';
+            // `raised` is the only style carrying an elevation - the shadow is the whole difference
+            // to `unelevated`, which is the same filled container without one.
+            const raised = !isIcon && (data.buttonStyle ?? 'raised') === 'raised';
             const background = !isSliderIcon && (pressState.active || pressState.hovered) ? pressed : primary;
             const image = on && data.imageTrue ? data.imageTrue : data.image || def.icon;
             const imageColorSet = !!(on && data.imageTrue ? data.imageTrueColor : data.imageColor);
@@ -644,8 +652,11 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
                 </>
             );
 
+            // VIS2 clips every widget (`.vis-widget` is `overflow: hidden`) and the button fills its
+            // box edge to edge, so the raised shadow would be cut off on all four sides. It is the
+            // only style carrying one, so it is the only one that gives up the 4 px.
             return (
-                <div style={{ boxSizing: 'border-box', width: '100%', height: '100%', padding: 0 }}>
+                <div style={{ boxSizing: 'border-box', width: '100%', height: '100%', padding: raised ? 4 : 0 }}>
                     <button
                         type="button"
                         aria-pressed={on}
@@ -657,6 +668,7 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
                             border: data.buttonStyle === 'outlined' && !isIcon ? `1px solid ${primary}` : 0,
                             borderRadius: isIcon ? '50%' : 4,
                             background: flatButton ? 'transparent' : background,
+                            boxShadow: raised ? (pressState.active ? '0 5px 5px -3px rgba(0,0,0,.2), 0 8px 10px 1px rgba(0,0,0,.14), 0 3px 14px 2px rgba(0,0,0,.12)' : '0 3px 1px -2px rgba(0,0,0,.2), 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12)') : undefined,
                             color: flatButton && !isIcon ? primary : secondary,
                             cursor: data.readOnly ? 'default' : 'pointer',
                             padding: isIcon ? 0 : '0 8px',
@@ -666,7 +678,7 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
                             justifyContent: 'center',
                             gap,
                             transform: pressState.active ? 'translateY(1px)' : 'none',
-                            transition: 'background 120ms ease, transform 80ms ease',
+                            transition: 'background 120ms ease, box-shadow 120ms ease, transform 80ms ease',
                             position: 'relative',
                         }}
                         onMouseEnter={() => this.setState({ hovered: true })}

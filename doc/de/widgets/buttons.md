@@ -40,3 +40,23 @@ Die Gruppe **Bild / Icon** nimmt einen Material-Design-Iconnamen oder eine
 Bildquelle (mit eigener Ein-Zustand-Farbe), **Farben** überschreibt das Thema,
 **Feedback** ergänzt Haptik und Klicksound, und **Verriegeln** verlangt einen
 Entsperr-Klick vor der Aktion.
+
+**Schaltflächenstil**
+
+- **raised** – gefüllte Fläche mit Schatten.
+- **unelevated** – dieselbe gefüllte Fläche ohne Schatten.
+- **outlined** – nur Rahmen, Fläche transparent.
+- **text** – nur Beschriftung, weder Rahmen noch Fläche.
+
+**Ein-Zustand** – *Beschriftung true*, *Beschriftungsfarbe für true*, *aktiver
+Hintergrund*, *aktives Bild* und *aktive Bildfarbe* gelten, solange der Button
+aktiv ist. Aktiv heißt bei *State* „das Objekt hat den geschriebenen Wert", bei
+*Toggle* „eingeschaltet" und bei *Navigation* „die Zielansicht ist gerade
+geöffnet" – damit lässt sich in einer Navigationsleiste die aktuelle Seite
+hervorheben. *Link*, *Addition* und *Multi State* haben keinen Ein-Zustand.
+
+**Farb-Vorrang** – dieselbe Fläche lässt sich aus zwei Gruppen einfärben, die
+Farbe aus **Farben** gewinnt:
+
+- *Primärfarbe* überschreibt *Hintergrund*, im aktiven Zustand gewinnt *aktiver Hintergrund*.
+- *sekundäre Farbe* überschreibt *Bildfarbe* (und die Beschriftungsfarbe, solange keine gesetzt ist).

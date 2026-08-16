@@ -1,3 +1,5 @@
+import React from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { createButtonClass } from './MaterialDesignButtons';
@@ -101,5 +103,62 @@ describe('shared button actions', () => {
         const { changeView, instance } = widget('navigation');
         instance.activate({ nav_view: 'details' }, undefined);
         expect(changeView).toHaveBeenCalledWith('details');
+    });
+});
+
+// Upstream #11: a navigation button reads no object, so every "true" option stayed dead until the
+// target view itself became the active state.
+describe('navigation button active presentation (upstream #11)', () => {
+    const Button = createButtonClass(definition('navigation'));
+    const render = (activeView: string): string => {
+        const instance = fixture<{ state: unknown; renderWidgetBody: (props: unknown) => React.JSX.Element }>(
+            new Button(fixture<ConstructorParameters<typeof Button>[0]>({ context: { setValue: vi.fn(), activeView } })),
+        );
+        instance.state = fixture<typeof instance.state>({
+            rxData: { nav_view: 'details', buttontext: 'Seite', labelTrue: 'Seite aktiv', labelColorTrue: '#7c0409', colorBgTrue: '#eeeeee', image: 'lightbulb-outline', imageTrue: 'lightbulb', imageTrueColor: '#00696d' },
+            values: {},
+        });
+        return renderToStaticMarkup(instance.renderWidgetBody(fixture<Parameters<typeof instance.renderWidgetBody>[0]>({})));
+    };
+
+    it('shows the true label, color, background and icon on its own view', () => {
+        const active = render('details');
+        expect(active).toContain('Seite aktiv');
+        expect(active).toContain('#7c0409');
+        expect(active).toContain('#eeeeee');
+        expect(active).toContain('mdi-lightbulb"');
+    });
+
+    it('stays inactive on any other view', () => {
+        const inactive = render('overview');
+        expect(inactive).toContain('>Seite<');
+        expect(inactive).not.toContain('#7c0409');
+        expect(inactive).toContain('mdi-lightbulb-outline');
+    });
+});
+
+// The shadow is the only thing telling `raised` and `unelevated` apart, and VIS2 clips a widget at
+// its box, so the elevated style needs room for it.
+describe('raised button elevation', () => {
+    const Button = createButtonClass(definition('state'));
+    const render = (rxData: Record<string, unknown>): string => {
+        const instance = fixture<{ state: unknown; renderWidgetBody: (props: unknown) => React.JSX.Element }>(
+            new Button(fixture<ConstructorParameters<typeof Button>[0]>({ context: { setValue: vi.fn() } })),
+        );
+        instance.state = fixture<typeof instance.state>({ rxData, values: {} });
+        return renderToStaticMarkup(instance.renderWidgetBody(fixture<Parameters<typeof instance.renderWidgetBody>[0]>({})));
+    };
+
+    it('elevates the raised style, with room for the shadow', () => {
+        expect(render({ buttonStyle: 'raised' })).toContain('box-shadow:0 3px');
+        expect(render({ buttonStyle: 'raised' })).toContain('padding:4px');
+        expect(render({})).toContain('box-shadow:0 3px');
+    });
+
+    it('leaves every other style flat', () => {
+        expect(render({ buttonStyle: 'unelevated' })).not.toContain('box-shadow:');
+        expect(render({ buttonStyle: 'unelevated' })).toContain('padding:0');
+        expect(render({ buttonStyle: 'text' })).not.toContain('box-shadow:');
+        expect(render({ buttonStyle: 'outlined' })).not.toContain('box-shadow:');
     });
 });
