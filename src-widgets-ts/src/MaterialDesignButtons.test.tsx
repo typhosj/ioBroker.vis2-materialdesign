@@ -74,12 +74,16 @@ describe('shared button actions', () => {
         instance.activate({ oid: 'test.0.value', value: -1, minmax: '5' }, 10);
         instance.activate({ oid: 'test.0.value', value: -1, minmax: '5' }, 5);
         instance.activate({ oid: 'test.0.value', value: -1, minmax: '' }, 0);
+        instance.activate({ oid: 'test.0.value', value: 5, minmax: '50;' }, 10);
+        instance.activate({ oid: 'test.0.value', value: -1, minmax: ';5' }, 10);
         expect(setValue.mock.calls).toEqual([
             ['test.0.value', 15],
             ['test.0.value', 50],
             ['test.0.value', 9],
             ['test.0.value', 5],
             ['test.0.value', -1],
+            ['test.0.value', 50],
+            ['test.0.value', 5],
         ]);
     });
 

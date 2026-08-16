@@ -24,6 +24,13 @@ describe('dialog trigger button style', () => {
         expect(render({ buttonStyle: 'icon' })).toContain('border-radius:50%');
     });
 
+    // A shadow drawn on the edge of the widget box is clipped away by VIS2 and stays invisible.
+    it('gives the raised style room for its shadow', () => {
+        expect(render({ buttonStyle: 'raised' })).toContain('margin:4px');
+        expect(render({ buttonStyle: 'unelevated' })).not.toContain('margin:4px');
+        expect(render({ designStyle: 'material3', buttonStyle: 'raised' })).not.toContain('margin:4px');
+    });
+
     it('maps the style onto the shared M3 button variants', () => {
         expect(render({ designStyle: 'material3', buttonStyle: 'raised' })).toContain('mdw-md3-button--filled');
         expect(render({ designStyle: 'material3', buttonStyle: 'text' })).toContain('mdw-md3-button--text');

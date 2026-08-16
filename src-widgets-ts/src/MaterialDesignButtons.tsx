@@ -366,7 +366,8 @@ function clampByMinMax(value: number, minmax: unknown, step: number): number {
     if (typeof minmax !== 'string' || !minmax.trim()) {
         return value;
     }
-    const bounds = minmax.split(';').map(part => Number(part.trim()));
+    // An empty half is an open end, not `Number('') === 0`, which would clamp "50;" to zero.
+    const bounds = minmax.split(';').map(part => (part.trim() ? Number(part.trim()) : NaN));
     const [min, max] = bounds.length > 1 ? bounds : step < 0 ? [bounds[0], NaN] : [NaN, bounds[0]];
     if (Number.isFinite(min) && value < min) {
         return min;
