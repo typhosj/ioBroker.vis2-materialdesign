@@ -38,7 +38,12 @@ Event display and date formats have their own groups:
 - **custom date formats** – per-view header and day format strings using date tokens (e.g. `dddd`, `D. MMMM`).
 
 The header, week-number, controls and time-axis layout groups style the
-remaining calendar chrome.
+remaining calendar chrome. Two settings there are not self-explanatory:
+
+- **show calendar week** – a week-number column on the left in month view, and
+  the week number above the time axis in week view.
+- **show current time / current time color** – a line on the current time in the
+  week and day view, moved on every minute.
 
 ```json
 [
@@ -53,6 +58,14 @@ remaining calendar chrome.
 ```
 
 The state must contain a JSON array.
+
+## ical adapter
+
+The state `ical.0.data.table` can be used directly. The widget reads the field
+names of the ical adapter (`event`, `_date`, `_end`, `_allDay`, `_calColor`)
+next to the format above and converts its UTC timestamps to local time. All-day
+events arrive from there with an exclusive end — the last day is not counted, the
+same as in the calendar itself.
 
 ## Design style
 

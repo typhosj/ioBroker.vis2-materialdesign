@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import MaterialDesignCalendar, { calendarDayCount, calendarEventHasTime, calendarEventOccursOnDate, calendarEventSlot, calendarGridStart, eventMinutes, formatCalendarShortTime, formatCalendarTime, formatMoment, isoDate, weekNumber } from './MaterialDesignCalendar';
+import MaterialDesignCalendar, { calendarDayCount, calendarEvent, calendarEventHasTime, calendarEventOccursOnDate, calendarEventSlot, calendarGridStart, eventMinutes, formatCalendarShortTime, formatCalendarTime, formatMoment, isoDate, localTimestamp, weekNumber } from './MaterialDesignCalendar';
 
 describe('MaterialDesignCalendar time format', () => {
     it('formats explicit 24-hour and 12-hour times independently from locale', () => {
@@ -38,6 +38,13 @@ describe('MaterialDesignCalendar time format', () => {
         expect(formatCalendarShortTime(12 * 60, '12h')).toBe('12 PM');
         expect(formatCalendarShortTime(9 * 60 + 30, '12h')).toBe('9:30 AM');
         expect(formatCalendarShortTime(12 * 60, 'locale', 'de-DE')).toBe('12 Uhr');
+    });
+
+    it('exposes the current-time indicator fields in the time-axis group', () => {
+        const group = MaterialDesignCalendar.getWidgetInfo().visAttrs?.find(attr => attr.name === 'calendarTimeAxisLayout');
+        const names = (group?.fields || []).map(field => field.name);
+        expect(names).toEqual(expect.arrayContaining(['calendarNowIndicatorShow', 'calendarNowIndicatorColor']));
+        expect(group?.fields?.find(field => field.name === 'calendarNowIndicatorShow')).toMatchObject({ type: 'checkbox', default: true });
     });
 
     it('exposes an explicit time-format selector in the time-axis group', () => {
@@ -155,5 +162,38 @@ describe('calendarEventSlot', () => {
     it('gives a zero-length (all-day/missing-end) event at least a one-slot span', () => {
         const slot = calendarEventSlot({ start: '2026-07-23T09:00' }, window_.firstMinute, window_.endMinute, window_.intervalMinutes);
         expect(slot).toEqual({ row: 1, span: 1, startMinute: 9 * 60 });
+    });
+});
+
+describe('ical adapter rows', () => {
+    it('keeps a documented start/end/name row untouched', () => {
+        expect(calendarEvent({ start: '2026-08-16T09:00', end: '2026-08-16T10:00', name: 'Meeting', color: '#123456' }))
+            .toMatchObject({ start: '2026-08-16T09:00', end: '2026-08-16T10:00', name: 'Meeting', color: '#123456' });
+    });
+
+    it('reads the ical field names and converts its UTC stamps to local wall-clock time', () => {
+        const row = { event: 'Zahnarzt', _date: '2026-08-16T06:30:00.000Z', _end: '2026-08-16T07:15:00.000Z', _allDay: false, _calColor: '#ff0000' };
+        const local = new Date('2026-08-16T06:30:00.000Z');
+        const event = calendarEvent(row);
+        expect(event.name).toBe('Zahnarzt');
+        expect(event.color).toBe('#ff0000');
+        expect(eventMinutes(event.start)).toBe(local.getHours() * 60 + local.getMinutes());
+        expect(calendarEventHasTime(event.start)).toBe(true);
+    });
+
+    it('strips the time of an all-day ical row, so its exclusive end still drops the last day', () => {
+        const row = { event: 'Urlaub', _date: '2026-08-14T22:00:00.000Z', _end: '2026-08-19T22:00:00.000Z', _allDay: true };
+        const event = calendarEvent(row);
+        const first = `${new Date('2026-08-14T22:00:00.000Z').getFullYear()}`;
+        expect(calendarEventHasTime(event.start)).toBe(false);
+        expect(event.start).toHaveLength(10);
+        expect(event.start?.startsWith(first)).toBe(true);
+        expect(calendarEventOccursOnDate(event, event.start as string)).toBe(true);
+        expect(calendarEventOccursOnDate(event, event.end as string)).toBe(false);
+    });
+
+    it('leaves a zone-less timestamp alone', () => {
+        expect(localTimestamp('2026-08-16T09:00:00')).toBe('2026-08-16T09:00:00');
+        expect(localTimestamp('2026-08-16')).toBe('2026-08-16');
     });
 });
