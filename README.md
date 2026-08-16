@@ -66,7 +66,7 @@ Report current VIS 2 problems in the
 [GitHub issue tracker](https://github.com/typhosj/ioBroker.vis2-materialdesign/issues).
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 0.3.4 (2026-08-16)
 
 - (typhosj) Fixed the **Min/Max** limit of the Addition buttons: a single bound was always read as the minimum, so a maximum like `50` lifted the state up to 50 on the first press and then counted on without any limit. A single bound is now the end the step runs into — a step up stops at a maximum, a step down at a minimum — while `0;100` keeps bounding both ends. An empty field, and an empty half in `50;`, also stopped acting as a bound of 0, so a button without a limit can count into negative values again (issue #12)
 - (typhosj) Fixed every **active** option of the Navigation buttons doing nothing: the variant reads no object, so "active" was always false and label true, active label color, active background, active image and active image color never showed. Active now means the target view is the one on screen, which is what highlights the current page in a navigation bar (issue #11)
@@ -116,26 +116,6 @@ Report current VIS 2 problems in the
 - (typhosj) Restored full visual parity of the ported widgets against the original VIS 1 versions and migrated the widget documentation to VIS 2
 - (typhosj) Reworked the widget documentation with per-widget editor screenshots that expand the relevant option groups and describe every non-obvious setting (English and German)
 - (typhosj) Fixed six widget editor group headers (title, text, card action, linked value, striped, list header) that showed untranslated keys
-
-### 0.2.0 (2026-07-13)
-
-- (typhosj) Ported all remaining legacy Material Design widget templates to native VIS 2 components
-- (typhosj) Added calendar, chart, table and embedded child-view widgets for dialogs, masonry, grid and advanced views
-- (typhosj) Added automated legacy-template-to-VIS2 registration coverage checks
-- (typhosj) Ported the adapter configuration UI to React 5 with the native theme editor
-- (typhosj) Restored the VIS2 editor action to apply Material Design theme values to widget properties
-
-### 0.1.0 (2026-07-09)
-
-- (typhosj) Initial native VIS 2 port of the Material Design button widgets
-- (typhosj) Added one-to-one VIS 2 button variants for navigation, link, state, multi-state, addition, toggle, vertical buttons, icon buttons, and icon button slider
-- (typhosj) Added VIS 2 editor previews using the original Material Design icon glyphs
-- (typhosj) Ported button state writes, delayed multi-state writes, toggle and push-button behavior, lock overlay, click sound, vibration feedback, image/icon handling, and SVG color behavior
-- Based on the original VIS Material Design widgets version 0.5.9 by Scrounger
-
-[Older changelog entries](CHANGELOG_OLD.md)
-
-<!-- omit in toc -->
 
 ## License
 
