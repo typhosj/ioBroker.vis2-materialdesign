@@ -345,11 +345,15 @@ function isActive(def: ButtonDefinition, current: ioBroker.StateValue | undefine
     return isOn(current, data);
 }
 
-function clampByMinMax(value: number, minmax: unknown): number {
-    if (typeof minmax !== 'string') {
+// `min;max` bounds both ends. A single bound is the one the step runs into - a step up stops at a
+// maximum, a step down at a minimum - because reading it as a minimum turned every "max 50" into a
+// press that jumped the state UP to 50 and then counted on without a limit.
+function clampByMinMax(value: number, minmax: unknown, step: number): number {
+    if (typeof minmax !== 'string' || !minmax.trim()) {
         return value;
     }
-    const [min, max] = minmax.split(';').map(part => Number(part.trim()));
+    const bounds = minmax.split(';').map(part => Number(part.trim()));
+    const [min, max] = bounds.length > 1 ? bounds : step < 0 ? [bounds[0], NaN] : [NaN, bounds[0]];
     if (Number.isFinite(min) && value < min) {
         return min;
     }
@@ -427,8 +431,8 @@ function execute(def: ButtonDefinition, props: VisRxWidgetProps, data: ButtonDat
     } else if (def.kind === 'multiState') {
         writeMultiState(props, data, schedule);
     } else if (def.kind === 'addition') {
-        const nextValue = numeric(current, 0) + numeric(data.value, 0);
-        setStateValue(props, data.oid || '', clampByMinMax(nextValue, data.minmax));
+        const step = numeric(data.value, 0);
+        setStateValue(props, data.oid || '', clampByMinMax(numeric(current, 0) + step, data.minmax, step));
     } else if ((def.kind === 'toggle' || def.kind === 'slider') && !data.readOnly) {
         const onValue = def.kind === 'slider' ? numeric(data.valueOn, 100) : data.toggleType === 'value' ? parseActionValue(String(data.valueOn ?? true)) : true;
         const offValue = def.kind === 'slider' ? numeric(data.valueOff, 0) : data.toggleType === 'value' ? parseActionValue(String(data.valueOff ?? false)) : false;

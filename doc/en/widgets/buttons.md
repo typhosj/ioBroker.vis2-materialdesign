@@ -24,7 +24,7 @@ listed below are self-explanatory.
 - **Navigation** – target VIS 2 view to open.
 - **Link** – URL and *open in new window*.
 - **State** – object id and the value written on click.
-- **Addition** – increment (`+`/`-` step) with optional min / max clamp.
+- **Addition** – *value* is the step, a plain number to count up and a `-` prefix to count down. *Min/Max* clamps the result: `0;100` sets both ends, a single number bounds the direction of the step – with a step of `5`, `50` is the maximum; with a step of `-1`, `5` is the minimum. Empty means unbounded.
 - **Toggle** – *toggle type* (`boolean` or custom off / on value) and *push button* (write on press and release).
 
 **Label**
