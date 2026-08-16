@@ -32,15 +32,21 @@ Termindarstellung und Datumsformate haben eigene Gruppen:
 
 <img src="../../media/vis2_calendar_editor_2.png" width="340" alt="Kalender Termin- und Datumsformat">
 
-- **Termin-Überlappungsmodus** – wie gleichzeitige Termine angeordnet werden (gestapelt oder nebeneinander).
+- **Termin-Überlappungsmodus** – wie gleichzeitige Termine in Wochen- und
+  Tagesansicht angeordnet werden: *Spalte* teilt die Breite unter ihnen auf,
+  *Stapel* legt sie versetzt übereinander. In der Monatsansicht stehen Termine
+  ohnehin untereinander, dort wirkt die Einstellung nicht.
 - **Terminhöhe / Schriften** – Größe und Typografie der Termine.
 - **benutzerdefinierte Datumsformate** – je Ansicht Kopf- und Tagesformat mit Datums-Token (z. B. `dddd`, `D. MMMM`).
 
 Die Gruppen für Kopfzeile, Kalenderwochen, Bedienung und Zeitachse gestalten die
 übrige Kalenderoberfläche. Zwei Einstellungen dort sind nicht selbsterklärend:
 
-- **Kalenderwoche anzeigen** – im Monat eine KW-Spalte links, in der Woche die KW
-  über der Zeitachse.
+- **Kalenderwoche anzeigen** – im Monat eine KW-Spalte links, in Wochen- und
+  Tagesansicht die KW in der Ecke über der Zeitachse; Schrift und Farbe kommen
+  aus derselben Gruppe.
+- **… gehe zu** – die Tageszahl wechselt in die eingestellte Ansicht und nimmt
+  den angeklickten Tag mit.
 - **aktuelle Uhrzeit anzeigen / Farbe** – Linie auf der aktuellen Uhrzeit in
   Wochen- und Tagesansicht, minütlich nachgeführt.
 - **Zeitachse: Hintergrundfarbe / Kopf-Hintergrundfarbe** – die erste färbt die
