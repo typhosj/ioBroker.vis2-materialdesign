@@ -37,7 +37,12 @@ Termindarstellung und Datumsformate haben eigene Gruppen:
 - **benutzerdefinierte Datumsformate** – je Ansicht Kopf- und Tagesformat mit Datums-Token (z. B. `dddd`, `D. MMMM`).
 
 Die Gruppen für Kopfzeile, Kalenderwochen, Bedienung und Zeitachse gestalten die
-übrige Kalenderoberfläche.
+übrige Kalenderoberfläche. Zwei Einstellungen dort sind nicht selbsterklärend:
+
+- **Kalenderwoche anzeigen** – im Monat eine KW-Spalte links, in der Woche die KW
+  über der Zeitachse.
+- **aktuelle Uhrzeit anzeigen / Farbe** – Linie auf der aktuellen Uhrzeit in
+  Wochen- und Tagesansicht, minütlich nachgeführt.
 
 ```json
 [
@@ -52,3 +57,11 @@ Die Gruppen für Kopfzeile, Kalenderwochen, Bedienung und Zeitachse gestalten di
 ```
 
 Der State muss ein JSON-Array enthalten.
+
+## ICAL-Adapter
+
+Der State `ical.0.data.table` kann direkt verwendet werden. Das Widget liest die
+Feldnamen des ICAL-Adapters (`event`, `_date`, `_end`, `_allDay`, `_calColor`)
+ebenso wie das obige Format und rechnet dessen UTC-Zeitstempel in Ortszeit um.
+Ganztagestermine kommen von dort mit exklusivem Ende — der letzte Tag wird nicht
+mitgezählt, wie im Kalender selbst.
