@@ -117,6 +117,8 @@ Report current VIS 2 problems in the
 - (typhosj) Reworked the widget documentation with per-widget editor screenshots that expand the relevant option groups and describe every non-obvious setting (English and German)
 - (typhosj) Fixed six widget editor group headers (title, text, card action, linked value, striped, list header) that showed untranslated keys
 
+[Older changelog entries](CHANGELOG_OLD.md)
+
 ## License
 
 MIT License
