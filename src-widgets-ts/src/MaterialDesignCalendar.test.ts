@@ -3,12 +3,12 @@ import MaterialDesignCalendar, { calendarDayCount, calendarEvent, calendarEventH
 
 describe('MaterialDesignCalendar overlapping events', () => {
     it('gives overlapping events their own lane and leaves separate events full width', () => {
-        expect(calendarEventLanes([{ row: 0, span: 2 }, { row: 1, span: 2 }, { row: 6, span: 1 }])).toEqual([{ index: 0, total: 2 }, { index: 1, total: 2 }, { index: 0, total: 1 }]);
+        expect(calendarEventLanes([{ start: 0, finish: 120 }, { start: 60, finish: 180 }, { start: 360, finish: 420 }])).toEqual([{ index: 0, total: 2 }, { index: 1, total: 2 }, { index: 0, total: 1 }]);
     });
 
     it('reuses a lane that ended and counts the widest point of a cluster', () => {
-        // The short event frees lane 0 at row 1, so the event starting at row 2 takes it back.
-        expect(calendarEventLanes([{ row: 0, span: 4 }, { row: 0, span: 1 }, { row: 2, span: 2 }])).toEqual([{ index: 1, total: 2 }, { index: 0, total: 2 }, { index: 0, total: 2 }]);
+        // The short event frees lane 0 after an hour, so the event starting two hours in takes it back.
+        expect(calendarEventLanes([{ start: 0, finish: 240 }, { start: 0, finish: 60 }, { start: 120, finish: 240 }])).toEqual([{ index: 1, total: 2 }, { index: 0, total: 2 }, { index: 0, total: 2 }]);
     });
 });
 
@@ -160,19 +160,24 @@ describe('calendarEventSlot', () => {
         expect(calendarEventSlot({ start: '2026-07-23T19:00', end: '2026-07-23T20:00' }, window_.firstMinute, window_.endMinute, window_.intervalMinutes)).toBeNull();
     });
 
-    it('computes row/span for an event fully inside the window', () => {
-        const slot = calendarEventSlot({ start: '2026-07-23T09:00', end: '2026-07-23T11:00' }, window_.firstMinute, window_.endMinute, window_.intervalMinutes);
-        expect(slot).toEqual({ row: 1, span: 2, startMinute: 9 * 60 });
+    it('keeps the minutes of an event fully inside the window', () => {
+        const slot = calendarEventSlot({ start: '2026-07-23T09:30', end: '2026-07-23T11:00' }, window_.firstMinute, window_.endMinute, window_.intervalMinutes);
+        expect(slot).toEqual({ start: 9 * 60 + 30, finish: 11 * 60, startMinute: 9 * 60 + 30 });
     });
 
-    it('clips row/span to the visible window for an event that starts before it', () => {
+    it('clips to the visible window for an event that starts before it', () => {
         const slot = calendarEventSlot({ start: '2026-07-23T06:00', end: '2026-07-23T09:00' }, window_.firstMinute, window_.endMinute, window_.intervalMinutes);
-        expect(slot).toEqual({ row: 0, span: 1, startMinute: 6 * 60 });
+        expect(slot).toEqual({ start: 8 * 60, finish: 9 * 60, startMinute: 6 * 60 });
     });
 
-    it('gives a zero-length (all-day/missing-end) event at least a one-slot span', () => {
+    it('gives an event without an end one interval of length', () => {
         const slot = calendarEventSlot({ start: '2026-07-23T09:00' }, window_.firstMinute, window_.endMinute, window_.intervalMinutes);
-        expect(slot).toEqual({ row: 1, span: 1, startMinute: 9 * 60 });
+        expect(slot).toEqual({ start: 9 * 60, finish: 10 * 60, startMinute: 9 * 60 });
+    });
+
+    it('keeps a 15 minute event 15 minutes long instead of rounding it to an interval', () => {
+        const slot = calendarEventSlot({ start: '2026-07-23T09:15', end: '2026-07-23T09:30' }, window_.firstMinute, window_.endMinute, window_.intervalMinutes);
+        expect(slot).toEqual({ start: 9 * 60 + 15, finish: 9 * 60 + 30, startMinute: 9 * 60 + 15 });
     });
 });
 

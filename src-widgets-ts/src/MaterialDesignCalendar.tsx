@@ -53,21 +53,19 @@ export function calendarDayCount(reference: Date, view: string, firstWeekday: nu
     }
     return view === 'week' ? 7 : 1;
 }
-export function calendarEventSlot(event: Event, firstMinute: number, endMinute: number, intervalMinutes: number): { row: number; span: number; startMinute: number } | null {
+// Minutes, not rows: an event is drawn where its time is, so 08:30 starts half way down the 8 o'clock
+// hour instead of on the 08:00 line. Only an event without an end falls back to one interval.
+export function calendarEventSlot(event: Event, firstMinute: number, endMinute: number, intervalMinutes: number): { start: number; finish: number; startMinute: number } | null {
     const startMinute = eventMinutes(event.start, firstMinute);
-    const finishMinute = Math.max(startMinute + intervalMinutes, eventMinutes(event.end, startMinute + intervalMinutes));
+    const finishMinute = Math.max(startMinute + 1, eventMinutes(event.end, startMinute + intervalMinutes));
     if (finishMinute <= firstMinute || startMinute >= endMinute) return null;
-    const visibleStart = Math.max(startMinute, firstMinute);
-    const visibleFinish = Math.min(finishMinute, endMinute);
-    const row = Math.max(0, Math.floor((visibleStart - firstMinute) / intervalMinutes));
-    const span = Math.max(1, Math.ceil((visibleFinish - visibleStart) / intervalMinutes));
-    return { row, span, startMinute };
+    return { start: Math.max(startMinute, firstMinute), finish: Math.min(finishMinute, endMinute), startMinute };
 }
 // Events sharing a time range would cover each other, so every event gets its lane inside its overlap
 // cluster: `column` splits the day into `total` columns, `stack` offsets by the lane index.
-export function calendarEventLanes(slots: { row: number; span: number }[]): { index: number; total: number }[] {
+export function calendarEventLanes(slots: { start: number; finish: number }[]): { index: number; total: number }[] {
     const lanes = slots.map(() => ({ index: 0, total: 1 }));
-    const order = slots.map((slot, id) => ({ end: slot.row + slot.span, id, start: slot.row })).sort((a, b) => a.start - b.start || a.end - b.end);
+    const order = slots.map((slot, id) => ({ end: slot.finish, id, start: slot.start })).sort((a, b) => a.start - b.start || a.end - b.end);
     let cluster: typeof order = [];
     const close = (): void => {
         const total = cluster.reduce((max, item) => Math.max(max, lanes[item.id].index + 1), 1);
@@ -229,10 +227,16 @@ export default class MaterialDesignCalendar extends VisWidget {
                 const placed = source.filter(event => calendarEventOccursOnDate(event, iso)).map(event => ({ event, slot: calendarEventSlot(event, firstMinute, endMinute, intervalMinutes) })).filter((entry): entry is { event: Event; slot: NonNullable<ReturnType<typeof calendarEventSlot>> } => entry.slot !== null);
                 const lanes = calendarEventLanes(placed.map(entry => entry.slot));
                 return placed.map(({ event, slot }, eventIndex) => {
-                    const { row, span, startMinute } = slot;
+                    const { start: eventStart, finish, startMinute } = slot;
                     const { index, total } = lanes[eventIndex];
                     const width = stackEvents ? `calc(100% - ${index * 12 + 2}px)` : `calc(${100 / total}% - 2px)`;
-                    return <div className="v-event" key={`event-${iso}-${eventIndex}`} style={{ alignSelf: 'stretch', backgroundColor: s(event.color, eventBackground), borderRadius: eventRadius, color: eventText(event), fontFamily: s(d.calendarEventFont, 'inherit'), fontSize: px(d.calendarEventFontSize, 12), gridColumn: dayIndex + 2, gridRow: `${row + 1} / span ${Math.min(span, slotCount - row)}`, justifySelf: 'start', lineHeight: 1.3, marginBlock: 1, marginLeft: stackEvents ? index * 12 + 1 : `calc(${index * 100 / total}% + 1px)`, minHeight: 0, overflow: 'hidden', padding: '4px 8px', width, zIndex: 1 + index }}>{calendarEventHasTime(event.start) ? <div style={{ fontWeight: 700, marginBottom: 2 }}>{formatCalendarTime(startMinute, timeFormat, timeLocale)}</div> : null}<div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s(event.name)}</div></div>;
+                    // The box spans the whole day column and the event is placed inside it by time. The
+                    // grid rows are equal, so a share of the column height is a share of the day —
+                    // measured against the rows, which `ceil()` can push past the configured end time.
+                    const gridMinutes = slotCount * intervalMinutes;
+                    const top = (eventStart - firstMinute) / gridMinutes * 100;
+                    const height = (finish - eventStart) / gridMinutes * 100;
+                    return <div className="v-event-column" key={`event-${iso}-${eventIndex}`} style={{ gridColumn: dayIndex + 2, gridRow: `1 / span ${slotCount}`, minHeight: 0, pointerEvents: 'none', position: 'relative', zIndex: 1 + index }}><div className="v-event" style={{ backgroundColor: s(event.color, eventBackground), borderRadius: eventRadius, boxSizing: 'border-box', color: eventText(event), fontFamily: s(d.calendarEventFont, 'inherit'), fontSize: px(d.calendarEventFontSize, 12), height: `calc(${height}% - 2px)`, left: stackEvents ? index * 12 + 1 : `calc(${index * 100 / total}% + 1px)`, lineHeight: 1.3, minHeight: 14, overflow: 'hidden', padding: '4px 8px', pointerEvents: 'auto', position: 'absolute', top: `calc(${top}% + 1px)`, width }}>{calendarEventHasTime(event.start) ? <div style={{ fontWeight: 700, marginBottom: 2 }}>{formatCalendarTime(startMinute, timeFormat, timeLocale)}</div> : null}<div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s(event.name)}</div></div></div>;
                 });
             })}
             {nowSlot ? <div className="v-current-time" style={{ gridColumn: nowColumn + 2, gridRow: nowSlot.row + 1, pointerEvents: 'none', position: 'relative', zIndex: 2 }}><div style={{ background: s(d.calendarNowIndicatorColor, '#ea4335'), height: 2, left: 0, position: 'absolute', right: 0, top: `${nowSlot.share * 100}%` }} /></div> : null}
