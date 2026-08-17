@@ -68,6 +68,19 @@ export const calendarEventOccursOnDate = (event: Event, date: string): boolean =
     // one-day fallback.
     return rawEnd && end > start && eventMinutes(rawEnd) === 0 ? date < end : date <= end;
 };
+// Where one event sits inside one day column, in minutes from midnight, clipped to the visible range.
+// A timed event running over midnight keeps its clock times, so on every day it continues into, start
+// and end belong to another day - 23:00-01:00 would otherwise be drawn at 23:00 on both days. Such a
+// day gets the part of the event that falls into it. All-day rows carry no time and keep the
+// one-interval fallback.
+export function calendarEventSlot(event: Event, iso: string, firstMinute: number, endMinute: number, intervalMinutes: number): { finish: number; start: number; startMinute: number } | null {
+    const startMinute = eventMinutes(event.start, firstMinute);
+    const timed = calendarEventHasTime(event.start);
+    const from = timed && s(event.start).slice(0, 10) < iso ? 0 : startMinute;
+    const to = timed && s(event.end).slice(0, 10) > iso ? endMinute : Math.max(from + 1, eventMinutes(event.end, from + intervalMinutes));
+    if (to <= firstMinute || from >= endMinute) return null;
+    return { finish: Math.min(to, endMinute), start: Math.max(from, firstMinute), startMinute };
+}
 export function formatCalendarTime(minutes: number, mode = 'locale', locale?: string): string {
     const normalized = ((Math.floor(minutes) % 1440) + 1440) % 1440;
     const hours = Math.floor(normalized / 60);
@@ -181,10 +194,8 @@ export default class MaterialDesignCalendar extends VisWidget {
                 // the 8 o'clock hour instead of on the 08:00 line, and a 15 minute event stays short.
                 // Only an event without an end falls back to one interval.
                 const placed = source.filter(event => calendarEventOccursOnDate(event, iso)).map(event => {
-                    const startMinute = eventMinutes(event.start, firstMinute);
-                    const finishMinute = Math.max(startMinute + 1, eventMinutes(event.end, startMinute + intervalMinutes));
-                    if (finishMinute <= firstMinute || startMinute >= endMinute) return null;
-                    return { event, start: Math.max(startMinute, firstMinute), finish: Math.min(finishMinute, endMinute), startMinute };
+                    const slot = calendarEventSlot(event, iso, firstMinute, endMinute, intervalMinutes);
+                    return slot ? { event, ...slot } : null;
                 }).filter(entry => entry !== null);
                 const lanes = calendarEventLanes(placed);
                 return placed.map(({ event, start: eventStart, finish, startMinute }, eventIndex) => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import MaterialDesignCalendar, { calendarEvent, calendarEventHasTime, calendarEventLanes, calendarEventOccursOnDate, eventMinutes, formatCalendarShortTime, formatCalendarTime, formatMoment, localTimestamp } from './MaterialDesignCalendar';
+import MaterialDesignCalendar, { calendarEvent, calendarEventHasTime, calendarEventLanes, calendarEventOccursOnDate, calendarEventSlot, eventMinutes, formatCalendarShortTime, formatCalendarTime, formatMoment, localTimestamp } from './MaterialDesignCalendar';
 
 describe('MaterialDesignCalendar overlapping events', () => {
     it('gives overlapping events their own lane and leaves separate events full width', () => {
@@ -9,6 +9,33 @@ describe('MaterialDesignCalendar overlapping events', () => {
     it('reuses a lane that ended and counts the widest point of a cluster', () => {
         // The short event frees lane 0 after an hour, so the event starting two hours in takes it back.
         expect(calendarEventLanes([{ start: 0, finish: 240 }, { start: 0, finish: 60 }, { start: 120, finish: 240 }])).toEqual([{ index: 1, total: 2 }, { index: 0, total: 2 }, { index: 0, total: 2 }]);
+    });
+});
+
+describe('MaterialDesignCalendar event placement', () => {
+    // 08:00 to 24:00 in one-hour rows.
+    const slot = (event: { start?: string; end?: string }, iso: string): unknown => calendarEventSlot(event, iso, 480, 1440, 60);
+
+    it('places a timed event by its minutes', () => {
+        expect(slot({ start: '2026-08-17T08:30', end: '2026-08-17T08:45' }, '2026-08-17')).toEqual({ start: 510, finish: 525, startMinute: 510 });
+    });
+
+    it('gives each day of an event over midnight its own part', () => {
+        const night = { start: '2026-08-17T23:00', end: '2026-08-18T01:00' };
+        const fullDay = (event: { start?: string; end?: string }, iso: string): unknown => calendarEventSlot(event, iso, 0, 1440, 60);
+        // First day runs to midnight, the second one from midnight instead of at 23:00 again.
+        expect(fullDay(night, '2026-08-17')).toEqual({ start: 1380, finish: 1440, startMinute: 1380 });
+        expect(fullDay(night, '2026-08-18')).toEqual({ start: 0, finish: 60, startMinute: 1380 });
+        // ... and the second day's part is gone when the axis starts after it.
+        expect(slot(night, '2026-08-18')).toBeNull();
+    });
+
+    it('keeps the one-interval fallback for rows without a time', () => {
+        expect(slot({ start: '2026-08-17', end: '2026-08-19' }, '2026-08-18')).toEqual({ start: 480, finish: 540, startMinute: 480 });
+    });
+
+    it('drops an event outside the visible time range', () => {
+        expect(slot({ start: '2026-08-17T05:00', end: '2026-08-17T06:00' }, '2026-08-17')).toBeNull();
     });
 });
 
