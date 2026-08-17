@@ -3,12 +3,12 @@ import MaterialDesignCalendar, { calendarEvent, calendarEventHasTime, calendarEv
 
 describe('MaterialDesignCalendar overlapping events', () => {
     it('gives overlapping events their own lane and leaves separate events full width', () => {
-        expect(calendarEventLanes([{ row: 0, span: 2 }, { row: 1, span: 2 }, { row: 6, span: 1 }])).toEqual([{ index: 0, total: 2 }, { index: 1, total: 2 }, { index: 0, total: 1 }]);
+        expect(calendarEventLanes([{ start: 0, finish: 120 }, { start: 60, finish: 180 }, { start: 360, finish: 420 }])).toEqual([{ index: 0, total: 2 }, { index: 1, total: 2 }, { index: 0, total: 1 }]);
     });
 
     it('reuses a lane that ended and counts the widest point of a cluster', () => {
-        // The short event frees lane 0 at row 1, so the event starting at row 2 takes it back.
-        expect(calendarEventLanes([{ row: 0, span: 4 }, { row: 0, span: 1 }, { row: 2, span: 2 }])).toEqual([{ index: 1, total: 2 }, { index: 0, total: 2 }, { index: 0, total: 2 }]);
+        // The short event frees lane 0 after an hour, so the event starting two hours in takes it back.
+        expect(calendarEventLanes([{ start: 0, finish: 240 }, { start: 0, finish: 60 }, { start: 120, finish: 240 }])).toEqual([{ index: 1, total: 2 }, { index: 0, total: 2 }, { index: 0, total: 2 }]);
     });
 });
 

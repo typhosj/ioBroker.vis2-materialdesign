@@ -37,9 +37,9 @@ export const eventMinutes = (value: unknown, fallback = 0): number => {
 };
 // Events sharing a time range would cover each other, so every event gets its lane inside its overlap
 // cluster: `column` splits the day into `total` columns, `stack` offsets by the lane index.
-export function calendarEventLanes(slots: { row: number; span: number }[]): { index: number; total: number }[] {
+export function calendarEventLanes(slots: { start: number; finish: number }[]): { index: number; total: number }[] {
     const lanes = slots.map(() => ({ index: 0, total: 1 }));
-    const order = slots.map((slot, id) => ({ end: slot.row + slot.span, id, start: slot.row })).sort((a, b) => a.start - b.start || a.end - b.end);
+    const order = slots.map((slot, id) => ({ end: slot.finish, id, start: slot.start })).sort((a, b) => a.start - b.start || a.end - b.end);
     let cluster: typeof order = [];
     const close = (): void => {
         const total = cluster.reduce((max, item) => Math.max(max, lanes[item.id].index + 1), 1);
@@ -177,19 +177,26 @@ export default class MaterialDesignCalendar extends VisWidget {
                 return <React.Fragment key={`slot-${minute}`}><div style={{ alignItems: 'flex-end', background: s(d.calendarTimeAxisBackgroundColor, 'transparent'), boxSizing: 'border-box', display: 'flex', gridColumn: 1, gridRow: slot + 1, justifyContent: 'flex-end' }}>{showLabel ? <div className="v-calendar-daily__interval-text" style={{ boxSizing: 'border-box', color: s(d.calendarTimeAxisFontColor, isDark ? '#fff' : '#000'), fontFamily: s(d.calendarTimeAxisFont, 'inherit'), fontSize: px(d.calendarTimeAxisFontSize, 12), paddingRight: 4, textAlign: 'right', transform: 'translateY(50%)', width: timeAxisWidth - 8 }}>{formatCalendarTime(labelMinute, timeFormat, timeLocale)}</div> : null}</div>{gridDays.map(({ iso }, dayIndex) => <div className="v-calendar-daily__day-interval" key={`${iso}-${minute}`} style={{ background: s(d.calendarDayBackgroundColor, 'transparent'), borderLeft: dayIndex === 0 ? 0 : undefined, borderRight: `1px solid ${s(d.calendarBorderColor, '#e0e0e0')}`, borderTop: `1px solid ${s(d.calendarBorderColor, '#e0e0e0')}`, gridColumn: dayIndex + 2, gridRow: slot + 1 }} />)}</React.Fragment>;
             })}
             {gridDays.flatMap(({ iso }, dayIndex) => {
+                // Minutes, not rows: an event is drawn where its time is, so 08:30 starts half way down
+                // the 8 o'clock hour instead of on the 08:00 line, and a 15 minute event stays short.
+                // Only an event without an end falls back to one interval.
                 const placed = source.filter(event => calendarEventOccursOnDate(event, iso)).map(event => {
                     const startMinute = eventMinutes(event.start, firstMinute);
-                    const finishMinute = Math.max(startMinute + intervalMinutes, eventMinutes(event.end, startMinute + intervalMinutes));
+                    const finishMinute = Math.max(startMinute + 1, eventMinutes(event.end, startMinute + intervalMinutes));
                     if (finishMinute <= firstMinute || startMinute >= endMinute) return null;
-                    const visibleStart = Math.max(startMinute, firstMinute);
-                    const visibleFinish = Math.min(finishMinute, endMinute);
-                    return { event, row: Math.max(0, Math.floor((visibleStart - firstMinute) / intervalMinutes)), span: Math.max(1, Math.ceil((visibleFinish - visibleStart) / intervalMinutes)), startMinute };
+                    return { event, start: Math.max(startMinute, firstMinute), finish: Math.min(finishMinute, endMinute), startMinute };
                 }).filter(entry => entry !== null);
                 const lanes = calendarEventLanes(placed);
-                return placed.map(({ event, row, span, startMinute }, eventIndex) => {
+                return placed.map(({ event, start: eventStart, finish, startMinute }, eventIndex) => {
                     const { index, total } = lanes[eventIndex];
                     const width = stackEvents ? `calc(100% - ${index * 12 + 2}px)` : `calc(${100 / total}% - 2px)`;
-                    return <div className="v-event" key={`event-${iso}-${eventIndex}`} style={{ alignSelf: 'stretch', backgroundColor: s(event.color, '#44739e'), color: s(event.colorText, '#fff'), fontFamily: s(d.calendarEventFont, 'inherit'), fontSize: px(d.calendarEventFontSize, 12), gridColumn: dayIndex + 2, gridRow: `${row + 1} / span ${Math.min(span, slotCount - row)}`, justifySelf: 'start', lineHeight: 1.3, marginBlock: 1, marginLeft: stackEvents ? index * 12 + 1 : `calc(${index * 100 / total}% + 1px)`, minHeight: 0, overflow: 'hidden', padding: '4px 8px', width, zIndex: 1 + index }}>{calendarEventHasTime(event.start) ? <div style={{ fontWeight: 700, marginBottom: 2 }}>{formatCalendarTime(startMinute, timeFormat, timeLocale)}</div> : null}<div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s(event.name)}</div></div>;
+                    // The box spans the whole day column and the event is placed inside it by time. The
+                    // grid rows are equal, so a share of the column height is a share of the day —
+                    // measured against the rows, which `ceil()` can push past the configured end time.
+                    const gridMinutes = slotCount * intervalMinutes;
+                    const top = (eventStart - firstMinute) / gridMinutes * 100;
+                    const height = (finish - eventStart) / gridMinutes * 100;
+                    return <div className="v-event-column" key={`event-${iso}-${eventIndex}`} style={{ gridColumn: dayIndex + 2, gridRow: `1 / span ${slotCount}`, minHeight: 0, pointerEvents: 'none', position: 'relative', zIndex: 1 + index }}><div className="v-event" style={{ backgroundColor: s(event.color, '#44739e'), boxSizing: 'border-box', color: s(event.colorText, '#fff'), fontFamily: s(d.calendarEventFont, 'inherit'), fontSize: px(d.calendarEventFontSize, 12), height: `calc(${height}% - 2px)`, left: stackEvents ? index * 12 + 1 : `calc(${index * 100 / total}% + 1px)`, lineHeight: 1.3, minHeight: 14, overflow: 'hidden', padding: '4px 8px', pointerEvents: 'auto', position: 'absolute', top: `calc(${top}% + 1px)`, width }}>{calendarEventHasTime(event.start) ? <div style={{ fontWeight: 700, marginBottom: 2 }}>{formatCalendarTime(startMinute, timeFormat, timeLocale)}</div> : null}<div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s(event.name)}</div></div></div>;
                 });
             })}
             {nowSlot ? <div className="v-current-time" style={{ gridColumn: nowColumn + 2, gridRow: nowSlot.row + 1, pointerEvents: 'none', position: 'relative', zIndex: 2 }}><div style={{ background: s(d.calendarNowIndicatorColor, '#ea4335'), height: 2, left: 0, position: 'absolute', right: 0, top: `${nowSlot.share * 100}%` }} /></div> : null}
