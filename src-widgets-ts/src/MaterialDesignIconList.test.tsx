@@ -26,3 +26,16 @@ describe('icon list SVG coloring', () => {
         expect(html).toContain('#ff0000');
     });
 });
+
+describe('icon list box layout', () => {
+    const list = { countListItems: 1, listType0: 'text', text0: 'row' };
+
+    it('moves the header with its alignment and leaves it its room', () => {
+        // The header row is a flex container, so `text-align` alone never moved it, and the card
+        // below measured itself against the whole widget box - one header height too tall.
+        const html = render({ ...list, headers: 'head', alignment: 'center', cardUse: true });
+        expect(html).toContain('justify-content:center');
+        expect(html).not.toContain('height:calc(100% - 6px)');
+        expect(html).toContain('flex:0 0 auto');
+    });
+});

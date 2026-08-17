@@ -54,6 +54,14 @@ describe('list styling attributes', () => {
         expect(card).toContain('.materialdesign-list-card--outlined{border:1px solid rgba(0,0,0,.12);box-shadow:none}');
     });
 
+    it('leaves the header its room instead of measuring the list against the whole box', () => {
+        // Header and list are siblings: a list of `height:100%` hangs one header out of the widget box.
+        const card = render({ ...row, headers: 'head', listLayout: 'card' });
+        expect(card).toContain('.materialdesign-list-card{background');
+        expect(card).not.toContain('height:calc(100% - 8px)');
+        expect(card).toContain('flex:1 1 auto');
+    });
+
     it('paints the list background the color group asks for', () => {
         expect(render({ ...row, listBackground: 'rgb(1,2,3)' })).toContain('background:rgb(1,2,3)');
     });
