@@ -53,13 +53,19 @@ export function calendarDayCount(reference: Date, view: string, firstWeekday: nu
     }
     return view === 'week' ? 7 : 1;
 }
+export const calendarEventHasTime = (value: unknown): boolean => /(?:T|\s)\d{1,2}:\d{2}/.test(s(value));
 // Minutes, not rows: an event is drawn where its time is, so 08:30 starts half way down the 8 o'clock
 // hour instead of on the 08:00 line. Only an event without an end falls back to one interval.
-export function calendarEventSlot(event: Event, firstMinute: number, endMinute: number, intervalMinutes: number): { start: number; finish: number; startMinute: number } | null {
+// A timed event running over midnight keeps its clock times, so on every day it continues into, start
+// and end belong to another day - 23:00-01:00 would otherwise be drawn at 23:00 on both days. Such a
+// day gets the part of the event that falls into it. All-day rows carry no time and keep the fallback.
+export function calendarEventSlot(event: Event, iso: string, firstMinute: number, endMinute: number, intervalMinutes: number): { start: number; finish: number; startMinute: number } | null {
     const startMinute = eventMinutes(event.start, firstMinute);
-    const finishMinute = Math.max(startMinute + 1, eventMinutes(event.end, startMinute + intervalMinutes));
-    if (finishMinute <= firstMinute || startMinute >= endMinute) return null;
-    return { start: Math.max(startMinute, firstMinute), finish: Math.min(finishMinute, endMinute), startMinute };
+    const timed = calendarEventHasTime(event.start);
+    const from = timed && s(event.start).slice(0, 10) < iso ? 0 : startMinute;
+    const finishMinute = timed && s(event.end).slice(0, 10) > iso ? endMinute : Math.max(from + 1, eventMinutes(event.end, from + intervalMinutes));
+    if (finishMinute <= firstMinute || from >= endMinute) return null;
+    return { start: Math.max(from, firstMinute), finish: Math.min(finishMinute, endMinute), startMinute };
 }
 // Events sharing a time range would cover each other, so every event gets its lane inside its overlap
 // cluster: `column` splits the day into `total` columns, `stack` offsets by the lane index.
@@ -83,7 +89,6 @@ export function calendarEventLanes(slots: { start: number; finish: number }[]): 
     close();
     return lanes;
 }
-export const calendarEventHasTime = (value: unknown): boolean => /(?:T|\s)\d{1,2}:\d{2}/.test(s(value));
 export const calendarEventOccursOnDate = (event: Event, date: string): boolean => {
     const start = s(event.start).slice(0, 10);
     const rawEnd = s(event.end);
@@ -224,7 +229,7 @@ export default class MaterialDesignCalendar extends VisWidget {
                 return <React.Fragment key={`slot-${minute}`}><div style={{ alignItems: 'flex-end', background: s(d.calendarTimeAxisBackgroundColor, 'transparent'), boxSizing: 'border-box', display: 'flex', gridColumn: 1, gridRow: slot + 1, justifyContent: 'flex-end' }}>{showLabel ? <div className="v-calendar-daily__interval-text" style={{ boxSizing: 'border-box', color: timeAxisFontColor, fontFamily: s(d.calendarTimeAxisFont, 'inherit'), fontSize: px(d.calendarTimeAxisFontSize, 12), paddingRight: 4, textAlign: 'right', transform: 'translateY(50%)', width: timeAxisWidth - 8 }}>{formatCalendarTime(labelMinute, timeFormat, timeLocale)}</div> : null}</div>{gridDays.map(({ iso }, dayIndex) => <div className="v-calendar-daily__day-interval" key={`${iso}-${minute}`} style={{ background: s(d.calendarDayBackgroundColor, 'transparent'), borderLeft: dayIndex === 0 ? 0 : undefined, borderRight: `1px solid ${borderColor}`, borderTop: `1px solid ${borderColor}`, gridColumn: dayIndex + 2, gridRow: slot + 1 }} />)}</React.Fragment>;
             })}
             {gridDays.flatMap(({ iso }, dayIndex) => {
-                const placed = source.filter(event => calendarEventOccursOnDate(event, iso)).map(event => ({ event, slot: calendarEventSlot(event, firstMinute, endMinute, intervalMinutes) })).filter((entry): entry is { event: Event; slot: NonNullable<ReturnType<typeof calendarEventSlot>> } => entry.slot !== null);
+                const placed = source.filter(event => calendarEventOccursOnDate(event, iso)).map(event => ({ event, slot: calendarEventSlot(event, iso, firstMinute, endMinute, intervalMinutes) })).filter((entry): entry is { event: Event; slot: NonNullable<ReturnType<typeof calendarEventSlot>> } => entry.slot !== null);
                 const lanes = calendarEventLanes(placed.map(entry => entry.slot));
                 return placed.map(({ event, slot }, eventIndex) => {
                     const { start: eventStart, finish, startMinute } = slot;

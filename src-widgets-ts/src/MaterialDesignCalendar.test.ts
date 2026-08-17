@@ -156,27 +156,42 @@ describe('calendarEventSlot', () => {
     const window_ = { firstMinute: 8 * 60, endMinute: 18 * 60, intervalMinutes: 60 };
 
     it('returns null when the event ends before or starts after the visible window', () => {
-        expect(calendarEventSlot({ start: '2026-07-23T05:00', end: '2026-07-23T06:00' }, window_.firstMinute, window_.endMinute, window_.intervalMinutes)).toBeNull();
-        expect(calendarEventSlot({ start: '2026-07-23T19:00', end: '2026-07-23T20:00' }, window_.firstMinute, window_.endMinute, window_.intervalMinutes)).toBeNull();
+        expect(calendarEventSlot({ start: '2026-07-23T05:00', end: '2026-07-23T06:00' }, '2026-07-23', window_.firstMinute, window_.endMinute, window_.intervalMinutes)).toBeNull();
+        expect(calendarEventSlot({ start: '2026-07-23T19:00', end: '2026-07-23T20:00' }, '2026-07-23', window_.firstMinute, window_.endMinute, window_.intervalMinutes)).toBeNull();
     });
 
     it('keeps the minutes of an event fully inside the window', () => {
-        const slot = calendarEventSlot({ start: '2026-07-23T09:30', end: '2026-07-23T11:00' }, window_.firstMinute, window_.endMinute, window_.intervalMinutes);
+        const slot = calendarEventSlot({ start: '2026-07-23T09:30', end: '2026-07-23T11:00' }, '2026-07-23', window_.firstMinute, window_.endMinute, window_.intervalMinutes);
         expect(slot).toEqual({ start: 9 * 60 + 30, finish: 11 * 60, startMinute: 9 * 60 + 30 });
     });
 
     it('clips to the visible window for an event that starts before it', () => {
-        const slot = calendarEventSlot({ start: '2026-07-23T06:00', end: '2026-07-23T09:00' }, window_.firstMinute, window_.endMinute, window_.intervalMinutes);
+        const slot = calendarEventSlot({ start: '2026-07-23T06:00', end: '2026-07-23T09:00' }, '2026-07-23', window_.firstMinute, window_.endMinute, window_.intervalMinutes);
         expect(slot).toEqual({ start: 8 * 60, finish: 9 * 60, startMinute: 6 * 60 });
     });
 
     it('gives an event without an end one interval of length', () => {
-        const slot = calendarEventSlot({ start: '2026-07-23T09:00' }, window_.firstMinute, window_.endMinute, window_.intervalMinutes);
+        const slot = calendarEventSlot({ start: '2026-07-23T09:00' }, '2026-07-23', window_.firstMinute, window_.endMinute, window_.intervalMinutes);
         expect(slot).toEqual({ start: 9 * 60, finish: 10 * 60, startMinute: 9 * 60 });
     });
 
+    it('gives each day of an event over midnight its own part', () => {
+        const night = { start: '2026-07-23T23:00', end: '2026-07-24T01:00' };
+        const fullDay = (iso: string): unknown => calendarEventSlot(night, iso, 0, 1440, 60);
+        // First day runs to midnight, the second one from midnight instead of at 23:00 again.
+        expect(fullDay('2026-07-23')).toEqual({ start: 23 * 60, finish: 1440, startMinute: 23 * 60 });
+        expect(fullDay('2026-07-24')).toEqual({ start: 0, finish: 60, startMinute: 23 * 60 });
+        // ... and the second day's part is gone when the time axis starts after it.
+        expect(calendarEventSlot(night, '2026-07-24', window_.firstMinute, window_.endMinute, window_.intervalMinutes)).toBeNull();
+    });
+
+    it('keeps the one-interval fallback for an all-day row without a time', () => {
+        expect(calendarEventSlot({ start: '2026-07-22', end: '2026-07-25' }, '2026-07-23', window_.firstMinute, window_.endMinute, window_.intervalMinutes))
+            .toEqual({ start: 8 * 60, finish: 9 * 60, startMinute: 8 * 60 });
+    });
+
     it('keeps a 15 minute event 15 minutes long instead of rounding it to an interval', () => {
-        const slot = calendarEventSlot({ start: '2026-07-23T09:15', end: '2026-07-23T09:30' }, window_.firstMinute, window_.endMinute, window_.intervalMinutes);
+        const slot = calendarEventSlot({ start: '2026-07-23T09:15', end: '2026-07-23T09:30' }, '2026-07-23', window_.firstMinute, window_.endMinute, window_.intervalMinutes);
         expect(slot).toEqual({ start: 9 * 60 + 15, finish: 9 * 60 + 30, startMinute: 9 * 60 + 15 });
     });
 });
