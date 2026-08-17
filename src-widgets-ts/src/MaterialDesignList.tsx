@@ -123,10 +123,11 @@ const listCss = '.materialdesign-list .mdc-list{list-style:none;margin:0;padding
     + '.materialdesign-list .mdc-list-item__graphic{flex-shrink:0;display:inline-flex;align-items:center;width:auto!important;height:auto!important;overflow:visible}'
     // `listLayout: card`/`cardOutlined` set this class but the geometry came from ambient legacy VIS1
     // CSS that is gone, so both card layouts rendered identical to `standard`.
-    // The 3 px inset is not decoration: the card filled the widget box edge to edge, and VIS2 clips
+    // The 4 px inset is not decoration: the card filled the widget box edge to edge, and VIS2 clips
     // there (`.vis-widget` is `overflow: hidden`), so the shadow was entirely outside the visible
-    // area and the outlined variant lost its bottom border.
-    + '.materialdesign-list .materialdesign-list-card{background:var(--materialdesign-color-card-background,#fff);border-radius:4px;box-shadow:0 2px 1px -1px rgba(0,0,0,.2),0 1px 1px 0 rgba(0,0,0,.14),0 1px 3px 0 rgba(0,0,0,.12);box-sizing:border-box;margin:3px;height:calc(100% - 6px);overflow:hidden}'
+    // area and the outlined variant lost its bottom border. It has to clear the 4 px the elevation
+    // shadow reaches below the card, otherwise `card` and `cardOutlined` look alike again.
+    + '.materialdesign-list .materialdesign-list-card{background:var(--materialdesign-color-card-background,#fff);border-radius:4px;box-shadow:0 2px 1px -1px rgba(0,0,0,.2),0 1px 1px 0 rgba(0,0,0,.14),0 1px 3px 0 rgba(0,0,0,.12);box-sizing:border-box;margin:4px;height:calc(100% - 8px);overflow:hidden}'
     + '.materialdesign-list .materialdesign-list-card--outlined{border:1px solid rgba(0,0,0,.12);box-shadow:none}'
     + '.materialdesign-list.mdw-style-material3 .materialdesign-list-card{border-radius:var(--md-sys-shape-corner-medium);box-shadow:var(--md-sys-elevation-level1)}'
     + '.materialdesign-list.mdw-style-material3 .materialdesign-list-card--outlined{background:var(--md-sys-color-surface);border:1px solid var(--md-sys-color-outline-variant);box-shadow:none}';
@@ -158,6 +159,6 @@ export default class MaterialDesignList extends VisWidget {
         // The row is a flex container, so `text-align` alone never moved anything: without
         // `justify-content` the header stayed glued to the left whatever the alignment said.
         const header = s(data.headers) ? <div className="materialdesign-list-header-container" style={{ height: headerHeight, marginBottom: -5, overflow: 'hidden', position: 'relative' }}><div className="materialdesign-html-card-container mdc-card" style={{ alignItems: 'center', background: 'transparent', display: 'flex', height: headerHeight + 5, justifyContent: s(data.alignment, 'flex-start'), margin: '8px 3px 3px', padding: `${n(data.header_padding_top, 6)}px ${n(data.header_padding_right, 16)}px ${n(data.header_padding_bottom, 20)}px ${n(data.header_padding_left, 16)}px`, textAlign: s(data.alignment, 'flex-start').replace('flex-', '') as React.CSSProperties['textAlign'] }}>{headerImageRight ? [headerTextNode, headerIconNode] : [headerIconNode, headerTextNode]}</div></div> : null;
-        const list = s(data.listLayout, 'standard') === 'standard' ? content : <div className={`materialdesign-list-card${s(data.listLayout) === 'cardOutlined' ? ' materialdesign-list-card--outlined' : ''}`}>{content}</div>; return <div className={`materialdesign-widget materialdesign-list${isM3 ? ` ${designStyleClasses(data, this.isDarkTheme())}` : ''}`} style={{ ...vars, ['--materialdesign-list-item-height' as string]: n(data.listItemHeight) ? `${n(data.listItemHeight)}px` : undefined, height: '100%', width: '100%' }}><style>{listCss}</style>{header}{list}</div>;
+        const list = s(data.listLayout, 'standard') === 'standard' ? content : <div className={`materialdesign-list-card${s(data.listLayout) === 'cardOutlined' ? ' materialdesign-list-card--outlined' : ''}`}>{content}</div>; return <div className={`materialdesign-widget materialdesign-list${isM3 ? ` ${designStyleClasses(data, this.isDarkTheme())}` : ''}`} style={{ ...vars, ['--materialdesign-list-item-height' as string]: n(data.listItemHeight) ? `${n(data.listItemHeight)}px` : undefined, background: s(data.listBackground) || undefined, height: '100%', width: '100%' }}><style>{listCss}</style>{header}{list}</div>;
     }
 }
