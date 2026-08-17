@@ -64,6 +64,7 @@ describe('top app bar dynamic items', () => {
         wrapper.style.zIndex = '5';
         applyRef(closed, root);
         expect(wrapper.style.zIndex).toBe('5');
+        expect(wrapper.style.pointerEvents).toBe('none');
 
         (widget as unknown as { open: boolean }).open = true;
         const open = widget.renderWidgetBody(fixture<Parameters<MaterialDesignTopAppBar['renderWidgetBody']>[0]>({})) as React.ReactElement<Record<string, unknown>>;
@@ -75,6 +76,11 @@ describe('top app bar dynamic items', () => {
         (widget as unknown as { open: boolean }).open = false;
         applyRef(widget.renderWidgetBody(fixture<Parameters<MaterialDesignTopAppBar['renderWidgetBody']>[0]>({})) as React.ReactElement, root);
         expect(wrapper.style.zIndex).toBe('5');
+
+        const editor = new MaterialDesignTopAppBar(fixture<ConstructorParameters<typeof MaterialDesignTopAppBar>[0]>({ context: {}, editMode: true }));
+        editor.state = fixture<typeof editor.state>({ rxData: { navItemCount: 1, labels0: 'Alpha' }, values: {} });
+        applyRef(editor.renderWidgetBody(fixture<Parameters<MaterialDesignTopAppBar['renderWidgetBody']>[0]>({})) as React.ReactElement, root);
+        expect(wrapper.style.pointerEvents).toBe('');
     });
 
     it('bounds JSON input and renders a visible error item for malformed data', () => {
