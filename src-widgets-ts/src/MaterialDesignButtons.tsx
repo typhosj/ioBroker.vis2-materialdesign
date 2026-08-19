@@ -683,9 +683,15 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
             const fgExplicit = on ? m3ColorExplicit(data.imageTrueColor) || m3ColorExplicit(data.mdwButtonSecondaryColor) : m3ColorExplicit(data.mdwButtonSecondaryColor) || m3ColorExplicit(data.imageColor);
             const labelExplicit = m3ColorExplicit(on ? data.labelColorTrue : data.labelColorFalse);
             const iconColor = isM3 && !fgExplicit ? 'currentColor' : secondary;
+            // `colorize`: the icon dims with the slider value. A brightness filter does that for
+            // every icon and image alike, without parsing the configured color or an M3 token.
+            const colorizeFactor = Math.max(0, Math.min(1, numeric(data.colorizeFactor, 0.5)));
+            const icon = data.colorize && def.kind === 'slider'
+                ? <span style={{ display: 'inline-flex', filter: `brightness(${1 - colorizeFactor + colorizeFactor * sliderRatio})` }}>{renderIcon(image, iconColor, iconSize, imageColorSet)}</span>
+                : renderIcon(image, iconColor, iconSize, imageColorSet);
             const content = (
                 <>
-                    {renderIcon(image, iconColor, iconSize, imageColorSet)}
+                    {icon}
                     {!isIcon ? (
                         <span
                             style={{

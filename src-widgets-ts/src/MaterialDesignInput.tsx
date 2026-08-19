@@ -371,6 +371,7 @@ export function outlinedNotchWidth(label: string, labelFontSize: unknown, labelF
 
 export default class MaterialDesignInput extends VisWidget {
     private focused = false;
+    private fieldHovered = false;
     private localValue: string | undefined;
     private seenStateValue: ioBroker.StateValue | undefined;
     private readonly rootRef = React.createRef<HTMLDivElement>();
@@ -439,13 +440,16 @@ export default class MaterialDesignInput extends VisWidget {
                 : themeColor(data.inputLayoutBorderColorSelected, '#44739e');
         const borderColor = this.focused ? activeBorderColor : inactiveBorderColor;
         const m3FilledBg = layout.includes('filled') ? 'var(--md-sys-color-surface-container-high)' : 'transparent';
+        // Resting -> hover -> focused. The hover stage only applies when a color was set for it.
         const bg = this.focused
             ? isM3 && !m3ColorExplicit(data.inputLayoutBackgroundColorSelected)
                 ? m3FilledBg
                 : cleanColor(data.inputLayoutBackgroundColorSelected, 'transparent')
-            : isM3 && !m3ColorExplicit(data.inputLayoutBackgroundColor)
-              ? m3FilledBg
-              : cleanColor(data.inputLayoutBackgroundColor, 'transparent');
+            : this.fieldHovered && m3ColorExplicit(data.inputLayoutBackgroundColorHover)
+              ? cleanColor(data.inputLayoutBackgroundColorHover, 'transparent')
+              : isM3 && !m3ColorExplicit(data.inputLayoutBackgroundColor)
+                ? m3FilledBg
+                : cleanColor(data.inputLayoutBackgroundColor, 'transparent');
         const labelColor = this.focused
             ? isM3 && !m3ColorExplicit(data.inputLabelColorSelected)
                 ? 'var(--md-sys-color-primary)'
@@ -465,7 +469,10 @@ export default class MaterialDesignInput extends VisWidget {
                 : themeColor(data.inputAppendixColor, 'rgba(0, 0, 0, 0.6)');
         const enclosed = layout.includes('outlined') || layout.includes('solo');
         const filled = layout.includes('filled');
-        const hasDetails = !!data.inputMessage || !!data.showInputCounter;
+        // `showInputMessageAlways` follows Vuetify's persistent-hint: off, the hint only shows while
+        // the field is focused.
+        const showMessage = !!data.inputMessage && (data.showInputMessageAlways !== false || this.focused);
+        const hasDetails = showMessage || !!data.showInputCounter;
         const slotMinHeight = enclosed || filled ? 40 : 32;
         const labelTranslateY = activeLabelTranslateY(data.inputTranslateY);
         // A prepend-inner icon shifts the text slot right; the floating label has to be shifted back by
@@ -490,6 +497,8 @@ export default class MaterialDesignInput extends VisWidget {
                 >
                     <div
                         className={`v-input v-input--dense theme--light materialdesign-text-field ${layout}${this.focused ? ' v-input--is-focused' : ''}${active ? ' v-input--is-label-active v-input--is-dirty' : ''}`}
+                        onMouseEnter={() => { this.fieldHovered = true; this.forceUpdate(); }}
+                        onMouseLeave={() => { this.fieldHovered = false; this.forceUpdate(); }}
                         style={
                             {
                                 '--vue-text-field-input-text-color': textColor,
@@ -795,7 +804,7 @@ export default class MaterialDesignInput extends VisWidget {
                                         padding: '0 10px',
                                     }}
                                 >
-                                    {data.inputMessage ? (
+                                    {showMessage ? (
                                         <div
                                             style={{
                                                 color:

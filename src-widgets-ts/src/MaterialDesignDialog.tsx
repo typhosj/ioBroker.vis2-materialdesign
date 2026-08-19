@@ -596,11 +596,11 @@ export class MaterialDesignDialog extends VisWidget {
                 <button
                   className={isM3 ? "mdw-md3-dialog-button" : undefined}
                   onClick={close}
-                  onPointerDown={fullscreen ? () => { this.pressClose = true; this.forceUpdate(); } : undefined}
-                  onPointerUp={fullscreen ? () => { this.pressClose = false; this.forceUpdate(); } : undefined}
-                  onPointerLeave={fullscreen ? () => { if (this.pressClose) { this.pressClose = false; this.forceUpdate(); } } : undefined}
+                  onPointerDown={() => { this.pressClose = true; this.forceUpdate(); }}
+                  onPointerUp={() => { this.pressClose = false; this.forceUpdate(); }}
+                  onPointerLeave={() => { if (this.pressClose) { this.pressClose = false; this.forceUpdate(); } }}
                   style={{
-                    background: "transparent",
+                    background: (this.pressClose && s(d.pressColor)) || "transparent",
                     border: 0,
                     borderRadius: 4,
                     color: s(d.buttonFontColor, isM3 ? "var(--md-sys-color-primary)" : "#44739e"),
@@ -608,9 +608,9 @@ export class MaterialDesignDialog extends VisWidget {
                     fontFamily: s(d.buttonFont),
                     fontSize: isM3 && !s(d.buttonFontSize) ? undefined : sizeCss(d.buttonFontSize, 16),
                     fontWeight: isM3 ? undefined : 500,
-                    height: 36,
+                    height: { small: 28, medium: 36, large: 44 }[s(d.buttonSize, "medium")] || 36,
                     minWidth: 64,
-                    padding: "0 16px",
+                    padding: s(d.buttonSize) === "small" ? "0 12px" : s(d.buttonSize) === "large" ? "0 24px" : "0 16px",
                     textTransform: isM3 ? undefined : "uppercase",
                     width: b(d.buttonFullWidth) ? "100%" : undefined,
                   }}
