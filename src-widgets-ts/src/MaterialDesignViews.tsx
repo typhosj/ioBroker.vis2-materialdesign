@@ -509,21 +509,34 @@ export class MaterialDesignViews extends VisWidget {
               : undefined,
           gap: layout.gaps,
           alignItems: s(d.viewVertAlignment, "center"),
+          // Masonry has one alignment field for its columns; Grid has the two axis fields.
+          justifyItems:
+            this.kind === "masonry"
+              ? { left: "start", right: "end", justify: "stretch", center: "center" }[s(d.viewAlignment, "center")] || "center"
+              : undefined,
           justifyContent: s(d.viewHorAlignment, "center"),
         }}
       >
         {items.map(({ index }) => {
           const view = s(d[`View${index}`]);
+          // Width bounds per view: empty means "no bound on that side".
+          const lower = d[`visibleResolutionGreaterThan${index}`];
+          const upper = d[`visibleResolutionLessThan${index}`];
+          const width = this.width || this.root.current?.clientWidth || 1025;
+          const inRange =
+            (lower === undefined || lower === null || lower === "" || width > n(lower)) &&
+            (upper === undefined || upper === null || upper === "" || width < n(upper));
           const isVisible =
-            !s(d[`visibilityOid${index}`]) ||
-            !visible(
-              stateValue(
-                this.state,
-                s(d[`visibilityOid${index}`]),
-              ),
-              s(d[`visibilityCondition${index}`], "=="),
-              d[`visibilityConditionValue${index}`],
-            );
+            inRange &&
+            (!s(d[`visibilityOid${index}`]) ||
+              !visible(
+                stateValue(
+                  this.state,
+                  s(d[`visibilityOid${index}`]),
+                ),
+                s(d[`visibilityCondition${index}`], "=="),
+                d[`visibilityConditionValue${index}`],
+              ));
           const height = n(d[`viewsHeight${index}`]);
           const span = Math.max(
             1,
