@@ -76,7 +76,6 @@ export const linearAttrs: RxWidgetInfo['visAttrs'] = [
             ...commonFields,
             { name: 'reverse', label: 'reverse', type: 'checkbox' },
             { name: 'invertValue', label: 'invertValue', type: 'checkbox' },
-            { name: 'debug', label: 'debug', type: 'checkbox' },
         ],
     },
     {

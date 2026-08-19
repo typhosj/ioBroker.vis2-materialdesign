@@ -107,7 +107,6 @@ const attrs: RxWidgetInfo["visAttrs"] = [
         type: "id",
       },
       num("chartTimeout"),
-      { name: "debug", label: "debug", type: "checkbox" },
     ],
   },
   {

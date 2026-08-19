@@ -98,7 +98,6 @@ const attrs: RxWidgetInfo["visAttrs"] = [
         options: ["bar", "line"],
         default: "bar",
       },
-      { name: "debug", label: "debug", type: "checkbox" },
     ],
   },
   {

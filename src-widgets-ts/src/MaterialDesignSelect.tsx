@@ -69,7 +69,6 @@ interface SelectData {
     listItemBackgroundColor?: string;
     listItemBackgroundHoverColor?: string;
     listItemBackgroundSelectedColor?: string;
-    listItemRippleEffectColor?: string;
     showSelectedIcon?: 'no' | 'prepend' | 'prepend-inner' | 'append-outer';
     listIconSize?: number;
     listIconColor?: string;
@@ -116,7 +115,6 @@ const attrs: RxWidgetInfo['visAttrs'] = [
                 options: ['text', 'date', 'time'],
                 default: 'text',
             },
-            { name: 'debug', label: 'debug', type: 'checkbox' },
         ],
     },
     {
@@ -273,7 +271,6 @@ const attrs: RxWidgetInfo['visAttrs'] = [
             { name: 'listItemBackgroundColor', label: 'listItemBackgroundColor', type: 'color' },
             { name: 'listItemBackgroundHoverColor', label: 'listItemBackgroundHoverColor', type: 'color' },
             { name: 'listItemBackgroundSelectedColor', label: 'listItemBackgroundSelectedColor', type: 'color' },
-            { name: 'listItemRippleEffectColor', label: 'listItemRippleEffectColor', type: 'color' },
             {
                 name: 'showSelectedIcon',
                 label: 'showSelectedIcon',

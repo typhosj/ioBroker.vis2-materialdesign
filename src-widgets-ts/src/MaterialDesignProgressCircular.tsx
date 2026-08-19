@@ -14,7 +14,6 @@ const attrs: RxWidgetInfo['visAttrs'] = [
             { name: 'min', label: 'min', type: 'number' },
             { name: 'max', label: 'max', type: 'number' },
             { name: 'progressIndeterminate', label: 'progressIndeterminate', type: 'checkbox' },
-            { name: 'debug', label: 'debug', type: 'checkbox' },
         ],
     },
     {

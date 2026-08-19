@@ -108,7 +108,6 @@ const attrs: RxWidgetInfo["visAttrs"] = [
         "chartPaddingRight",
         "chartPaddingBottom",
       ].map(number),
-      { name: "debug", label: "debug", type: "checkbox" },
     ],
   },
   {
