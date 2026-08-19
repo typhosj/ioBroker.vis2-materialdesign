@@ -46,13 +46,19 @@ describe('per-view resolution bounds', () => {
 });
 
 describe('masonry alignment', () => {
-    it('maps viewAlignment onto the grid columns', () => {
-        expect(markup(widget(MaterialDesignMasonryViews, { countViews: 1, View0: 'a', viewAlignment: 'left' }, 1200))).toContain('justify-items:start');
-        expect(markup(widget(MaterialDesignMasonryViews, { countViews: 1, View0: 'a', viewAlignment: 'justify' }, 1200))).toContain('justify-items:stretch');
-        expect(markup(widget(MaterialDesignMasonryViews, { countViews: 1, View0: 'a' }, 1200))).toContain('justify-items:center');
+    // The four options are text-align values ('justify' is not even a justify-items one) and align
+    // the content of a column. Written as justify-items they shrank every column to its content
+    // width, so a masonry of empty views collapsed to a set of lines.
+    it('aligns the column content and leaves the columns stretched', () => {
+        expect(markup(widget(MaterialDesignMasonryViews, { countViews: 1, View0: 'a', viewAlignment: 'left' }, 1200))).toContain('text-align:left');
+        expect(markup(widget(MaterialDesignMasonryViews, { countViews: 1, View0: 'a', viewAlignment: 'justify' }, 1200))).toContain('text-align:justify');
+        expect(markup(widget(MaterialDesignMasonryViews, { countViews: 1, View0: 'a' }, 1200))).toContain('text-align:center');
+        expect(markup(widget(MaterialDesignMasonryViews, { countViews: 1, View0: 'a' }, 1200))).not.toContain('justify-items');
     });
 
     it('leaves the grid widget alone, which has its own two alignment fields', () => {
-        expect(markup(widget(MaterialDesignGridViews, { countViews: 1, View0: 'a', viewAlignment: 'left' }, 1200))).not.toContain('justify-items');
+        const grid = markup(widget(MaterialDesignGridViews, { countViews: 1, View0: 'a', viewAlignment: 'left' }, 1200));
+        expect(grid).not.toContain('justify-items');
+        expect(grid).not.toContain('text-align');
     });
 });

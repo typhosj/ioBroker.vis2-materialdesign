@@ -513,10 +513,12 @@ export class MaterialDesignViews extends VisWidget {
               : undefined,
           gap: layout.gaps,
           alignItems: s(d.viewVertAlignment, "center"),
-          // Masonry has one alignment field for its columns; Grid has the two axis fields.
-          justifyItems:
+          // Masonry has one alignment field for its columns; Grid has the two axis fields. Its
+          // values are text-align ones ("justify" is not even a justify-items value) and belong to
+          // the column content: as justify-items they shrank every column to its content width.
+          textAlign:
             this.kind === "masonry"
-              ? { left: "start", right: "end", justify: "stretch", center: "center" }[s(d.viewAlignment, "center")] || "center"
+              ? (s(d.viewAlignment, "center") as React.CSSProperties["textAlign"])
               : undefined,
           justifyContent: s(d.viewHorAlignment, "center"),
         }}
