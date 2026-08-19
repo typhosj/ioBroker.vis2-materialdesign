@@ -1038,18 +1038,6 @@
         "widget": "Top App Bar"
     },
     {
-        "id": "dark.top_app_bar.item_text_disabled",
-        "desc": "colorListItemTextDisabled",
-        "value": "rgba(0, 0, 0, 0.38)",
-        "widget": "Top App Bar"
-    },
-    {
-        "id": "dark.top_app_bar.item_icon_disabled",
-        "desc": "colorListItemIconDisabled",
-        "value": "rgba(0, 0, 0, 0.38)",
-        "widget": "Top App Bar"
-    },
-    {
         "id": "dark.top_app_bar.item_divider",
         "desc": "colorListItemDivider",
         "defaultValue": 4,
@@ -1059,18 +1047,6 @@
         "id": "dark.top_app_bar.item_icon_toggle",
         "desc": "colorSubItemToggleIcon",
         "defaultValue": 0,
-        "widget": "Top App Bar"
-    },
-    {
-        "id": "dark.top_app_bar.item_backdrop_background_text_off",
-        "desc": "colorDrawerbackdropLabelBackground",
-        "value": "rgba(0,0,0,0.5)",
-        "widget": "Top App Bar"
-    },
-    {
-        "id": "dark.top_app_bar.item_backdrop_background_text_on",
-        "desc": "colorDrawerbackdropLabelBackgroundActive",
-        "value": "#1e88e566",
         "widget": "Top App Bar"
     },
     {
@@ -1113,18 +1089,6 @@
         "id": "dark.top_app_bar.subItem_divider",
         "desc": "colorListSubItemDivider",
         "defaultValue": 4,
-        "widget": "Top App Bar"
-    },
-    {
-        "id": "dark.top_app_bar.subItem_backdrop_background_text_off",
-        "desc": "colorDrawerbackdropSubLabelBackground",
-        "value": "rgba(0,0,0,0.5)",
-        "widget": "Top App Bar"
-    },
-    {
-        "id": "dark.top_app_bar.subItem_backdrop_background_text_on",
-        "desc": "colorDrawerbackdropSubLabelBackgroundActive",
-        "value": "#1e88e566",
         "widget": "Top App Bar"
     },
     {
