@@ -638,9 +638,15 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
             const sliderDash = `${sliderArcLength * sliderRatio} ${sliderCircumference}`;
             const sliderTrackDash = `${sliderArcLength} ${sliderCircumference}`;
             const sliderRotation = numeric(data.angleOffset, 0) - 90;
+            // `colorize`: the icon dims with the slider value. A brightness filter does that for
+            // every icon and image alike, without parsing the configured color.
+            const colorizeFactor = Math.max(0, Math.min(1, numeric(data.colorizeFactor, 0.5)));
+            const icon = data.colorize && def.kind === 'slider'
+                ? <span style={{ display: 'inline-flex', filter: `brightness(${1 - colorizeFactor + colorizeFactor * sliderRatio})` }}>{renderIcon(image, secondary, iconSize, imageColorSet)}</span>
+                : renderIcon(image, secondary, iconSize, imageColorSet);
             const content = (
                 <>
-                    {renderIcon(image, secondary, iconSize, imageColorSet)}
+                    {icon}
                     {!isIcon ? (
                         <span
                             style={{

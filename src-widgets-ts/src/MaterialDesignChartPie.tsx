@@ -366,6 +366,7 @@ export default class MaterialDesignChartPie extends VisWidget {
                 background: s(data.colorTitleSectionBackground),
                 color: s(data.colorTitle),
                 fontFamily: s(data.titleFontFamily),
+                fontSize: n(data.titleLayout) ? `${n(data.titleLayout)}px` : undefined,
               }}
               dangerouslySetInnerHTML={{ __html: sanitizeHtml(s(data.title)) }}
             />

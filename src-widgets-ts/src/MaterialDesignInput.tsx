@@ -376,6 +376,7 @@ export function outlinedNotchWidth(label: string, labelFontSize: unknown, labelF
 
 export default class MaterialDesignInput extends VisWidget {
     private focused = false;
+    private fieldHovered = false;
     private localValue: string | undefined;
     private seenStateValue: ioBroker.StateValue | undefined;
     private readonly rootRef = React.createRef<HTMLDivElement>();
@@ -429,9 +430,12 @@ export default class MaterialDesignInput extends VisWidget {
         );
         const activeBorderColor = themeColor(data.inputLayoutBorderColorSelected, '#44739e');
         const borderColor = this.focused ? activeBorderColor : inactiveBorderColor;
+        // Resting -> hover -> focused; each stage falls back to the previous one when unset.
         const bg = this.focused
             ? cleanColor(data.inputLayoutBackgroundColorSelected, 'transparent')
-            : cleanColor(data.inputLayoutBackgroundColor, 'transparent');
+            : this.fieldHovered
+              ? cleanColor(data.inputLayoutBackgroundColorHover || data.inputLayoutBackgroundColor, 'transparent')
+              : cleanColor(data.inputLayoutBackgroundColor, 'transparent');
         const labelColor = this.focused
             ? themeColor(data.inputLabelColorSelected, '#44739e')
             : themeColor(data.inputLabelColor, 'rgba(0, 0, 0, 0.54)');
@@ -442,7 +446,8 @@ export default class MaterialDesignInput extends VisWidget {
         const appendixColor = themeColor(data.inputAppendixColor, 'rgba(0, 0, 0, 0.6)');
         const enclosed = layout.includes('outlined') || layout.includes('solo');
         const filled = layout.includes('filled');
-        const hasDetails = !!data.inputMessage || !!data.showInputCounter;
+        const showMessage = !!data.inputMessage && (data.showInputMessageAlways !== false || this.focused);
+        const hasDetails = showMessage || !!data.showInputCounter;
         const slotMinHeight = enclosed || filled ? 40 : 32;
         const labelTranslateY = activeLabelTranslateY(data.inputTranslateY);
         // A prepend-inner icon shifts the text slot (and thus the label) to the right. When the label
@@ -468,6 +473,8 @@ export default class MaterialDesignInput extends VisWidget {
                 >
                     <div
                         className={`v-input v-input--dense theme--light materialdesign-text-field ${layout}${this.focused ? ' v-input--is-focused' : ''}${active ? ' v-input--is-label-active v-input--is-dirty' : ''}`}
+                        onMouseEnter={() => { this.fieldHovered = true; this.forceUpdate(); }}
+                        onMouseLeave={() => { this.fieldHovered = false; this.forceUpdate(); }}
                         style={
                             {
                                 '--vue-text-field-input-text-color': textColor,
@@ -778,7 +785,7 @@ export default class MaterialDesignInput extends VisWidget {
                                         padding: '0 10px',
                                     }}
                                 >
-                                    {data.inputMessage ? (
+                                    {showMessage ? (
                                         <div
                                             style={{
                                                 color: themeColor(data.inputMessageColor, 'rgba(0, 0, 0, 0.54)'),

@@ -533,11 +533,11 @@ export class MaterialDesignDialog extends VisWidget {
                 ) : null}
                 <button
                   onClick={close}
-                  onPointerDown={fullscreen ? () => { this.pressClose = true; this.forceUpdate(); } : undefined}
-                  onPointerUp={fullscreen ? () => { this.pressClose = false; this.forceUpdate(); } : undefined}
-                  onPointerLeave={fullscreen ? () => { if (this.pressClose) { this.pressClose = false; this.forceUpdate(); } } : undefined}
+                  onPointerDown={() => { this.pressClose = true; this.forceUpdate(); }}
+                  onPointerUp={() => { this.pressClose = false; this.forceUpdate(); }}
+                  onPointerLeave={() => { if (this.pressClose) { this.pressClose = false; this.forceUpdate(); } }}
                   style={{
-                    background: "transparent",
+                    background: (this.pressClose && s(d.pressColor)) || "transparent",
                     border: 0,
                     borderRadius: 4,
                     color: s(d.buttonFontColor, "#44739e"),
@@ -545,9 +545,9 @@ export class MaterialDesignDialog extends VisWidget {
                     fontFamily: s(d.buttonFont),
                     fontSize: sizeCss(d.buttonFontSize, 16),
                     fontWeight: 500,
-                    height: 36,
+                    height: { small: 28, medium: 36, large: 44 }[s(d.buttonSize, "medium")] || 36,
                     minWidth: 64,
-                    padding: "0 16px",
+                    padding: s(d.buttonSize) === "small" ? "0 12px" : s(d.buttonSize) === "large" ? "0 24px" : "0 16px",
                     textTransform: "uppercase",
                     width: b(d.buttonFullWidth) ? "100%" : undefined,
                   }}

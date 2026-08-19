@@ -319,6 +319,7 @@ export default class MaterialDesignChartJson extends VisWidget {
         min: optN((graph as Record<string, unknown>).yAxis_min), max: optN((graph as Record<string, unknown>).yAxis_max),
       }));
     const xAxes = [chartAxis({
+      barPercentage: data.barWidth === undefined || data.barWidth === "" ? undefined : Math.max(0, Math.min(1, n(data.barWidth, 80) / 100)),
       display: b(data.xAxisShowAxis, true),
       position: s(data.xAxisPosition, "bottom"),
       title: s(data.xAxisTitle), titleColor: s(data.xAxisTitleColor),
@@ -371,6 +372,7 @@ export default class MaterialDesignChartJson extends VisWidget {
                 background: s(data.colorTitleSectionBackground),
                 color: s(data.colorTitle),
                 fontFamily: s(data.titleFontFamily),
+                fontSize: n(data.titleLayout) ? `${n(data.titleLayout)}px` : undefined,
               }}
               dangerouslySetInnerHTML={{ __html: sanitizeHtml(s(data.title)) }}
             />

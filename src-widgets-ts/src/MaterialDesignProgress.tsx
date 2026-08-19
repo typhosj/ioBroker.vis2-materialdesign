@@ -204,6 +204,9 @@ export default class MaterialDesignProgress extends VisWidget {
                                 background: striped
                                     ? `repeating-linear-gradient(${num(data.stripAngle, 135)}deg, ${progress.color} 0 ${num(data.stipWidth1, 25)}%, ${stripeColor} ${num(data.stipWidth1, 25)}% ${num(data.stipWidth2, 50)}%, ${progress.color} ${num(data.stipWidth2, 50)}% ${num(data.stipWidth3, 75)}%)`
                                     : progress.color,
+                                // `stripDistance` gives the repeating pattern a fixed width instead of
+                                // letting the percentage stops stretch with the bar.
+                                backgroundSize: striped && num(data.stripDistance) ? `${num(data.stripDistance)}px 100%` : undefined,
                                 height: '100%',
                                 insetInlineStart: reverse ? `${100 - displayedPercent}%` : 0,
                                 position: 'absolute',

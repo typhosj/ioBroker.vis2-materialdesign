@@ -472,7 +472,7 @@ export default class MaterialDesignChartLineHistory extends VisWidget {
     ) : null;
     const chartMain = b(d.cardUse) ? (
       <div className="materialdesign-html-card-container mdc-card" style={{ background: s(d.colorBackground), boxSizing: "border-box", display: "flex", flexDirection: "column", height: "100%", padding: n(d.borderDistance, 8), width: "100%" }}>
-        <div style={{ background: s(d.colorTitleSectionBackground), color: s(d.colorTitle), fontFamily: s(d.titleFontFamily) }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(s(d.title)) }} />
+        <div style={{ background: s(d.colorTitleSectionBackground), color: s(d.colorTitle), fontFamily: s(d.titleFontFamily), fontSize: n(d.titleLayout) ? `${n(d.titleLayout)}px` : undefined }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(s(d.title)) }} />
         <div style={{ background: s(d.colorTextSectionBackground), flex: "1 1 0", minHeight: 0 }}>{chartjs}</div>
       </div>
     ) : chartjs;
