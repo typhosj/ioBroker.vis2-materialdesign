@@ -474,7 +474,7 @@ export default class MaterialDesignChartLineHistory extends VisWidget {
       <div
         className={`materialdesign-widget materialdesign-chart${isM3 ? ` ${designStyleClasses(d, this.isDarkTheme())}` : ""}`}
         style={{
-          background: s(d.backgroundColor),
+          background: s(d.backgroundColor) || (isM3 ? "var(--md-sys-color-surface)" : undefined),
           display: "flex",
           flexDirection: ["top", "bottom"].includes(s(d.legendPosition))
             ? "column"

@@ -361,7 +361,7 @@ export default class MaterialDesignChartPie extends VisWidget {
       <div
         className={`materialdesign-widget materialdesign-chart${isM3 ? ` ${designStyleClasses(data, this.isDarkTheme())}` : ""}`}
         style={{
-          background: s(data.backgroundColor),
+          background: s(data.backgroundColor) || (isM3 ? "var(--md-sys-color-surface)" : undefined),
           display: "flex",
           flexDirection: ["top", "bottom"].includes(s(data.legendPosition))
             ? "column"

@@ -1,5 +1,6 @@
+import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import { barAxisRange, barCount, buildBars, json } from './MaterialDesignChartBar';
+import MaterialDesignChartBar, { barAxisRange, barCount, buildBars, json } from './MaterialDesignChartBar';
 
 describe('json', () => {
     it('parses a JSON array', () => {
@@ -73,5 +74,27 @@ describe('barAxisRange', () => {
     it('treats a null axisValueMax as unset (auto-scale), not as 1', () => {
         const bars = buildBars({}, [{ value: 5 }, { value: 30 }], 2, [], () => 0);
         expect(barAxisRange({ axisValueMin: null, axisValueMax: null }, bars)).toEqual({ min: 0, max: 30 });
+    });
+});
+
+// The canvas cannot read CSS variables, so the axis colors come from a fixed light/dark palette.
+// Without a surface of its own the dark palette ended up on the light page behind it.
+describe('M3 surface', () => {
+    const fixture = <T>(value: unknown): T => value as T;
+    const render = (rxData: Record<string, unknown>, dark = false): string => {
+        const widget = new MaterialDesignChartBar(fixture<ConstructorParameters<typeof MaterialDesignChartBar>[0]>({ context: {} }));
+        widget.state = fixture<typeof widget.state>({ rxData, values: {} });
+        (widget as unknown as { isDarkTheme: () => boolean }).isDarkTheme = () => dark;
+        return renderToStaticMarkup(widget.renderWidgetBody(fixture<Parameters<MaterialDesignChartBar['renderWidgetBody']>[0]>({})));
+    };
+
+    it('paints the M3 surface when no background is configured', () => {
+        expect(render({ designStyle: 'material3' })).toContain('var(--md-sys-color-surface)');
+        expect(render({ designStyle: 'material3' }, true)).toContain('var(--md-sys-color-surface)');
+    });
+
+    it('leaves a configured background and the legacy style alone', () => {
+        expect(render({ designStyle: 'material3', backgroundColor: '#ff0000' })).not.toContain('var(--md-sys-color-surface)');
+        expect(render({ designStyle: 'legacy' })).not.toContain('var(--md-sys-color-surface)');
     });
 });
