@@ -213,12 +213,13 @@ function feedback(data: SliderData): void {
 }
 
 function cssVars(data: SliderData): React.CSSProperties {
+    const isM3 = designStyle(data as Record<string, unknown>) === 'material3';
     return {
         '--vue-slider-thumb-label-font-color': cleanColor(data.thumbFontColor, '#FFFFFF'),
         '--vue-slider-thumb-label-font-family': data.thumbFontFamily || undefined,
         '--vue-slider-thumb-label-font-size': `${num(data.thumbFontSize, 12)}px`,
-        '--vue-slider-tick-before-color': cleanColor(data.tickColorBefore, '#44739e'),
-        '--vue-slider-tick-after-color': cleanColor(data.tickColorAfter, '#44739e'),
+        '--vue-slider-tick-before-color': isM3 && !m3ColorExplicit(data.tickColorBefore) ? 'var(--md-sys-color-primary)' : cleanColor(data.tickColorBefore, '#44739e'),
+        '--vue-slider-tick-after-color': isM3 && !m3ColorExplicit(data.tickColorAfter) ? 'var(--md-sys-color-outline-variant)' : cleanColor(data.tickColorAfter, '#44739e'),
         '--vue-slider-tick-color': cleanColor(data.tickTextColor, '#808080'),
         '--vue-slider-tick-font-family': data.tickFontFamily || undefined,
         '--vue-slider-tick-font-size': `${num(data.tickFontSize, 14)}px`,

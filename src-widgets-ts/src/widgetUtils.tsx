@@ -449,8 +449,9 @@ export function designStyle(data: Record<string, unknown> | null | undefined): D
     return value === 'material3' || value === 'legacy' ? value : projectDesignStyle;
 }
 
-export function designStyleClasses(data: Record<string, unknown> | null | undefined, isDark: boolean): string {
-    if (designStyle(data) !== 'material3') return 'mdw-style-legacy';
+// Only ever called for the Material 3 case — every caller guards with its own `isM3`, and no CSS
+// selects a legacy class. The dark flag decides which token block applies.
+export function designStyleClasses(_data: Record<string, unknown> | null | undefined, isDark: boolean): string {
     return isDark ? 'mdw-style-material3 mdw-dark' : 'mdw-style-material3';
 }
 

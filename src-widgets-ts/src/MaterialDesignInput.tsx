@@ -514,10 +514,7 @@ export default class MaterialDesignInput extends VisWidget {
                                     data.inputLabelColor,
                                     'rgba(0, 0, 0, 0.54)',
                                 ),
-                                '--vue-text-field-label-after-color': themeColor(
-                                    data.inputLabelColorSelected,
-                                    '#44739e',
-                                ),
+                                '--vue-text-field-label-after-color': labelColor,
                                 '--vue-text-field-label-font-family': data.inputLabelFontFamily || undefined,
                                 '--vue-text-field-label-font-size': `${fontSize(data.inputLabelFontSize, 16)}px`,
                                 '--vue-text-field-appendix-color': appendixColor,

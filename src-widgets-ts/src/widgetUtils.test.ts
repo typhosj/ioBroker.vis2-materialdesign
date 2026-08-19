@@ -174,11 +174,11 @@ describe('widget utilities', () => {
         }
     });
 
-    it('designStyleClasses adds only a root class (plus the shared dark flag) in M3 mode', () => {
-        expect(designStyleClasses(undefined, false)).toBe('mdw-style-legacy');
+    // Only the M3 case reaches this: every caller guards with its own `isM3`, and no CSS selects a
+    // legacy class. The dark flag is the only thing left to decide.
+    it('designStyleClasses adds only a root class plus the shared dark flag', () => {
         expect(designStyleClasses({ designStyle: 'material3' }, false)).toBe('mdw-style-material3');
         expect(designStyleClasses({ designStyle: 'material3' }, true)).toBe('mdw-style-material3 mdw-dark');
-        expect(designStyleClasses({ designStyle: 'legacy' }, true)).toBe('mdw-style-legacy');
     });
 
     it('subscribes to exactly the scheme and the font, not a state per role', () => {

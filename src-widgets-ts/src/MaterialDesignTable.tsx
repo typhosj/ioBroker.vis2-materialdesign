@@ -23,6 +23,7 @@ function bound(text: string, row: Row): string { return text.replace(/#\[obj\.(.
 // only where the editor sets no explicit font-size (inline wins otherwise).
 const tableCss = '.materialdesign-table .mdc-data-table__header-cell,.materialdesign-table .mdc-data-table__cell{font-size:.875rem;vertical-align:middle}'
     + '.materialdesign-table .mdc-data-table__header-cell:focus-visible{outline:2px solid #44739e;outline-offset:-2px}'
+    + '.materialdesign-table.mdw-style-material3 .mdc-data-table__header-cell:focus-visible{outline-color:var(--md-sys-color-primary)}'
     + '.materialdesign-table .mdc-data-table__header-cell{font-weight:500;letter-spacing:.00714em}'
     + '.materialdesign-table .mdc-data-table__cell{letter-spacing:.01786em}'
     ;

@@ -117,6 +117,7 @@ const listCss = '.materialdesign-list .mdc-list{list-style:none;margin:0;padding
     + '.materialdesign-list .mdc-list-item__meta{margin-left:auto}'
     + '.materialdesign-list .mdc-list-group__subheader{display:block;margin:0;list-style:none}'
     + '.materialdesign-list .mdc-list-item:focus-visible{outline:2px solid #44739e;outline-offset:-2px}'
+    + '.materialdesign-list.mdw-style-material3 .mdc-list-item:focus-visible{outline-color:var(--md-sys-color-primary)}'
     // Counters the legacy `min-height:40px!important` and lets the graphic size itself (legacy forced
     // 24x24, clamping larger listImageHeight SVGs).
     + '.materialdesign-list.materialdesign-widget .mdc-list-item{min-height:var(--materialdesign-list-item-height,48px)!important;height:auto!important}'
