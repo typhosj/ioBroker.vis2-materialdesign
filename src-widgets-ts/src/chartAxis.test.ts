@@ -31,8 +31,6 @@ describe('chartAxis', () => {
             gridWidth: 2,
             drawTicks: false,
             tickLength: 0,
-            zeroLineColor: '#444',
-            zeroLineWidth: 3,
             time: { tooltipFormat: 'lll' },
         })).toEqual({
             id: 'temperature', type: 'linear', position: 'right', display: false, stacked: true,
@@ -43,7 +41,7 @@ describe('chartAxis', () => {
             },
             gridLines: {
                 display: false, color: '#333', lineWidth: 2, drawTicks: false,
-                tickMarkLength: 0, zeroLineColor: '#444', zeroLineWidth: 3,
+                tickMarkLength: 0,
             },
             scaleLabel: {
                 display: true, labelString: 'Temperature', fontColor: '#222',

@@ -59,7 +59,6 @@ const baseFields = [
     { name: 'vibrateOnMobilDevices', label: 'vibrateOnMobilDevices', type: 'number', default: 50 },
     { name: 'clickSoundPlay', label: 'clickSoundPlay', type: 'checkbox' },
     { name: 'clickSoundVolume', label: 'clickSoundVolume', type: 'slider', min: 0, max: 1, step: 0.1, default: 0.5 },
-    { name: 'debug', label: 'debug', type: 'checkbox' },
 ];
 
 const labelFields = [

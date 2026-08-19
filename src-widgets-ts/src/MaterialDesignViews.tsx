@@ -227,13 +227,6 @@ export function viewsInfo(kind: Kind): RxWidgetInfo {
           options: ["left", "center", "right", "justify"],
           default: "center",
         },
-        {
-          name: "showResolutionAssistant",
-          label: "showResolutionAssistant",
-          type: "checkbox" as const,
-          default: true,
-        },
-        { name: "debug", label: "debug", type: "checkbox" as const },
       ]
     : [
         {
@@ -271,13 +264,6 @@ export function viewsInfo(kind: Kind): RxWidgetInfo {
           max: 12,
           step: 1,
         },
-        {
-          name: "showResolutionAssistant",
-          label: "showResolutionAssistant",
-          type: "checkbox" as const,
-          default: true,
-        },
-        { name: "debug", label: "debug", type: "checkbox" as const },
       ];
   const settings = masonry ? breakpoints : gridBreakpoints;
   const itemFields = masonry

@@ -26,8 +26,6 @@ export type AxisSpec = {
     gridWidth?: number;
     drawTicks?: boolean;
     tickLength?: number;
-    zeroLineColor?: string;
-    zeroLineWidth?: number;
     time?: Record<string, unknown>;
 };
 
@@ -50,8 +48,6 @@ export function chartAxis(a: AxisSpec): Record<string, unknown> {
     if (a.gridWidth) gridLines.lineWidth = a.gridWidth;
     if (a.drawTicks !== undefined) gridLines.drawTicks = a.drawTicks;
     if (a.tickLength !== undefined) gridLines.tickMarkLength = a.tickLength;
-    if (has(a.zeroLineColor)) gridLines.zeroLineColor = a.zeroLineColor;
-    if (a.zeroLineWidth) gridLines.zeroLineWidth = a.zeroLineWidth;
 
     const scaleLabel: Record<string, unknown> = {};
     if (has(a.title)) {

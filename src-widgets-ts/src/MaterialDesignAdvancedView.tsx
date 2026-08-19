@@ -45,7 +45,6 @@ export function advancedViewInfo(kind: Kind): RxWidgetInfo {
                   type: "number",
                   default: 50,
                 },
-                { name: "debug", label: "debug", type: "checkbox" },
                 { name: "count", label: "count", type: "number", default: 1 },
               ],
             },
@@ -107,7 +106,6 @@ export function advancedViewInfo(kind: Kind): RxWidgetInfo {
                   label: "hideErrorMessage",
                   type: "checkbox",
                 },
-                { name: "debug", label: "debug", type: "checkbox" },
               ],
             },
             {
@@ -215,10 +213,6 @@ export class MaterialDesignAdvancedView extends VisWidget {
     const fadeOut = Math.max(0, n(data.fadeOutDuration, 50));
     const easing = easings[s(data.fadeEffect, "swing")] || "ease-in-out";
     if (selected !== this.shown) {
-      if (b(data.debug))
-        console.log(
-          `materialdesign ${props.id}: ${s(data.oid) || "no oid"} = ${JSON.stringify(stateValue(this.state, s(data.oid)))} -> view ${selected ? `"${selected}"` : "not found"}`,
-        );
       // The view that just lost the state stays mounted until its fade-out ended.
       this.outgoing = this.shown;
       this.shown = selected;

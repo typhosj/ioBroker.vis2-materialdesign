@@ -18,7 +18,6 @@ const attrs: RxWidgetInfo['visAttrs'] = [
             iconField('mdwIcon', 'mdwIcon', 'material-design'),
             { name: 'mdwIconSize', label: 'mdwIconSize', type: 'number' },
             { name: 'mdwIconColor', label: 'mdwIconColor', type: 'color' },
-            { name: 'debug', label: 'debug', type: 'checkbox' },
         ],
     },
 ];

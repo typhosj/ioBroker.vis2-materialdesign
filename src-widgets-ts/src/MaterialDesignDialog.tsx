@@ -204,7 +204,6 @@ export function dialogInfo(kind: Kind): RxWidgetInfo {
       step: 0.1,
       default: 0.5,
     },
-    { name: "debug", label: "debug", type: "checkbox" as const },
   ];
   const iframe = [
     { name: "src", label: "src", type: "url" as const },

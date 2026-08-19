@@ -48,7 +48,6 @@ const attrs: RxWidgetInfo['visAttrs'] = [
             { name: 'oid', label: 'oid', type: 'id' },
             { name: 'targetType', label: 'targetType', type: 'select', options: ['auto', 'number', 'string', 'boolean', 'linked'], default: 'auto' },
             { name: 'overrideText', label: 'overrideText', type: 'html' },
-            { name: 'debug', label: 'debug', type: 'checkbox' },
         ],
     },
     {

@@ -98,7 +98,6 @@ const attrs: RxWidgetInfo["visAttrs"] = [
         "chartPaddingRight",
         "chartPaddingBottom",
       ].map((name) => ({ name, label: name, type: "number" as const })),
-      { name: "debug", label: "debug", type: "checkbox" },
     ],
   },
   { name: "chartLayout", label: "group_chartLayout", fields: chartFields },
@@ -151,7 +150,6 @@ const attrs: RxWidgetInfo["visAttrs"] = [
     name: "barLayout",
     label: "group_barLayout",
     fields: [
-      { name: "barLabelText", label: "barLabelText", type: "text" },
       {
         name: "colorScheme",
         label: "colorScheme",
@@ -318,24 +316,8 @@ const attrs: RxWidgetInfo["visAttrs"] = [
         max: 100,
         step: 1,
       },
-      {
-        name: `${axis}ZeroLineWidth`,
-        label: `${axis}ZeroLineWidth`,
-        type: "number" as const,
-      },
-      {
-        name: `${axis}ZeroLineColor`,
-        label: `${axis}ZeroLineColor`,
-        type: "color" as const,
-      },
       ...(axis === "xAxis"
         ? [
-            {
-              name: "xAxisTicksSource",
-              label: "xAxisTicksSource",
-              type: "select" as const,
-              options: ["auto", "data", "labels"],
-            },
             {
               name: "xAxisOffset",
               label: "xAxisOffset",
@@ -544,8 +526,6 @@ export default class MaterialDesignChartBar extends VisWidget {
       gridWidth: on(data[`${ax}AxisGridLinesWitdh`]),
       drawTicks: b(data[`${ax}AxisShowTicks`], true),
       tickLength: on(data[`${ax}AxisTickLength`]),
-      zeroLineColor: s(data[`${ax}AxisZeroLineColor`]),
-      zeroLineWidth: on(data[`${ax}AxisZeroLineWidth`]),
     });
     // value axis (numeric) carries the computed min/max; the other axis holds category labels.
     const valueAxis = axisOf(horizontal ? "x" : "y");

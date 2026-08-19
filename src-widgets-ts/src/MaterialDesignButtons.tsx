@@ -37,7 +37,6 @@ interface ButtonData {
     colorizeFactor?: number;
     angleOffset?: number;
     angleArc?: number;
-    debug?: boolean;
     mdwButtonPrimaryColor?: string;
     mdwButtonSecondaryColor?: string;
     mdwButtonColorPress?: string;
@@ -109,7 +108,6 @@ const feedbackFields = [
     { name: 'vibrateOnMobilDevices', label: 'vibrateOnMobilDevices', type: 'number' },
     { name: 'clickSoundPlay', label: 'clickSoundPlay', type: 'checkbox' },
     { name: 'clickSoundVolume', label: 'clickSoundVolume', type: 'slider', min: 0, max: 1, step: 0.05, default: 0.5 },
-    { name: 'debug', label: 'debug', type: 'checkbox' },
 ];
 
 const actionFields = {

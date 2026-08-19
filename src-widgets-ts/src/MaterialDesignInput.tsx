@@ -60,7 +60,6 @@ interface InputData {
     appendOuterIcon?: string;
     appendOuterIconSize?: number;
     appendOuterIconColor?: string;
-    debug?: boolean;
 }
 
 const attrs: RxWidgetInfo['visAttrs'] = [
@@ -78,7 +77,6 @@ const attrs: RxWidgetInfo['visAttrs'] = [
             },
             { name: 'inputMask', label: 'inputMask', type: 'text' },
             { name: 'inputMaxLength', label: 'inputMaxLength', type: 'number' },
-            { name: 'debug', label: 'debug', type: 'checkbox' },
         ],
     },
     {
