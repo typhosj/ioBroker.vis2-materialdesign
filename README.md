@@ -68,6 +68,7 @@ Report current VIS 2 problems in the
 ## Changelog
 ### **WORK IN PROGRESS**
 
+- (typhosj) Changed `vis2-materialdesign.0.colors.darkTheme` from a switch into a three-way setting: `auto` follows VIS 2's own theme, `light` and `dark` force one. The widget set used to know only a boolean of its own that nothing in VIS 2 ever moved, so a light view could show dark widgets. Stored `true`/`false` values and every script writing them keep working; `auto` is the default for new installations
 - (typhosj) Fixed the header of the **List** and the **Icon List** being a card: it carried the card class, whose column layout put the header image above the heading instead of beside it and turned the header **alignment** into a vertical one, so left, center and right moved the header up, to the middle and down. Its rounded frame and shadow were drawn around the header too and VIS 2 cut them off at both sides (issue #14)
 - (typhosj) Removed the **List** option "enable overflow": a row grows with its content in VIS 2, so there was nothing left for the option to release (issue #14)
 - (typhosj) Fixed the **List** and **Icon List** drawing their rows one header height taller than the widget box: the list, the card and the card's text section each measured themselves against the whole widget, so with a header the lower rows ended up outside the widget and VIS 2 clipped them away. Header and content now share the box

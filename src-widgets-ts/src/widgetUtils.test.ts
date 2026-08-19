@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { VisRxWidgetProps, VisRxWidgetState } from '@iobroker/types-vis-2';
 import { pickerValueName } from './IconFilePicker';
-import { DEFAULT_DARK_THEME_OID, MAX_DYNAMIC_ITEMS, VisWidget, accessibleText, applyThemeVariables, boundedCount, createInfo, itemCount, darkThemeOid, editorDialogPalette, formatDurationTokens, formatMoment, humanizeDuration, iconFieldDataKey, parseActionValue, safeWidgetUrl, sanitizeHtml, setStateValue, SliderWriter, stateValue, stringValue } from './widgetUtils';
+import { DEFAULT_DARK_THEME_OID, MAX_DYNAMIC_ITEMS, VisWidget, accessibleText, applyThemeVariables, boundedCount, createInfo, itemCount, darkThemeOid, resolveDarkTheme, editorDialogPalette, formatDurationTokens, formatMoment, humanizeDuration, iconFieldDataKey, parseActionValue, safeWidgetUrl, sanitizeHtml, setStateValue, SliderWriter, stateValue, stringValue } from './widgetUtils';
 
 function fixture<T>(value: unknown): T { return value as T; }
 
@@ -89,6 +89,35 @@ describe('widget utilities', () => {
 
         widget.componentWillUnmount();
         expect(unsubscribeState).toHaveBeenCalledWith(DEFAULT_DARK_THEME_OID, expect.any(Function));
+    });
+
+    it('resolves the three dark-theme settings and the booleans written before them', () => {
+        expect(resolveDarkTheme(true, 'light')).toBe(true);
+        expect(resolveDarkTheme('dark', 'light')).toBe(true);
+        expect(resolveDarkTheme(false, 'dark')).toBe(false);
+        expect(resolveDarkTheme('light', 'dark')).toBe(false);
+        // Everything else, `auto` included, hands the decision to VIS2.
+        expect(resolveDarkTheme('auto', 'dark')).toBe(true);
+        expect(resolveDarkTheme('auto', 'light')).toBe(false);
+        expect(resolveDarkTheme(undefined, 'dark')).toBe(true);
+        expect(resolveDarkTheme(null, undefined)).toBe(false);
+    });
+
+    it('a widget on `auto` follows the VIS theme', () => {
+        type Handler = (id: string, state: { val: unknown } | null) => void;
+        const handlers: Record<string, Handler> = {};
+        const subscribeState = vi.fn((id: string, cb: Handler) => { handlers[id] = cb; return Promise.resolve(); });
+        type Inspection = { isDarkTheme: () => boolean };
+
+        const widget = fixture<Inspection & VisWidget>(new VisWidget(fixture<ConstructorParameters<typeof VisWidget>[0]>({ context: { socket: { subscribeState, unsubscribeState: vi.fn() }, themeType: 'dark' } })));
+        widget.state = fixture<typeof widget.state>({ rxData: {}, values: {} });
+        widget.forceUpdate = () => {};
+
+        widget.componentDidMount();
+        expect(widget.isDarkTheme()).toBe(true);
+
+        handlers[DEFAULT_DARK_THEME_OID](DEFAULT_DARK_THEME_OID, { val: 'light' });
+        expect(widget.isDarkTheme()).toBe(false);
     });
 
     it('VisWidget subscribes to an explicit override oid instead of the shared default', () => {

@@ -633,6 +633,15 @@ export function darkThemeOid(data: Record<string, unknown> | null | undefined): 
     return stringValue(data?.__mdwThemeDark, DEFAULT_DARK_THEME_OID);
 }
 
+// The state carries three settings, not a boolean: `auto` follows VIS2's own theme so a light
+// view stops getting dark widgets from a state nobody touched. Booleans stay valid — installs
+// created before this and every script writing true/false keep working unchanged.
+export function resolveDarkTheme(value: ioBroker.StateValue | undefined, themeType: string | undefined): boolean {
+    if (value === true || value === 'true' || value === 'dark') return true;
+    if (value === false || value === 'false' || value === 'light') return false;
+    return themeType === 'dark';
+}
+
 export function applyThemeVariables(data: Record<string, unknown>, values: Record<string, ioBroker.StateValue> | undefined): void {
     // Client-only: this writes CSS custom properties onto document.documentElement. During the
     // vis-2 server-side prerender there is no document, and the widget data may be null — either
@@ -660,12 +669,12 @@ export class VisWidget extends BaseVisWidget {
     // this makes the dark flag work for every widget regardless of whether its `theme` attribute
     // group was ever touched in the editor.
     private darkThemeSubscribedOid?: string;
-    private darkThemeValue = false;
+    private darkThemeSetting: ioBroker.StateValue | undefined;
 
     private onDarkThemeChanged = (_id: string, state: ioBroker.State | null | undefined): void => {
-        const next = state?.val === true || state?.val === 'true';
-        if (next !== this.darkThemeValue) {
-            this.darkThemeValue = next;
+        const before = this.isDarkTheme();
+        this.darkThemeSetting = state?.val;
+        if (this.isDarkTheme() !== before) {
             this.forceUpdate();
         }
     };
@@ -703,12 +712,12 @@ export class VisWidget extends BaseVisWidget {
     }
 
     protected isDarkTheme(): boolean {
-        return this.darkThemeValue;
+        return resolveDarkTheme(this.darkThemeSetting, this.props.context?.themeType);
     }
 
     render(): React.JSX.Element | null {
         const rxData = { ...this.state.rxData };
-        applyThemeVariables(rxData, { ...this.state.values, [`${darkThemeOid(rxData)}.val`]: this.darkThemeValue });
+        applyThemeVariables(rxData, { ...this.state.values, [`${darkThemeOid(rxData)}.val`]: this.isDarkTheme() });
         return super.render();
     }
 }
