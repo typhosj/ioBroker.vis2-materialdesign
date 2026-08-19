@@ -638,7 +638,7 @@
     "listSubItemDividerStyle": "divider style",
     "listSubItemTextSize": "submenu text size",
     "listType": "type of list",
-    "listTypeButtonLink": "Button Link: Url",
+    "listTypeButtonLink": "Button Link: URL",
     "listTypeButtonNav": "Button Navigation: View",
     "listTypeButtonStateValue": "Button State: value",
     "lockApplyOnlyOnImage": "apply grayfilter only on icon",
