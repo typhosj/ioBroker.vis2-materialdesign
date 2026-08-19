@@ -25,7 +25,6 @@ export default defineConfig({
                 'src-widgets-ts/src/translations.ts',
                 'src-widgets-ts/src/MaterialDesignAutocomplete.tsx',
                 'src-widgets-ts/src/MaterialDesignAdvancedViewInWidget*.tsx',
-                'src-widgets-ts/src/MaterialDesignButton.tsx',
                 'src-widgets-ts/src/MaterialDesignButton{Adition,Link,Navigation,State,StateMulti,Toggle}{,Vertical}.tsx',
                 'src-widgets-ts/src/MaterialDesignIconButton*.tsx',
                 'src-widgets-ts/src/MaterialDesign{Checkbox,Switch}.tsx',
