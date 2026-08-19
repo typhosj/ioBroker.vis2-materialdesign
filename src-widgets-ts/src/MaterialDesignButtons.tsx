@@ -202,10 +202,9 @@ function attrs(def: ButtonDefinition): RxWidgetInfo['visAttrs'] {
             fields: [...(isIcon ? [] : styleFields), ...actionFields[def.kind], ...feedbackFields],
         },
         ...multiStateGroups,
-        {
-            name: 'label',
-            fields: labelFields,
-        },
+        // An icon button has no label, so labelFields is empty — and an empty group is an empty
+        // section in the editor that opens onto nothing.
+        ...(labelFields.length ? [{ name: 'label', fields: labelFields }] : []),
         {
             name: 'color',
             fields: [

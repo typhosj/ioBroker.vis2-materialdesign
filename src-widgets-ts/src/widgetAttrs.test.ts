@@ -103,6 +103,21 @@ function scopeOf(file: string): string {
     return [...seen].map(name => allSources[name]).join('\n');
 }
 
+describe('no empty attribute group', () => {
+    const widgets = Object.entries(modules)
+        .map(([file, module]) => ({ file, info: module.default?.getWidgetInfo?.() }))
+        .filter((entry): entry is { file: string; info: { visAttrs?: Group[] } } => !!entry.info);
+
+    // An empty group is a section in the editor that opens onto nothing. The theme fields are
+    // hidden but real, so a group carrying only those is fine.
+    it.each(widgets.map(w => [w.file, w] as const))('%s has no group without fields', (_file, widget) => {
+        const empty = (widget.info.visAttrs || [])
+            .filter(group => !(group.fields || []).length)
+            .map(group => group.name);
+        expect(empty, `empty groups: ${empty.join(', ')}`).toEqual([]);
+    });
+});
+
 describe('every declared attribute is read', () => {
     const widgets = Object.entries(modules)
         .map(([file, module]) => ({ file, info: module.default?.getWidgetInfo?.() }))
