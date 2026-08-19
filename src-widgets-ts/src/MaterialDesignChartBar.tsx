@@ -2,7 +2,7 @@ import React from "react";
 import { indexedFields, MAX_DYNAMIC_ITEMS, squarePreview, itemCount, RenderProps, VisWidget, createInfo, stateValue, sanitizeHtml } from './widgetUtils';
 import type { RxWidgetInfo } from "@iobroker/types-vis-2";
 import { colorSchemes, scheme } from "./MaterialDesignColorScheme";
-import { MaterialDesignChartCanvas, layoutConfig, tooltipConfig, tooltipNumber } from "./MaterialDesignChartCanvas";
+import { MaterialDesignChartCanvas, datalabelsConfig, layoutConfig, tooltipConfig, tooltipNumber } from "./MaterialDesignChartCanvas";
 import { chartAxis } from "./chartAxis";
 
 type Data = Record<string, unknown> & {
@@ -554,7 +554,7 @@ export default class MaterialDesignChartBar extends VisWidget {
     }
     if (on(data.barWidth) !== undefined) catAxis.barPercentage = Math.max(0, Math.min(1, n(data.barWidth, 80) / 100));
     const scales = horizontal ? { xAxes: [valueAxis], yAxes: [catAxis] } : { yAxes: [valueAxis], xAxes: [catAxis] };
-    const chartjs = <MaterialDesignChartCanvas type={horizontal ? "horizontalBar" : "bar"} data={{ labels: bars.map(bar => bar.label), datasets: [{ data: bars.map(bar => bar.value), backgroundColor: bars.map(bar => bar.color), hoverBackgroundColor: s(data.hoverColor) || undefined, borderColor: s(data.hoverBorderColor), borderWidth: n(data.hoverBorderWidth) }] }} options={{ responsive: true, maintainAspectRatio: false, layout: layoutConfig(data), hover: b(data.disableHoverEffects) ? { mode: null } : undefined, animation: { duration: n(data.animationDuration, 1000) }, legend: { display: false }, scales, plugins: { mdwChartArea: { color: s(data.chartAreaBackgroundColor) } }, tooltips: tooltipConfig(data, {
+    const chartjs = <MaterialDesignChartCanvas type={horizontal ? "horizontalBar" : "bar"} data={{ labels: bars.map(bar => bar.label), datasets: [{ data: bars.map(bar => bar.value), backgroundColor: bars.map(bar => bar.color), hoverBackgroundColor: s(data.hoverColor) || undefined, borderColor: s(data.hoverBorderColor), borderWidth: n(data.hoverBorderWidth) }] }} options={{ responsive: true, maintainAspectRatio: false, layout: layoutConfig(data), hover: b(data.disableHoverEffects) ? { mode: null } : undefined, animation: { duration: n(data.animationDuration, 1000) }, legend: { display: false }, scales, plugins: { datalabels: datalabelsConfig(data, index => ({ text: `${s(bars[index]?.valueText)}${s(bars[index]?.appendix)}`, color: bars[index]?.valueColor }), { align: "top", anchor: "end" }), mdwChartArea: { color: s(data.chartAreaBackgroundColor) } }, tooltips: tooltipConfig(data, {
       title: (items: { index?: number }[]) => { const bar = bars[n(items[0]?.index)]; return bar?.tooltipTitle ? bar.tooltipTitle.split("\\n") : s(bar?.label); },
       label: (item: { index?: number }) => { const bar = bars[n(item.index)]; if (bar?.tooltipText) return bar.tooltipText.split("\\n"); return `${tooltipNumber(data, bar?.value) ?? s(bar?.valueText)}${s(bar?.appendix)}${s(data.tooltipBodyAppend)}`; },
     }) }} />;

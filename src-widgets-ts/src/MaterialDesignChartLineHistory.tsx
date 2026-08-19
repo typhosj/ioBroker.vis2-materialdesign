@@ -2,7 +2,7 @@ import React from "react";
 import { indexedFields, squarePreview, itemCount, RenderProps, VisWidget, createInfo, stateValue, sanitizeHtml } from './widgetUtils';
 import type { RxWidgetInfo, VisRxWidgetState } from "@iobroker/types-vis-2";
 import { colorSchemes, scheme } from "./MaterialDesignColorScheme";
-import { MaterialDesignChartCanvas, layoutConfig, tooltipConfig } from "./MaterialDesignChartCanvas";
+import { MaterialDesignChartCanvas, datalabelsConfig, layoutConfig, tooltipConfig } from "./MaterialDesignChartCanvas";
 import { chartAxis } from "./chartAxis";
 
 type Data = Record<string, unknown>;
@@ -158,7 +158,9 @@ const attrs: RxWidgetInfo["visAttrs"] = [
       color("fillColor"),
       color("pointColor"),
       { name: "legendText", label: "legendText", type: "text" },
-      { name: "showValues", label: "showValues", type: "select", options: ["showValuesOn", "showValuesOff", "showValuesAuto"], default: "showValuesOn" },
+      // Off by default: a history line carries hundreds of points, and a label on each one is a wall
+      // of text. The other charts draw one label per bar or slice, where "on" makes sense.
+      { name: "showValues", label: "showValues", type: "select", options: ["showValuesOn", "showValuesOff", "showValuesAuto"], default: "showValuesOff" },
       num("valuesSteps"),
       num("valuesMinDecimals"),
       num("valuesMaxDecimals"),
@@ -421,7 +423,25 @@ export default class MaterialDesignChartLineHistory extends VisWidget {
       const value = (Number.isFinite(raw) ? raw : 0).toLocaleString(undefined, { maximumFractionDigits: tipMax, minimumFractionDigits: tipMin });
       return `${s(chartData.datasets?.[n(tip.datasetIndex)]?.label)}: ${value}${s(d.tooltipBodyAppend)}`;
     };
-    const chartjs = <MaterialDesignChartCanvas type="line" data={{ datasets: this.series.map((series, i) => ({ label: s(item(d, "legendText", i), series.oid), data: series.points.filter(point => point.val !== null).map(point => ({ t: point.ts, y: point.val })), borderColor: s(item(d, "dataColor", i), colors[i] || s(d.globalColor, "#44739e")), backgroundColor: b(item(d, "useFillColor", i)) ? s(item(d, "fillColor", i), `${s(item(d, "dataColor", i), colors[i] || s(d.globalColor, "#44739e"))}33`) : "transparent", fill: b(item(d, "useFillColor", i)), borderWidth: n(item(d, "lineThikness", i), 2), steppedLine: b(item(d, "steppedLine", i)), lineTension: 0, pointBackgroundColor: s(item(d, "pointColor", i), s(item(d, "dataColor", i), colors[i] || s(d.globalColor, "#44739e"))), pointRadius: n(d.pointSize, 3), yAxisID: yAxisIdOf(i) })) }} options={{ responsive: true, maintainAspectRatio: false, layout: layoutConfig(d), animation: { duration: n(d.animationDuration, 1000) }, legend: { display: false }, plugins: { datalabels: { display: false }, mdwChartArea: { color: s(d.chartAreaBackgroundColor) } }, tooltips: tooltipConfig(d, { label: tooltipLabel }), scales: { xAxes, yAxes } }} />;
+    // The value labels are configured per data set (own decimals, unit, font, box), so each series
+    // gets its own datalabels block instead of one chart-wide one.
+    const seriesLabels = (series: { points: { val: number | null }[] }, i: number): object => {
+      const points = series.points.filter(point => point.val !== null);
+      const minDigits = Math.max(0, n(item(d, "valuesMinDecimals", i)));
+      const maxDigits = Math.max(minDigits, n(item(d, "valuesMaxDecimals", i), 2));
+      return datalabelsConfig({
+        showValues: item(d, "showValues", i),
+        valuesSteps: item(d, "valuesSteps", i),
+        valuesFontColor: item(d, "valuesFontColor", i),
+        valuesFontFamily: item(d, "valuesFontFamily", i),
+        valuesFontSize: item(d, "valuesFontSize", i),
+        valuesBackgroundColor: item(d, "valuesBackgroundColor", i),
+        valuesBorderColor: item(d, "valuesBorderColor", i),
+        valuesBorderWidth: item(d, "valuesBorderWidth", i),
+        valuesBorderRadius: item(d, "valuesBorderRadius", i),
+      }, index => ({ text: `${n(points[index]?.val).toLocaleString(undefined, { minimumFractionDigits: minDigits, maximumFractionDigits: maxDigits })}${s(item(d, "valuesAppendText", i))}` }), { align: "top", anchor: "center" });
+    };
+    const chartjs = <MaterialDesignChartCanvas type="line" data={{ datasets: this.series.map((series, i) => ({ label: s(item(d, "legendText", i), series.oid), data: series.points.filter(point => point.val !== null).map(point => ({ t: point.ts, y: point.val })), borderColor: s(item(d, "dataColor", i), colors[i] || s(d.globalColor, "#44739e")), backgroundColor: b(item(d, "useFillColor", i)) ? s(item(d, "fillColor", i), `${s(item(d, "dataColor", i), colors[i] || s(d.globalColor, "#44739e"))}33`) : "transparent", fill: b(item(d, "useFillColor", i)), borderWidth: n(item(d, "lineThikness", i), 2), steppedLine: b(item(d, "steppedLine", i)), lineTension: 0, pointBackgroundColor: s(item(d, "pointColor", i), s(item(d, "dataColor", i), colors[i] || s(d.globalColor, "#44739e"))), pointRadius: n(d.pointSize, 3), spanGaps: b(item(d, "lineSpanGaps", i), true), yAxisID: yAxisIdOf(i), datalabels: seriesLabels(series, i) })) }} options={{ responsive: true, maintainAspectRatio: false, layout: layoutConfig(d), animation: { duration: n(d.animationDuration, 1000) }, legend: { display: false }, plugins: { datalabels: { display: false }, mdwChartArea: { color: s(d.chartAreaBackgroundColor) } }, tooltips: tooltipConfig(d, { label: tooltipLabel }), scales: { xAxes, yAxes } }} />;
     const legend = b(d.showLegend, true) ? (
       <div
         style={{

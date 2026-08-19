@@ -54,6 +54,37 @@ export function tooltipConfig(data: Record<string, unknown>, callbacks?: object)
   return config;
 }
 
+// Value labels on the drawn element (chartjs-plugin-datalabels). Every chart passes its own text
+// and color per item, the rest of the look comes from the `values*` fields.
+// `valuesSteps` thins the labels out (every n-th item); 0/1 shows all.
+export function datalabelsConfig(
+  data: Record<string, unknown>,
+  label: (index: number) => { text: string; color?: string },
+  defaults: { align: string; anchor: string },
+): object {
+  const num = (value: unknown, fallback = 0): number => (value === "" || value === null || value === undefined || !Number.isFinite(Number(value)) ? fallback : Number(value));
+  const str = (value: unknown, fallback = ""): string => (typeof value === "string" && value ? value : fallback);
+  const show = str(data.showValues, "showValuesOn");
+  const steps = Math.max(1, num(data.valuesSteps, 1));
+  const visible = show === "showValuesAuto" ? "auto" : true;
+  type LabelContext = { dataIndex: number };
+  return {
+    align: str(data.valuesPositionAlign, defaults.align),
+    anchor: str(data.valuesPositionAnchor, defaults.anchor),
+    backgroundColor: str(data.valuesBackgroundColor) || null,
+    borderColor: str(data.valuesBorderColor) || null,
+    borderRadius: num(data.valuesBorderRadius),
+    borderWidth: num(data.valuesBorderWidth),
+    color: (context: LabelContext): string => label(context.dataIndex).color || str(data.valuesFontColor, "#000"),
+    display: show === "showValuesOff" ? false : (context: LabelContext): boolean | string => (context.dataIndex % steps === 0 ? visible : false),
+    font: { family: str(data.valuesFontFamily) || undefined, size: num(data.valuesFontSize, 12) },
+    formatter: (_value: unknown, context: LabelContext): string => label(context.dataIndex).text,
+    offset: num(data.valuesPositionOffset, 4),
+    rotation: num(data.valuesRotation),
+    textAlign: str(data.valuesTextAlign, "center"),
+  };
+}
+
 // `chartPadding*` in px around the plot. Only sides that are set are emitted, so chart.js keeps
 // its own spacing for the rest.
 export function layoutConfig(data: Record<string, unknown>): object | undefined {
