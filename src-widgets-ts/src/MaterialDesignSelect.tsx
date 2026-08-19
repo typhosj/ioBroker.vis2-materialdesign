@@ -108,13 +108,6 @@ const attrs: RxWidgetInfo['visAttrs'] = [
         label: 'group_common',
         fields: [
             { name: 'oid', label: 'oid', type: 'id' },
-            {
-                name: 'inputType',
-                label: 'inputType',
-                type: 'select',
-                options: ['text', 'date', 'time'],
-                default: 'text',
-            },
         ],
     },
     {
@@ -760,7 +753,7 @@ export default class MaterialDesignSelect extends VisWidget {
                                         textOverflow: 'ellipsis',
                                         width: '100%',
                                     }}
-                                    type="text"
+                                    type={data.inputType === 'date' || data.inputType === 'time' ? data.inputType : 'text'}
                                     value={this.filterText ?? (selected?.text || '')}
                                 />
                             ) : (
