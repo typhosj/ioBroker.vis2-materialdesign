@@ -73,5 +73,8 @@ describe('list styling attributes', () => {
         const right = render({ ...row, headers: 'head', headerImage: 'account', headerImagePosition: 'right', headerDistanceBetweenTextAndImage: 20 });
         expect(right).toContain('margin-left:20px');
         expect(right.indexOf('materialdesign-list-header"')).toBeLessThan(right.indexOf('margin-left:20px'));
+        // `mdc-card` is a column flex box: it would turn the alignment vertical and stack the
+        // image above the text, and draw a card frame around the header.
+        expect(left).not.toContain('mdc-card');
     });
 });
