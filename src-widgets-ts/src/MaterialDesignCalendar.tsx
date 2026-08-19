@@ -140,14 +140,20 @@ export default class MaterialDesignCalendar extends VisWidget {
     private clock = 0;
     static getWidgetInfo(): RxWidgetInfo { return { ...createInfo('tplVis2-materialdesign-Calendar', 'Calendar', attrs, ['calendarHeaderLayout', 'calendarWeekNumbersLayout', 'calendarButtonsLayout', 'controlLayout', 'calendarTimeAxisLayout', 'calendarCustomFormats']), visPrev: squarePreview('F00ED'), visDefaultStyle: { width: 500, height: 300 } }; }
     getWidgetInfo(): RxWidgetInfo { return MaterialDesignCalendar.getWidgetInfo(); }
-    componentDidMount(): void { super.componentDidMount(); this.clock = window.setInterval(() => this.forceUpdate(), 60000); }
+    // The minute clock exists for the now line. A month view has none, and the indicator can be
+    // switched off — no reason to re-render every widget on the page once a minute for nothing.
+    private syncClock(needed: boolean): void {
+        if (needed && !this.clock) this.clock = window.setInterval(() => this.forceUpdate(), 60000);
+        if (!needed && this.clock) { window.clearInterval(this.clock); this.clock = 0; }
+    }
     componentWillUnmount(): void { if (this.clock) window.clearInterval(this.clock); super.componentWillUnmount(); }
-    private feedback(d: Data): void { if (n(d.vibrateOnMobilDevices) > 0) navigator.vibrate?.(n(d.vibrateOnMobilDevices)); if (b(d.clickSoundPlay)) { const audio = new Audio('widgets/vis2-materialdesign/materialdesign-widgets-click-sound.mp3'); audio.volume = Math.max(0, Math.min(1, n(d.clickSoundVolume, 0.5))); void audio.play().catch(() => undefined); } }
+    private feedback(d: Data): void { if (n(d.vibrateOnMobilDevices, 50) > 0) navigator.vibrate?.(n(d.vibrateOnMobilDevices, 50)); if (b(d.clickSoundPlay)) { const audio = new Audio('widgets/vis2-materialdesign/materialdesign-widgets-click-sound.mp3'); audio.volume = Math.max(0, Math.min(1, n(d.clickSoundVolume, 0.5))); void audio.play().catch(() => undefined); } }
     renderWidgetBody(props: RenderProps): React.JSX.Element {
         super.renderWidgetBody(props);
         const d = this.state.rxData as unknown as Data;
         const isDark = this.isDarkTheme();
         const view: string = this.view || s(d.calendarView, 'month');
+        this.syncClock(view !== 'month' && b(d.calendarNowIndicatorShow, true));
         const source = events(stateValue(this.state, s(d.oid)));
         const weekdays = s(d.calendarWeekdays, '1,2,3,4,5,6,0').split(',').map(Number).filter(day => day >= 0 && day < 7);
         const order = weekdays.length === 7 ? weekdays : [1, 2, 3, 4, 5, 6, 0];

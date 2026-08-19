@@ -899,14 +899,35 @@ export class VisWidget extends BaseVisWidget {
         }
     };
 
+    private subscribeDarkTheme(oid: string): void {
+        if (oid === this.darkThemeSubscribedOid) {
+            return;
+        }
+        if (this.darkThemeSubscribedOid) {
+            this.props.context.socket.unsubscribeState(this.darkThemeSubscribedOid, this.onDarkThemeChanged);
+        }
+        this.darkThemeSubscribedOid = oid || undefined;
+        if (oid) {
+            this.props.context.socket.subscribeState(oid, this.onDarkThemeChanged).catch((e: unknown) => console.error(`Cannot subscribe on ${oid}: ${String(e)}`));
+        }
+    }
+
+    // Editing the dark-theme state or switching the widget to Material 3 in the editor used to
+    // leave both subscriptions as they were until the page was reloaded.
+    onRxDataChanged(prevRxData: typeof this.state.rxData): void {
+        super.onRxDataChanged?.(prevRxData);
+        const rxData = this.state?.rxData as unknown as Record<string, unknown> | undefined;
+        this.subscribeDarkTheme(darkThemeOid(rxData));
+        this.resolvedStyle = designStyle(rxData);
+        if (this.resolvedStyle === 'material3' && !this.m3SeedSubscribed) {
+            this.subscribeM3Seeds();
+        }
+    }
+
     componentDidMount(): void {
         super.componentDidMount();
         const rxData = this.state?.rxData as unknown as Record<string, unknown> | undefined;
-        const oid = darkThemeOid(rxData);
-        if (oid) {
-            this.darkThemeSubscribedOid = oid;
-            this.props.context.socket.subscribeState(oid, this.onDarkThemeChanged).catch((e: unknown) => console.error(`Cannot subscribe on ${oid}: ${String(e)}`));
-        }
+        this.subscribeDarkTheme(darkThemeOid(rxData));
         this.projectStyleSubscribed = true;
         this.props.context.socket.subscribeState(DEFAULT_DESIGN_STYLE_OID, this.onProjectDesignStyleChanged).catch((e: unknown) => console.error(`Cannot subscribe on ${DEFAULT_DESIGN_STYLE_OID}: ${String(e)}`));
         this.resolvedStyle = designStyle(rxData);

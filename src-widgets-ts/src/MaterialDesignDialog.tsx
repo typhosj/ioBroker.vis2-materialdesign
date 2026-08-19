@@ -387,8 +387,8 @@ export class MaterialDesignDialog extends VisWidget {
     }
   }
   private feedback(d: Data): void {
-    if (n(d.vibrateOnMobilDevices) > 0)
-      navigator.vibrate?.(n(d.vibrateOnMobilDevices));
+    if (n(d.vibrateOnMobilDevices, 50) > 0)
+      navigator.vibrate?.(n(d.vibrateOnMobilDevices, 50));
     if (b(d.clickSoundPlay)) {
       const a = new Audio(
         "widgets/vis2-materialdesign/materialdesign-widgets-click-sound.mp3",

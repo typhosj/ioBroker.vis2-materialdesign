@@ -38,12 +38,16 @@ export type AxisSpec = {
     time?: Record<string, unknown>;
 };
 
+// Material Design blue instead of chart.js' grey #666. Set per axis, not through Chart.defaults:
+// that global reaches every chart.js instance on the page, ours or not.
+export const CHART_TEXT_COLOR = '#44739e';
+
 const has = (v: unknown): boolean => v !== undefined && v !== null && v !== '';
 
 export function chartAxis(a: AxisSpec): Record<string, unknown> {
     const ticks: Record<string, unknown> = {};
     if (a.labelsDisplay !== undefined) ticks.display = a.labelsDisplay;
-    if (has(a.labelColor)) ticks.color = a.labelColor;
+    ticks.color = has(a.labelColor) ? a.labelColor : CHART_TEXT_COLOR;
     const tickFont: Record<string, unknown> = {};
     if (has(a.labelFontFamily)) tickFont.family = a.labelFontFamily;
     if (a.labelFontSize) tickFont.size = a.labelFontSize;
@@ -69,7 +73,7 @@ export function chartAxis(a: AxisSpec): Record<string, unknown> {
         title.display = true;
         title.text = a.title;
     }
-    if (has(a.titleColor)) title.color = a.titleColor;
+    if (has(a.title) || has(a.titleColor)) title.color = has(a.titleColor) ? a.titleColor : CHART_TEXT_COLOR;
     const titleFont: Record<string, unknown> = {};
     if (has(a.titleFontFamily)) titleFont.family = a.titleFontFamily;
     if (a.titleFontSize) titleFont.size = a.titleFontSize;

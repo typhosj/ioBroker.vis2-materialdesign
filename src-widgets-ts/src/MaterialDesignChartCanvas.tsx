@@ -9,6 +9,7 @@ import {
 import ChartDataLabels from "chartjs-plugin-datalabels";
 
 import { designStyle, m3OnColor } from "./widgetUtils";
+import { CHART_TEXT_COLOR } from "./chartAxis";
 
 // Deliberately not `chart.js/auto`, which drags in the radar/polar/bubble/scatter/time engine we
 // never draw (~2x the gzip). The guard is for vitest/jsdom, whose resolver loads a build without
@@ -24,9 +25,6 @@ if (typeof (Chart as { register?: unknown }).register === "function") {
     ChartDataLabels,
   );
 }
-
-// v4 renamed this global from defaults.global.defaultFontColor.
-Chart.defaults.color = "#44739e";
 
 // Value labels sit ON the drawn element, so a fixed color is unreadable on half the palette.
 export function labelColorFor(context: { dataIndex: number; dataset?: { backgroundColor?: unknown }; chart?: { canvas?: HTMLCanvasElement } }): string {
@@ -67,7 +65,7 @@ export function datalabelsConfig(
   const offElementColor = (context: LabelContext): string => {
     const canvas = context.chart?.canvas;
     const token = canvas && designStyle(data) === "material3" ? getComputedStyle(canvas).getPropertyValue("--md-sys-color-on-surface").trim() : "";
-    return token || str(Chart.defaults.color, "#44739e");
+    return token || CHART_TEXT_COLOR;
   };
   return {
     align,
