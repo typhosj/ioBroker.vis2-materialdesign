@@ -62,3 +62,72 @@ describe('indexed attribute groups', () => {
         expect(at(count - 1, 'hint'), `${group.name} hints on a real entry`).toEqual([true]);
     });
 });
+
+// A field the editor offers but no widget reads is the worst kind of bug report: the user sets it,
+// nothing happens, and the widget looks broken. This is the guard that keeps the list at zero.
+//
+// Scope matters: a field counts as read only inside its own widget file plus the local modules that
+// file imports. Checking all sources at once let `showInputMessageAlways` pass because Select
+// implemented it while Input did not.
+//
+// A read is `data.name`, `data['name']` or `data[`name${i}`]` — not a declaration. Field lists are
+// built by helpers (`num("chartPaddingTop")`, `["axisValueMin", …].map(…)`), so a plain text search
+// counts those declarations as uses and finds nothing.
+const sources = import.meta.glob<string>('./*.tsx', { eager: true, query: '?raw', import: 'default' });
+const sourcesTs = import.meta.glob<string>('./*.ts', { eager: true, query: '?raw', import: 'default' });
+const allSources: Record<string, string> = { ...sources, ...sourcesTs };
+
+// Names assembled at runtime, which no static search can see:
+// - chartPadding*: layoutConfig() loops over the four side names.
+// - the colspan fields: MaterialDesignViews picks the field name for the current breakpoint and
+//   reads it as d[layout.key].
+// - delayInMs: read through indexedValue(data, 'delayInMs', i).
+const RUNTIME_NAMES = new Set([
+    'chartPaddingTop', 'chartPaddingLeft', 'chartPaddingRight', 'chartPaddingBottom',
+    'viewColSpan', 'handyGridPortraitColSpan', 'handyGridLandscapeColSpan',
+    'tabletGridPortraitColSpan', 'tabletGridLandscapeColSpan',
+    'delayInMs',
+]);
+
+function scopeOf(file: string): string {
+    const seen = new Set([file]);
+    const queue = [file];
+    while (queue.length) {
+        const current = queue.pop()!;
+        for (const match of (allSources[current] || '').matchAll(/from\s+['"]\.\/([A-Za-z0-9_]+)['"]/g)) {
+            for (const candidate of [`./${match[1]}.tsx`, `./${match[1]}.ts`]) {
+                if (allSources[candidate] && !seen.has(candidate)) { seen.add(candidate); queue.push(candidate); }
+            }
+        }
+    }
+    return [...seen].map(name => allSources[name]).join('\n');
+}
+
+describe('every declared attribute is read', () => {
+    const widgets = Object.entries(modules)
+        .map(([file, module]) => ({ file, info: module.default?.getWidgetInfo?.() }))
+        .filter((entry): entry is { file: string; info: { visAttrs?: Group[] } } => !!entry.info);
+
+    it.each(widgets.map(w => [w.file, w] as const))('%s reads what it declares', (file, widget) => {
+        const text = scopeOf(file);
+        const reads = new Set<string>();
+        for (const match of text.matchAll(/\.([A-Za-z_$][\w$]*)\b/g)) reads.add(match[1]);
+        for (const match of text.matchAll(/\[\s*['"]([^'"\]]+)['"]\s*\]/g)) reads.add(match[1]);
+        // Rows of an indexed group are read through helpers that take the base name as a string.
+        for (const match of text.matchAll(/\b(?:indexed|indexedValue|item|get)\(\s*(?:\w+\s*,\s*)?['"]([A-Za-z_$][\w$]*)['"]/g)) reads.add(match[1]);
+        const prefixes = [...text.matchAll(/\[`([A-Za-z_$][\w$]*)\$\{/g)].map(match => match[1]);
+        const suffixes = [...text.matchAll(/\[`\$\{[^}]+\}([A-Za-z_$][\w$]*)`\]/g)].map(match => match[1]);
+
+        const dead = (widget.info.visAttrs || []).flatMap(group => (group.fields || [])
+            .filter(field => {
+                const name = field.name;
+                if (!name || name.startsWith('__mdwTheme') || name === 'addBarHint' || name === 'useTheme') return false;
+                if (field.type === 'custom' || field.type === 'help') return false;
+                if (RUNTIME_NAMES.has(name) || reads.has(name)) return false;
+                if (prefixes.some(prefix => name.startsWith(prefix))) return false;
+                return !suffixes.some(suffix => name.endsWith(suffix) && name.length > suffix.length);
+            })
+            .map(field => `${group.name}.${field.name}`));
+        expect(dead, `declared but never read: ${dead.join(', ')}`).toEqual([]);
+    });
+});
