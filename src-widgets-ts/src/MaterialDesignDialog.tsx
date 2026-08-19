@@ -151,12 +151,7 @@ const closeFields = [
   { name: "buttonFont", label: "buttonFont", type: "fontname" as const },
   { name: "buttonFontColor", label: "buttonFontColor", type: "color" as const },
   { name: "pressColor", label: "pressColor", type: "color" as const },
-  {
-    name: "fullscreenCloseIcon",
-    label: "fullscreenCloseIcon",
-    type: "icon" as const,
-    default: "close",
-  },
+  iconField("fullscreenCloseIcon", "fullscreenCloseIcon", "close"),
   {
     name: "fullscreenCloseIconColor",
     label: "fullscreenCloseIconColor",

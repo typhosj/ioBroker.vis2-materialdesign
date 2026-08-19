@@ -118,6 +118,17 @@ describe('no empty attribute group', () => {
     });
 });
 
+describe('icon fields go through the widget set picker', () => {
+    // VIS 2 renders `type: 'icon'` with its own IconPicker, which loads the value as an image URL
+    // and 404s on an mdi name. iconField() uses our picker, which takes mdi names, Material
+    // Symbols and ioBroker files — the three kinds renderIcon() understands.
+    it.each(Object.keys(allSources))('%s declares no raw icon field', file => {
+        // The comment above iconField() names the type it replaces, so only code counts.
+        const code = allSources[file].replace(/^\s*\/\/.*$/gm, '');
+        expect(/type:\s*['"]icon['"]/.test(code)).toBe(false);
+    });
+});
+
 describe('every declared attribute is read', () => {
     const widgets = Object.entries(modules)
         .map(([file, module]) => ({ file, info: module.default?.getWidgetInfo?.() }))
