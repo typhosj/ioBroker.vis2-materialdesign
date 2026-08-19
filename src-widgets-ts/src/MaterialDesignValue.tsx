@@ -38,6 +38,7 @@ export interface ValueData extends BaseRxData {
     effectFontColor?: string;
     effectFontSize?: number;
     effectDuration?: number;
+    isHiddenOnLoad?: boolean;
 }
 
 
@@ -224,10 +225,48 @@ export default class MaterialDesignValue extends VisWidget {
         return MaterialDesignValue.getWidgetInfo();
     }
 
+    // `changeEffect`: the value briefly switches to its own color and size when it changes, so a
+    // change is noticeable on a dashboard nobody is staring at.
+    private seenValue: ioBroker.StateValue | undefined;
+    private seenAny = false;
+    private effectUntil = 0;
+    private effectTimer?: number;
+
+    componentWillUnmount(): void {
+        if (this.effectTimer) {
+            window.clearTimeout(this.effectTimer);
+        }
+        super.componentWillUnmount();
+    }
+
     renderWidgetBody(props: RenderProps): React.JSX.Element {
         super.renderWidgetBody(props);
         const data = this.state.rxData as ValueData;
         const value = stateValue(this.state, data.oid);
+        // The value briefly switches to its own color and size when it changes, so a change is
+        // noticeable on a dashboard nobody is staring at.
+        if (value !== this.seenValue) {
+            // The first value is the state arriving, not a change — no flash on load.
+            const changed = this.seenAny;
+            this.seenValue = value;
+            this.seenAny = true;
+            if (changed && data.changeEffectEnabled) {
+                const duration = Math.max(0, number(data.effectDuration, 750));
+                this.effectUntil = Date.now() + duration;
+                if (this.effectTimer) {
+                    window.clearTimeout(this.effectTimer);
+                }
+                this.effectTimer = window.setTimeout(() => {
+                    this.effectTimer = undefined;
+                    this.forceUpdate();
+                }, duration);
+            }
+        }
+        const inEffect = !!data.changeEffectEnabled && Date.now() < this.effectUntil;
+        // `isHiddenOnLoad` keeps the widget out of sight until its state has arrived.
+        if (data.isHiddenOnLoad && value === undefined) {
+            return <div className="materialdesign-widget materialdesign-value" style={{ height: '100%', visibility: 'hidden', width: '100%' }} />;
+        }
         const isM3 = designStyle(data as unknown as Record<string, unknown>) === 'material3';
         const m3Text = (resolved: string, token: string): string | undefined =>
             resolved || (isM3 ? token : undefined);
@@ -240,10 +279,13 @@ export default class MaterialDesignValue extends VisWidget {
         const iconFirst = data.iconPosition !== 'right';
         const gap = number(data.valueLabelWidth, 4);
         const valueStyle: React.CSSProperties = {
-            color: m3Text(color(evalMaybe(data.valuesFontColor, value)), 'var(--md-sys-color-on-surface)'),
+            // The effect color wins over both the configured color and the M3 token while it lasts.
+            color: (inEffect ? text(data.effectFontColor) : '') || m3Text(color(evalMaybe(data.valuesFontColor, value)), 'var(--md-sys-color-on-surface)'),
             flex: 1,
             fontFamily: text(data.valuesFontFamily) || undefined,
-            fontSize: data.valuesFontSize ? sizeCss(data.valuesFontSize, 14) : undefined,
+            fontSize: inEffect && data.effectFontSize
+                ? sizeCss(data.effectFontSize, 14)
+                : data.valuesFontSize ? sizeCss(data.valuesFontSize, 14) : undefined,
             margin: `0 ${gap}px`,
             textAlign: data.textAlign || 'start',
         };

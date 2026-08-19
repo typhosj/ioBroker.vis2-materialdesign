@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatBoolean, formatNumber, formattedValue, replaceValue, type ValueData } from './MaterialDesignValue';
+import { renderToStaticMarkup } from 'react-dom/server';
+
+import MaterialDesignValue, { formatBoolean, formatNumber, formattedValue, replaceValue, type ValueData } from './MaterialDesignValue';
 
 const data = (overrides: Partial<ValueData>): ValueData => overrides as unknown as ValueData;
 
@@ -57,5 +59,38 @@ describe('MaterialDesignValue formatting', () => {
         it('splits piped results into indexed #value[n] placeholders', () => {
             expect(formattedValue('a|b', data({ targetType: 'string', overrideText: '#value[0]/#value[1]' }))).toBe('a/b');
         });
+    });
+});
+
+describe('change effect and hidden-on-load', () => {
+    const fixture = <T>(value: unknown): T => value as T;
+    const widget = (rxData: Partial<ValueData>, value: unknown): MaterialDesignValue => {
+        const instance = new MaterialDesignValue(fixture<ConstructorParameters<typeof MaterialDesignValue>[0]>({ context: {} }));
+        instance.state = fixture<typeof instance.state>({ rxData, values: value === undefined ? {} : { 'test.0.v.val': value } });
+        return instance;
+    };
+    const render = (instance: MaterialDesignValue): string =>
+        renderToStaticMarkup(instance.renderWidgetBody(fixture<Parameters<MaterialDesignValue['renderWidgetBody']>[0]>({})));
+    const update = (instance: MaterialDesignValue, value: unknown): string => {
+        instance.state = fixture<typeof instance.state>({ ...instance.state, values: { 'test.0.v.val': value } });
+        return render(instance);
+    };
+
+    it('hides itself until the state arrives', () => {
+        expect(render(widget({ oid: 'test.0.v', isHiddenOnLoad: true }, undefined))).toContain('visibility:hidden');
+        expect(render(widget({ oid: 'test.0.v', isHiddenOnLoad: true }, 5))).not.toContain('visibility:hidden');
+        expect(render(widget({ oid: 'test.0.v' }, undefined))).not.toContain('visibility:hidden');
+    });
+
+    it('flashes the effect color on a change, but not on the first value', () => {
+        const instance = widget({ oid: 'test.0.v', changeEffectEnabled: true, effectFontColor: '#ff0000' }, 1);
+        expect(render(instance)).not.toContain('#ff0000');
+        expect(update(instance, 2)).toContain('#ff0000');
+    });
+
+    it('stays quiet while the effect is switched off', () => {
+        const instance = widget({ oid: 'test.0.v', effectFontColor: '#ff0000' }, 1);
+        render(instance);
+        expect(update(instance, 2)).not.toContain('#ff0000');
     });
 });
