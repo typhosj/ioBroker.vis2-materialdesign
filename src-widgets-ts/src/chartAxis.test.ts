@@ -53,4 +53,23 @@ describe('chartAxis', () => {
     it('does not emit empty strings or false numeric shortcuts', () => {
         expect(chartAxis({ id: '', labelFontSize: 0, gridWidth: 0, title: '' })).toEqual({});
     });
+
+    it('carries label skipping, rotation, tick limit and the bar thickness', () => {
+        const callback = (value: unknown): string => `${String(value)} kWh`;
+        expect(chartAxis({
+            autoSkip: true,
+            minRotation: 30,
+            maxRotation: 60,
+            maxTicksLimit: 8,
+            tickCallback: callback,
+            offset: true,
+            offsetGridLines: false,
+            barPercentage: 0.8,
+        })).toEqual({
+            offset: true,
+            barPercentage: 0.8,
+            ticks: { autoSkip: true, minRotation: 30, maxRotation: 60, maxTicksLimit: 8, callback },
+            gridLines: { offsetGridLines: false },
+        });
+    });
 });

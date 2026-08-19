@@ -27,6 +27,14 @@ export type AxisSpec = {
     drawTicks?: boolean;
     tickLength?: number;
     time?: Record<string, unknown>;
+    autoSkip?: boolean;
+    minRotation?: number;
+    maxRotation?: number;
+    maxTicksLimit?: number;
+    tickCallback?: (value: unknown) => string;
+    offset?: boolean;
+    offsetGridLines?: boolean;
+    barPercentage?: number; // v2 keeps the bar thickness on the category scale, not on the dataset
 };
 
 const has = (v: unknown): boolean => v !== undefined && v !== null && v !== '';
@@ -41,8 +49,14 @@ export function chartAxis(a: AxisSpec): Record<string, unknown> {
     if (a.min !== undefined) ticks.min = a.min;
     if (a.max !== undefined) ticks.max = a.max;
     if (a.stepSize !== undefined) ticks.stepSize = a.stepSize;
+    if (a.autoSkip !== undefined) ticks.autoSkip = a.autoSkip;
+    if (a.minRotation !== undefined) ticks.minRotation = a.minRotation;
+    if (a.maxRotation !== undefined) ticks.maxRotation = a.maxRotation;
+    if (a.maxTicksLimit !== undefined) ticks.maxTicksLimit = a.maxTicksLimit;
+    if (a.tickCallback) ticks.callback = a.tickCallback;
 
     const gridLines: Record<string, unknown> = {};
+    if (a.offsetGridLines !== undefined) gridLines.offsetGridLines = a.offsetGridLines;
     if (a.gridDisplay !== undefined) gridLines.display = a.gridDisplay;
     if (has(a.gridColor)) gridLines.color = a.gridColor;
     if (a.gridWidth) gridLines.lineWidth = a.gridWidth;
@@ -64,6 +78,8 @@ export function chartAxis(a: AxisSpec): Record<string, unknown> {
     if (has(a.position)) axis.position = a.position;
     if (a.display !== undefined) axis.display = a.display;
     if (a.stacked !== undefined) axis.stacked = a.stacked;
+    if (a.offset !== undefined) axis.offset = a.offset;
+    if (a.barPercentage !== undefined) axis.barPercentage = a.barPercentage;
     if (a.time) axis.time = a.time;
     if (Object.keys(ticks).length) axis.ticks = ticks;
     if (Object.keys(gridLines).length) axis.gridLines = gridLines;

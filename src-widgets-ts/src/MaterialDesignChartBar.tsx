@@ -526,11 +526,33 @@ export default class MaterialDesignChartBar extends VisWidget {
       gridWidth: on(data[`${ax}AxisGridLinesWitdh`]),
       drawTicks: b(data[`${ax}AxisShowTicks`], true),
       tickLength: on(data[`${ax}AxisTickLength`]),
+      // The xAxisLayout group is about the x axis, whichever role it plays in this orientation.
+      minRotation: ax === "x" ? on(data.xAxisMinRotation) : undefined,
+      maxRotation: ax === "x" ? on(data.xAxisMaxRotation) : undefined,
+      offset: ax === "x" && data.xAxisOffset !== "" && data.xAxisOffset !== undefined ? b(data.xAxisOffset) : undefined,
+      offsetGridLines: ax === "x" && data.xAxisOffsetGridLines !== "" && data.xAxisOffsetGridLines !== undefined ? b(data.xAxisOffsetGridLines) : undefined,
     });
     // value axis (numeric) carries the computed min/max; the other axis holds category labels.
+    // The value axis carries step size, digits and the appended unit; the category axis carries
+    // label skipping and the bar thickness (v2 keeps barPercentage on the scale, not the dataset).
+    const valueDigits = { minimumFractionDigits: Math.max(0, n(data.axisValueMinDigits)), maximumFractionDigits: Math.max(Math.max(0, n(data.axisValueMinDigits)), n(data.axisValueMaxDigits)) };
+    const valueSuffix = s(data.axisValueAppendText);
     const valueAxis = axisOf(horizontal ? "x" : "y");
-    valueAxis.ticks = { ...((valueAxis.ticks) || {}), min, max };
+    valueAxis.ticks = {
+      ...((valueAxis.ticks) || {}),
+      min,
+      max,
+      ...(on(data.axisValueStepSize) === undefined ? {} : { stepSize: on(data.axisValueStepSize) }),
+      ...(on(data.axisMaxLabel) === undefined ? {} : { maxTicksLimit: on(data.axisMaxLabel) }),
+      ...(data.axisValueMinDigits === undefined || data.axisValueMinDigits === "") && (data.axisValueMaxDigits === undefined || data.axisValueMaxDigits === "") && !valueSuffix
+        ? {}
+        : { callback: (value: unknown) => `${Number.isFinite(Number(value)) ? Number(value).toLocaleString(undefined, valueDigits) : s(value)}${valueSuffix}` },
+    };
     const catAxis = axisOf(horizontal ? "y" : "x");
+    if (data.axisLabelAutoSkip !== undefined && data.axisLabelAutoSkip !== "") {
+      catAxis.ticks = { ...(catAxis.ticks || {}), autoSkip: b(data.axisLabelAutoSkip) };
+    }
+    if (on(data.barWidth) !== undefined) catAxis.barPercentage = Math.max(0, Math.min(1, n(data.barWidth, 80) / 100));
     const scales = horizontal ? { xAxes: [valueAxis], yAxes: [catAxis] } : { yAxes: [valueAxis], xAxes: [catAxis] };
     const chartjs = <MaterialDesignChartCanvas type={horizontal ? "horizontalBar" : "bar"} data={{ labels: bars.map(bar => bar.label), datasets: [{ data: bars.map(bar => bar.value), backgroundColor: bars.map(bar => bar.color), hoverBackgroundColor: s(data.hoverColor) || undefined, borderColor: s(data.hoverBorderColor), borderWidth: n(data.hoverBorderWidth) }] }} options={{ responsive: true, maintainAspectRatio: false, layout: layoutConfig(data), hover: b(data.disableHoverEffects) ? { mode: null } : undefined, animation: { duration: n(data.animationDuration, 1000) }, legend: { display: false }, scales, plugins: { mdwChartArea: { color: s(data.chartAreaBackgroundColor) } }, tooltips: tooltipConfig(data, {
       title: (items: { index?: number }[]) => { const bar = bars[n(items[0]?.index)]; return bar?.tooltipTitle ? bar.tooltipTitle.split("\\n") : s(bar?.label); },
