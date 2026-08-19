@@ -346,7 +346,7 @@ export default class MaterialDesignChartPie extends VisWidget {
     // out. Doughnuts centre the label in the band instead; `valuesPositionAlign` still overrides.
     }, { align: s(data.chartType) === "doughnut" ? "center" : "end", anchor: "center" }), legend: { display: false }, mdwChartArea: { color: s(data.chartAreaBackgroundColor) }, tooltip: tooltipConfig(data, {
       title: (items: { dataIndex?: number }[]) => { const item = values[n(items[0]?.dataIndex)]; return item?.tooltipTitle ? item.tooltipTitle.split("\\n") : ""; },
-      label: (item: { dataIndex?: number }) => { const v = values[n(item.dataIndex)]; if (v?.tooltipText) return v.tooltipText.split("\\n"); const num = n(v?.value).toLocaleString(undefined, { minimumFractionDigits: Math.max(0, n(data.tooltipValueMinDecimals)), maximumFractionDigits: Math.max(0, n(data.tooltipValueMaxDecimals)) }); return `${s(v?.label)}: ${num}${s(v?.appendix)}`; },
+      label: (item: { dataIndex?: number }) => { const v = values[n(item.dataIndex)]; if (v?.tooltipText) return v.tooltipText.split("\\n"); const num = n(v?.value).toLocaleString(undefined, { minimumFractionDigits: Math.max(0, n(data.tooltipValueMinDecimals)), maximumFractionDigits: Math.max(0, n(data.tooltipValueMaxDecimals)) }); return `${s(v?.label)}: ${num}${s(v?.appendix)}${s(data.tooltipBodyAppend)}`; },
     }) } }} />;
     const chartBox = (
       <div style={{ flex: 1, minWidth: 0, minHeight: 0, position: "relative" }}>{chartjs}</div>
