@@ -4,7 +4,7 @@ import { chartAxis } from './chartAxis';
 
 describe('chartAxis', () => {
     it('keeps chart.js defaults when no option is configured', () => {
-        expect(chartAxis({})).toEqual({});
+        expect(chartAxis({})).toEqual({ ticks: { fontColor: '#44739e' } });
     });
 
     it('maps configured axis, tick, grid and title options', () => {
@@ -51,7 +51,8 @@ describe('chartAxis', () => {
     });
 
     it('does not emit empty strings or false numeric shortcuts', () => {
-        expect(chartAxis({ id: '', labelFontSize: 0, gridWidth: 0, title: '' })).toEqual({});
+        // The tick color is always emitted: it replaces the chart.js default that used to be set globally.
+        expect(chartAxis({ id: '', labelFontSize: 0, gridWidth: 0, title: '' })).toEqual({ ticks: { fontColor: '#44739e' } });
     });
 
     it('carries label skipping, rotation, tick limit and the bar thickness', () => {
@@ -68,7 +69,7 @@ describe('chartAxis', () => {
         })).toEqual({
             offset: true,
             barPercentage: 0.8,
-            ticks: { autoSkip: true, minRotation: 30, maxRotation: 60, maxTicksLimit: 8, callback },
+            ticks: { fontColor: '#44739e', autoSkip: true, minRotation: 30, maxRotation: 60, maxTicksLimit: 8, callback },
             gridLines: { offsetGridLines: false },
         });
     });

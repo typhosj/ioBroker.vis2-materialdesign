@@ -203,7 +203,7 @@ export function labelFor(raw: number, percent: number, data: SliderData, applyRu
 }
 
 function feedback(data: SliderData): void {
-    const vibrate = num(data.vibrateOnMobilDevices, 0);
+    const vibrate = num(data.vibrateOnMobilDevices, 50);
     if (vibrate > 0 && navigator.vibrate) {
         navigator.vibrate(vibrate);
     }

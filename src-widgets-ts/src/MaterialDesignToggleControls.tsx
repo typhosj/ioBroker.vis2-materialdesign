@@ -147,7 +147,7 @@ function writeValue(props: VisRxWidgetProps, data: ToggleControlData, on: boolea
 }
 
 function feedback(data: ToggleControlData): void {
-    const vibrate = asNumber(data.vibrateOnMobilDevices, 0);
+    const vibrate = asNumber(data.vibrateOnMobilDevices, 50);
     if (vibrate > 0 && navigator.vibrate) {
         navigator.vibrate(vibrate);
     }

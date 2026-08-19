@@ -240,8 +240,8 @@ export default class MaterialDesignIconList extends VisWidget {
             const audio = new Audio('widgets/vis2-materialdesign/materialdesign-widgets-click-sound.mp3');
             audio.volume = Math.max(0, Math.min(1, n(data.clickSoundVolume, 0.5)));
             void audio.play().catch(() => undefined);
-        } else if (!sound && n(data.vibrateOnMobilDevices) > 0) {
-            navigator.vibrate?.(n(data.vibrateOnMobilDevices));
+        } else if (!sound && n(data.vibrateOnMobilDevices, 50) > 0) {
+            navigator.vibrate?.(n(data.vibrateOnMobilDevices, 50));
         }
     }
 

@@ -146,7 +146,7 @@ export function arcPath(start: number, length: number, radius: number): string {
 }
 
 function feedback(data: RoundSliderData): void {
-    const vibrate = num(data.vibrateOnMobilDevices, 0);
+    const vibrate = num(data.vibrateOnMobilDevices, 50);
     if (vibrate > 0 && navigator.vibrate) {
         navigator.vibrate(vibrate);
     }

@@ -37,12 +37,16 @@ export type AxisSpec = {
     barPercentage?: number; // v2 keeps the bar thickness on the category scale, not on the dataset
 };
 
+const AXIS_TEXT_COLOR = '#44739e';
+
 const has = (v: unknown): boolean => v !== undefined && v !== null && v !== '';
 
 export function chartAxis(a: AxisSpec): Record<string, unknown> {
     const ticks: Record<string, unknown> = {};
     if (a.labelsDisplay !== undefined) ticks.display = a.labelsDisplay;
-    if (has(a.labelColor)) ticks.fontColor = a.labelColor;
+    // Material Design blue instead of chart.js' grey #666. Set per axis, not through
+    // Chart.defaults: that global reaches every chart.js instance on the page, ours or not.
+    ticks.fontColor = has(a.labelColor) ? a.labelColor : AXIS_TEXT_COLOR;
     if (has(a.labelFontFamily)) ticks.fontFamily = a.labelFontFamily;
     if (a.labelFontSize) ticks.fontSize = a.labelFontSize;
     if (a.labelPadding !== undefined) ticks.padding = a.labelPadding;
@@ -68,7 +72,7 @@ export function chartAxis(a: AxisSpec): Record<string, unknown> {
         scaleLabel.display = true;
         scaleLabel.labelString = a.title;
     }
-    if (has(a.titleColor)) scaleLabel.fontColor = a.titleColor;
+    if (has(a.title) || has(a.titleColor)) scaleLabel.fontColor = has(a.titleColor) ? a.titleColor : AXIS_TEXT_COLOR;
     if (has(a.titleFontFamily)) scaleLabel.fontFamily = a.titleFontFamily;
     if (a.titleFontSize) scaleLabel.fontSize = a.titleFontSize;
 

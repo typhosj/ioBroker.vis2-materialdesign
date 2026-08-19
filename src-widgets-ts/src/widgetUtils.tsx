@@ -670,13 +670,29 @@ export class VisWidget extends BaseVisWidget {
         }
     };
 
-    componentDidMount(): void {
-        super.componentDidMount();
-        const oid = darkThemeOid(this.state?.rxData as unknown as Record<string, unknown> | undefined);
+    private subscribeDarkTheme(oid: string): void {
+        if (oid === this.darkThemeSubscribedOid) {
+            return;
+        }
+        if (this.darkThemeSubscribedOid) {
+            this.props.context.socket.unsubscribeState(this.darkThemeSubscribedOid, this.onDarkThemeChanged);
+        }
+        this.darkThemeSubscribedOid = oid || undefined;
         if (oid) {
-            this.darkThemeSubscribedOid = oid;
             this.props.context.socket.subscribeState(oid, this.onDarkThemeChanged).catch((e: unknown) => console.error(`Cannot subscribe on ${oid}: ${String(e)}`));
         }
+    }
+
+    componentDidMount(): void {
+        super.componentDidMount();
+        this.subscribeDarkTheme(darkThemeOid(this.state?.rxData as unknown as Record<string, unknown> | undefined));
+    }
+
+    // Editing the dark-theme state in the editor used to leave the widget on the old subscription
+    // until the page was reloaded.
+    onRxDataChanged(prevRxData: typeof this.state.rxData): void {
+        super.onRxDataChanged?.(prevRxData);
+        this.subscribeDarkTheme(darkThemeOid(this.state?.rxData as unknown as Record<string, unknown> | undefined));
     }
 
     componentWillUnmount(): void {
