@@ -336,6 +336,7 @@
     "fullscreenResolutionLower": "mostrar diálogo em tela cheia se a resolução for menor que",
     "Generate global script": "Gerar script global",
     "generate script": "gerar script",
+    "sendValueOnRelease": "Enviar o valor ao soltar",
     "theme states synced": "estados do tema sincronizados",
     "globalColor": "cor global",
     "group_alertLayout": "disposição",

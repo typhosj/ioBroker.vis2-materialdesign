@@ -336,6 +336,7 @@
     "fullscreenResolutionLower": "показывать полноэкранный диалог, если разрешение ниже",
     "Generate global script": "Создать глобальный скрипт",
     "generate script": "Создать скрипт",
+    "sendValueOnRelease": "Отправлять значение при отпускании",
     "theme states synced": "состояния темы синхронизированы",
     "globalColor": "глобальный цвет",
     "group_alertLayout": "расположение",

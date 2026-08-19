@@ -4,7 +4,7 @@ import type { RxWidgetInfo, VisRxWidgetProps } from '@iobroker/types-vis-2';
 
 import { cleanColor, num, snapToStep } from './MaterialDesignProgress';
 import { m3ColorExplicit } from './MaterialDesignButtons';
-import { squarePreview, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, setStateValue, sizeCss, sliderKeyValue, stateValue, sanitizeHtml } from './widgetUtils';
+import { squarePreview, RenderProps, SliderWriter, VisWidget, createInfo, designStyle, designStyleClasses, setStateValue, sizeCss, sliderKeyValue, stateValue, sanitizeHtml } from './widgetUtils';
 
 export interface RoundSliderData {
     oid?: string;
@@ -13,6 +13,7 @@ export interface RoundSliderData {
     max?: number;
     step?: number;
     readOnly?: boolean;
+    sendValueOnRelease?: boolean;
     startAngle?: number;
     arcLength?: number;
     sliderWidth?: number;
@@ -49,6 +50,7 @@ const attrs: RxWidgetInfo['visAttrs'] = [
         fields: [
             { name: 'oid', label: 'oid', type: 'id' },
             { name: 'oid-working', label: 'oid-working', type: 'id' },
+            { name: 'sendValueOnRelease', label: 'sendValueOnRelease', type: 'checkbox' },
             { name: 'min', label: 'min', type: 'number' },
             { name: 'max', label: 'max', type: 'number' },
             { name: 'step', label: 'step', type: 'number', default: 1 },
@@ -164,6 +166,12 @@ function feedback(data: RoundSliderData): void {
 
 export default class MaterialDesignRoundSlider extends VisWidget {
     private optimisticValue: number | undefined;
+    private readonly writer = new SliderWriter();
+
+    componentWillUnmount(): void {
+        this.writer.cancel();
+        super.componentWillUnmount();
+    }
     private seenStateValue: ioBroker.StateValue | undefined;
 
     constructor(props: VisRxWidgetProps) {
@@ -231,9 +239,21 @@ export default class MaterialDesignRoundSlider extends VisWidget {
                 event.stopPropagation();
                 const next = this.pointerValue(event, data);
                 this.optimisticValue = next;
-                setStateValue(this.props, data.oid || '', next);
+                // The handle follows the finger either way; only the writing differs.
+                if (!data.sendValueOnRelease) {
+                    this.writer.write(this.props, data.oid || '', next);
+                }
                 this.forceUpdate();
             }
+        };
+        const release = (): void => {
+            if (data.sendValueOnRelease) {
+                if (this.optimisticValue !== undefined) {
+                    setStateValue(this.props, data.oid || '', this.optimisticValue);
+                }
+                return;
+            }
+            this.writer.flush(this.props);
         };
 
         // Non-slider keys are left alone so Tab still moves focus.
@@ -278,6 +298,7 @@ export default class MaterialDesignRoundSlider extends VisWidget {
                         if (event.currentTarget.hasPointerCapture(event.pointerId)) {
                             event.currentTarget.releasePointerCapture(event.pointerId);
                         }
+                        release();
                     }}
                     onPointerCancel={event => {
                         if (event.currentTarget.hasPointerCapture(event.pointerId)) {

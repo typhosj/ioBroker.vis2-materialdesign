@@ -337,6 +337,7 @@
     "Generate global script": "Generate global script",
     "generate script": "generate script",
     "globalColor": "global color",
+    "sendValueOnRelease": "Send value on release",
     "theme states synced": "theme states synced",
     "group_alertLayout": "layout",
     "group_autoCompleteListLayout": "menu layout",

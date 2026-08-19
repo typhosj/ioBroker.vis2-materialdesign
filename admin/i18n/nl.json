@@ -336,6 +336,7 @@
     "fullscreenResolutionLower": "dialoogvenster op volledig scherm weergeven als de resolutie lager is dan",
     "Generate global script": "Genereer een globaal script",
     "generate script": "script genereren",
+    "sendValueOnRelease": "Waarde pas bij loslaten versturen",
     "theme states synced": "thema-statussen gesynchroniseerd",
     "globalColor": "globale kleur",
     "group_alertLayout": "lay-out",

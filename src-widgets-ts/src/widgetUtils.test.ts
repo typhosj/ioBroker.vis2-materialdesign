@@ -1,7 +1,7 @@
-import { describe, expect, it, vi } from 'vitest';
-import type { VisRxWidgetState, WidgetData } from '@iobroker/types-vis-2';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { VisRxWidgetProps, VisRxWidgetState, WidgetData } from '@iobroker/types-vis-2';
 import { pickerValueName } from './IconFilePicker';
-import { DEFAULT_DARK_THEME_OID, M3_FONT_OID, M3_SCHEME_OID, M3_TOKEN_ROLES, MAX_DYNAMIC_ITEMS, VisWidget, accessibleText, applyM3SeedVariables, applyThemeVariables, boundedCount, createInfo, itemCount, darkThemeOid, designStyle, designStyleClasses, editorDialogPalette, formatDurationTokens, formatMoment, humanizeDuration, iconFieldDataKey, m3SeedOids, parseActionValue, parseM3Scheme, safeWidgetUrl, sanitizeHtml, setProjectDesignStyle, setStateValue, sliderKeyValue, stateValue, stringValue } from './widgetUtils';
+import { DEFAULT_DARK_THEME_OID, M3_FONT_OID, M3_SCHEME_OID, M3_TOKEN_ROLES, MAX_DYNAMIC_ITEMS, VisWidget, accessibleText, applyM3SeedVariables, applyThemeVariables, boundedCount, createInfo, itemCount, darkThemeOid, designStyle, designStyleClasses, editorDialogPalette, formatDurationTokens, formatMoment, humanizeDuration, iconFieldDataKey, m3SeedOids, parseActionValue, parseM3Scheme, safeWidgetUrl, sanitizeHtml, setProjectDesignStyle, setStateValue, SliderWriter, sliderKeyValue, stateValue, stringValue } from './widgetUtils';
 
 function fixture<T>(value: unknown): T { return value as T; }
 
@@ -353,5 +353,54 @@ describe('widget utilities', () => {
         expect(sliderKeyValue('ArrowRight', 0.3, 0, 1, 0.1)).toBe(0.4);
         expect(sliderKeyValue('ArrowRight', 12, 2, 100, 5)).toBe(12 + 5);
         expect(sliderKeyValue('ArrowRight', 50, 0, 100, 0)).toBe(51);
+    });
+});
+
+describe('SliderWriter', () => {
+    const harness = (): { props: VisRxWidgetProps; sent: Array<[string, unknown]> } => {
+        const sent: Array<[string, unknown]> = [];
+        const props = { context: { setValue: (id: string, value: unknown) => sent.push([id, value]) } } as unknown as VisRxWidgetProps;
+        return { props, sent };
+    };
+
+    beforeEach(() => vi.useFakeTimers());
+    afterEach(() => vi.useRealTimers());
+
+    it('sends the first value at once so a tap still reacts', () => {
+        const { props, sent } = harness();
+        new SliderWriter(200).write(props, 'test.0.dim', 10);
+        expect(sent).toEqual([['test.0.dim', 10]]);
+    });
+
+    it('collapses a drag into few writes and never loses the last value', () => {
+        const { props, sent } = harness();
+        const writer = new SliderWriter(200);
+        for (let value = 1; value <= 20; value++) {
+            writer.write(props, 'test.0.dim', value);
+            vi.advanceTimersByTime(10);
+        }
+        writer.flush(props);
+        expect(sent.length).toBeLessThanOrEqual(2);
+        expect(sent[sent.length - 1]).toEqual(['test.0.dim', 20]);
+    });
+
+    it('keeps writing while the drag continues past the interval', () => {
+        const { props, sent } = harness();
+        const writer = new SliderWriter(200);
+        writer.write(props, 'test.0.dim', 1);
+        vi.advanceTimersByTime(250);
+        writer.write(props, 'test.0.dim', 2);
+        vi.advanceTimersByTime(250);
+        expect(sent).toEqual([['test.0.dim', 1], ['test.0.dim', 2]]);
+    });
+
+    it('drops a queued write when the widget goes away', () => {
+        const { props, sent } = harness();
+        const writer = new SliderWriter(200);
+        writer.write(props, 'test.0.dim', 1);
+        writer.write(props, 'test.0.dim', 2);
+        writer.cancel();
+        vi.advanceTimersByTime(1000);
+        expect(sent).toEqual([['test.0.dim', 1]]);
     });
 });
