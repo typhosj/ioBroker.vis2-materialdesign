@@ -59,7 +59,8 @@ leer gelassene Werte. Damit ein Widget der Material-3-Palette folgt, diese Felde
 leeren.
 
 Der Dark-Mode folgt demselben Datenpunkt
-`vis2-materialdesign.0.colors.darkTheme` wie im klassischen Stil. Der Tab
+`vis2-materialdesign.0.colors.darkTheme` wie im klassischen Stil: `auto`
+übernimmt ihn vom Theme der VIS 2, `light` und `dark` erzwingen eins. Der Tab
 **Design** leitet das komplette Material-3-Schema aus einer Seed-Farbe ab; ohne
 Seed gilt Googles Basispalette.
 

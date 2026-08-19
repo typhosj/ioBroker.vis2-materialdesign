@@ -58,7 +58,8 @@ you configured explicitly still win — Material 3 only fills in the values you
 left empty, so clear those fields to let a widget follow the Material 3 palette.
 
 Dark mode follows the same `vis2-materialdesign.0.colors.darkTheme` state the
-classic style already uses. The **Design** tab derives the complete Material 3
+classic style already uses: `auto` takes it from VIS 2's own theme, `light` and
+`dark` force one. The **Design** tab derives the complete Material 3
 scheme from one seed color; leave the seed empty for Google's baseline palette.
 
 Each widget page shows both styles side by side in light and dark mode.

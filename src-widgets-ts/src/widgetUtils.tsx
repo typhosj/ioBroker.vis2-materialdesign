@@ -762,6 +762,15 @@ export function darkThemeOid(data: Record<string, unknown> | null | undefined): 
     return stringValue(data?.__mdwThemeDark, DEFAULT_DARK_THEME_OID);
 }
 
+// The state carries three settings, not a boolean: `auto` follows VIS2's own theme so a light
+// view stops getting dark widgets from a state nobody touched. Booleans stay valid — installs
+// created before this and every script writing true/false keep working unchanged.
+export function resolveDarkTheme(value: ioBroker.StateValue | undefined, themeType: string | undefined): boolean {
+    if (value === true || value === 'true' || value === 'dark') return true;
+    if (value === false || value === 'false' || value === 'light') return false;
+    return themeType === 'dark';
+}
+
 export function applyThemeVariables(data: Record<string, unknown>, values: Record<string, ioBroker.StateValue> | undefined): void {
     // No document during the vis-2 server-side prerender, and the widget data may be null.
     if (typeof document === 'undefined' || !data || !values) return;
@@ -859,7 +868,7 @@ const BaseVisWidget: typeof VisRxWidget<BaseRxData, WidgetState> = window.visRxW
 export class VisWidget extends BaseVisWidget {
     // VIS2's own subscription discovery only looks at keys present in saved data (see darkThemeOid).
     private darkThemeSubscribedOid?: string;
-    private darkThemeValue = false;
+    private darkThemeSetting: ioBroker.StateValue | undefined;
 
     private m3SeedSubscribed = false;
     private m3SeedValues: Record<string, ioBroker.StateValue | undefined> = {};
@@ -885,9 +894,9 @@ export class VisWidget extends BaseVisWidget {
     };
 
     private onDarkThemeChanged = (_id: string, state: ioBroker.State | null | undefined): void => {
-        const next = state?.val === true || state?.val === 'true';
-        if (next !== this.darkThemeValue) {
-            this.darkThemeValue = next;
+        const before = this.isDarkTheme();
+        this.darkThemeSetting = state?.val;
+        if (this.isDarkTheme() !== before) {
             this.forceUpdate();
         }
     };
@@ -952,12 +961,12 @@ export class VisWidget extends BaseVisWidget {
     }
 
     protected isDarkTheme(): boolean {
-        return this.darkThemeValue;
+        return resolveDarkTheme(this.darkThemeSetting, this.props.context?.themeType);
     }
 
     render(): React.JSX.Element | null {
         const rxData = { ...this.state.rxData };
-        applyThemeVariables(rxData, { ...this.state.values, [`${darkThemeOid(rxData)}.val`]: this.darkThemeValue });
+        applyThemeVariables(rxData, { ...this.state.values, [`${darkThemeOid(rxData)}.val`]: this.isDarkTheme() });
         if (this.m3SeedSubscribed && designStyle(rxData) === 'material3') applyM3SeedVariables(this.m3SeedValues);
         return super.render();
     }
