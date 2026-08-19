@@ -41,8 +41,43 @@ export function tooltipConfig(data: Record<string, unknown>, callbacks?: object)
   put("bodyFontFamily", str(data.tooltipBodyFontFamily));
   put("titleFontSize", num(data.tooltipTitleFontSize));
   put("bodyFontSize", num(data.tooltipBodyFontSize));
+  put("caretSize", num(data.tooltipArrowSize));
+  put("caretPadding", num(data.tooltipDistanceToBar));
+  put("cornerRadius", num(data.tooltipBoxRadius));
+  put("xPadding", num(data.tooltipXpadding));
+  put("yPadding", num(data.tooltipYpadding));
+  put("titleMarginBottom", num(data.tooltipTitleMarginBottom));
+  if (data.tooltipShowColorBox !== undefined && data.tooltipShowColorBox !== null && data.tooltipShowColorBox !== "") {
+    config.displayColors = data.tooltipShowColorBox === true || data.tooltipShowColorBox === "true" || data.tooltipShowColorBox === 1 || data.tooltipShowColorBox === "1";
+  }
   if (callbacks) config.callbacks = callbacks;
   return config;
+}
+
+// `chartPadding*` in px around the plot. Only sides that are set are emitted, so chart.js keeps
+// its own spacing for the rest.
+export function layoutConfig(data: Record<string, unknown>): object | undefined {
+  const num = (value: unknown): number | undefined => (value === "" || value === null || value === undefined || !Number.isFinite(Number(value)) ? undefined : Number(value));
+  const padding: Record<string, number> = {};
+  for (const [side, key] of [["top", "chartPaddingTop"], ["left", "chartPaddingLeft"], ["right", "chartPaddingRight"], ["bottom", "chartPaddingBottom"]] as const) {
+    const value = num(data[key]);
+    if (value !== undefined) padding[side] = value;
+  }
+  return Object.keys(padding).length ? { padding } : undefined;
+}
+
+// `tooltipValueMin/MaxDecimals`. Undefined when the user set neither, so the caller keeps its own
+// text — the bar label already carries the datalabel decimals, which are a different setting.
+export function tooltipNumber(data: Record<string, unknown>, value: unknown): string | undefined {
+  const num = (v: unknown): number | undefined => (v === "" || v === null || v === undefined || !Number.isFinite(Number(v)) ? undefined : Number(v));
+  const min = num(data.tooltipValueMinDecimals);
+  const max = num(data.tooltipValueMaxDecimals);
+  const raw = num(value);
+  if (raw === undefined || (min === undefined && max === undefined)) return undefined;
+  return raw.toLocaleString(undefined, {
+    minimumFractionDigits: Math.max(0, Math.min(20, min ?? 0)),
+    maximumFractionDigits: Math.max(0, Math.min(20, max ?? Math.max(min ?? 0, 2))),
+  });
 }
 
 // `data`/`options` are typed loosely: callers build chart.js v2 configs whose
