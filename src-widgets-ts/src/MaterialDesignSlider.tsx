@@ -3,7 +3,7 @@ import React from 'react';
 import type { RxWidgetInfo, VisRxWidgetProps } from '@iobroker/types-vis-2';
 
 import { cleanColor, num, snapToStep } from './MaterialDesignProgress';
-import { squarePreview, RenderProps, VisWidget, boundedCount, createInfo, setStateValue, sizeCss, stateValue, sanitizeHtml } from './widgetUtils';
+import { squarePreview, RenderProps, SliderWriter, VisWidget, boundedCount, createInfo, setStateValue, sizeCss, stateValue, sanitizeHtml } from './widgetUtils';
 
 // Self-contained layout for the Vuetify-style slider DOM. The old widget relied on ambient
 // legacy Vuetify CSS (v-slider*) for track/thumb geometry and for hiding the raw value <input>;
@@ -40,6 +40,7 @@ export interface SliderData {
     reverseSlider?: boolean;
     knobSize?: 'knobSmall' | 'knobMedium' | 'knobBig';
     readOnly?: boolean;
+    sendValueOnRelease?: boolean;
     min?: number;
     max?: number;
     step?: number;
@@ -92,6 +93,7 @@ const attrs: RxWidgetInfo['visAttrs'] = [
         fields: [
             { name: 'oid', label: 'oid', type: 'id' },
             { name: 'oid-working', label: 'oid-working', type: 'id' },
+            { name: 'sendValueOnRelease', label: 'sendValueOnRelease', type: 'checkbox' },
             { name: 'orientation', label: 'orientation', type: 'select', options: ['horizontal', 'vertical'], default: 'horizontal' },
             { name: 'reverseSlider', label: 'reverseSlider', type: 'checkbox' },
             { name: 'knobSize', label: 'knobSize', type: 'select', options: ['knobSmall', 'knobMedium', 'knobBig'], default: 'knobSmall' },
@@ -249,6 +251,13 @@ export default class MaterialDesignSlider extends VisWidget {
         return MaterialDesignSlider.getWidgetInfo();
     }
 
+    private readonly writer = new SliderWriter();
+
+    componentWillUnmount(): void {
+        this.writer.cancel();
+        super.componentWillUnmount();
+    }
+
     private pointerValue(event: React.PointerEvent<HTMLElement>, data: SliderData): number {
         const box = event.currentTarget.getBoundingClientRect();
         const { min, max, step } = range(data);
@@ -270,8 +279,21 @@ export default class MaterialDesignSlider extends VisWidget {
         event.stopPropagation();
         const value = this.pointerValue(event, data);
         this.optimisticValue = value;
-        setStateValue(this.props, data.oid || '', value);
+        // The thumb follows the finger either way; only the writing differs.
+        if (!data.sendValueOnRelease) {
+            this.writer.write(this.props, data.oid || '', value);
+        }
         this.forceUpdate();
+    }
+
+    private releasePointer(data: SliderData): void {
+        if (data.sendValueOnRelease) {
+            if (this.optimisticValue !== undefined) {
+                setStateValue(this.props, data.oid || '', this.optimisticValue);
+            }
+            return;
+        }
+        this.writer.flush(this.props);
     }
 
     renderWidgetBody(props: RenderProps): React.JSX.Element {
@@ -405,6 +427,7 @@ export default class MaterialDesignSlider extends VisWidget {
                                                 if (event.currentTarget.hasPointerCapture(event.pointerId)) {
                                                     event.currentTarget.releasePointerCapture(event.pointerId);
                                                 }
+                                                this.releasePointer(data);
                                             }}
                                             onPointerCancel={event => {
                                                 if (event.currentTarget.hasPointerCapture(event.pointerId)) {

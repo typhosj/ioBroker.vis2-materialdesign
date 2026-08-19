@@ -335,6 +335,7 @@
     "fullscreenResolutionLower": "muestra el diálogo de pantalla completa si la resolución es inferior a",
     "Generate global script": "Generar script global",
     "generate script": "generar script",
+    "sendValueOnRelease": "Enviar el valor al soltar",
     "theme states synced": "estados del tema sincronizados",
     "globalColor": "color global",
     "group_alertLayout": "diseño",

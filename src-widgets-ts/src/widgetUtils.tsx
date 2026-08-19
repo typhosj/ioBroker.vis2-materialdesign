@@ -287,6 +287,71 @@ export function setStateValue(props: VisRxWidgetProps, oid: string, value: ioBro
     }
 }
 
+export const SLIDER_WRITE_INTERVAL = 200;
+
+// Dragging a slider used to write on every pointermove — hundreds of writes per drag, which the
+// bus and the device at the end of it cannot keep up with (a Zigbee lamp lags seconds behind).
+// The first move is sent at once so a tap still reacts, the rest is collapsed to one write per
+// interval, and `flush()` guarantees the value the finger stopped on is the value that lands.
+export class SliderWriter {
+    private timer?: number;
+    private pendingOid?: string;
+    private pendingValue?: ioBroker.StateValue;
+    private lastSent = 0;
+
+    constructor(private readonly interval: number = SLIDER_WRITE_INTERVAL) {}
+
+    write(props: VisRxWidgetProps, oid: string, value: ioBroker.StateValue): void {
+        if (!oid) {
+            return;
+        }
+        const now = Date.now();
+        const wait = this.interval - (now - this.lastSent);
+        this.pendingOid = oid;
+        this.pendingValue = value;
+        if (wait <= 0 && this.timer === undefined) {
+            this.send(props);
+            return;
+        }
+        if (this.timer === undefined) {
+            this.timer = setTimeout(() => {
+                this.timer = undefined;
+                this.send(props);
+            }, Math.max(0, wait)) as unknown as number;
+        }
+    }
+
+    // Pointer up: whatever is still queued goes out now, without waiting for the interval.
+    flush(props: VisRxWidgetProps): void {
+        if (this.timer !== undefined) {
+            clearTimeout(this.timer);
+            this.timer = undefined;
+        }
+        this.send(props);
+    }
+
+    cancel(): void {
+        if (this.timer !== undefined) {
+            clearTimeout(this.timer);
+            this.timer = undefined;
+        }
+        this.pendingOid = undefined;
+        this.pendingValue = undefined;
+    }
+
+    private send(props: VisRxWidgetProps): void {
+        if (this.pendingOid === undefined || this.pendingValue === undefined) {
+            return;
+        }
+        this.lastSent = Date.now();
+        const oid = this.pendingOid;
+        const value = this.pendingValue;
+        this.pendingOid = undefined;
+        this.pendingValue = undefined;
+        setStateValue(props, oid, value);
+    }
+}
+
 export function parseActionValue(value: string): ioBroker.StateValue {
     if (value === 'true') {
         return true;

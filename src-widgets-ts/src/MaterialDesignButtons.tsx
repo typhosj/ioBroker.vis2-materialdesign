@@ -2,7 +2,7 @@ import React from 'react';
 
 import type { RxWidgetInfo, VisRxWidgetProps } from '@iobroker/types-vis-2';
 
-import { indexedFields, squarePreview, PressState, RenderProps, VisWidget, createInfo, itemCount, iconField, parseActionValue, safeWidgetUrl, setStateValue, sizeCss, stateValue, sanitizeHtml, stringValue } from './widgetUtils';
+import { indexedFields, squarePreview, PressState, RenderProps, SliderWriter, VisWidget, createInfo, itemCount, iconField, parseActionValue, safeWidgetUrl, setStateValue, sizeCss, stateValue, sanitizeHtml, stringValue } from './widgetUtils';
 
 type ButtonKind = 'navigation' | 'link' | 'state' | 'multiState' | 'addition' | 'toggle' | 'slider';
 type ButtonLayout = 'default' | 'vertical' | 'icon';
@@ -27,6 +27,7 @@ interface ButtonData {
     toggleType?: 'boolean' | 'value';
     stateIfNotTrueValue?: 'on' | 'off';
     sliderOnly?: boolean;
+    sendValueOnRelease?: boolean;
     sliderWidth?: number;
     sliderThikness?: number;
     showInFront?: boolean;
@@ -141,6 +142,7 @@ const actionFields = {
         { name: 'oid', label: 'oid', type: 'id' },
         { name: 'readOnly', label: 'readOnly', type: 'checkbox' },
         { name: 'sliderOnly', label: 'sliderOnly', type: 'checkbox' },
+        { name: 'sendValueOnRelease', label: 'sendValueOnRelease', type: 'checkbox' },
         { name: 'valueOff', label: 'valueOff', type: 'number' },
         { name: 'valueOn', label: 'valueOn', type: 'number' },
         { name: 'sliderWidth', label: 'sliderWidth', type: 'number', default: 20 },
@@ -448,6 +450,8 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
         private readonly actionTimers = new Set<number>();
         private lastTouchAt = 0;
         private lastSliderAt = 0;
+        private readonly sliderWriter = new SliderWriter();
+        private sliderPending: number | undefined;
         private pressed = false;
 
         constructor(props: VisRxWidgetProps) {
@@ -477,6 +481,7 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
             }
             this.actionTimers.forEach(timer => window.clearTimeout(timer));
             this.actionTimers.clear();
+            this.sliderWriter.cancel();
             super.componentWillUnmount?.();
         }
 
@@ -591,7 +596,21 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
             const angle = (Math.atan2(y, x) * 180) / Math.PI + 90 - offset;
             const normalized = ((angle % 360) + 360) % 360;
             const ratio = Math.max(0, Math.min(1, normalized / arc));
-            setStateValue(this.props, data.oid || '', Math.round(min + (max - min) * ratio));
+            const next = Math.round(min + (max - min) * ratio);
+            this.sliderPending = next;
+            if (!data.sendValueOnRelease) {
+                this.sliderWriter.write(this.props, data.oid || '', next);
+            }
+        }
+
+        releaseSlider(data: ButtonData): void {
+            if (data.sendValueOnRelease) {
+                if (this.sliderPending !== undefined) {
+                    setStateValue(this.props, data.oid || '', this.sliderPending);
+                }
+                return;
+            }
+            this.sliderWriter.flush(this.props);
         }
 
         renderWidgetBody(props: RenderProps): React.JSX.Element {
@@ -799,6 +818,7 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
                                         if (event.currentTarget.hasPointerCapture(event.pointerId)) {
                                             event.currentTarget.releasePointerCapture(event.pointerId);
                                         }
+                                        this.releaseSlider(data);
                                     }}
                                     onPointerCancel={event => {
                                         if (event.currentTarget.hasPointerCapture(event.pointerId)) {
