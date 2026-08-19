@@ -396,6 +396,8 @@ function items(data: SelectData, states?: unknown): SelectItem[] {
 
 export default class MaterialDesignSelect extends VisWidget {
     private open = false;
+    private fieldHovered = false;
+    private fieldRef: HTMLElement | null = null;
     private filterTimer?: number;
     private localValue: ioBroker.StateValue | undefined;
     private seenStateValue: ioBroker.StateValue | undefined;
@@ -480,6 +482,10 @@ export default class MaterialDesignSelect extends VisWidget {
         this.widDiv?.style.setProperty('overflow', 'visible', 'important');
         this.rootRef.current?.parentElement?.style.setProperty('overflow', 'visible', 'important');
         this.rootRef.current?.parentElement?.parentElement?.style.setProperty('overflow', 'visible', 'important');
+        // Not in the editor: a field grabbing the focus while someone arranges widgets is a nuisance.
+        if ((this.state.rxData as unknown as SelectData).autoFocus && !this.props.editMode) {
+            this.fieldRef?.focus();
+        }
     }
 
     static getWidgetInfo(): RxWidgetInfo {
@@ -516,13 +522,14 @@ export default class MaterialDesignSelect extends VisWidget {
             isM3 && !m3ColorExplicit(saved) ? token : color(saved, legacyFallback);
         // The saved option still wins, and the open-upwards calculation has to measure the height it renders.
         const itemHeight = num(data.listItemHeight, 0) || (isM3 ? 48 : 40);
-        const border = this.open
+        const borderFor = (legacyFallback: string): string => this.open
             ? m3c(data.inputLayoutBorderColorSelected, 'var(--md-sys-color-primary)', '#44739e')
-            : m3c(data.inputLayoutBorderColor, 'var(--md-sys-color-outline)', 'rgba(0, 0, 0, 0.54)');
+            : this.fieldHovered && m3ColorExplicit(data.inputLayoutBorderColorHover)
+              ? color(data.inputLayoutBorderColorHover, legacyFallback)
+              : m3c(data.inputLayoutBorderColor, 'var(--md-sys-color-outline)', legacyFallback);
+        const border = borderFor('rgba(0, 0, 0, 0.54)');
         // Lighter resting border than the underline default, matching the old widget.
-        const outlinedBorder = this.open
-            ? m3c(data.inputLayoutBorderColorSelected, 'var(--md-sys-color-primary)', '#44739e')
-            : m3c(data.inputLayoutBorderColor, 'var(--md-sys-color-outline)', 'rgba(0, 0, 0, 0.24)');
+        const outlinedBorder = borderFor('rgba(0, 0, 0, 0.24)');
         const activeLabelFontSize = Math.max(10, num(data.inputLabelFontSize, 16) * 0.75);
         const textDefault =
             data.inputTextColor === undefined || data.inputTextColor === '' || data.inputTextColor === '#000000';
@@ -598,14 +605,23 @@ export default class MaterialDesignSelect extends VisWidget {
                             this.open = !this.open;
                             this.forceUpdate();
                         }}
+                        onMouseEnter={() => { this.fieldHovered = true; this.forceUpdate(); }}
+                        onMouseLeave={() => { this.fieldHovered = false; this.forceUpdate(); }}
+                        ref={(element: HTMLElement | null) => { this.fieldRef = element; }}
                         style={{
                             alignItems: 'center',
+                            // Resting -> hover -> open. The two extra stages only apply when the
+                            // editor actually set a color for them.
                             background:
-                                isM3 && !m3ColorExplicit(data.inputLayoutBackgroundColor)
-                                    ? filled
-                                        ? 'var(--md-sys-color-surface-container-high)'
-                                        : 'transparent'
-                                    : color(data.inputLayoutBackgroundColor, filled ? 'rgba(0, 0, 0, 0.06)' : 'transparent'),
+                                this.open && m3ColorExplicit(data.inputLayoutBackgroundColorSelected)
+                                    ? color(data.inputLayoutBackgroundColorSelected, 'transparent')
+                                    : this.fieldHovered && m3ColorExplicit(data.inputLayoutBackgroundColorHover)
+                                      ? color(data.inputLayoutBackgroundColorHover, 'transparent')
+                                      : isM3 && !m3ColorExplicit(data.inputLayoutBackgroundColor)
+                                        ? filled
+                                            ? 'var(--md-sys-color-surface-container-high)'
+                                            : 'transparent'
+                                        : color(data.inputLayoutBackgroundColor, filled ? 'rgba(0, 0, 0, 0.06)' : 'transparent'),
                             border: 0,
                             borderBottom: enclosed ? 0 : `1px solid ${border}`,
                             borderRadius: rounded ? 28 : enclosed ? 4 : filled ? '4px 4px 0 0' : undefined,
@@ -713,6 +729,9 @@ export default class MaterialDesignSelect extends VisWidget {
                                         left: 12,
                                         position: 'absolute',
                                         top: active ? (outlined ? -4 : 1) : 9,
+                                        transform: num(data.inputTranslateX, 0) || num(data.inputTranslateY, 0)
+                                            ? `translate(${num(data.inputTranslateX, 0)}px, ${num(data.inputTranslateY, 0)}px)`
+                                            : undefined,
                                         whiteSpace: 'nowrap',
                                     }}
                                 >
