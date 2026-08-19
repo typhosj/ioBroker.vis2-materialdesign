@@ -124,3 +124,27 @@ describe('select data sources and writes', () => {
         expect(setValue).toHaveBeenLastCalledWith('test.0.choice', 'custom');
     });
 });
+
+describe('hint and counter', () => {
+    const withData = (rxData: Record<string, unknown>): MaterialDesignSelect => {
+        const select = new MaterialDesignSelect(fixture<ConstructorParameters<typeof MaterialDesignSelect>[0]>({ context: {} }));
+        select.state = fixture<typeof select.state>({
+            rxData: { listDataMethod: 'valueList', valueList: '1;2;3', valueListLabels: 'One;Two;Three', ...rxData },
+            values: {},
+        });
+        return select;
+    };
+    const markup = (select: MaterialDesignSelect): string =>
+        renderToStaticMarkup(select.renderWidgetBody(fixture<Parameters<MaterialDesignSelect['renderWidgetBody']>[0]>({})));
+
+    it('shows the hint by default and hides it when it should only appear while open', () => {
+        expect(markup(withData({ inputMessage: 'Pick one' }))).toContain('Pick one');
+        expect(markup(withData({ inputMessage: 'Pick one', showInputMessageAlways: false }))).not.toContain('Pick one');
+        expect(renderToStaticMarkup(open(withData({ inputMessage: 'Pick one', showInputMessageAlways: false })))).toContain('Pick one');
+    });
+
+    it('counts the entries the list offers, and stays away unless asked', () => {
+        expect(markup(withData({ showInputCounter: true }))).toContain('>3<');
+        expect(markup(withData({}))).not.toContain('v-text-field__details');
+    });
+});

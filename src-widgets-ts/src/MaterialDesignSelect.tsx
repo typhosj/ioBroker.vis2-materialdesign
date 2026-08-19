@@ -400,6 +400,8 @@ function items(data: SelectData, states?: unknown): SelectItem[] {
 
 export default class MaterialDesignSelect extends VisWidget {
     private open = false;
+    private fieldHovered = false;
+    private fieldRef: HTMLElement | null = null;
     private filterTimer?: number;
     private localValue: ioBroker.StateValue | undefined;
     private seenStateValue: ioBroker.StateValue | undefined;
@@ -485,6 +487,10 @@ export default class MaterialDesignSelect extends VisWidget {
         this.widDiv?.style.setProperty('overflow', 'visible', 'important');
         this.rootRef.current?.parentElement?.style.setProperty('overflow', 'visible', 'important');
         this.rootRef.current?.parentElement?.parentElement?.style.setProperty('overflow', 'visible', 'important');
+        // Not in the editor: a field grabbing the focus while someone arranges widgets is a nuisance.
+        if ((this.state.rxData as unknown as SelectData).autoFocus && !this.props.editMode) {
+            this.fieldRef?.focus();
+        }
     }
 
     static getWidgetInfo(): RxWidgetInfo {
@@ -514,15 +520,14 @@ export default class MaterialDesignSelect extends VisWidget {
         const filter = this.isAutocomplete ? this.filterText : undefined;
         const visibleList = filter ? list.filter(item => item.text.toLowerCase().includes(filter.toLowerCase())) : list;
         const active = this.open || (current !== undefined && current !== null && current !== '');
-        const border = color(
-            this.open ? data.inputLayoutBorderColorSelected : data.inputLayoutBorderColor,
-            this.open ? '#44739e' : 'rgba(0, 0, 0, 0.54)',
+        // Rest -> hover -> open, jede Stufe fällt auf die vorige zurück, wenn sie nicht gesetzt ist.
+        const borderFor = (fallback: string): string => color(
+            this.open ? data.inputLayoutBorderColorSelected : this.fieldHovered ? data.inputLayoutBorderColorHover || data.inputLayoutBorderColor : data.inputLayoutBorderColor,
+            this.open ? '#44739e' : fallback,
         );
+        const border = borderFor('rgba(0, 0, 0, 0.54)');
         // Outlined box uses a lighter resting border to match the old widget (0.2), not the darker underline default (0.54).
-        const outlinedBorder = color(
-            this.open ? data.inputLayoutBorderColorSelected : data.inputLayoutBorderColor,
-            this.open ? '#44739e' : 'rgba(0, 0, 0, 0.24)',
-        );
+        const outlinedBorder = borderFor('rgba(0, 0, 0, 0.24)');
         const activeLabelFontSize = Math.max(10, num(data.inputLabelFontSize, 16) * 0.75);
         const textColor = color(data.inputTextColor, '#000000');
         const isTop = data.listPosition === 'top';
@@ -570,6 +575,11 @@ export default class MaterialDesignSelect extends VisWidget {
         }
         // Autocomplete uses a plain div field so its editable filter input stays typeable (an input nested in a <button> is not).
         const FieldTag = this.isAutocomplete ? 'div' : 'button';
+        // Hint and counter: declared since the port, never rendered. `showInputMessageAlways`
+        // follows Vuetify's `persistent-hint` — off, the hint only shows while the field is
+        // "focused", which for a select means its open list.
+        const showMessage = !!data.inputMessage && (data.showInputMessageAlways !== false || this.open);
+        const hasDetails = showMessage || !!data.showInputCounter;
         return (
             <div
                 className="materialdesign-widget materialdesign-select"
@@ -587,10 +597,13 @@ export default class MaterialDesignSelect extends VisWidget {
                             this.open = !this.open;
                             this.forceUpdate();
                         }}
+                        onMouseEnter={() => { this.fieldHovered = true; this.forceUpdate(); }}
+                        onMouseLeave={() => { this.fieldHovered = false; this.forceUpdate(); }}
+                        ref={(element: HTMLElement | null) => { this.fieldRef = element; }}
                         style={{
                             alignItems: 'center',
                             background: color(
-                                data.inputLayoutBackgroundColor,
+                                this.open ? data.inputLayoutBackgroundColorSelected || data.inputLayoutBackgroundColor : this.fieldHovered ? data.inputLayoutBackgroundColorHover || data.inputLayoutBackgroundColor : data.inputLayoutBackgroundColor,
                                 filled ? 'rgba(0, 0, 0, 0.06)' : 'transparent',
                             ),
                             border: 0,
@@ -699,6 +712,9 @@ export default class MaterialDesignSelect extends VisWidget {
                                         left: 12,
                                         position: 'absolute',
                                         top: active ? (outlined ? -4 : 1) : 9,
+                                        transform: num(data.inputTranslateX, 0) || num(data.inputTranslateY, 0)
+                                            ? `translate(${num(data.inputTranslateX, 0)}px, ${num(data.inputTranslateY, 0)}px)`
+                                            : undefined,
                                         whiteSpace: 'nowrap',
                                     }}
                                 >
@@ -817,6 +833,43 @@ export default class MaterialDesignSelect extends VisWidget {
                             <span style={{ flex: '0 0 auto', marginLeft: 4 }}>{selectedIcon}</span>
                         ) : null}
                     </FieldTag>
+                    {hasDetails ? (
+                        <div
+                            className="v-text-field__details"
+                            style={{ alignItems: 'center', display: 'flex', flex: '0 0 auto', justifyContent: 'flex-end', maxWidth: '100%', minHeight: 14, padding: '0 10px' }}
+                        >
+                            {showMessage ? (
+                                <div
+                                    style={{
+                                        color: color(data.inputMessageColor, 'rgba(0, 0, 0, 0.54)'),
+                                        flex: 1,
+                                        fontFamily: data.inputMessageFontFamily || undefined,
+                                        fontSize: sizeCss(data.inputMessageFontSize, 14),
+                                        textAlign: 'left',
+                                    }}
+                                >
+                                    {data.inputMessage}
+                                </div>
+                            ) : null}
+                            {data.showInputCounter ? (
+                                <div
+                                    className="v-counter"
+                                    style={{
+                                        color: color(data.inputCounterColor, 'rgba(0, 0, 0, 0.54)'),
+                                        flex: '0 1 auto',
+                                        fontFamily: data.inputCounterFontFamily || undefined,
+                                        fontSize: sizeCss(data.inputCounterFontSize, 14),
+                                        marginLeft: 8,
+                                        whiteSpace: 'nowrap',
+                                    }}
+                                >
+                                    {/* Entry count, not character count: for a select the list length is what a
+                                        reader can act on, and there is no maximum to count against. */}
+                                    {list.length}
+                                </div>
+                            ) : null}
+                        </div>
+                    ) : null}
                     {this.open ? (
                         <div
                             className="v-menu__content v-select-list"
