@@ -68,6 +68,8 @@ Report current VIS 2 problems in the
 ## Changelog
 ### **WORK IN PROGRESS**
 
+- (typhosj) Fixed the header of the **List** and the **Icon List** being a card: it carried the card class, whose column layout put the header image above the heading instead of beside it and turned the header **alignment** into a vertical one, so left, center and right moved the header up, to the middle and down. Its rounded frame and shadow were drawn around the header too and VIS 2 cut them off at both sides (issue #14)
+- (typhosj) Removed the **List** option "enable overflow": a row grows with its content in VIS 2, so there was nothing left for the option to release (issue #14)
 - (typhosj) Fixed the **List** and **Icon List** drawing their rows one header height taller than the widget box: the list, the card and the card's text section each measured themselves against the whole widget, so with a header the lower rows ended up outside the widget and VIS 2 clipped them away. Header and content now share the box
 - (typhosj) Fixed the **alignment** of the Icon List header doing nothing: the header row is a flex row, which ignores `text-align`, so `center` and `flex-end` stayed on the left (the List header got the same fix)
 - (typhosj) Fixed an appointment over midnight being drawn at its start time on every day it touches in the week and day view of the **Calendar**: a 23:00–01:00 appointment showed at 23:00 on both days. Each day now gets the part of the appointment that falls into it — the first day to midnight, the next one from midnight — and a day that only carries a part outside the configured time axis shows nothing

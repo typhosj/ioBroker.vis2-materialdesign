@@ -645,7 +645,6 @@
     "listItemValueFontSelectedColor": "所选值的字体颜色",
     "listItemValueFontSize": "值的字体大小",
     "listLayout": "布局",
-    "listOverflow": "启用溢出",
     "listPosition": "位置",
     "listPositionOffset": "使用位置偏移",
     "listSubItemAlignment": "子菜单文本对齐",

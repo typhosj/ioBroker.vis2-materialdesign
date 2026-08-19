@@ -645,7 +645,6 @@
     "listItemValueFontSelectedColor": "font color of selected value",
     "listItemValueFontSize": "font size of value",
     "listLayout": "layout",
-    "listOverflow": "enable overflow ",
     "listPosition": "position",
     "listPositionOffset": "use position offset",
     "listSubItemAlignment": "submenu text alignment",

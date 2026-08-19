@@ -645,7 +645,6 @@
     "listItemValueFontSelectedColor": "цвет шрифта выбранного значения",
     "listItemValueFontSize": "размер шрифта значения",
     "listLayout": "расположение",
-    "listOverflow": "разрешить переполнение",
     "listPosition": "позиция",
     "listPositionOffset": "использовать смещение положения",
     "listSubItemAlignment": "выравнивание текста подменю",
