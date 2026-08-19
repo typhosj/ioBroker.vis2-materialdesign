@@ -2,7 +2,7 @@ import React from "react";
 import { squarePreview , RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, stateValue, sanitizeHtml } from './widgetUtils';
 import type { RxWidgetInfo } from "@iobroker/types-vis-2";
 import { colorSchemes, scheme } from "./MaterialDesignColorScheme";
-import { MaterialDesignChartCanvas, tooltipConfig } from "./MaterialDesignChartCanvas";
+import { ChartLegend, MaterialDesignChartCanvas, layoutConfig, tooltipConfig } from "./MaterialDesignChartCanvas";
 import { chartAxis, m3ChartColors } from "./chartAxis";
 
 type Graph = {
@@ -312,37 +312,7 @@ export default class MaterialDesignChartJson extends VisWidget {
     const palette = s(data.colorScheme)
       ? scheme(s(data.colorScheme), graphs.length)
       : [];
-    const legend = b(data.showLegend, true) ? (
-      <div
-        style={{
-          display: "flex",
-          flexDirection: ["top", "bottom"].includes(s(data.legendPosition))
-            ? "row"
-            : "column",
-          flexWrap: "wrap",
-          flexShrink: 0,
-          gap: n(data.legendPadding, 8),
-          padding: n(data.legendDistanceToChart),
-          fontFamily: s(data.legendFontFamily),
-          fontSize: n(data.legendFontSize, 14),
-        }}
-      >
-        {graphs.map((graph, i) => (
-          <span key={i} style={{ color: s(data.legendFontColor) || (isM3 ? "var(--md-sys-color-on-surface)" : undefined) }}>
-            <i
-              style={{
-                background: graphColor(graph, i, palette, data.globalColor),
-                display: "inline-block",
-                height: n(data.legendBoxWidth, 10),
-                marginRight: 4,
-                width: n(data.legendBoxWidth, 10),
-              }}
-            />
-            {s(graph.legendText)}
-          </span>
-        ))}
-      </div>
-    ) : null;
+    const legend = <ChartLegend data={data} entries={graphs.map((graph, i) => ({ label: s(graph.legendText), color: graphColor(graph, i, palette, data.globalColor) }))} />;
     // v4: scales are a keyed object (x + one entry per distinct y-axis id).
     const axisId = graphAxisId;
     const yEntries = distinctAxisGraphs(graphs).map((graph): [string, Record<string, unknown>] => [axisId(graph), chartAxis({
@@ -366,7 +336,7 @@ export default class MaterialDesignChartJson extends VisWidget {
       gridColor: s(data.xAxisGridLinesColor, isM3 ? m3.grid : ""),
     });
     const scales = { x: xAxis, ...Object.fromEntries(yEntries) };
-    const chartjs = <MaterialDesignChartCanvas type={s(data.chartType, "bar")} data={{ labels, datasets: graphs.map((graph, i) => { const color = graphColor(graph, i, palette, data.globalColor); const dsColor = isM3 && color === "#44739e" ? m3.primary : color; return { type: s(graph.type, s(data.chartType, "bar")), label: s(graph.legendText), data: (graph.data || []).map(jsonChartValue), borderColor: dsColor, backgroundColor: b(graph.line_UseFillColor) ? s(graph.line_FillColor, `${dsColor}33`) : dsColor, borderWidth: n(graph.line_Thickness, n(graph.barBorderWidth, 2)), stepped: b(graph.line_steppedLine), spanGaps: b(graph.line_spanGaps, true), fill: b(graph.line_UseFillColor), yAxisID: axisId(graph), stack: b(graph.barIsStacked) ? String(n((graph as Record<string, unknown>).barStackId, 0)) : undefined }; }) }} options={{ responsive: true, maintainAspectRatio: false, animation: { duration: n(data.animationDuration, 1000) }, scales, plugins: { legend: { display: false }, mdwChartArea: { color: s(data.chartAreaBackgroundColor) }, tooltip: tooltipConfig(data), datalabels: { display: false } } }} />;
+    const chartjs = <MaterialDesignChartCanvas type={s(data.chartType, "bar")} data={{ labels, datasets: graphs.map((graph, i) => { const color = graphColor(graph, i, palette, data.globalColor); const dsColor = isM3 && color === "#44739e" ? m3.primary : color; return { type: s(graph.type, s(data.chartType, "bar")), label: s(graph.legendText), data: (graph.data || []).map(jsonChartValue), borderColor: dsColor, backgroundColor: b(graph.line_UseFillColor) ? s(graph.line_FillColor, `${dsColor}33`) : dsColor, borderWidth: n(graph.line_Thickness, n(graph.barBorderWidth, 2)), stepped: b(graph.line_steppedLine), spanGaps: b(graph.line_spanGaps, true), fill: b(graph.line_UseFillColor), barPercentage: data.barWidth === undefined || data.barWidth === "" ? undefined : Math.max(0, Math.min(1, n(data.barWidth, 80) / 100)), yAxisID: axisId(graph), stack: b(graph.barIsStacked) ? String(n((graph as Record<string, unknown>).barStackId, 0)) : undefined }; }) }} options={{ responsive: true, maintainAspectRatio: false, layout: layoutConfig(data), hover: b(data.disableHoverEffects) ? { mode: null } : undefined, animation: { duration: n(data.animationDuration, 1000) }, scales, plugins: { legend: { display: false }, mdwChartArea: { color: s(data.chartAreaBackgroundColor) }, tooltip: tooltipConfig(data), datalabels: { display: false } } }} />;
     // Keep the canvas from eating the whole flex box, else the legend spills outside the widget frame.
     const chartBox = (
       <div style={{ flex: 1, minWidth: 0, minHeight: 0, position: "relative" }}>{chartjs}</div>
@@ -412,7 +382,7 @@ export default class MaterialDesignChartJson extends VisWidget {
               style={{
                 background: s(data.colorTitleSectionBackground),
                 color: s(data.colorTitle) || (isM3 ? "var(--md-sys-color-on-surface)" : undefined),
-                fontFamily: s(data.titleFontFamily),
+                fontFamily: s(data.titleFontFamily), fontSize: n(data.titleLayout) ? `${n(data.titleLayout)}px` : undefined,
               }}
               dangerouslySetInnerHTML={{ __html: sanitizeHtml(s(data.title)) }}
             />

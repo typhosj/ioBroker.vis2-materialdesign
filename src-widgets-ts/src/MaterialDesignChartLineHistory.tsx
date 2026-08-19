@@ -2,7 +2,7 @@ import React from "react";
 import { squarePreview, indexedFields, itemCount, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, formatMoment, visLocale, stateValue, sanitizeHtml } from './widgetUtils';
 import type { RxWidgetInfo, VisRxWidgetState } from "@iobroker/types-vis-2";
 import { colorSchemes, scheme } from "./MaterialDesignColorScheme";
-import { MaterialDesignChartCanvas, datalabelsConfig, tooltipConfig } from "./MaterialDesignChartCanvas";
+import { ChartLegend, MaterialDesignChartCanvas, datalabelsConfig, layoutConfig, tooltipConfig } from "./MaterialDesignChartCanvas";
 import { chartAxis, m3ChartColors } from "./chartAxis";
 
 type Data = Record<string, unknown>;
@@ -451,35 +451,11 @@ export default class MaterialDesignChartLineHistory extends VisWidget {
     // chart.js v4 hard-crashes (vScale undefined) if a dataset references a y-axis id with no scale;
     // series indices can diverge from configured rows (sparse oids).
     this.series.forEach((_series, i) => { const id = yAxisIdOf(i); if (!(id in scales)) scales[id] = { axis: "y", type: "linear", position: "left" }; });
-    const chartjs = <MaterialDesignChartCanvas type="line" data={{ datasets: this.series.map((series, i) => { const seriesColorValue = seriesColor(d, i, colors, d.globalColor); const dsColor = isM3 && seriesColorValue === "#44739e" ? m3.primary : seriesColorValue; const points = series.points.filter(point => point.val !== null); return { label: s(item(d, "legendText", i), series.oid), data: points.map(point => ({ x: point.ts, y: point.val })), datalabels: seriesLabels(i, points, dsColor), borderColor: dsColor, backgroundColor: b(item(d, "useFillColor", i)) ? s(item(d, "fillColor", i), `${dsColor}33`) : "transparent", fill: b(item(d, "useFillColor", i)), borderWidth: n(item(d, "lineThikness", i), 2), stepped: b(item(d, "steppedLine", i)), tension: 0, pointBackgroundColor: s(item(d, "pointColor", i), dsColor), pointRadius: n(d.pointSize, 3), yAxisID: yAxisIdOf(i) }; }) }} options={{ responsive: true, maintainAspectRatio: false, animation: { duration: n(d.animationDuration, 1000) }, scales, plugins: { legend: { display: false }, datalabels: { display: false }, mdwChartArea: { color: s(d.chartAreaBackgroundColor) }, tooltip: tooltipConfig(d, { title: (items: { parsed?: { x?: number } }[]) => fmtTime(items[0]?.parsed?.x, timeFmt || "lll"), label: tooltipLabel }) } }} />;
-    const legend = b(d.showLegend, true) ? (
-      <div
-        style={{
-          color: s(d.legendFontColor) || (isM3 ? "var(--md-sys-color-on-surface)" : undefined),
-          fontFamily: s(d.legendFontFamily),
-          fontSize: n(d.legendFontSize, 14),
-          flexShrink: 0,
-        }}
-      >
-        {this.series.map((series, i) => (
-          <span key={series.oid} style={{ display: "block" }}>
-            <i
-              style={{
-                background: seriesColor(d, i, colors, d.globalColor),
-                display: "inline-block",
-                height: n(d.legendBoxWidth, 10),
-                marginRight: 4,
-                width: n(d.legendBoxWidth, 10),
-              }}
-            />
-            {s(item(d, "legendText", i), series.oid)}
-          </span>
-        ))}
-      </div>
-    ) : null;
+    const chartjs = <MaterialDesignChartCanvas type="line" data={{ datasets: this.series.map((series, i) => { const seriesColorValue = seriesColor(d, i, colors, d.globalColor); const dsColor = isM3 && seriesColorValue === "#44739e" ? m3.primary : seriesColorValue; const points = series.points.filter(point => point.val !== null); return { label: s(item(d, "legendText", i), series.oid), data: points.map(point => ({ x: point.ts, y: point.val })), datalabels: seriesLabels(i, points, dsColor), borderColor: dsColor, backgroundColor: b(item(d, "useFillColor", i)) ? s(item(d, "fillColor", i), `${dsColor}33`) : "transparent", fill: b(item(d, "useFillColor", i)), borderWidth: n(item(d, "lineThikness", i), 2), stepped: b(item(d, "steppedLine", i)), tension: 0, pointBackgroundColor: s(item(d, "pointColor", i), dsColor), pointRadius: n(d.pointSize, 3), yAxisID: yAxisIdOf(i), spanGaps: b(item(d, "lineSpanGaps", i), true) }; }) }} options={{ responsive: true, maintainAspectRatio: false, layout: layoutConfig(d), animation: { duration: n(d.animationDuration, 1000) }, scales, plugins: { legend: { display: false }, datalabels: { display: false }, mdwChartArea: { color: s(d.chartAreaBackgroundColor) }, tooltip: tooltipConfig(d, { title: (items: { parsed?: { x?: number } }[]) => fmtTime(items[0]?.parsed?.x, timeFmt || "lll"), label: tooltipLabel }) } }} />;
+    const legend = <ChartLegend data={d} entries={this.series.map((series, i) => ({ label: s(item(d, "legendText", i), series.oid), color: s(item(d, "dataColor", i), colors[i] || s(d.globalColor, "#44739e")) }))} />;
     const chartMain = b(d.cardUse) ? (
       <div className="materialdesign-html-card-container mdc-card" style={{ background: s(d.colorBackground) || (isM3 ? "var(--md-sys-color-surface-container-low)" : undefined), boxSizing: "border-box", display: "flex", flexDirection: "column", height: "calc(100% - 6px)", margin: 3, padding: n(d.borderDistance, 8), width: "calc(100% - 6px)" }}>
-        <div style={{ background: s(d.colorTitleSectionBackground), color: s(d.colorTitle) || (isM3 ? "var(--md-sys-color-on-surface)" : undefined), fontFamily: s(d.titleFontFamily) }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(s(d.title)) }} />
+        <div style={{ background: s(d.colorTitleSectionBackground), color: s(d.colorTitle) || (isM3 ? "var(--md-sys-color-on-surface)" : undefined), fontFamily: s(d.titleFontFamily), fontSize: n(d.titleLayout) ? `${n(d.titleLayout)}px` : undefined }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(s(d.title)) }} />
         {/* The canvas is height:100%, so without a flex row of its own it keeps the full card height
             and the title pushes its bottom axis out of the widget. */}
         <div style={{ background: s(d.colorTextSectionBackground), flex: "1 1 0", minHeight: 0 }}>{chartjs}</div>

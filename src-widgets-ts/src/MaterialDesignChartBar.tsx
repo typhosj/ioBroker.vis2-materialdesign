@@ -2,7 +2,7 @@ import React from "react";
 import { MAX_DYNAMIC_ITEMS, squarePreview, indexedFields, itemCount, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, stateValue, sanitizeHtml } from './widgetUtils';
 import type { RxWidgetInfo } from "@iobroker/types-vis-2";
 import { colorSchemes, scheme } from "./MaterialDesignColorScheme";
-import { MaterialDesignChartCanvas, datalabelsConfig, tooltipConfig } from "./MaterialDesignChartCanvas";
+import { ChartLegend, MaterialDesignChartCanvas, datalabelsConfig, layoutConfig, tooltipConfig, tooltipNumber } from "./MaterialDesignChartCanvas";
 import { chartAxis, m3ChartColors } from "./chartAxis";
 
 type Data = Record<string, unknown> & {
@@ -537,16 +537,45 @@ export default class MaterialDesignChartBar extends VisWidget {
       gridWidth: on(data[`${ax}AxisGridLinesWitdh`]),
       drawTicks: b(data[`${ax}AxisShowTicks`], true),
       tickLength: on(data[`${ax}AxisTickLength`]),
+      minRotation: ax === "x" ? on(data.xAxisMinRotation) : undefined,
+      maxRotation: ax === "x" ? on(data.xAxisMaxRotation) : undefined,
+      offset: ax === "x" && data.xAxisOffset !== "" && data.xAxisOffset !== undefined ? b(data.xAxisOffset) : undefined,
+      gridOffset: ax === "x" && data.xAxisOffsetGridLines !== "" && data.xAxisOffsetGridLines !== undefined ? b(data.xAxisOffsetGridLines) : undefined,
     });
     // v4: horizontalBar is gone -> type "bar" + indexAxis "y"; scales are a keyed object.
+    const valueDigits = { minimumFractionDigits: Math.max(0, n(data.axisValueMinDigits)), maximumFractionDigits: Math.max(Math.max(0, n(data.axisValueMinDigits)), n(data.axisValueMaxDigits)) };
+    const valueSuffix = s(data.axisValueAppendText);
     const valueAxis = axisOf(horizontal ? "x" : "y");
     valueAxis.type = "linear"; valueAxis.min = min; valueAxis.max = max;
+    valueAxis.ticks = {
+      ...(valueAxis.ticks || {}),
+      ...(on(data.axisValueStepSize) === undefined ? {} : { stepSize: on(data.axisValueStepSize) }),
+      ...(on(data.axisMaxLabel) === undefined ? {} : { maxTicksLimit: on(data.axisMaxLabel) }),
+      ...((data.axisValueMinDigits === undefined || data.axisValueMinDigits === "") && (data.axisValueMaxDigits === undefined || data.axisValueMaxDigits === "") && !valueSuffix
+        ? {}
+        : { callback: (value: unknown) => `${Number.isFinite(Number(value)) ? Number(value).toLocaleString(undefined, valueDigits) : s(value)}${valueSuffix}` }),
+    };
     const catAxis = axisOf(horizontal ? "y" : "x");
+    if (data.axisLabelAutoSkip !== undefined && data.axisLabelAutoSkip !== "") {
+      catAxis.ticks = { ...(catAxis.ticks || {}), autoSkip: b(data.axisLabelAutoSkip) };
+    }
     const scales = { [horizontal ? "x" : "y"]: valueAxis, [horizontal ? "y" : "x"]: catAxis };
-    const chartjs = <MaterialDesignChartCanvas type="bar" data={{ labels: bars.map(bar => bar.label), datasets: [{ data: bars.map(bar => bar.value), backgroundColor: bars.map(bar => isM3 && bar.color === "#44739e" ? m3.primary : bar.color), borderColor: s(data.hoverBorderColor), borderWidth: n(data.hoverBorderWidth) }] }} options={{ indexAxis: horizontal ? "y" : "x", responsive: true, maintainAspectRatio: false, animation: { duration: n(data.animationDuration, 1000) }, scales, plugins: { datalabels: datalabelsConfig(data, index => { const bar = bars[index]; return { color: bar?.valueColor, text: `${s(bar?.valueText)}${s(bar?.appendix)}` }; }, { align: "top", anchor: "end" }), legend: { display: false }, mdwChartArea: { color: s(data.chartAreaBackgroundColor) }, tooltip: tooltipConfig(data, {
+    const chartjs = <MaterialDesignChartCanvas type="bar" data={{ labels: bars.map(bar => bar.label), datasets: [{ data: bars.map(bar => bar.value), backgroundColor: bars.map(bar => isM3 && bar.color === "#44739e" ? m3.primary : bar.color), hoverBackgroundColor: s(data.hoverColor) || undefined, borderColor: s(data.hoverBorderColor), borderWidth: n(data.hoverBorderWidth), barPercentage: on(data.barWidth) === undefined ? undefined : Math.max(0, Math.min(1, n(data.barWidth, 80) / 100)) }] }} options={{ indexAxis: horizontal ? "y" : "x", responsive: true, maintainAspectRatio: false, layout: layoutConfig(data), hover: b(data.disableHoverEffects) ? { mode: null } : undefined, animation: { duration: n(data.animationDuration, 1000) }, scales, plugins: { datalabels: datalabelsConfig(data, index => { const bar = bars[index]; return { color: bar?.valueColor, text: `${s(bar?.valueText)}${s(bar?.appendix)}` }; }, { align: "top", anchor: "end" }), legend: { display: false }, mdwChartArea: { color: s(data.chartAreaBackgroundColor) }, tooltip: tooltipConfig(data, {
       title: (items: { dataIndex?: number }[]) => { const bar = bars[n(items[0]?.dataIndex)]; return bar?.tooltipTitle ? bar.tooltipTitle.split("\\n") : s(bar?.label); },
-      label: (item: { dataIndex?: number }) => { const bar = bars[n(item.dataIndex)]; return bar?.tooltipText ? bar.tooltipText.split("\\n") : `${s(bar?.valueText)}${s(bar?.appendix)}`; },
+      label: (item: { dataIndex?: number }) => { const bar = bars[n(item.dataIndex)]; if (bar?.tooltipText) return bar.tooltipText.split("\\n"); return `${tooltipNumber(data, bar?.value) ?? s(bar?.valueText)}${s(bar?.appendix)}${s(data.tooltipBodyAppend)}`; },
     }) } }} />;
+    // Bar never drew a legend although the editor offered the whole group. One entry per bar, in
+    // its own color — the same shape Pie and JSON use.
+    const legend = <ChartLegend data={data} entries={bars.map(bar => ({ label: bar.label, color: isM3 && bar.color === "#44739e" ? m3.primary : bar.color }))} defaultShown={false} />;
+    const legendHorizontal = ["top", "bottom"].includes(s(data.legendPosition));
+    const legendFirst = ["top", "left"].includes(s(data.legendPosition, "right"));
+    const body = (
+      <div style={{ display: "flex", flexDirection: legendHorizontal ? "column" : "row", height: "100%", minHeight: 0, width: "100%" }}>
+        {legendFirst ? legend : null}
+        <div style={{ flex: 1, minHeight: 0, minWidth: 0, position: "relative" }}>{chartjs}</div>
+        {legendFirst ? null : legend}
+      </div>
+    );
     return (
       <div
         className={`materialdesign-widget materialdesign-chart${isM3 ? ` ${designStyleClasses(data, this.isDarkTheme())}` : ""}`}
@@ -578,15 +607,16 @@ export default class MaterialDesignChartBar extends VisWidget {
                 background: s(data.colorTitleSectionBackground),
                 color: s(data.colorTitle) || (isM3 ? "var(--md-sys-color-on-surface)" : undefined),
                 fontFamily: s(data.titleFontFamily),
+                fontSize: n(data.titleLayout) ? `${n(data.titleLayout)}px` : undefined,
               }}
               dangerouslySetInnerHTML={{ __html: sanitizeHtml(title) }}
             />
             {/* The canvas is height:100%, so in a plain block card it kept the FULL card height and
                 the title pushed its bottom axis out of the widget. Flex row that takes the rest. */}
-            <div style={{ background: s(data.colorTextSectionBackground), flex: "1 1 0", minHeight: 0 }}>{chartjs}</div>
+            <div style={{ background: s(data.colorTextSectionBackground), flex: "1 1 0", minHeight: 0 }}>{body}</div>
           </div>
         ) : (
-          chartjs
+          body
         )}
       </div>
     );

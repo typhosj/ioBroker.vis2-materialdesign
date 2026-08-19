@@ -2,7 +2,7 @@ import React from "react";
 import { MAX_DYNAMIC_ITEMS, squarePreview, indexedFields, itemCount, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, stateValue, sanitizeHtml } from './widgetUtils';
 import type { RxWidgetInfo } from "@iobroker/types-vis-2";
 import { colorSchemes, scheme } from "./MaterialDesignColorScheme";
-import { MaterialDesignChartCanvas, datalabelsConfig, tooltipConfig } from "./MaterialDesignChartCanvas";
+import { ChartLegend, MaterialDesignChartCanvas, datalabelsConfig, layoutConfig, tooltipConfig } from "./MaterialDesignChartCanvas";
 import { m3ChartColors } from "./chartAxis";
 
 type Data = Record<string, unknown> & {
@@ -339,46 +339,8 @@ export default class MaterialDesignChartPie extends VisWidget {
       ? scheme(s(data.colorScheme), count)
       : [];
     const values = buildPieValues(data, json, count, colors, i => n(stateValue(this.state, s(data[`oid${i}`]))));
-    const legend = b(data.showLegend) ? (
-      <div
-        style={{
-          display: "flex",
-          flexDirection: ["top", "bottom"].includes(s(data.legendPosition))
-            ? "row"
-            : "column",
-          flexWrap: "wrap",
-          flexShrink: 0,
-          fontFamily: s(data.legendFontFamily),
-          fontSize: n(data.legendFontSize, 14),
-          gap: n(data.legendPadding, 8),
-          padding: n(data.legendDistanceToChart),
-        }}
-      >
-        {values.map((item, i) => (
-          <span
-            key={i}
-            style={{
-              alignItems: "center",
-              color: s(data.legendFontColor) || (isM3 ? "var(--md-sys-color-on-surface)" : undefined),
-              display: "flex",
-            }}
-          >
-            <i
-              style={{
-                background: item.color,
-                borderRadius: b(data.legendPointStyle, true) ? "50%" : 0,
-                display: "inline-block",
-                height: n(data.legendBoxWidth, 10),
-                marginRight: 4,
-                width: n(data.legendBoxWidth, 10),
-              }}
-            />
-            {item.label}
-          </span>
-        ))}
-      </div>
-    ) : null;
-    const chartjs = <MaterialDesignChartCanvas type={s(data.chartType, "pie")} data={{ labels: values.map(item => item.label), datasets: [{ data: values.map(item => item.value), backgroundColor: values.map(item => isM3 && item.color === "#44739e" ? m3.primary : item.color), borderColor: s(data.borderColor, "#fff"), borderWidth: n(data.borderWidth, 1) }] }} options={{ responsive: true, maintainAspectRatio: false, animation: { duration: n(data.animationDuration, 1000) }, cutout: s(data.chartType) === "doughnut" ? `${n(data.doughnutCutOut, 50)}%` : 0, plugins: { datalabels: datalabelsConfig(data, index => { const item = values[index]; return { color: item?.textColor, text: `${n(item?.value).toLocaleString(undefined, { minimumFractionDigits: Math.max(0, n(data.valuesMinDecimals)), maximumFractionDigits: Math.max(0, n(data.valuesMaxDecimals)) })}${s(item?.appendix)}` }; // `align: "end"` pushes the label outward from the middle of the arc band. On a pie that lands
+    const legend = <ChartLegend data={data} entries={values.map(item => ({ label: item.label, color: item.color }))} defaultShown={false} />;
+    const chartjs = <MaterialDesignChartCanvas type={s(data.chartType, "pie")} data={{ labels: values.map(item => item.label), datasets: [{ data: values.map(item => item.value), backgroundColor: values.map(item => isM3 && item.color === "#44739e" ? m3.primary : item.color), hoverBackgroundColor: s(data.hoverColor) || undefined, hoverBorderColor: s(data.hoverBorderColor) || undefined, hoverBorderWidth: data.hoverBorderWidth === "" || data.hoverBorderWidth === undefined || data.hoverBorderWidth === null ? undefined : n(data.hoverBorderWidth), borderColor: s(data.borderColor, "#fff"), borderWidth: n(data.borderWidth, 1) }] }} options={{ responsive: true, maintainAspectRatio: false, layout: layoutConfig(data), hover: b(data.disableHoverEffects) ? { mode: null } : undefined, animation: { duration: n(data.animationDuration, 1000) }, cutout: s(data.chartType) === "doughnut" ? `${n(data.doughnutCutOut, 50)}%` : 0, plugins: { datalabels: datalabelsConfig(data, index => { const item = values[index]; return { color: item?.textColor, text: `${n(item?.value).toLocaleString(undefined, { minimumFractionDigits: Math.max(0, n(data.valuesMinDecimals)), maximumFractionDigits: Math.max(0, n(data.valuesMaxDecimals)) })}${s(item?.appendix)}` }; // `align: "end"` pushes the label outward from the middle of the arc band. On a pie that lands
     // inside the slice, but on a doughnut the band is narrow and its middle already sits near the
     // outer edge — the labels ended up outside the colored ring, the wider the cut-out the further
     // out. Doughnuts centre the label in the band instead; `valuesPositionAlign` still overrides.
@@ -429,7 +391,7 @@ export default class MaterialDesignChartPie extends VisWidget {
               style={{
                 background: s(data.colorTitleSectionBackground),
                 color: s(data.colorTitle) || (isM3 ? "var(--md-sys-color-on-surface)" : undefined),
-                fontFamily: s(data.titleFontFamily),
+                fontFamily: s(data.titleFontFamily), fontSize: n(data.titleLayout) ? `${n(data.titleLayout)}px` : undefined,
               }}
               dangerouslySetInnerHTML={{ __html: sanitizeHtml(s(data.title)) }}
             />

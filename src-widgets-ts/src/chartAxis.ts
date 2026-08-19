@@ -20,6 +20,12 @@ export type AxisSpec = {
     min?: number;
     max?: number;
     stepSize?: number;
+    autoSkip?: boolean;
+    minRotation?: number;
+    maxRotation?: number;
+    maxTicksLimit?: number;
+    offset?: boolean; // v4: scale.offset
+    gridOffset?: boolean; // v4: grid.offset (v2 called it gridLines.offsetGridLines)
     title?: string;
     titleColor?: string;
     titleFontFamily?: string;
@@ -45,8 +51,13 @@ export function chartAxis(a: AxisSpec): Record<string, unknown> {
     if (a.labelPadding !== undefined) ticks.padding = a.labelPadding;
     if (a.stepSize !== undefined) ticks.stepSize = a.stepSize;
     if (a.tickCallback) ticks.callback = a.tickCallback;
+    if (a.autoSkip !== undefined) ticks.autoSkip = a.autoSkip;
+    if (a.minRotation !== undefined) ticks.minRotation = a.minRotation;
+    if (a.maxRotation !== undefined) ticks.maxRotation = a.maxRotation;
+    if (a.maxTicksLimit !== undefined) ticks.maxTicksLimit = a.maxTicksLimit;
 
     const grid: Record<string, unknown> = {};
+    if (a.gridOffset !== undefined) grid.offset = a.gridOffset;
     if (a.gridDisplay !== undefined) grid.display = a.gridDisplay;
     if (has(a.gridColor)) grid.color = a.gridColor;
     if (a.gridWidth) grid.lineWidth = a.gridWidth;
@@ -70,6 +81,7 @@ export function chartAxis(a: AxisSpec): Record<string, unknown> {
     if (has(a.position)) axis.position = a.position;
     if (a.display !== undefined) axis.display = a.display;
     if (a.stacked !== undefined) axis.stacked = a.stacked;
+    if (a.offset !== undefined) axis.offset = a.offset;
     if (a.min !== undefined) axis.min = a.min;
     if (a.max !== undefined) axis.max = a.max;
     if (a.time) axis.time = a.time;

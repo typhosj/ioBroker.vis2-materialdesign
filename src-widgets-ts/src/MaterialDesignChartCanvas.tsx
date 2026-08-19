@@ -121,8 +121,91 @@ export function tooltipConfig(data: Record<string, unknown>, callbacks?: object)
   const bodyFont = { family: str(data.tooltipBodyFontFamily), size: num(data.tooltipBodyFontSize) };
   if (titleFont.family || titleFont.size) config.titleFont = titleFont;
   if (bodyFont.family || bodyFont.size) config.bodyFont = bodyFont;
+  put("caretSize", num(data.tooltipArrowSize));
+  put("caretPadding", num(data.tooltipDistanceToBar));
+  put("cornerRadius", num(data.tooltipBoxRadius));
+  put("titleMarginBottom", num(data.tooltipTitleMarginBottom));
+  // v4 folded xPadding/yPadding into one `padding`.
+  const padX = num(data.tooltipXpadding);
+  const padY = num(data.tooltipYpadding);
+  if (padX !== undefined || padY !== undefined) config.padding = { x: padX ?? 6, y: padY ?? 6 };
+  if (data.tooltipShowColorBox !== undefined && data.tooltipShowColorBox !== null && data.tooltipShowColorBox !== "") {
+    config.displayColors = data.tooltipShowColorBox === true || data.tooltipShowColorBox === "true" || data.tooltipShowColorBox === 1 || data.tooltipShowColorBox === "1";
+  }
   if (callbacks) config.callbacks = callbacks;
   return config;
+}
+
+// `tooltipValueMin/MaxDecimals`. Undefined when the user set neither, so the caller keeps its own
+// text — the value label carries valuesMin/MaxDecimals, which is a different setting.
+export function tooltipNumber(data: Record<string, unknown>, value: unknown): string | undefined {
+  const num = (v: unknown): number | undefined => (v === "" || v === null || v === undefined || !Number.isFinite(Number(v)) ? undefined : Number(v));
+  const min = num(data.tooltipValueMinDecimals);
+  const max = num(data.tooltipValueMaxDecimals);
+  const raw = num(value);
+  if (raw === undefined || (min === undefined && max === undefined)) return undefined;
+  return raw.toLocaleString(undefined, {
+    minimumFractionDigits: Math.max(0, Math.min(20, min ?? 0)),
+    maximumFractionDigits: Math.max(0, Math.min(20, max ?? Math.max(min ?? 0, 2))),
+  });
+}
+
+// `chartPadding*` in px around the plot. Only sides that are set are emitted, so chart.js keeps its
+// own spacing for the rest.
+export function layoutConfig(data: Record<string, unknown>): object | undefined {
+  const num = (value: unknown): number | undefined => (value === "" || value === null || value === undefined || !Number.isFinite(Number(value)) ? undefined : Number(value));
+  const padding: Record<string, number> = {};
+  for (const [side, key] of [["top", "chartPaddingTop"], ["left", "chartPaddingLeft"], ["right", "chartPaddingRight"], ["bottom", "chartPaddingBottom"]] as const) {
+    const value = num(data[key]);
+    if (value !== undefined) padding[side] = value;
+  }
+  return Object.keys(padding).length ? { padding } : undefined;
+}
+
+// chart.js' own legend is off in all our charts (it cannot be styled per widget field), so the
+// widgets draw their own from the same `legend*` fields. One component for all of them.
+export function ChartLegend({ data, entries, defaultShown = true }: {
+  data: Record<string, unknown>;
+  entries: { label: string; color: string }[];
+  defaultShown?: boolean;
+}): React.JSX.Element | null {
+  const num = (value: unknown, fallback = 0): number => (value === "" || value === null || value === undefined || !Number.isFinite(Number(value)) ? fallback : Number(value));
+  const str = (value: unknown, fallback = ""): string => (typeof value === "string" && value ? value : fallback);
+  const bool = (value: unknown, fallback: boolean): boolean => (value === undefined || value === null || value === "" ? fallback : value === true || value === "true" || value === 1 || value === "1");
+  if (!bool(data.showLegend, defaultShown)) return null;
+  const horizontal = ["top", "bottom"].includes(str(data.legendPosition));
+  const isM3 = designStyle(data) === "material3";
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: horizontal ? "row" : "column",
+        flexWrap: "wrap",
+        flexShrink: 0,
+        fontFamily: str(data.legendFontFamily) || undefined,
+        fontSize: num(data.legendFontSize, 14),
+        gap: num(data.legendPadding, 8),
+        padding: num(data.legendDistanceToChart),
+      }}
+    >
+      {entries.map((entry, index) => (
+        <span key={index} style={{ alignItems: "center", color: str(data.legendFontColor) || (isM3 ? "var(--md-sys-color-on-surface)" : undefined), display: "flex" }}>
+          <i
+            style={{
+              background: entry.color,
+              borderRadius: bool(data.legendPointStyle, true) ? "50%" : 0,
+              display: "inline-block",
+              flexShrink: 0,
+              height: num(data.legendBoxWidth, 10),
+              marginRight: 4,
+              width: num(data.legendBoxWidth, 10),
+            }}
+          />
+          {entry.label}
+        </span>
+      ))}
+    </div>
+  );
 }
 
 // Callers build chart.js configs whose runtime shape (null points for gaps, numeric stack ids) is
