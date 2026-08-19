@@ -2,7 +2,7 @@ import React from "react";
 import { indexedFields, MAX_DYNAMIC_ITEMS, squarePreview, itemCount, RenderProps, VisWidget, createInfo, stateValue, sanitizeHtml } from './widgetUtils';
 import type { RxWidgetInfo } from "@iobroker/types-vis-2";
 import { colorSchemes, scheme } from "./MaterialDesignColorScheme";
-import { MaterialDesignChartCanvas, datalabelsConfig, layoutConfig, tooltipConfig, tooltipNumber } from "./MaterialDesignChartCanvas";
+import { ChartLegend, MaterialDesignChartCanvas, datalabelsConfig, layoutConfig, tooltipConfig, tooltipNumber } from "./MaterialDesignChartCanvas";
 import { chartAxis } from "./chartAxis";
 
 type Data = Record<string, unknown> & {
@@ -558,6 +558,18 @@ export default class MaterialDesignChartBar extends VisWidget {
       title: (items: { index?: number }[]) => { const bar = bars[n(items[0]?.index)]; return bar?.tooltipTitle ? bar.tooltipTitle.split("\\n") : s(bar?.label); },
       label: (item: { index?: number }) => { const bar = bars[n(item.index)]; if (bar?.tooltipText) return bar.tooltipText.split("\\n"); return `${tooltipNumber(data, bar?.value) ?? s(bar?.valueText)}${s(bar?.appendix)}${s(data.tooltipBodyAppend)}`; },
     }) }} />;
+    // Bar never drew a legend although the editor offered the whole group. One entry per bar, in
+    // its own color — the same shape Pie and JSON use.
+    const legend = <ChartLegend data={data} entries={bars.map(bar => ({ label: bar.label, color: bar.color }))} defaultShown={false} />;
+    const legendHorizontal = ["top", "bottom"].includes(s(data.legendPosition));
+    const legendFirst = ["top", "left"].includes(s(data.legendPosition, "right"));
+    const body = (
+      <div style={{ display: "flex", flexDirection: legendHorizontal ? "column" : "row", height: "100%", minHeight: 0, width: "100%" }}>
+        {legendFirst ? legend : null}
+        <div style={{ flex: 1, minHeight: 0, minWidth: 0, position: "relative" }}>{chartjs}</div>
+        {legendFirst ? null : legend}
+      </div>
+    );
     return (
       <div
         className="materialdesign-widget materialdesign-chart"
@@ -588,10 +600,10 @@ export default class MaterialDesignChartBar extends VisWidget {
               dangerouslySetInnerHTML={{ __html: sanitizeHtml(title) }}
             />
             {/* Own box so the card text section can carry its background color. */}
-            <div style={{ background: s(data.colorTextSectionBackground), flex: "1 1 0", minHeight: 0 }}>{chartjs}</div>
+            <div style={{ background: s(data.colorTextSectionBackground), flex: "1 1 0", minHeight: 0 }}>{body}</div>
           </div>
         ) : (
-          chartjs
+          body
         )}
       </div>
     );

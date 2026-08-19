@@ -2,7 +2,7 @@ import React from "react";
 import { squarePreview , RenderProps, VisWidget, createInfo, stateValue, sanitizeHtml } from './widgetUtils';
 import type { RxWidgetInfo } from "@iobroker/types-vis-2";
 import { colorSchemes, scheme } from "./MaterialDesignColorScheme";
-import { MaterialDesignChartCanvas, layoutConfig, tooltipConfig } from "./MaterialDesignChartCanvas";
+import { ChartLegend, MaterialDesignChartCanvas, layoutConfig, tooltipConfig } from "./MaterialDesignChartCanvas";
 import { chartAxis } from "./chartAxis";
 
 type Graph = {
@@ -302,41 +302,8 @@ export default class MaterialDesignChartJson extends VisWidget {
     const palette = s(data.colorScheme)
       ? scheme(s(data.colorScheme), graphs.length)
       : [];
-    const legend = b(data.showLegend, true) ? (
-      <div
-        style={{
-          display: "flex",
-          flexDirection: ["top", "bottom"].includes(s(data.legendPosition))
-            ? "row"
-            : "column",
-          flexWrap: "wrap",
-          flexShrink: 0,
-          gap: n(data.legendPadding, 8),
-          padding: n(data.legendDistanceToChart),
-          fontFamily: s(data.legendFontFamily),
-          fontSize: n(data.legendFontSize, 14),
-        }}
-      >
-        {graphs.map((graph, i) => (
-          <span key={i} style={{ color: s(data.legendFontColor) }}>
-            <i
-              style={{
-                background: s(
-                  graph.color,
-                  palette[i] || s(data.globalColor, "#44739e"),
-                ),
-                display: "inline-block",
-                height: n(data.legendBoxWidth, 10),
-                marginRight: 4,
-                width: n(data.legendBoxWidth, 10),
-              }}
-            />
-            {s(graph.legendText)}
-          </span>
-        ))}
-      </div>
-    ) : null;
-    // unset yAxis_id -> id 0, so all graphs share one y-axis instead of
+    const legend = <ChartLegend data={data} entries={graphs.map((graph, i) => ({ label: s(graph.legendText), color: s(graph.color, palette[i] || s(data.globalColor, "#44739e")) }))} />;
+   // unset yAxis_id -> id 0, so all graphs share one y-axis instead of
     // each graph getting its own axis by index.
     const axisId = (graph: Graph) => `yAxis_id_${n((graph as Record<string, unknown>).yAxis_id, 0)}`;
     // one axis config per distinct id (dedupe; else duplicate axis ids).

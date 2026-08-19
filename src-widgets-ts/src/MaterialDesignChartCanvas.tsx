@@ -54,6 +54,51 @@ export function tooltipConfig(data: Record<string, unknown>, callbacks?: object)
   return config;
 }
 
+// chart.js' own legend is off in all our charts (it cannot be styled per widget field), so the
+// widgets draw their own from the same `legend*` fields. One component for all of them.
+export function ChartLegend({ data, entries, defaultShown = true }: {
+  data: Record<string, unknown>;
+  entries: { label: string; color: string }[];
+  defaultShown?: boolean;
+}): React.JSX.Element | null {
+  const num = (value: unknown, fallback = 0): number => (value === "" || value === null || value === undefined || !Number.isFinite(Number(value)) ? fallback : Number(value));
+  const str = (value: unknown, fallback = ""): string => (typeof value === "string" && value ? value : fallback);
+  const bool = (value: unknown, fallback: boolean): boolean => (value === undefined || value === null || value === "" ? fallback : value === true || value === "true" || value === 1 || value === "1");
+  if (!bool(data.showLegend, defaultShown)) return null;
+  const horizontal = ["top", "bottom"].includes(str(data.legendPosition));
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: horizontal ? "row" : "column",
+        flexWrap: "wrap",
+        flexShrink: 0,
+        fontFamily: str(data.legendFontFamily) || undefined,
+        fontSize: num(data.legendFontSize, 14),
+        gap: num(data.legendPadding, 8),
+        padding: num(data.legendDistanceToChart),
+      }}
+    >
+      {entries.map((entry, index) => (
+        <span key={index} style={{ alignItems: "center", color: str(data.legendFontColor) || undefined, display: "flex" }}>
+          <i
+            style={{
+              background: entry.color,
+              borderRadius: bool(data.legendPointStyle, true) ? "50%" : 0,
+              display: "inline-block",
+              flexShrink: 0,
+              height: num(data.legendBoxWidth, 10),
+              marginRight: 4,
+              width: num(data.legendBoxWidth, 10),
+            }}
+          />
+          {entry.label}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 // Value labels on the drawn element (chartjs-plugin-datalabels). Every chart passes its own text
 // and color per item, the rest of the look comes from the `values*` fields.
 // `valuesSteps` thins the labels out (every n-th item); 0/1 shows all.

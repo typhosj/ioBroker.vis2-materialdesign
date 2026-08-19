@@ -1,6 +1,8 @@
+import React from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 
-import { datalabelsConfig, layoutConfig, tooltipConfig, tooltipNumber } from './MaterialDesignChartCanvas';
+import { ChartLegend, datalabelsConfig, layoutConfig, tooltipConfig, tooltipNumber } from './MaterialDesignChartCanvas';
 
 describe('layoutConfig', () => {
     it('emits only the sides the editor filled in', () => {
@@ -102,5 +104,25 @@ describe('tooltipNumber', () => {
     it('returns undefined without decimals set, so the caller keeps its own text', () => {
         expect(tooltipNumber({}, 3.14159)).toBeUndefined();
         expect(tooltipNumber({ tooltipValueMaxDecimals: 1 }, 'not a number')).toBeUndefined();
+    });
+});
+
+describe('ChartLegend', () => {
+    const entries = [{ label: 'Kitchen', color: '#f00' }, { label: 'Hall', color: '#0f0' }];
+    const html = (data: Record<string, unknown>, defaultShown?: boolean): string =>
+        renderToStaticMarkup(React.createElement(ChartLegend, { data, entries, defaultShown }) as React.ReactElement);
+
+    it('stays away unless switched on, and follows the default the chart passes', () => {
+        expect(html({})).toContain('Kitchen');
+        expect(html({}, false)).toBe('');
+        expect(html({ showLegend: true }, false)).toContain('Kitchen');
+        expect(html({ showLegend: false })).toBe('');
+    });
+
+    it('lays out along the position and takes box shape and size from the fields', () => {
+        expect(html({ legendPosition: 'top' })).toContain('flex-direction:row');
+        expect(html({ legendPosition: 'right' })).toContain('flex-direction:column');
+        expect(html({ legendPointStyle: false })).toContain('border-radius:0');
+        expect(html({ legendBoxWidth: 20 })).toContain('height:20px');
     });
 });

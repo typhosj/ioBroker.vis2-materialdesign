@@ -2,7 +2,7 @@ import React from "react";
 import { indexedFields, MAX_DYNAMIC_ITEMS, squarePreview, itemCount, RenderProps, VisWidget, createInfo, stateValue, sanitizeHtml } from './widgetUtils';
 import type { RxWidgetInfo } from "@iobroker/types-vis-2";
 import { colorSchemes, scheme } from "./MaterialDesignColorScheme";
-import { MaterialDesignChartCanvas, datalabelsConfig, layoutConfig, tooltipConfig } from "./MaterialDesignChartCanvas";
+import { ChartLegend, MaterialDesignChartCanvas, datalabelsConfig, layoutConfig, tooltipConfig } from "./MaterialDesignChartCanvas";
 
 type Data = Record<string, unknown> & {
   oid?: string;
@@ -318,46 +318,8 @@ export default class MaterialDesignChartPie extends VisWidget {
         tooltipText: s(item?.tooltipText, s(data[`tooltipText${i}`])),
       };
     });
-    const legend = b(data.showLegend) ? (
-      <div
-        style={{
-          display: "flex",
-          flexDirection: ["top", "bottom"].includes(s(data.legendPosition))
-            ? "row"
-            : "column",
-          flexWrap: "wrap",
-          flexShrink: 0,
-          fontFamily: s(data.legendFontFamily),
-          fontSize: n(data.legendFontSize, 14),
-          gap: n(data.legendPadding, 8),
-          padding: n(data.legendDistanceToChart),
-        }}
-      >
-        {values.map((item, i) => (
-          <span
-            key={i}
-            style={{
-              alignItems: "center",
-              color: s(data.legendFontColor),
-              display: "flex",
-            }}
-          >
-            <i
-              style={{
-                background: item.color,
-                borderRadius: b(data.legendPointStyle, true) ? "50%" : 0,
-                display: "inline-block",
-                height: n(data.legendBoxWidth, 10),
-                marginRight: 4,
-                width: n(data.legendBoxWidth, 10),
-              }}
-            />
-            {item.label}
-          </span>
-        ))}
-      </div>
-    ) : null;
-    const chartjs = <MaterialDesignChartCanvas type={s(data.chartType, "pie")} data={{ labels: values.map(item => item.label), datasets: [{ data: values.map(item => item.value), backgroundColor: values.map(item => item.color), hoverBackgroundColor: s(data.hoverColor) || undefined, hoverBorderColor: s(data.hoverBorderColor) || undefined, hoverBorderWidth: data.hoverBorderWidth === "" || data.hoverBorderWidth === undefined || data.hoverBorderWidth === null ? undefined : n(data.hoverBorderWidth), borderColor: s(data.borderColor, "#fff"), borderWidth: n(data.borderWidth, 1) }] }} options={{ responsive: true, maintainAspectRatio: false, layout: layoutConfig(data), hover: b(data.disableHoverEffects) ? { mode: null } : undefined, animation: { duration: n(data.animationDuration, 1000) }, cutoutPercentage: s(data.chartType) === "doughnut" ? n(data.doughnutCutOut, 50) : 0, legend: { display: false }, plugins: { datalabels: datalabelsConfig(data, index => ({ text: `${n(values[index]?.value).toLocaleString(undefined, { minimumFractionDigits: Math.max(0, n(data.valuesMinDecimals)), maximumFractionDigits: Math.max(Math.max(0, n(data.valuesMinDecimals)), n(data.valuesMaxDecimals)) })}${s(values[index]?.appendix)}`, color: values[index]?.textColor }), { align: "center", anchor: "center" }), mdwChartArea: { color: s(data.chartAreaBackgroundColor) } }, tooltips: tooltipConfig(data, {
+    const legend = <ChartLegend data={data} entries={values.map(item => ({ label: item.label, color: item.color }))} defaultShown={false} />;
+   const chartjs = <MaterialDesignChartCanvas type={s(data.chartType, "pie")} data={{ labels: values.map(item => item.label), datasets: [{ data: values.map(item => item.value), backgroundColor: values.map(item => item.color), hoverBackgroundColor: s(data.hoverColor) || undefined, hoverBorderColor: s(data.hoverBorderColor) || undefined, hoverBorderWidth: data.hoverBorderWidth === "" || data.hoverBorderWidth === undefined || data.hoverBorderWidth === null ? undefined : n(data.hoverBorderWidth), borderColor: s(data.borderColor, "#fff"), borderWidth: n(data.borderWidth, 1) }] }} options={{ responsive: true, maintainAspectRatio: false, layout: layoutConfig(data), hover: b(data.disableHoverEffects) ? { mode: null } : undefined, animation: { duration: n(data.animationDuration, 1000) }, cutoutPercentage: s(data.chartType) === "doughnut" ? n(data.doughnutCutOut, 50) : 0, legend: { display: false }, plugins: { datalabels: datalabelsConfig(data, index => ({ text: `${n(values[index]?.value).toLocaleString(undefined, { minimumFractionDigits: Math.max(0, n(data.valuesMinDecimals)), maximumFractionDigits: Math.max(Math.max(0, n(data.valuesMinDecimals)), n(data.valuesMaxDecimals)) })}${s(values[index]?.appendix)}`, color: values[index]?.textColor }), { align: "center", anchor: "center" }), mdwChartArea: { color: s(data.chartAreaBackgroundColor) } }, tooltips: tooltipConfig(data, {
       title: (items: { index?: number }[]) => { const item = values[n(items[0]?.index)]; return item?.tooltipTitle ? item.tooltipTitle.split("\\n") : ""; },
       label: (item: { index?: number }) => { const v = values[n(item.index)]; if (v?.tooltipText) return v.tooltipText.split("\\n"); const num = n(v?.value).toLocaleString(undefined, { minimumFractionDigits: Math.max(0, n(data.tooltipValueMinDecimals)), maximumFractionDigits: Math.max(0, n(data.tooltipValueMaxDecimals)) }); return `${s(v?.label)}: ${num}${s(v?.appendix)}${s(data.tooltipBodyAppend)}`; },
     }) }} />;
