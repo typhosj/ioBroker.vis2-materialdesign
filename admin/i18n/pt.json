@@ -431,7 +431,6 @@
     "group_xAxisLayout": "layout do eixo x",
     "group_yAxisLayout": "layout do eixo y",
     "group_yAxisLayoutForData": "layout do eixo y para dados",
-    "group.buttonOids": "IDs de objeto",
     "groupHeader": "título",
     "handleSize": "tamanho do botão",
     "handleZoom": "botão de zoom no controle",
@@ -1150,5 +1149,13 @@
     "total": "total",
     "vertical": "vertical",
     "write": "escrever",
-    "indexedAddHint": "Este grupo é a barra de adicionar, não uma entrada: use + para criar uma; os botões ao lado copiam ou eliminam a entrada acima."
+    "indexedAddHint": "Este grupo é a barra de adicionar, não uma entrada: use + para criar uma; os botões ao lado copiam ou eliminam a entrada acima.",
+    "ariaCloseAlert": "Fechar alerta",
+    "ariaClearInput": "Limpar entrada",
+    "ariaOpenMenu": "Abrir menu",
+    "ariaTable": "Tabela",
+    "ariaCardAction": "Ação do cartão",
+    "ariaListItemAction": "Ação do item da lista",
+    "ariaRoundSlider": "Controle giratório",
+    "ariaDialog": "Diálogo"
 }

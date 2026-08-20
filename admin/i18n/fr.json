@@ -431,7 +431,6 @@
     "group_xAxisLayout": "disposition des axes x",
     "group_yAxisLayout": "Disposition en Y",
     "group_yAxisLayoutForData": "disposition en ordonnée pour les données",
-    "group.buttonOids": "ID d'objet",
     "groupHeader": "gros titre",
     "handleSize": "taille du bouton",
     "handleZoom": "bouton zoom au contrôle",
@@ -1150,5 +1149,13 @@
     "total": "total",
     "vertical": "vertical",
     "write": "écrire",
-    "indexedAddHint": "Ce groupe est la barre d’ajout, pas une entrée : utilisez + pour en créer une, les boutons voisins copient ou suppriment l’entrée au-dessus."
+    "indexedAddHint": "Ce groupe est la barre d’ajout, pas une entrée : utilisez + pour en créer une, les boutons voisins copient ou suppriment l’entrée au-dessus.",
+    "ariaCloseAlert": "Fermer l'alerte",
+    "ariaClearInput": "Effacer la saisie",
+    "ariaOpenMenu": "Ouvrir le menu",
+    "ariaTable": "Tableau",
+    "ariaCardAction": "Action de la carte",
+    "ariaListItemAction": "Action de l'élément de liste",
+    "ariaRoundSlider": "Curseur rotatif",
+    "ariaDialog": "Boîte de dialogue"
 }

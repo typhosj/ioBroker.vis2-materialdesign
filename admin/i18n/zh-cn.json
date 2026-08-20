@@ -431,7 +431,6 @@
     "group_xAxisLayout": "x轴布局",
     "group_yAxisLayout": "y轴布局",
     "group_yAxisLayoutForData": "数据的Y轴布局",
-    "group.buttonOids": "对象 ID",
     "groupHeader": "标题",
     "handleSize": "旋钮大小",
     "handleZoom": "控制旋钮变焦",
@@ -1150,5 +1149,13 @@
     "total": "总计",
     "vertical": "垂直",
     "write": "写入",
-    "indexedAddHint": "此分组是添加栏，不是条目：用 + 新增条目，旁边的按钮可复制或删除上方的条目。"
+    "indexedAddHint": "此分组是添加栏，不是条目：用 + 新增条目，旁边的按钮可复制或删除上方的条目。",
+    "ariaCloseAlert": "关闭提示",
+    "ariaClearInput": "清除输入",
+    "ariaOpenMenu": "打开菜单",
+    "ariaTable": "表格",
+    "ariaCardAction": "卡片操作",
+    "ariaListItemAction": "列表项操作",
+    "ariaRoundSlider": "圆形滑块",
+    "ariaDialog": "对话框"
 }

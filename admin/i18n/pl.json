@@ -431,7 +431,6 @@
     "group_xAxisLayout": "układ osi x",
     "group_yAxisLayout": "układ osi y",
     "group_yAxisLayoutForData": "Układ osi y dla danych",
-    "group.buttonOids": "ID obiektów",
     "groupHeader": "nagłówek",
     "handleSize": "rozmiar pokrętła",
     "handleZoom": "pokrętło zoom przy sterowaniu",
@@ -1150,5 +1149,13 @@
     "total": "suma",
     "vertical": "pionowo",
     "write": "zapis",
-    "indexedAddHint": "Ta grupa to pasek dodawania, nie wpis: użyj +, aby go utworzyć, a przyciski obok kopiują lub usuwają wpis powyżej."
+    "indexedAddHint": "Ta grupa to pasek dodawania, nie wpis: użyj +, aby go utworzyć, a przyciski obok kopiują lub usuwają wpis powyżej.",
+    "ariaCloseAlert": "Zamknij powiadomienie",
+    "ariaClearInput": "Wyczyść pole",
+    "ariaOpenMenu": "Otwórz menu",
+    "ariaTable": "Tabela",
+    "ariaCardAction": "Akcja karty",
+    "ariaListItemAction": "Akcja elementu listy",
+    "ariaRoundSlider": "Suwak okrągły",
+    "ariaDialog": "Okno dialogowe"
 }

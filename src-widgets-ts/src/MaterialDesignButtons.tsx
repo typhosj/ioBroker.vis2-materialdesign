@@ -186,7 +186,7 @@ function attrs(def: ButtonDefinition): RxWidgetInfo['visAttrs'] {
             ? [
                   {
                       name: 'buttonOids',
-                      label: 'group.buttonOids',
+                      label: 'group_buttonOids',
                       indexFrom: 0,
                       indexTo: 'countOids',
                       fields: indexedFields(

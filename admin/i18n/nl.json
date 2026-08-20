@@ -431,7 +431,6 @@
     "group_xAxisLayout": "x asindeling",
     "group_yAxisLayout": "y-aslay-out",
     "group_yAxisLayoutForData": "y-aslay-out voor gegevens",
-    "group.buttonOids": "Object-ID's",
     "groupHeader": "opschrift",
     "handleSize": "knop maat",
     "handleZoom": "knop zoom bij bediening",
@@ -1150,5 +1149,13 @@
     "total": "totaal",
     "vertical": "verticaal",
     "write": "schrijven",
-    "indexedAddHint": "Deze groep is de toevoegbalk, geen item: gebruik + om er een aan te maken; de knoppen ernaast kopiëren of verwijderen het item erboven."
+    "indexedAddHint": "Deze groep is de toevoegbalk, geen item: gebruik + om er een aan te maken; de knoppen ernaast kopiëren of verwijderen het item erboven.",
+    "ariaCloseAlert": "Melding sluiten",
+    "ariaClearInput": "Invoer wissen",
+    "ariaOpenMenu": "Menu openen",
+    "ariaTable": "Tabel",
+    "ariaCardAction": "Kaartactie",
+    "ariaListItemAction": "Actie lijstitem",
+    "ariaRoundSlider": "Ronde schuifregelaar",
+    "ariaDialog": "Dialoogvenster"
 }

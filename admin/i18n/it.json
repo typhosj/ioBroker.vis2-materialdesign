@@ -431,7 +431,6 @@
     "group_xAxisLayout": "layout dell'asse x",
     "group_yAxisLayout": "layout dell'asse y",
     "group_yAxisLayoutForData": "layout dell'asse y per i dati",
-    "group.buttonOids": "ID oggetto",
     "groupHeader": "titolo",
     "handleSize": "dimensione della manopola",
     "handleZoom": "zoom della manopola al controllo",
@@ -1150,5 +1149,13 @@
     "total": "totale",
     "vertical": "verticale",
     "write": "scrivi",
-    "indexedAddHint": "Questo gruppo è la barra di aggiunta, non una voce: usa + per crearne una, i pulsanti accanto copiano o eliminano la voce sopra."
+    "indexedAddHint": "Questo gruppo è la barra di aggiunta, non una voce: usa + per crearne una, i pulsanti accanto copiano o eliminano la voce sopra.",
+    "ariaCloseAlert": "Chiudi avviso",
+    "ariaClearInput": "Cancella immissione",
+    "ariaOpenMenu": "Apri menu",
+    "ariaTable": "Tabella",
+    "ariaCardAction": "Azione della scheda",
+    "ariaListItemAction": "Azione voce di elenco",
+    "ariaRoundSlider": "Cursore rotondo",
+    "ariaDialog": "Finestra di dialogo"
 }

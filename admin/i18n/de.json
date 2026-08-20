@@ -431,7 +431,6 @@
     "group_xAxisLayout": "x-Achsen Layout",
     "group_yAxisLayout": "y-Achsen Layout",
     "group_yAxisLayoutForData": "y-Achsen-Layout für Datensatz",
-    "group.buttonOids": "Objekt-IDs",
     "groupHeader": "Überschrift",
     "handleSize": "Knopfgröße",
     "handleZoom": "Knopfzoom bei Steuerung",
@@ -1150,5 +1149,13 @@
     "total": "Summe",
     "vertical": "vertikal",
     "write": "schreiben",
-    "indexedAddHint": "Diese Gruppe ist die Hinzufügen-Leiste, kein Eintrag: mit + einen anlegen, die Knöpfe daneben kopieren oder löschen den Eintrag darüber."
+    "indexedAddHint": "Diese Gruppe ist die Hinzufügen-Leiste, kein Eintrag: mit + einen anlegen, die Knöpfe daneben kopieren oder löschen den Eintrag darüber.",
+    "ariaCloseAlert": "Meldung schließen",
+    "ariaClearInput": "Eingabe löschen",
+    "ariaOpenMenu": "Menü öffnen",
+    "ariaTable": "Tabelle",
+    "ariaCardAction": "Karten-Aktion",
+    "ariaListItemAction": "Listeneintrag-Aktion",
+    "ariaRoundSlider": "Runder Regler",
+    "ariaDialog": "Dialog"
 }

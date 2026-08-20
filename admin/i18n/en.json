@@ -431,7 +431,6 @@
     "group_xAxisLayout": "x axis layout",
     "group_yAxisLayout": "y axis layout",
     "group_yAxisLayoutForData": "y-axis layout for data",
-    "group.buttonOids": "Object IDs",
     "groupHeader": "headline",
     "handleSize": "knob size",
     "handleZoom": "knob zoom at control",
@@ -1150,5 +1149,13 @@
     "total": "total",
     "vertical": "vertical",
     "write": "write",
-    "indexedAddHint": "This group is the add bar, not an entry: use + to add one, the buttons next to it clone or delete the entry above."
+    "indexedAddHint": "This group is the add bar, not an entry: use + to add one, the buttons next to it clone or delete the entry above.",
+    "ariaCloseAlert": "Close alert",
+    "ariaClearInput": "Clear input",
+    "ariaOpenMenu": "Open menu",
+    "ariaTable": "Table",
+    "ariaCardAction": "Card action",
+    "ariaListItemAction": "List item action",
+    "ariaRoundSlider": "Round slider",
+    "ariaDialog": "Dialog"
 }

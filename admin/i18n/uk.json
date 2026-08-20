@@ -431,7 +431,6 @@
     "group_xAxisLayout": "X вісь макет",
     "group_yAxisLayout": "Y вісь макет",
     "group_yAxisLayoutForData": "Y вісь макет FOR дані",
-    "group.buttonOids": "Ідентифікатори об’єктів",
     "groupHeader": "заголовок",
     "handleSize": "KNOB розмір",
     "handleZoom": "KNOB масштаб AT керування",
@@ -1150,5 +1149,13 @@
     "total": "сума",
     "vertical": "вертикально",
     "write": "запис",
-    "indexedAddHint": "Ця група — панель додавання, а не запис: натисніть +, щоб створити його; кнопки поруч копіюють або видаляють запис вище."
+    "indexedAddHint": "Ця група — панель додавання, а не запис: натисніть +, щоб створити його; кнопки поруч копіюють або видаляють запис вище.",
+    "ariaCloseAlert": "Закрити сповіщення",
+    "ariaClearInput": "Очистити поле",
+    "ariaOpenMenu": "Відкрити меню",
+    "ariaTable": "Таблиця",
+    "ariaCardAction": "Дія картки",
+    "ariaListItemAction": "Дія елемента списку",
+    "ariaRoundSlider": "Круглий регулятор",
+    "ariaDialog": "Діалог"
 }
