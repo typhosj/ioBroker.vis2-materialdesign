@@ -66,7 +66,7 @@ Report current VIS 2 problems in the
 [GitHub issue tracker](https://github.com/typhosj/ioBroker.vis2-materialdesign/issues).
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 0.3.5 (2026-08-20)
 
 - (typhosj) Fixed the Bar Chart rendering nothing at all, and the Pie Chart tooltip and the Value widget throwing, when a decimals field was given a minimum above its maximum — which is what filling in "min decimals" and leaving "max decimals" empty adds up to. The maximum is lifted to the minimum now instead of breaking the widget
 - (typhosj) Fixed HTML from a state being able to carry a `<style>` block: its rules are page-wide, so one state value could hide a whole VIS view or lay an invisible layer over it, and the text inside such a block is re-parsed on the way back out, which turns an inert `<img onerror>` into a live one
@@ -156,17 +156,6 @@ Report current VIS 2 problems in the
 - (typhosj) Added the combined icon/image picker to the remaining widgets (checkbox, input, select, switch)
 - (typhosj) Removed the legacy VIS 1 example scripts (`examples/`) from the repository
 - (typhosj) Expanded test coverage for the slider, round slider and value widgets
-
-### 0.3.0 (2026-07-22)
-
-- (typhosj) Removed all VIS 1 legacy: the bundled `materialdesign` VIS 1 widget set and `materialdesign.html` are gone; the adapter no longer ships or depends on any VIS 1 files
-- (typhosj) Made all widgets self-contained by vendoring the Material Design Icons webfont and the required Material Components base CSS into the widget bundle, so icons and styling render without the legacy stylesheet
-- (typhosj) Removed the obsolete jQuery/Materialize configuration page; the native React theme editor is now the only admin UI
-- (typhosj) Roughly halved the published package size (woff2-only fonts, dead-code removal, smaller preview image)
-- (typhosj) Added text input masking and custom calendar date/time formats
-- (typhosj) Restored full visual parity of the ported widgets against the original VIS 1 versions and migrated the widget documentation to VIS 2
-- (typhosj) Reworked the widget documentation with per-widget editor screenshots that expand the relevant option groups and describe every non-obvious setting (English and German)
-- (typhosj) Fixed six widget editor group headers (title, text, card action, linked value, striped, list header) that showed untranslated keys
 
 [Older changelog entries](CHANGELOG_OLD.md)
 

@@ -1,6 +1,18 @@
 # Older changes
 
 Older changelog entries are archived here by the release script once the changelog in the README grows past the most recent releases. The current changelog lives in the README.
+## 0.3.0 (2026-07-22)
+
+- (typhosj) Removed all VIS 1 legacy: the bundled `materialdesign` VIS 1 widget set and `materialdesign.html` are gone; the adapter no longer ships or depends on any VIS 1 files
+- (typhosj) Made all widgets self-contained by vendoring the Material Design Icons webfont and the required Material Components base CSS into the widget bundle, so icons and styling render without the legacy stylesheet
+- (typhosj) Removed the obsolete jQuery/Materialize configuration page; the native React theme editor is now the only admin UI
+- (typhosj) Roughly halved the published package size (woff2-only fonts, dead-code removal, smaller preview image)
+- (typhosj) Added text input masking and custom calendar date/time formats
+- (typhosj) Restored full visual parity of the ported widgets against the original VIS 1 versions and migrated the widget documentation to VIS 2
+- (typhosj) Reworked the widget documentation with per-widget editor screenshots that expand the relevant option groups and describe every non-obvious setting (English and German)
+- (typhosj) Fixed six widget editor group headers (title, text, card action, linked value, striped, list header) that showed untranslated keys
+
+
 ## 0.2.0 (2026-07-13)
 
 - (typhosj) Ported all remaining legacy Material Design widget templates to native VIS 2 components
