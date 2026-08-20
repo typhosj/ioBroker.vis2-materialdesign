@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { VisRxWidgetProps, VisRxWidgetState } from '@iobroker/types-vis-2';
 import { pickerValueName } from './IconFilePicker';
-import { DEFAULT_DARK_THEME_OID, MAX_DYNAMIC_ITEMS, VisWidget, accessibleText, applyThemeVariables, boundedCount, createInfo, itemCount, darkThemeOid, resolveDarkTheme, editorDialogPalette, formatDurationTokens, formatMoment, humanizeDuration, iconFieldDataKey, parseActionValue, safeWidgetUrl, sanitizeHtml, setStateValue, SliderWriter, stateValue, stringValue } from './widgetUtils';
+import { boolValue, numberValue, textValue, DEFAULT_DARK_THEME_OID, MAX_DYNAMIC_ITEMS, VisWidget, accessibleText, applyThemeVariables, boundedCount, createInfo, itemCount, darkThemeOid, resolveDarkTheme, editorDialogPalette, formatDurationTokens, formatMoment, humanizeDuration, iconFieldDataKey, parseActionValue, safeWidgetUrl, sanitizeHtml, setStateValue, SliderWriter, stateValue, stringValue } from './widgetUtils';
 
 function fixture<T>(value: unknown): T { return value as T; }
 
@@ -187,6 +187,22 @@ describe('widget utilities', () => {
         // obfuscated javascript: URL (tabs/newlines between chars) is still caught
         expect(sanitizeHtml('<a href="java\tscript:alert(1)">x</a>')).toBe('<a>x</a>');
         // empty / non-string inputs are safe
+        // A `style` ELEMENT is page-wide, so a state value could hide the whole view or drop an
+        // invisible full-screen layer over it. Only the style ATTRIBUTE used to be filtered.
+        expect(sanitizeHtml('<style>body{display:none}</style>hi')).toBe('hi');
+        expect(sanitizeHtml('<svg><style>a{}</style></svg>')).toBe('<svg></svg>');
+        // mXSS: the parser re-reads the text inside <style> on the way out, and inside MathML
+        // text-integration points that turns an inert <img onerror> into a live element.
+        expect(sanitizeHtml('<math><mtext><table><mglyph><style><img src=1 onerror=alert(1)>')).not.toContain('onerror');
+        // <object data=> and <form action=> are dropped whole, not just their URL
+        expect(sanitizeHtml('<object data="javascript:alert(1)"></object>')).toBe('');
+        expect(sanitizeHtml('<form action="javascript:alert(1)"><button>x</button></form>')).toBe('');
+        expect(sanitizeHtml('<iframe srcdoc="<script>alert(1)</script>"></iframe>')).toBe('');
+        // handler names are matched case-insensitively, and a leading space does not smuggle a scheme
+        expect(sanitizeHtml('<img src=x ONERROR=alert(1)>')).toBe('<img src="x">');
+        expect(sanitizeHtml('<a href=" javascript:alert(1)">x</a>')).toBe('<a>x</a>');
+        expect(sanitizeHtml('<a href="vbscript:alert(1)">x</a>')).toBe('<a>x</a>');
+        expect(sanitizeHtml('<div style="background:url(javascript:alert(1))">x</div>')).toBe('<div>x</div>');
         expect(sanitizeHtml(undefined)).toBe('');
         expect(sanitizeHtml(42)).toBe('42');
     });
@@ -278,5 +294,49 @@ describe('SliderWriter', () => {
         writer.cancel();
         vi.advanceTimersByTime(1000);
         expect(sent).toEqual([['test.0.dim', 1]]);
+    });
+});
+
+// The three of these replaced a copy of `s`/`n`/`b` in fourteen widget files. The copies had
+// drifted: the Calendar one read `Number.isFinite(Number(v)) ? Number(v) : d`, and because
+// Number('') and Number(null) are both a finite 0, clearing a number field in the editor beat
+// the declared default instead of falling back to it. These are the cases that told them apart.
+describe('rxData coercions', () => {
+    it('treats an unset field as unset, not as a value', () => {
+        expect(numberValue('', 24)).toBe(24);
+        expect(numberValue(null, 24)).toBe(24);
+        expect(numberValue(undefined, 24)).toBe(24);
+        expect(textValue('', 'x')).toBe('x');
+        expect(textValue(null, 'x')).toBe('x');
+        // VIS2 writes the STRING 'null' into a cleared id field.
+        expect(textValue('null', 'x')).toBe('x');
+        expect(boolValue('', true)).toBe(true);
+        expect(boolValue(null, true)).toBe(true);
+    });
+
+    it('keeps a real value, including the falsy ones', () => {
+        expect(numberValue(0, 24)).toBe(0);
+        expect(numberValue('0', 24)).toBe(0);
+        expect(numberValue(-5, 24)).toBe(-5);
+        expect(textValue('0', 'x')).toBe('0');
+        expect(textValue(0, 'x')).toBe('0');
+        expect(boolValue(false, true)).toBe(false);
+    });
+
+    it('reads the strings VIS2 hands numbers and booleans back as', () => {
+        expect(numberValue('21.5')).toBe(21.5);
+        expect(boolValue('true')).toBe(true);
+        expect(boolValue('1')).toBe(true);
+        expect(boolValue(1)).toBe(true);
+        expect(boolValue('false')).toBe(false);
+        expect(boolValue('anything else')).toBe(false);
+    });
+
+    it('falls back rather than returning NaN or [object Object]', () => {
+        expect(numberValue('not a number', 7)).toBe(7);
+        expect(numberValue(Number.NaN, 7)).toBe(7);
+        expect(numberValue(Number.POSITIVE_INFINITY, 7)).toBe(7);
+        expect(textValue({}, 'x')).toBe('x');
+        expect(textValue([], 'x')).toBe('x');
     });
 });
