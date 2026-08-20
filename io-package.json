@@ -244,7 +244,7 @@
       "_id": "colors.darkTheme",
       "type": "state",
       "common": {
-        "role": "text",
+        "role": "switch.setting",
         "name": "Dark colors: auto (follow the VIS theme) | light | dark",
         "type": "mixed",
         "states": {
