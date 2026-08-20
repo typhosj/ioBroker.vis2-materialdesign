@@ -102,6 +102,7 @@ a reason to wait with an upgrade.
 ## Changelog
 ### **WORK IN PROGRESS**
 
+- (typhosj) Fixed the Bar Chart rendering nothing at all, and the Pie Chart tooltip throwing, when a decimals field was given a minimum above its maximum — which is what filling in "min decimals" and leaving "max decimals" empty adds up to. The maximum is lifted to the minimum now instead of taking the widget, and the view around it, down
 - (typhosj) Fixed HTML from a state being able to carry a `<style>` block: its rules are page-wide, so one state value could hide a whole VIS view or lay an invisible full-screen element over it. Style blocks are now removed like scripts and iframes, while formatting HTML passes through as before
 - (typhosj) Fixed every number option of the **Calendar** falling back to 0 instead of its default once the field was emptied in the editor: the day axis collapsed from 24 hours to one, the rows dropped to their 12 px minimum, and the click sound went silent. An emptied field means "not set" again, in every widget
 - (typhosj) Fixed the "min screen resolution" of the **Alerts** hiding every alerts widget on the page instead of the one it was set on, so two of them with different widths hid each other. The rule now belongs to its widget
