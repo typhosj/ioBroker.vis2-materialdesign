@@ -128,3 +128,9 @@ describe('ChartLegend', () => {
         expect(html({ designStyle: 'material3', legendFontColor: '#123456' })).toContain('#123456');
     });
 });
+
+describe('tooltipNumber decimal bounds', () => {
+    it('does not throw when the min is above the max', () => {
+        expect(tooltipNumber({ tooltipValueMinDecimals: 3, tooltipValueMaxDecimals: 1 }, 1.23456)).toMatch(/^1[.,]235$/);
+    });
+});
