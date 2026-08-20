@@ -98,3 +98,13 @@ describe('M3 surface', () => {
         expect(render({ designStyle: 'legacy' })).not.toContain('var(--md-sys-color-surface)');
     });
 });
+
+describe('buildBars decimal bounds', () => {
+    // A min without a max is what the editor stores when only one of the two fields is filled in.
+    // Intl throws a RangeError when min > max, and buildBars runs during render, so the throw took
+    // the widget - and the view it sits in - down with it.
+    it('formats a min-decimals bar that has no max', () => {
+        const bars = buildBars({ valuesMinDecimals: 2 }, null, 1, [], () => 21.5);
+        expect(bars[0].valueText).toMatch(/^21[.,]50$/);
+    });
+});

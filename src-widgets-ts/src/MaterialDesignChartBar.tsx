@@ -39,7 +39,11 @@ export function buildBars(data: Data, source: Record<string, unknown>[] | null, 
   return Array.from({ length: count }, (_, i) => {
     const row = source?.[i];
     const value = n(row?.value, valueForIndex(i));
-    const decimals = Math.max(0, n(data.valuesMaxDecimals, 0));
+    const minDecimals = Math.max(0, n(data.valuesMinDecimals));
+    // Intl throws when min > max, and a min without a max is what the editor stores when only one of
+    // the two fields is filled in. VIS2 renders a view's widgets in one tree without an error
+    // boundary, so the throw took more than this bar down with it.
+    const decimals = Math.max(minDecimals, n(data.valuesMaxDecimals, 0));
     return {
       label: s(row?.label, s(indexed(data, "label", i))),
       value,
@@ -52,7 +56,7 @@ export function buildBars(data: Data, source: Record<string, unknown>[] | null, 
       ),
       valueText: s(
         row?.valueText,
-        s(indexed(data, "valueText", i), value.toLocaleString(undefined, { minimumFractionDigits: Math.max(0, n(data.valuesMinDecimals)), maximumFractionDigits: decimals })),
+        s(indexed(data, "valueText", i), value.toLocaleString(undefined, { minimumFractionDigits: minDecimals, maximumFractionDigits: decimals })),
       ),
       // Empty means "not configured": the label color is then derived from the bar it is drawn on.
       valueColor: s(

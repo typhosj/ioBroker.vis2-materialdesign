@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import MaterialDesignChartJson from './MaterialDesignChartJson';
 import MaterialDesignChartLineHistory from './MaterialDesignChartLineHistory';
+import MaterialDesignChartPie from './MaterialDesignChartPie';
 import { MaterialDesignChartCanvas } from './MaterialDesignChartCanvas';
 
 function fixture<T>(value: unknown): T { return value as T; }
@@ -100,5 +101,22 @@ describe('line history x-axis label font', () => {
 
     it('still takes the label colour, which was the only thing it used to take', () => {
         expect(xAxis({ xAxisValueLabelColor: '#00696d' }).ticks.color).toBe('#00696d');
+    });
+});
+
+// Intl throws a RangeError when minimumFractionDigits is above maximumFractionDigits, and the two
+// are free-standing editor number fields: filling in the min and leaving the max empty is enough.
+// The pie builds its label text inside the tooltip callback, so the throw came out of chart.js.
+describe('pie tooltip decimal bounds', () => {
+    const label = (rxData: Record<string, unknown>): string =>
+        optionsOf(new MaterialDesignChartPie(fixture<ConstructorParameters<typeof MaterialDesignChartPie>[0]>({ context: {} })), { dataCount: 1, oid0: 'p.0.v', ...rxData }, { 'p.0.v.val': 21.5 })
+            .plugins.tooltip.callbacks.label({ dataIndex: 0 });
+
+    it('formats a min without a max instead of throwing', () => {
+        expect(label({ tooltipValueMinDecimals: 2 })).toMatch(/21[.,]50/);
+    });
+
+    it('still honours a max above the min', () => {
+        expect(label({ tooltipValueMinDecimals: 1, tooltipValueMaxDecimals: 3 })).toMatch(/21[.,]5/);
     });
 });
