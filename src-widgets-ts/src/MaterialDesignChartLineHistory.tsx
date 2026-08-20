@@ -1,5 +1,5 @@
 import React from "react";
-import { squarePreview, indexedFields, itemCount, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, formatMoment, visLocale, stateValue, sanitizeHtml } from './widgetUtils';
+import { squarePreview, indexedFields, itemCount, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, formatMoment, visLocale, stateValue, sanitizeHtml, boolValue as b, numberValue as n, textValue as s } from './widgetUtils';
 import type { RxWidgetInfo, VisRxWidgetState } from "@iobroker/types-vis-2";
 import { colorSchemes, scheme } from "./MaterialDesignColorScheme";
 import { ChartLegend, MaterialDesignChartCanvas, datalabelsConfig, layoutConfig, tooltipConfig } from "./MaterialDesignChartCanvas";
@@ -38,16 +38,6 @@ const intervals: Record<string, number> = {
   "1 year": 31536000000,
   "2 years": 63072000000,
 };
-const s = (v: unknown, d = "") =>
-  v === undefined || v === null || v === "" || v === "null" ? d : typeof v === "string" ? v : typeof v === "number" || typeof v === "boolean" || typeof v === "bigint" ? String(v) : d;
-const n = (v: unknown, d = 0) =>
-  v === undefined || v === null || v === "" || !Number.isFinite(Number(v))
-    ? d
-    : Number(v);
-const b = (v: unknown, d = false) =>
-  v === undefined || v === null || v === ""
-    ? d
-    : v === true || v === "true" || v === 1 || v === "1";
 // vis-2 stores row 0 of an indexed group under the plain base name, higher rows as `${name}${i}`.
 export const item = (d: Data, key: string, i: number): unknown => { const v = d[`${key}${i}`]; return v !== undefined ? v : (i === 0 ? d[key] : undefined); };
 export function seriesColor(d: Data, i: number, colors: string[], globalColor: unknown): string {
@@ -119,6 +109,8 @@ const attrs: RxWidgetInfo["visAttrs"] = [
       num("chartPaddingLeft"),
       num("chartPaddingRight"),
       num("chartPaddingBottom"),
+      // Declared last so it lands at the end of the group, the way the other three charts have it.
+      num("animationDuration"),
     ],
   },
   {
@@ -224,6 +216,8 @@ const attrs: RxWidgetInfo["visAttrs"] = [
     fields: [
       { name: "xAxisTimeFormats", label: "xAxisTimeFormats", type: "text" },
       color("xAxisValueLabelColor"),
+      { name: "xAxisValueFontFamily", label: "xAxisValueFontFamily", type: "fontname" as const },
+      num("xAxisValueFontSize"),
       {
         name: "xAxisShowGridLines",
         label: "xAxisShowGridLines",
@@ -424,6 +418,8 @@ export default class MaterialDesignChartLineHistory extends VisWidget {
       axis: "x",
       type: "linear",
       labelColor: s(d.xAxisValueLabelColor, isM3 ? m3.text : ""),
+      labelFontFamily: s(d.xAxisValueFontFamily),
+      labelFontSize: n(d.xAxisValueFontSize),
       gridDisplay: b(d.xAxisShowGridLines, true),
       gridColor: s(d.xAxisGridLinesColor, isM3 ? m3.grid : ""),
       tickCallback: (value) => fmtTime(value, timeFmt || "HH:mm"),

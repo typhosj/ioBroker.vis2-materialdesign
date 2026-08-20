@@ -272,7 +272,7 @@ export default class MaterialDesignRoundSlider extends VisWidget {
         return (
             <div className={`materialdesign-widget materialdesign-slider-round${isM3 ? ` ${designStyleClasses(data as Record<string, unknown>, this.isDarkTheme())}` : ''}`} style={{ height: '100%', position: 'relative', width: '100%' }}>
                 <svg
-                    aria-label="Round Slider"
+                    aria-label={VisWidget.t('ariaRoundSlider')}
                     aria-readonly={disabled}
                     aria-valuemax={max}
                     aria-valuemin={min}

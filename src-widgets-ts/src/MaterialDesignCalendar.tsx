@@ -1,17 +1,17 @@
 import React from 'react';
 import type { RxWidgetInfo } from '@iobroker/types-vis-2';
-import { squarePreview, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, m3OnColor, sizeCss, stateValue, formatMoment } from './widgetUtils';
+import { squarePreview, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, m3OnColor, sizeCss, stateValue, formatMoment, boolValue as b, numberValue as n, textValue } from './widgetUtils';
 
 export { formatMoment };
 
 type Data = Record<string, unknown> & { oid?: string };
 type Event = { start?: string; end?: string; name?: string; color?: string; colorText?: string };
+// A bare `var(--token)` gets the widget's own default folded in as the CSS fallback, so a theme
+// that never defines the token still paints the colour the option promised.
 const s = (v: unknown, d = ''): string => {
-    const value = v === undefined || v === null || v === '' || v === 'null' ? d : typeof v === "string" ? v : typeof v === "number" || typeof v === "boolean" || typeof v === "bigint" ? String(v) : d;
+    const value = textValue(v, d);
     return value.startsWith('var(') && value.endsWith(')') ? `${value.slice(0, -1)}, ${d})` : value;
 };
-const b = (v: unknown, d = false): boolean => v === undefined || v === null || v === '' ? d : v === true || v === 'true' || v === 1 || v === '1';
-const n = (v: unknown, d = 0): number => Number.isFinite(Number(v)) ? Number(v) : d;
 const px = (v: unknown, d: number): string => sizeCss(v, d);
 // toISOString() shifts to UTC and misplaces events by a day in +offset zones.
 export const isoDate = (day: Date): string => `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
