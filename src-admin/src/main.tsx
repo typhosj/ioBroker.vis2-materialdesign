@@ -4,21 +4,11 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import { Box, Button, Card, CardContent, Checkbox, CssBaseline, FormControlLabel, FormGroup, FormHelperText, Paper, Tab, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tabs, TextField, ThemeProvider, Typography } from '@mui/material';
 import React, { useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import colors from '../../admin/lib/colors.json';
-import colorsDark from '../../admin/lib/colorsDark.json';
-import defaultcolors from '../../admin/lib/defaultcolors.json';
-import defaultcolorsDark from '../../admin/lib/defaultcolorsDark.json';
-import defaultfontSizes from '../../admin/lib/defaultfontSizes.json';
-import defaultfonts from '../../admin/lib/defaultfonts.json';
-import fontSizes from '../../admin/lib/fontSizes.json';
-import fonts from '../../admin/lib/fonts.json';
+import { THEME_NAMES, ancestorChannels, defaultSlotId, defaultsKey, readDefaults, readEntries, themeDefinitions, themeStateCommon, themeStateId } from './themeConfig';
+import type { NativeConfig, ThemeEntry } from './themeConfig';
 import '../../fonts.css';
 import './style.css';
 
-type ThemeName = 'colors' | 'colorsDark' | 'fonts' | 'fontSizes';
-type ThemeEntry = { id: string; desc: string; widget: string; defaultValue?: number; value?: string | number };
-type NativeConfig = Record<string, unknown> & { scriptName?: string; variableName?: string; javascriptInstance?: string; sentryReport?: boolean };
-type ThemeDefinition = { entries: ThemeEntry[]; defaults: Array<string | number>; title: string; widgetTitle: string };
 
 // Admin adapter translations load per-language at runtime — only English plus the active language —
 // so the config bundle no longer inlines all 11 dictionaries (~124 kB gz). Vite still emits each
@@ -37,45 +27,15 @@ async function loadLang(lang: string): Promise<void> {
         // leave missing — adapter-react-v5 falls back to the key / English
     }
 }
-const themeDefinitions: Record<ThemeName, ThemeDefinition> = {
-    colors: { entries: colors, defaults: defaultcolors, title: 'default light colors', widgetTitle: 'Widget colors' },
-    colorsDark: { entries: colorsDark, defaults: defaultcolorsDark, title: 'default dark colors', widgetTitle: 'Widget colors' },
-    fonts: { entries: fonts, defaults: defaultfonts, title: 'config_fonts', widgetTitle: 'Widget fonts' },
-    fontSizes: { entries: fontSizes, defaults: defaultfontSizes, title: 'config_fontSizes', widgetTitle: 'Widget font sizes' },
-};
 
 // GenericApp's constructor merges `translations` into the framework dictionary and calls
 // I18n.setTranslations itself, after bootstrap() has populated the active languages.
 const t = (text: string): string => I18n.t(text);
 
-function defaultsKey(theme: ThemeName): string {
-    return `default${theme}`;
-}
-
-function readDefaults(config: NativeConfig, theme: ThemeName): Array<string | number> {
-    const fallback = themeDefinitions[theme].defaults;
-    const saved = config[defaultsKey(theme)];
-    const values = !Array.isArray(saved) ? [...fallback] : fallback.map((value, index) => saved[index] ?? value) as Array<string | number>;
-    // fontSizes must stay numeric even if an older config (or state) left a numeric string behind.
-    return theme === 'fontSizes' ? values.map(value => Number(value)) : values;
-}
-
-function readEntries(config: NativeConfig, theme: ThemeName, defaults: Array<string | number>): ThemeEntry[] {
-    const saved = Array.isArray(config[theme]) ? config[theme] as ThemeEntry[] : [];
-    return themeDefinitions[theme].entries.map(entry => {
-        const old = saved.find(candidate => candidate.id === entry.id);
-        const rawDefault = old?.defaultValue as unknown;
-        const savedDefault = rawDefault === '' ? Number.NaN : Number(rawDefault);
-        const defaultValue = Number.isInteger(savedDefault) && savedDefault >= 0 && savedDefault < defaults.length ? savedDefault : old ? undefined : entry.defaultValue;
-        const value = old?.value ?? entry.value ?? defaults[defaultValue ?? 0];
-        return { ...entry, ...old, defaultValue, value: theme === 'fontSizes' ? Number(value) : value };
-    });
-}
-
 function ThemeEditor(props: { config: NativeConfig; update: (key: string, value: unknown) => void }): React.JSX.Element {
     const [tab, setTab] = useState(0);
     const [filter, setFilter] = useState('');
-    const theme = (['colors', 'colorsDark', 'fonts', 'fontSizes'] as ThemeName[])[tab];
+    const theme = THEME_NAMES[tab];
     const definition = themeDefinitions[theme];
     const defaults = readDefaults(props.config, theme);
     const entries = readEntries(props.config, theme, defaults);
@@ -124,30 +84,23 @@ class MaterialDesignAdmin extends GenericApp<GenericAppProps, GenericAppState> {
     constructor(props: GenericAppProps) { super(props, { adapterName: 'vis2-materialdesign', bottomButtons: true, translations }); }
     onPrepareLoad(settings: NativeConfig): void {
         super.onPrepareLoad(settings);
-        (['colors', 'colorsDark', 'fonts', 'fontSizes'] as ThemeName[]).forEach(theme => {
+        THEME_NAMES.forEach(theme => {
             const defaults = readDefaults(settings, theme);
             settings[defaultsKey(theme)] = defaults;
             settings[theme] = readEntries(settings, theme, defaults);
         });
     }
     private async ensureAncestorChannels(id: string, namespace: string, ensured: Set<string>): Promise<void> {
-        const parts = id.substring(namespace.length + 1).split('.');
-        parts.pop(); // the leaf state itself doesn't need a channel
-        let current = namespace;
-        for (const part of parts) {
-            current = `${current}.${part}`;
-            if (ensured.has(current)) continue;
-            ensured.add(current);
-            if (!(await this.socket.getObject(current))) {
-                await this.socket.setObject(current, { type: 'channel', common: { name: part }, native: {} });
+        for (const channel of ancestorChannels(id, namespace)) {
+            if (ensured.has(channel)) continue;
+            ensured.add(channel);
+            if (!(await this.socket.getObject(channel))) {
+                await this.socket.setObject(channel, { type: 'channel', common: { name: channel.split('.').pop()! }, native: {} });
             }
         }
     }
     private async setThemeState(id: string, name: string, value: string | number): Promise<void> {
-        const type = typeof value === 'number' ? 'number' : 'string';
-        // role "value" is restricted to type "number" by the ioBroker role catalogue;
-        // color hex codes and font names are strings, so they need the generic "text" role.
-        const role = type === 'number' ? 'value' : 'text';
+        const { type, role } = themeStateCommon(value);
         const existing = await this.socket.getObject(id);
         if (!existing) {
             await this.socket.setObject(id, { type: 'state', common: { name, desc: name, type, read: true, write: false, role }, native: {} });
@@ -161,16 +114,16 @@ class MaterialDesignAdmin extends GenericApp<GenericAppProps, GenericAppState> {
         const namespace = `${this.adapterName}.${this.instance}`;
         const ensuredChannels = new Set<string>();
         await this.socket.setState(`${namespace}.sentry`, config.sentryReport === true, true);
-        for (const theme of ['colors', 'colorsDark', 'fonts', 'fontSizes'] as ThemeName[]) {
+        for (const theme of THEME_NAMES) {
             const defaults = readDefaults(config, theme);
             const entries = readEntries(config, theme, defaults);
             for (const [index, value] of defaults.entries()) {
-                const id = theme === 'colors' ? `${namespace}.colors.light.default_${index}` : theme === 'colorsDark' ? `${namespace}.colors.dark.default_${index}` : `${namespace}.${theme}.default_${index}`;
+                const id = defaultSlotId(namespace, theme, index);
                 await this.ensureAncestorChannels(id, namespace, ensuredChannels);
                 await this.setThemeState(id, `${t(`${theme}Default`)} ${index}`, value);
             }
             for (const entry of entries) {
-                const id = theme.startsWith('colors') ? `${namespace}.colors.${entry.id}` : `${namespace}.${theme}.${entry.id}`;
+                const id = themeStateId(namespace, theme, entry.id);
                 await this.ensureAncestorChannels(id, namespace, ensuredChannels);
                 await this.setThemeState(id, t(entry.desc), entry.value ?? '');
             }
