@@ -228,11 +228,16 @@ export function humanizeDuration(totalSeconds: number, locale?: string): string 
 // cover the whole VIS view, and its text content is re-parsed on the way back out - the
 // math/mglyph/style shape turns an inert `<img onerror>` inside it into a live element.
 const UNSAFE_ELEMENTS = 'script,style,iframe,object,embed,base,meta,link,form,noscript';
+const HTML_ENTITIES: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
 const URL_ATTRS = new Set(['href', 'src', 'xlink:href', 'action', 'formaction', 'background', 'poster', 'data']);
 export function sanitizeHtml(input: unknown): string {
     if (input === null || input === undefined) return '';
     const html = stringValue(input);
-    if (!html || typeof document === 'undefined') return html;
+    if (!html) return html;
+    // No parser to sanitize with (any non-browser render): escape the markup instead of handing it
+    // through untouched. vis-2 runs widgets in the browser only, so nothing reaches this today — it
+    // is here so the one sink that matters fails closed rather than open if that ever changes.
+    if (typeof document === 'undefined') return html.replace(/[&<>"']/g, character => HTML_ENTITIES[character]);
     const template = document.createElement('template');
     template.innerHTML = html;
     template.content.querySelectorAll(UNSAFE_ELEMENTS).forEach(element => element.remove());
@@ -258,10 +263,11 @@ export function html(input: unknown): { dangerouslySetInnerHTML: { __html: strin
 }
 
 export function accessibleText(input: unknown, fallback: string): string {
-    const html = sanitizeHtml(input);
-    if (typeof document === 'undefined') return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() || fallback;
+    // Plain text either way, so without a parser the raw input can be stripped directly — going
+    // through sanitizeHtml there would escape the markup and leave the entities showing.
+    if (typeof document === 'undefined') return stringValue(input).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() || fallback;
     const template = document.createElement('template');
-    template.innerHTML = html;
+    template.innerHTML = sanitizeHtml(input);
     return template.content.textContent?.trim() || fallback;
 }
 

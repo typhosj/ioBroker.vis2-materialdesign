@@ -493,3 +493,21 @@ describe('rxData coercions', () => {
         expect(textValue([], 'x')).toBe('x');
     });
 });
+
+describe('sanitizeHtml without a DOM parser', () => {
+    afterEach(() => vi.unstubAllGlobals());
+
+    // vis-2 renders widgets in the browser only, so nothing hits this today. It is a floor: the one
+    // sink that matters must fail closed, never hand the markup through untouched.
+    it('escapes the markup instead of passing it through', () => {
+        vi.stubGlobal('document', undefined);
+        expect(sanitizeHtml('<img src="x" onerror="alert(1)">')).toBe('&lt;img src=&quot;x&quot; onerror=&quot;alert(1)&quot;&gt;');
+        expect(sanitizeHtml('a & b')).toBe('a &amp; b');
+    });
+
+    it('still reduces accessible text to words, not entities', () => {
+        vi.stubGlobal('document', undefined);
+        expect(accessibleText('<b>Kitchen</b> light', 'fallback')).toBe('Kitchen light');
+        expect(accessibleText('<b></b>', 'fallback')).toBe('fallback');
+    });
+});
