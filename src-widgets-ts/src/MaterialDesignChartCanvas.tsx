@@ -8,8 +8,14 @@ import {
 } from "chart.js";
 import ChartDataLabels from "chartjs-plugin-datalabels";
 
-import { designStyle, m3OnColor } from "./widgetUtils";
+import { boolValue, designStyle, m3OnColor, numberValue, textValue } from "./widgetUtils";
 import { CHART_TEXT_COLOR } from "./chartAxis";
+
+// The shared coercions all take a fallback. These two are the other half: a field the user left
+// empty has to stay `undefined` so the key is omitted from the chart.js config entirely, rather
+// than overwriting a chart.js default with a zero or an empty string.
+const optionalNumber = (value: unknown): number | undefined => (value === "" || value === null || value === undefined || !Number.isFinite(Number(value)) ? undefined : Number(value));
+const optionalText = (value: unknown): string | undefined => (typeof value === "string" && value ? value : undefined);
 
 // Deliberately not `chart.js/auto`, which drags in the radar/polar/bubble/scatter/time engine we
 // never draw (~2x the gzip). The guard is for vitest/jsdom, whose resolver loads a build without
@@ -52,13 +58,11 @@ export function datalabelsConfig(
   label: (index: number) => { text: string; color?: string },
   defaults: { align: string; anchor: string },
 ): object {
-  const num = (value: unknown, fallback = 0): number => (value === "" || value === null || value === undefined || !Number.isFinite(Number(value)) ? fallback : Number(value));
-  const str = (value: unknown, fallback = ""): string => (typeof value === "string" && value ? value : fallback);
-  const show = str(data.showValues, "showValuesOn");
-  const steps = Math.max(1, num(data.valuesSteps, 1));
+  const show = textValue(data.showValues, "showValuesOn");
+  const steps = Math.max(1, numberValue(data.valuesSteps, 1));
   const visible = show === "showValuesAuto" ? "auto" : true;
-  const align = str(data.valuesPositionAlign, defaults.align);
-  const anchor = str(data.valuesPositionAnchor, defaults.anchor);
+  const align = textValue(data.valuesPositionAlign, defaults.align);
+  const anchor = textValue(data.valuesPositionAnchor, defaults.anchor);
   // `labelColorFor` only reads right while the label sits ON the element (align/anchor center). The
   // bar default parks it above the bar, where the contrast pick produced white on white.
   const onElement = align === "center" || anchor === "center";
@@ -70,17 +74,17 @@ export function datalabelsConfig(
   return {
     align,
     anchor,
-    backgroundColor: str(data.valuesBackgroundColor) || null,
-    borderColor: str(data.valuesBorderColor) || null,
-    borderRadius: num(data.valuesBorderRadius),
-    borderWidth: num(data.valuesBorderWidth),
+    backgroundColor: textValue(data.valuesBackgroundColor) || null,
+    borderColor: textValue(data.valuesBorderColor) || null,
+    borderRadius: numberValue(data.valuesBorderRadius),
+    borderWidth: numberValue(data.valuesBorderWidth),
     color: (context: LabelContext): string => label(context.dataIndex).color || (onElement ? labelColorFor(context) : offElementColor(context)),
     display: show === "showValuesOff" ? false : (context: LabelContext): boolean | string => (context.dataIndex % steps === 0 ? visible : false),
-    font: { family: str(data.valuesFontFamily) || undefined, size: num(data.valuesFontSize, 12) },
+    font: { family: textValue(data.valuesFontFamily) || undefined, size: numberValue(data.valuesFontSize, 12) },
     formatter: (_value: unknown, context: LabelContext): string => label(context.dataIndex).text,
-    offset: num(data.valuesPositionOffset, 4),
-    rotation: num(data.valuesRotation),
-    textAlign: str(data.valuesTextAlign, "center"),
+    offset: numberValue(data.valuesPositionOffset, 4),
+    rotation: numberValue(data.valuesRotation),
+    textAlign: textValue(data.valuesTextAlign, "center"),
   };
 }
 
@@ -103,32 +107,28 @@ const chartAreaBackground = {
 // The tooltip options were declared on every chart widget but never handed to chart.js, so only
 // `showTooltip` did anything. Unset entries are left out, otherwise they overwrite chart.js defaults.
 export function tooltipConfig(data: Record<string, unknown>, callbacks?: object): object {
-  const num = (value: unknown): number | undefined => (value === "" || value === null || value === undefined || !Number.isFinite(Number(value)) ? undefined : Number(value));
-  const str = (value: unknown): string | undefined => (typeof value === "string" && value ? value : undefined);
-  const enabled = data.showTooltip === undefined || data.showTooltip === null || data.showTooltip === ""
-    ? true
-    : data.showTooltip === true || data.showTooltip === "true" || data.showTooltip === 1 || data.showTooltip === "1";
-  const config: Record<string, unknown> = { enabled, mode: str(data.tooltipMode) || "nearest" };
+  const enabled = boolValue(data.showTooltip, true);
+  const config: Record<string, unknown> = { enabled, mode: optionalText(data.tooltipMode) || "nearest" };
   const put = (key: string, value: unknown): void => { if (value !== undefined) config[key] = value; };
-  put("position", str(data.tooltipPosition));
-  put("bodyAlign", str(data.tooltipBodyAlignment));
-  put("backgroundColor", str(data.tooltipBackgroundColor));
-  put("titleColor", str(data.tooltipTitleFontColor));
-  put("bodyColor", str(data.tooltipBodyFontColor));
-  const titleFont = { family: str(data.tooltipTitleFontFamily), size: num(data.tooltipTitleFontSize) };
-  const bodyFont = { family: str(data.tooltipBodyFontFamily), size: num(data.tooltipBodyFontSize) };
+  put("position", optionalText(data.tooltipPosition));
+  put("bodyAlign", optionalText(data.tooltipBodyAlignment));
+  put("backgroundColor", optionalText(data.tooltipBackgroundColor));
+  put("titleColor", optionalText(data.tooltipTitleFontColor));
+  put("bodyColor", optionalText(data.tooltipBodyFontColor));
+  const titleFont = { family: optionalText(data.tooltipTitleFontFamily), size: optionalNumber(data.tooltipTitleFontSize) };
+  const bodyFont = { family: optionalText(data.tooltipBodyFontFamily), size: optionalNumber(data.tooltipBodyFontSize) };
   if (titleFont.family || titleFont.size) config.titleFont = titleFont;
   if (bodyFont.family || bodyFont.size) config.bodyFont = bodyFont;
-  put("caretSize", num(data.tooltipArrowSize));
-  put("caretPadding", num(data.tooltipDistanceToBar));
-  put("cornerRadius", num(data.tooltipBoxRadius));
-  put("titleMarginBottom", num(data.tooltipTitleMarginBottom));
+  put("caretSize", optionalNumber(data.tooltipArrowSize));
+  put("caretPadding", optionalNumber(data.tooltipDistanceToBar));
+  put("cornerRadius", optionalNumber(data.tooltipBoxRadius));
+  put("titleMarginBottom", optionalNumber(data.tooltipTitleMarginBottom));
   // v4 folded xPadding/yPadding into one `padding`.
-  const padX = num(data.tooltipXpadding);
-  const padY = num(data.tooltipYpadding);
+  const padX = optionalNumber(data.tooltipXpadding);
+  const padY = optionalNumber(data.tooltipYpadding);
   if (padX !== undefined || padY !== undefined) config.padding = { x: padX ?? 6, y: padY ?? 6 };
   if (data.tooltipShowColorBox !== undefined && data.tooltipShowColorBox !== null && data.tooltipShowColorBox !== "") {
-    config.displayColors = data.tooltipShowColorBox === true || data.tooltipShowColorBox === "true" || data.tooltipShowColorBox === 1 || data.tooltipShowColorBox === "1";
+    config.displayColors = boolValue(data.tooltipShowColorBox, false);
   }
   if (callbacks) config.callbacks = callbacks;
   return config;
@@ -137,24 +137,24 @@ export function tooltipConfig(data: Record<string, unknown>, callbacks?: object)
 // `tooltipValueMin/MaxDecimals`. Undefined when the user set neither, so the caller keeps its own
 // text — the value label carries valuesMin/MaxDecimals, which is a different setting.
 export function tooltipNumber(data: Record<string, unknown>, value: unknown): string | undefined {
-  const num = (v: unknown): number | undefined => (v === "" || v === null || v === undefined || !Number.isFinite(Number(v)) ? undefined : Number(v));
-  const min = num(data.tooltipValueMinDecimals);
-  const max = num(data.tooltipValueMaxDecimals);
-  const raw = num(value);
+  const min = optionalNumber(data.tooltipValueMinDecimals);
+  const max = optionalNumber(data.tooltipValueMaxDecimals);
+  const raw = optionalNumber(value);
   if (raw === undefined || (min === undefined && max === undefined)) return undefined;
+  // Intl throws when min > max, which the editor lets you configure one field at a time.
+  const lower = Math.max(0, Math.min(20, min ?? 0));
   return raw.toLocaleString(undefined, {
-    minimumFractionDigits: Math.max(0, Math.min(20, min ?? 0)),
-    maximumFractionDigits: Math.max(0, Math.min(20, max ?? Math.max(min ?? 0, 2))),
+    minimumFractionDigits: lower,
+    maximumFractionDigits: Math.max(lower, Math.min(20, max ?? Math.max(min ?? 0, 2))),
   });
 }
 
 // `chartPadding*` in px around the plot. Only sides that are set are emitted, so chart.js keeps its
 // own spacing for the rest.
 export function layoutConfig(data: Record<string, unknown>): object | undefined {
-  const num = (value: unknown): number | undefined => (value === "" || value === null || value === undefined || !Number.isFinite(Number(value)) ? undefined : Number(value));
   const padding: Record<string, number> = {};
   for (const [side, key] of [["top", "chartPaddingTop"], ["left", "chartPaddingLeft"], ["right", "chartPaddingRight"], ["bottom", "chartPaddingBottom"]] as const) {
-    const value = num(data[key]);
+    const value = optionalNumber(data[key]);
     if (value !== undefined) padding[side] = value;
   }
   return Object.keys(padding).length ? { padding } : undefined;
@@ -167,11 +167,8 @@ export function ChartLegend({ data, entries, defaultShown = true }: {
   entries: { label: string; color: string }[];
   defaultShown?: boolean;
 }): React.JSX.Element | null {
-  const num = (value: unknown, fallback = 0): number => (value === "" || value === null || value === undefined || !Number.isFinite(Number(value)) ? fallback : Number(value));
-  const str = (value: unknown, fallback = ""): string => (typeof value === "string" && value ? value : fallback);
-  const bool = (value: unknown, fallback: boolean): boolean => (value === undefined || value === null || value === "" ? fallback : value === true || value === "true" || value === 1 || value === "1");
-  if (!bool(data.showLegend, defaultShown)) return null;
-  const horizontal = ["top", "bottom"].includes(str(data.legendPosition));
+  if (!boolValue(data.showLegend, defaultShown)) return null;
+  const horizontal = ["top", "bottom"].includes(textValue(data.legendPosition));
   const isM3 = designStyle(data) === "material3";
   return (
     <div
@@ -180,23 +177,23 @@ export function ChartLegend({ data, entries, defaultShown = true }: {
         flexDirection: horizontal ? "row" : "column",
         flexWrap: "wrap",
         flexShrink: 0,
-        fontFamily: str(data.legendFontFamily) || undefined,
-        fontSize: num(data.legendFontSize, 14),
-        gap: num(data.legendPadding, 8),
-        padding: num(data.legendDistanceToChart),
+        fontFamily: textValue(data.legendFontFamily) || undefined,
+        fontSize: numberValue(data.legendFontSize, 14),
+        gap: numberValue(data.legendPadding, 8),
+        padding: numberValue(data.legendDistanceToChart),
       }}
     >
       {entries.map((entry, index) => (
-        <span key={index} style={{ alignItems: "center", color: str(data.legendFontColor) || (isM3 ? "var(--md-sys-color-on-surface)" : undefined), display: "flex" }}>
+        <span key={index} style={{ alignItems: "center", color: textValue(data.legendFontColor) || (isM3 ? "var(--md-sys-color-on-surface)" : undefined), display: "flex" }}>
           <i
             style={{
               background: entry.color,
-              borderRadius: bool(data.legendPointStyle, true) ? "50%" : 0,
+              borderRadius: boolValue(data.legendPointStyle, true) ? "50%" : 0,
               display: "inline-block",
               flexShrink: 0,
-              height: num(data.legendBoxWidth, 10),
+              height: numberValue(data.legendBoxWidth, 10),
               marginRight: 4,
-              width: num(data.legendBoxWidth, 10),
+              width: numberValue(data.legendBoxWidth, 10),
             }}
           />
           {entry.label}
