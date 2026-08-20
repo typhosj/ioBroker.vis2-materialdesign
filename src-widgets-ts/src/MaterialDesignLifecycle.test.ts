@@ -1,3 +1,4 @@
+/// <reference types="vite/client" />
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { createButtonClass } from './MaterialDesignButtons';
@@ -6,6 +7,8 @@ import { MaterialDesignDialog } from './MaterialDesignDialog';
 import MaterialDesignIconList from './MaterialDesignIconList';
 import MaterialDesignSelect from './MaterialDesignSelect';
 import { MaterialDesignViews } from './MaterialDesignViews';
+import MaterialDesignCalendar from './MaterialDesignCalendar';
+import MaterialDesignChartLineHistory from './MaterialDesignChartLineHistory';
 
 function fixture<T>(value: unknown): T { return value as T; }
 
@@ -88,5 +91,64 @@ describe('widget lifecycle cleanup', () => {
         expect(vi.getTimerCount()).toBe(1);
         iconList.componentWillUnmount();
         expect(vi.getTimerCount()).toBe(0);
+    });
+});
+
+// The tests above name five widgets by hand, which is exactly how the two setInterval owners
+// stayed uncovered for so long. A leaked interval is the worst of the bunch: a timeout fires once
+// and is gone, an interval keeps re-rendering a dead widget for as long as the page is open.
+describe('interval owners release their timer', () => {
+    it('stops the calendar minute clock', () => {
+        vi.useFakeTimers();
+        const calendar = fixture<{ syncClock: (needed: boolean) => void; componentWillUnmount: () => void }>(
+            new MaterialDesignCalendar(fixture<ConstructorParameters<typeof MaterialDesignCalendar>[0]>({ context: {} })),
+        );
+
+        calendar.syncClock(true);
+        expect(vi.getTimerCount()).toBe(1);
+        // Switching to a month view (or turning the now indicator off) has to stop it too, not
+        // just unmounting — otherwise it re-renders once a minute for an indicator nobody draws.
+        calendar.syncClock(false);
+        expect(vi.getTimerCount()).toBe(0);
+
+        calendar.syncClock(true);
+        calendar.componentWillUnmount();
+        vi.runOnlyPendingTimers();
+        expect(vi.getTimerCount()).toBe(0);
+    });
+
+    it('stops the line-history refresh interval', () => {
+        vi.useFakeTimers();
+        const chart = new MaterialDesignChartLineHistory(fixture<ConstructorParameters<typeof MaterialDesignChartLineHistory>[0]>({ context: {} }));
+        chart.state = fixture<typeof chart.state>({ rxData: { refreshMethod: 'timeInterval', refreshTimeInterval: '1 minute' }, values: {} });
+
+        fixture<{ update: () => void }>(chart).update();
+        expect(vi.getTimerCount()).toBe(1);
+
+        chart.componentWillUnmount();
+        vi.runOnlyPendingTimers();
+        expect(vi.getTimerCount()).toBe(0);
+    });
+});
+
+// A widget that starts a timer, subscribes to an event or attaches an observer and then forgets
+// componentWillUnmount leaks it — and a componentWillUnmount that does not chain to super skips
+// the base class cleanup instead. Neither shows up in a render test, and neither is something the
+// five cases above would catch for a widget added next year.
+describe('every widget that starts work can stop it', () => {
+    const sources = import.meta.glob<string>('./MaterialDesign*.tsx', { eager: true, query: '?raw', import: 'default' });
+    const code = (text: string): string => text.replace(/^\s*\/\/.*$/gm, '');
+    const STARTS_WORK = /\b(?:setTimeout|setInterval|requestAnimationFrame|addEventListener)\s*\(|new (?:Resize|Mutation|Intersection)Observer\b/;
+
+    const owners = Object.entries(sources).filter(([, text]) => STARTS_WORK.test(code(text)));
+
+    it('finds the widgets that start work', () => {
+        expect(owners.length).toBeGreaterThan(5);
+    });
+
+    it.each(owners)('%s declares componentWillUnmount and chains to super', (_file, text) => {
+        const body = code(text);
+        expect(body).toContain('componentWillUnmount');
+        expect(/super\.componentWillUnmount\??\.?\(\)/.test(body)).toBe(true);
     });
 });

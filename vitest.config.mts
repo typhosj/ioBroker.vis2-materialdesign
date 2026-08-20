@@ -23,7 +23,6 @@ export default defineConfig({
                 'src-widgets-ts/src/generated/**',
                 'src-widgets-ts/src/index.tsx',
                 'src-widgets-ts/src/translations.ts',
-                'src-widgets-ts/src/MaterialDesignAutocomplete.tsx',
                 'src-widgets-ts/src/MaterialDesignAdvancedViewInWidget*.tsx',
                 'src-widgets-ts/src/MaterialDesignButton{Adition,Link,Navigation,State,StateMulti,Toggle}{,Vertical}.tsx',
                 'src-widgets-ts/src/MaterialDesignIconButton*.tsx',
@@ -31,14 +30,14 @@ export default defineConfig({
                 'src-widgets-ts/src/MaterialDesignDialog{View,IFrame}.tsx',
                 'src-widgets-ts/src/MaterialDesign{Grid,Masonry}Views.tsx',
             ],
-            // Set just under the measured values (60.57 / 49.62 / 56.40 / 61.04), so removing a test
+            // Set just under the measured values (68.01 / 58.93 / 64.13 / 69.92), so removing a test
             // trips the gate. The previous numbers sat ~20 points below the actual coverage and
             // could only have failed after a collapse, which is not a gate.
             thresholds: {
-                statements: 60,
-                branches: 49,
-                functions: 56,
-                lines: 60,
+                statements: 68,
+                branches: 58,
+                functions: 64,
+                lines: 69,
             },
         },
     },

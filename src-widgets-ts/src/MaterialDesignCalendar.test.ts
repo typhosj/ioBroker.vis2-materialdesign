@@ -1,3 +1,4 @@
+import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import MaterialDesignCalendar, { calendarDayCount, calendarEvent, calendarEventHasTime, calendarEventLanes, calendarEventOccursOnDate, calendarEventSlot, calendarGridStart, eventMinutes, formatCalendarShortTime, formatCalendarTime, formatMoment, isoDate, localTimestamp, weekNumber } from './MaterialDesignCalendar';
 
@@ -226,5 +227,44 @@ describe('ical adapter rows', () => {
     it('leaves a zone-less timestamp alone', () => {
         expect(localTimestamp('2026-08-16T09:00:00')).toBe('2026-08-16T09:00:00');
         expect(localTimestamp('2026-08-16')).toBe('2026-08-16');
+    });
+});
+
+// The Calendar used to carry its own `n()`, and it was the one copy out of fourteen that read
+// `Number.isFinite(Number(v)) ? Number(v) : d`. Number('') and Number(null) are a finite 0, so
+// clearing a number field in the editor did not fall back to the declared default - it wrote a
+// zero. The day axis collapsed from 24 hours to 1 and the row height dropped to its 12px floor.
+// Only an EMPTIED field reaches this; an untouched one is undefined and always worked.
+describe('cleared number fields fall back to their default', () => {
+    function cast<T>(value: unknown): T { return value as T; }
+
+    // The day axis is a CSS grid: `repeat(<slots>, minmax(<row height>px, 1fr))` carries both
+    // numbers this used to get wrong.
+    function axis(extra: Record<string, unknown>): { slots: number; height: number } {
+        const widget = new MaterialDesignCalendar(cast<ConstructorParameters<typeof MaterialDesignCalendar>[0]>({ context: {} }));
+        widget.state = cast<typeof widget.state>({ rxData: { calendarView: 'day', calendarNowIndicatorShow: false, ...extra }, values: {} });
+        const html = renderToStaticMarkup(widget.renderWidgetBody(cast<Parameters<MaterialDesignCalendar['renderWidgetBody']>[0]>({})));
+        const match = html.match(/repeat\((\d+), minmax\((\d+)px/);
+        if (!match) throw new Error('no day axis rendered');
+        return { slots: Number(match[1]), height: Number(match[2]) };
+    }
+
+    it('keeps the 24-hour axis when the end time was cleared', () => {
+        expect(axis({}).slots).toBe(24);
+        expect(axis({ calendarTimeAxisEndTime: '' }).slots).toBe(24);
+        expect(axis({ calendarTimeAxisEndTime: null }).slots).toBe(24);
+        // A real value still wins.
+        expect(axis({ calendarTimeAxisEndTime: 6 }).slots).toBe(6);
+    });
+
+    it('keeps the hourly interval when the interval was cleared', () => {
+        expect(axis({ calendarTimeAxisIntervalMinutes: '' }).slots).toBe(24);
+        expect(axis({ calendarTimeAxisIntervalMinutes: 30 }).slots).toBe(48);
+    });
+
+    it('keeps the row height when it was cleared', () => {
+        expect(axis({}).height).toBe(48);
+        expect(axis({ calendarTimeAxisHeight: '' }).height).toBe(48);
+        expect(axis({ calendarTimeAxisHeight: 24 }).height).toBe(24);
     });
 });
