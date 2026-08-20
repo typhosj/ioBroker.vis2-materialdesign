@@ -20,6 +20,7 @@ aufgeführte Einstellungen sind selbsterklärend.
 - **Objekt-ID** – State mit dem JSON-Meldungs-Array.
 - **max. Meldungen** – wie viele Meldungen gleichzeitig gezeigt werden.
 - **min. Bildschirmauflösung** – blendet das Widget unterhalb dieser Breite aus.
+  Die Regel gilt nur für dieses Widget, mehrere Alerts-Widgets einer Ansicht können also unterschiedliche Breiten verwenden.
 
 **Layout**
 

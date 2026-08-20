@@ -57,6 +57,7 @@ check recording and the selected range first, then increase Chart timeout.
 - Fill color shades the area below a line; without a custom fill color, a transparent line color is used.
 - Newly configured datasets share one Y axis by default. Its position, title and limits come from the first dataset group. Empty min/max fields retain automatic scaling.
 - X-axis time format uses Moment format tokens, for example `HH:mm` for a 24-hour display. The same format is applied to seconds, minutes, hours and days.
+- The X-axis labels take a color, font and font size of their own, the way the Y-axis labels always did. Left empty, the chart defaults apply.
 - Tooltip mode `index` compares datasets at the same X value; `nearest` shows the closest point.
 
 ## Design style

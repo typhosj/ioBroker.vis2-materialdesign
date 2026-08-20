@@ -21,6 +21,7 @@ language, so the screenshots are German.
 - **object id** – state holding the JSON alert array.
 - **max alerts** – how many alerts are shown at once.
 - **min screen resolution** – hides the widget below this screen width.
+  The rule applies to this widget only, so several alerts widgets in one view can use different widths.
 
 **Layout**
 

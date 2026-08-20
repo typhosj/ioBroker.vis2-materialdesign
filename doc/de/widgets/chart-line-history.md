@@ -58,6 +58,7 @@ Chart-Timeout erhöhen.
 - Füllfarbe schattiert den Bereich unter einer Linie; ohne eigene Füllfarbe wird eine transparente Linienfarbe verwendet.
 - Neu angelegte Datensätze teilen standardmäßig eine Y-Achse. Deren Position, Titel und Grenzen stammen aus der ersten Datensatzgruppe. Leere Min-/Max-Felder behalten automatische Skalierung.
 - X-Achsen-Zeitformat verwendet Moment-Format-Token, beispielsweise `HH:mm` für eine 24-Stunden-Anzeige. Dasselbe Format wird auf Sekunden, Minuten, Stunden und Tage angewendet.
+- Die Beschriftung der X-Achse hat eine eigene Farbe, Schriftart und Schriftgröße, wie die der Y-Achse. Leer gelassen gelten die Vorgaben des Diagramms.
 - Tooltip-Modus `index` vergleicht Reihen am gleichen X-Wert; `nearest` zeigt den nächstgelegenen Punkt.
 
 ## Gestaltungsstil
