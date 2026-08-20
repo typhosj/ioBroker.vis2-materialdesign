@@ -95,3 +95,12 @@ describe('bar chart options', () => {
         expect(chart({ dataCount: 1, disableHoverEffects: true }).options.hover).toEqual({ mode: null });
     });
 });
+
+describe('decimal bounds', () => {
+    // A min without a max is what the editor stores when only one of the two fields is filled in.
+    // Intl throws a RangeError when min > max, which took the whole widget down with it.
+    it('renders a min-decimals bar without a max', () => {
+        const { data } = chart({ dataCount: 1, oid0: 'a.0.v', valuesMinDecimals: 2 }, { 'a.0.v.val': 21.5 });
+        expect(data.datasets[0].data).toEqual([21.5]);
+    });
+});

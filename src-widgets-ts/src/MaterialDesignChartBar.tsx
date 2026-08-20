@@ -457,7 +457,9 @@ export default class MaterialDesignChartBar extends VisWidget {
           ),
         ),
       );
-      const decimals = Math.max(0, n(data.valuesMaxDecimals, 0));
+      const minDecimals = Math.max(0, n(data.valuesMinDecimals));
+      // Intl throws when min > max, and a min without a max is what the editor stores when only one of the two fields is filled in.
+      const decimals = Math.max(minDecimals, n(data.valuesMaxDecimals, 0));
       return {
         label: s(row?.label, s(indexed(data, "label", i))),
         value,
@@ -470,7 +472,7 @@ export default class MaterialDesignChartBar extends VisWidget {
         ),
         valueText: s(
           row?.valueText,
-          s(indexed(data, "valueText", i), value.toLocaleString(undefined, { minimumFractionDigits: Math.max(0, n(data.valuesMinDecimals)), maximumFractionDigits: decimals })),
+          s(indexed(data, "valueText", i), value.toLocaleString(undefined, { minimumFractionDigits: minDecimals, maximumFractionDigits: decimals })),
         ),
         valueColor: s(
           row?.valueColor,

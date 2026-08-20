@@ -176,7 +176,8 @@ export function formatNumber(value: unknown, data: ValueData): string {
     const max = data.maxDecimals === undefined ? undefined : number(data.maxDecimals);
     const formatted = new Intl.NumberFormat(undefined, {
         minimumFractionDigits: min,
-        maximumFractionDigits: max,
+        // Intl throws when min > max, and filling in only one of the two fields is normal in the editor.
+        maximumFractionDigits: max === undefined || min === undefined ? max : Math.max(min, max),
     }).format(numeric);
     return `${formatted}${data.valueLabelUnit ? ` ${data.valueLabelUnit}` : ''}`;
 }

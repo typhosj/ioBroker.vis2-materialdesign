@@ -85,3 +85,11 @@ describe('pie chart options', () => {
         expect(chart({ dataCount: 1, hoverColor: '#abcdef' }).data.datasets[0].hoverBackgroundColor).toBe('#abcdef');
     });
 });
+
+describe('decimal bounds', () => {
+    // Intl throws when min > max, which is what a min-only tooltip setting adds up to.
+    it('builds a tooltip callback with a min and no max', () => {
+        const { options } = chart({ dataCount: 1, oid0: 'a.0.v', tooltipValueMinDecimals: 2 }, { 'a.0.v.val': 21.5 });
+        expect(options.tooltips.callbacks.label({ index: 0 })).toMatch(/21[.,]50/);
+    });
+});

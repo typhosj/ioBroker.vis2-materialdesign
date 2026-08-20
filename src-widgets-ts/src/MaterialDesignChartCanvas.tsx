@@ -145,9 +145,11 @@ export function tooltipNumber(data: Record<string, unknown>, value: unknown): st
   const max = num(data.tooltipValueMaxDecimals);
   const raw = num(value);
   if (raw === undefined || (min === undefined && max === undefined)) return undefined;
+  // Intl throws when min > max, which the editor lets you configure one field at a time.
+  const lower = Math.max(0, Math.min(20, min ?? 0));
   return raw.toLocaleString(undefined, {
-    minimumFractionDigits: Math.max(0, Math.min(20, min ?? 0)),
-    maximumFractionDigits: Math.max(0, Math.min(20, max ?? Math.max(min ?? 0, 2))),
+    minimumFractionDigits: lower,
+    maximumFractionDigits: Math.max(lower, Math.min(20, max ?? Math.max(min ?? 0, 2))),
   });
 }
 

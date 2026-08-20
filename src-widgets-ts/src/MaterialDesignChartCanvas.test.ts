@@ -126,3 +126,9 @@ describe('ChartLegend', () => {
         expect(html({ legendBoxWidth: 20 })).toContain('height:20px');
     });
 });
+
+describe('tooltipNumber decimal bounds', () => {
+    it('does not throw when the min is above the max', () => {
+        expect(tooltipNumber({ tooltipValueMinDecimals: 3, tooltipValueMaxDecimals: 1 }, 1.23456)).toMatch(/^1[.,]235$/);
+    });
+});

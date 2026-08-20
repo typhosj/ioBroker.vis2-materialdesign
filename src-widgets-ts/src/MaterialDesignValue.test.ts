@@ -91,3 +91,10 @@ describe('change effect and hidden-on-load', () => {
         expect(update(instance, 2)).not.toContain('#ff0000');
     });
 });
+
+describe('formatNumber decimal bounds', () => {
+    // Intl throws when min > max; both are free-standing editor number fields.
+    it('does not throw when the min is above the max', () => {
+        expect(formatNumber(1.23456, data({ minDecimals: 3, maxDecimals: 1 }))).toMatch(/^1[.,]235$/);
+    });
+});
