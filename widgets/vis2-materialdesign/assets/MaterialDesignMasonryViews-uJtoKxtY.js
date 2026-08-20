@@ -1,1 +1,0 @@
-import{n as e,t}from"./MaterialDesignViews-Er7r6D_M.js";var n=class n extends t{constructor(e){super(e,`masonry`)}static getWidgetInfo(){return e(`masonry`)}getWidgetInfo(){return n.getWidgetInfo()}};export{n as default};
