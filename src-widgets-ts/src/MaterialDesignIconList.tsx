@@ -3,7 +3,7 @@ import React from 'react';
 import type { RxWidgetInfo, WidgetData } from '@iobroker/types-vis-2';
 
 import { renderIcon } from './MaterialDesignButtons';
-import { indexedFields, MAX_DYNAMIC_ITEMS, squarePreview, RenderProps, VisWidget, accessibleText, boundedCount, createInfo, iconField, itemCount, parseActionValue, safeWidgetUrl, setStateValue, stateValue, sanitizeHtml, stringValue } from './widgetUtils';
+import { indexedFields, MAX_DYNAMIC_ITEMS, squarePreview, RenderProps, VisWidget, accessibleText, boundedCount, createInfo, iconField, itemCount, parseActionValue, safeWidgetUrl, setStateValue, stateValue, sanitizeHtml, stringValue, boolValue as b, numberValue as n, textValue as s } from './widgetUtils';
 
 type Data = Record<string, unknown> & {
     listItemDataMethod?: string;
@@ -165,9 +165,6 @@ const css = `
 .materialdesign-icon-list .materialdesign-button{font-family:var(--materialdesign-font-button);font-size:var(--materialdesign-font-size-button);font-weight:500;text-decoration:none;padding:0 8px;align-items:center;justify-content:center;box-sizing:border-box;height:36px;border:0;outline:0;line-height:inherit;user-select:none;overflow:hidden;vertical-align:middle;border-radius:4px}.materialdesign-icon-list .materialdesign-icon-button{border-radius:100%;width:48px;height:48px;font-size:24px;display:inline-block;box-sizing:border-box;border:0;outline:0;background-color:transparent;fill:currentColor;color:inherit;text-decoration:none;cursor:pointer;user-select:none}.materialdesign-icon-list .materialdesign-button,.materialdesign-icon-list .materialdesign-icon-button{-webkit-tap-highlight-color:transparent}.materialdesign-icon-list .materialdesign-iconList-button:active{box-shadow:inset 0 0 0 999px color-mix(in srgb,var(--materialdesign-color-icon-button-hover) 12%,transparent)}.materialdesign-icon-list .materialdesign-iconList-button:focus-visible{outline:2px solid #44739e;outline-offset:2px}
 `;
 
-const n = (value: unknown, fallback = 0): number => value === '' || value === undefined || value === null || !Number.isFinite(Number(value)) ? fallback : Number(value);
-const s = (value: unknown, fallback = ''): string => value === '' || value === undefined || value === null || value === 'null' ? fallback : typeof value === "string" ? value : typeof value === "number" || typeof value === "boolean" || typeof value === "bigint" ? String(value) : fallback;
-const b = (value: unknown, fallback = false): boolean => value === undefined || value === null || value === '' ? fallback : value === true || value === 'true' || value === 1 || value === '1';
 function getItem(data: Data, index: number, json?: Record<string, unknown>): Item {
     const get = (editorName: string, jsonName = editorName): unknown => json ? json[jsonName] : data[`${editorName}${index}`];
     const image = s(get('listImage', 'image'));
@@ -269,7 +266,7 @@ export default class MaterialDesignIconList extends VisWidget {
         const activate = (): void => this.activate(item, index, current, data);
         return {
             'aria-disabled': item.readOnly,
-            'aria-label': accessibleText(item.text, 'List item action'),
+            'aria-label': accessibleText(item.text, VisWidget.t('ariaListItemAction')),
             onClick: activate,
             onKeyDown: event => { if (!item.readOnly && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); activate(); } },
             onPointerDown: () => this.feedback(data, true),

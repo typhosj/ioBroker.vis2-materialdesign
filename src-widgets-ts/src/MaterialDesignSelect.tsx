@@ -787,7 +787,7 @@ export default class MaterialDesignSelect extends VisWidget {
                         ) : null}
                         {data.clearIconShow && current !== undefined && current !== null && current !== '' ? (
                             <button
-                                aria-label="clear"
+                                aria-label={VisWidget.t('ariaClearInput')}
                                 onClick={event => {
                                     event.stopPropagation();
                                     this.localValue = '';

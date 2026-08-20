@@ -1,5 +1,5 @@
 import React from "react";
-import { indexedFields, squarePreview, itemCount, RenderProps, VisWidget, createInfo, stateValue, sanitizeHtml } from './widgetUtils';
+import { indexedFields, squarePreview, itemCount, RenderProps, VisWidget, createInfo, stateValue, sanitizeHtml, boolValue as b, numberValue as n, textValue as s } from './widgetUtils';
 import type { RxWidgetInfo, VisRxWidgetState } from "@iobroker/types-vis-2";
 import { colorSchemes, scheme } from "./MaterialDesignColorScheme";
 import { MaterialDesignChartCanvas, datalabelsConfig, layoutConfig, tooltipConfig } from "./MaterialDesignChartCanvas";
@@ -38,16 +38,6 @@ const intervals: Record<string, number> = {
   "1 year": 31536000000,
   "2 years": 63072000000,
 };
-const s = (v: unknown, d = "") =>
-  v === undefined || v === null || v === "" || v === "null" ? d : typeof v === "string" ? v : typeof v === "number" || typeof v === "boolean" || typeof v === "bigint" ? String(v) : d;
-const n = (v: unknown, d = 0) =>
-  v === undefined || v === null || v === "" || !Number.isFinite(Number(v))
-    ? d
-    : Number(v);
-const b = (v: unknown, d = false) =>
-  v === undefined || v === null || v === ""
-    ? d
-    : v === true || v === "true" || v === 1 || v === "1";
 // vis-2 stores the first row (index 0) of an indexed group under the plain
 // base name (e.g. `yAxisTitle`), higher rows as `${name}${i}`. Prefer the
 // suffixed key, fall back to the plain name for index 0 so editor edits to
@@ -112,6 +102,8 @@ const attrs: RxWidgetInfo["visAttrs"] = [
       num("chartPaddingLeft"),
       num("chartPaddingRight"),
       num("chartPaddingBottom"),
+      // Declared last so it lands at the end of the group, the way the other three charts have it.
+      num("animationDuration"),
     ],
   },
   {
@@ -215,6 +207,8 @@ const attrs: RxWidgetInfo["visAttrs"] = [
     fields: [
       { name: "xAxisTimeFormats", label: "xAxisTimeFormats", type: "text" },
       color("xAxisValueLabelColor"),
+      { name: "xAxisValueFontFamily", label: "xAxisValueFontFamily", type: "fontname" as const },
+      num("xAxisValueFontSize"),
       {
         name: "xAxisShowGridLines",
         label: "xAxisShowGridLines",
@@ -410,6 +404,8 @@ export default class MaterialDesignChartLineHistory extends VisWidget {
     const xAxes = [chartAxis({
       type: "time",
       labelColor: s(d.xAxisValueLabelColor),
+      labelFontFamily: s(d.xAxisValueFontFamily),
+      labelFontSize: n(d.xAxisValueFontSize),
       gridDisplay: b(d.xAxisShowGridLines, true),
       gridColor: s(d.xAxisGridLinesColor),
       time: timeFmt ? { tooltipFormat: "lll", displayFormats: { second: timeFmt, minute: timeFmt, hour: timeFmt, day: timeFmt } } : { tooltipFormat: "lll" },

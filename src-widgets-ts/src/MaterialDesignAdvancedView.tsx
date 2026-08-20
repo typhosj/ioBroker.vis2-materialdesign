@@ -1,20 +1,9 @@
 import React from "react";
-import { MAX_DYNAMIC_ITEMS, squarePreview, boundedCount, createInfo, indexedFields, itemCount, RenderProps, stateValue, VisWidget } from './widgetUtils';
+import { MAX_DYNAMIC_ITEMS, squarePreview, boundedCount, createInfo, indexedFields, itemCount, RenderProps, stateValue, VisWidget, boolValue as b, numberValue as n, textValue as s } from './widgetUtils';
 import type { RxWidgetInfo } from "@iobroker/types-vis-2";
 
 type Kind = "state" | "state8";
 type Data = Record<string, unknown>;
-const s = (v: unknown, d = ""): string =>
-  v === undefined || v === null || v === "" || v === "null" ? d : typeof v === "string" ? v : typeof v === "number" || typeof v === "boolean" || typeof v === "bigint" ? String(v) : d;
-const n = (v: unknown, d = 0): number =>
-  v === undefined || v === null || v === "" || !Number.isFinite(Number(v))
-    ? d
-    : Number(v);
-const b = (v: unknown, d = false): boolean =>
-  v === undefined || v === null || v === ""
-    ? d
-    : v === true || v === "true" || v === 1 || v === "1";
-
 export function advancedViewInfo(kind: Kind): RxWidgetInfo {
   const state8 = kind === "state8";
   return {

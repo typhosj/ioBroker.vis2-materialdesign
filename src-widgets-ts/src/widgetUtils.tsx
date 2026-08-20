@@ -76,6 +76,22 @@ export function stringValue(value: unknown, fallback = ''): string {
           : fallback;
 }
 
+// The three coercions every widget needs for an rxData field, and the reason they are here rather
+// than copied per widget: VIS2 stores an untouched attribute as '' or null and hands numbers back
+// as strings, so Number('') === 0 is finite and would silently beat the declared default. Every
+// caller reads user-entered options, so ''/null/'null' always mean "not set", never a value.
+export function textValue(value: unknown, fallback = ''): string {
+    return value === undefined || value === null || value === '' || value === 'null' ? fallback : stringValue(value, fallback);
+}
+
+export function numberValue(value: unknown, fallback = 0): number {
+    return value === undefined || value === null || value === '' || !Number.isFinite(Number(value)) ? fallback : Number(value);
+}
+
+export function boolValue(value: unknown, fallback = false): boolean {
+    return value === undefined || value === null || value === '' ? fallback : value === true || value === 'true' || value === 1 || value === '1';
+}
+
 // How many indexed rows a "count" option asks for. VIS 1 stored the LAST INDEX in these options, so
 // its "number of data sets = 3" drew four — the label promised one thing and the loop `i <= count`
 // did another. Here the number means the number of rows, and the editor hides the row at index
@@ -231,7 +247,10 @@ export function humanizeDuration(totalSeconds: number, locale?: string): string 
 // (an inert <template>, no dependency, no regex-bypass surface): drop active-content elements, strip
 // on* handlers, and neutralize script-y URLs. Formatting HTML (font/b/img/table/data:image…) passes
 // through unchanged. Always route HTML sinks through this via the `html()` helper below.
-const UNSAFE_ELEMENTS = 'script,iframe,object,embed,base,meta,link,form,noscript';
+// `style` is in here for two reasons: its rules are page-wide, so one state value could hide or
+// cover the whole VIS view, and its text content is re-parsed on the way back out - the
+// math/mglyph/style shape turns an inert `<img onerror>` inside it into a live element.
+const UNSAFE_ELEMENTS = 'script,style,iframe,object,embed,base,meta,link,form,noscript';
 const URL_ATTRS = new Set(['href', 'src', 'xlink:href', 'action', 'formaction', 'background', 'poster', 'data']);
 export function sanitizeHtml(input: unknown): string {
     if (input === null || input === undefined) return '';
@@ -504,13 +523,12 @@ export function iconField(name: string, label: string, def?: string): RxWidgetIn
 }
 
 type ThemeEntry = { id: string; desc: string; widget: string };
-type ThemeType = 'colors' | 'fonts' | 'fontSizes';
+export type ThemeType = 'colors' | 'fonts' | 'fontSizes';
 
 const themeLists: Record<ThemeType, ThemeEntry[]> = { colors, fonts, fontSizes };
-const themeNameAliases: Record<string, string> = {
-    Button: 'Buttons',
-    'HTML Card': 'HTML Card',
-    'Preview Color Schemes': 'Color Scheme Preview',
+// visName -> the name the theme lists file the entry under, where the two drifted apart.
+export const themeNameAliases: Record<string, string> = {
+    Icon: 'Material Design Icon',
 };
 
 function themeEntries(widgetName: string): Array<{ type: ThemeType; entry: ThemeEntry }> {
@@ -527,7 +545,7 @@ function cssVariable(type: ThemeType, id: string): string {
     return `--materialdesign-widget-theme-font-size-${normalized}`;
 }
 
-function themeStateId(type: ThemeType, id: string, dark = false): string {
+export function themeStateId(type: ThemeType, id: string, dark = false): string {
     if (type === 'colors') return `vis2-materialdesign.0.colors.${dark ? id.replace(/^light\./, 'dark.') : id}`;
     return `vis2-materialdesign.0.${type}.${id}`;
 }

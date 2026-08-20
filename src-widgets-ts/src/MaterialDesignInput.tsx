@@ -733,7 +733,7 @@ export default class MaterialDesignInput extends VisWidget {
                                     ) : null}
                                     {data.clearIconShow !== false && value !== '' ? (
                                         <button
-                                            aria-label="clear"
+                                            aria-label={VisWidget.t('ariaClearInput')}
                                             onClick={() => {
                                                 this.localValue = '';
                                                 setStateValue(this.props, data.oid || '', '');

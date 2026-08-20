@@ -1,5 +1,5 @@
 import React from "react";
-import { squarePreview , RenderProps, VisWidget, createInfo, stateValue, sanitizeHtml } from './widgetUtils';
+import { squarePreview, RenderProps, VisWidget, createInfo, stateValue, sanitizeHtml, boolValue as b, numberValue as n, textValue as s } from './widgetUtils';
 import type { RxWidgetInfo } from "@iobroker/types-vis-2";
 import { colorSchemes, scheme } from "./MaterialDesignColorScheme";
 import { ChartLegend, MaterialDesignChartCanvas, layoutConfig, tooltipConfig } from "./MaterialDesignChartCanvas";
@@ -30,22 +30,12 @@ type Graph = {
   datalabel_fontSize?: number;
 };
 type Data = Record<string, unknown> & { oid?: string };
-const s = (v: unknown, d = "") =>
-  v === undefined || v === null || v === "" || v === "null" ? d : typeof v === "string" ? v : typeof v === "number" || typeof v === "boolean" || typeof v === "bigint" ? String(v) : d;
-const n = (v: unknown, d = 0) =>
-  v === undefined || v === null || v === "" || !Number.isFinite(Number(v))
-    ? d
-    : Number(v);
 // like n() but yields undefined (not 0) for empty/invalid, so an unset
 // axis min/max stays auto-scaling instead of collapsing the axis to 0.
 const optN = (v: unknown): number | undefined =>
   v === undefined || v === null || v === "" || !Number.isFinite(Number(v))
     ? undefined
     : Number(v);
-const b = (v: unknown, d = false) =>
-  v === undefined || v === null || v === ""
-    ? d
-    : v === true || v === "true" || v === 1 || v === "1";
 export const jsonChartValue = (raw: unknown): number | null => {
   const value = typeof raw === "object" && raw ? (raw as { y?: unknown }).y : raw;
   if (value === null || value === undefined || value === "") return null;
@@ -73,6 +63,7 @@ export function jsonChartSegments<T>(points: Array<T | null>, spanGaps: boolean)
   return segments;
 }
 const color = (name: string) => ({ name, label: name, type: "color" as const });
+const num = (name: string) => ({ name, label: name, type: "number" as const });
 const number = (name: string) => ({
   name,
   label: name,
@@ -214,6 +205,19 @@ const attrs: RxWidgetInfo["visAttrs"] = [
       color("tooltipBackgroundColor"),
       color("tooltipTitleFontColor"),
       color("tooltipBodyFontColor"),
+      { name: "tooltipShowColorBox", label: "tooltipShowColorBox", type: "checkbox" as const, default: true },
+      num("tooltipArrowSize"),
+      num("tooltipDistanceToBar"),
+      num("tooltipBoxRadius"),
+      num("tooltipXpadding"),
+      num("tooltipYpadding"),
+      num("tooltipTitleMarginBottom"),
+      // tooltipConfig() has always read these four - the JSON chart just never offered them, so
+      // its tooltip font stayed on the chart.js default and the theme button wrote into nothing.
+      { name: "tooltipTitleFontFamily", label: "tooltipTitleFontFamily", type: "fontname" as const },
+      { name: "tooltipTitleFontSize", label: "tooltipTitleFontSize", type: "number" as const },
+      { name: "tooltipBodyFontFamily", label: "tooltipBodyFontFamily", type: "fontname" as const },
+      { name: "tooltipBodyFontSize", label: "tooltipBodyFontSize", type: "number" as const },
       {
         name: "tooltipBodyAlignment",
         label: "tooltipBodyAlignment",

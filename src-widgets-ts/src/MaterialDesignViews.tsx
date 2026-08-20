@@ -1,16 +1,9 @@
 import React from "react";
-import { indexedFields, squarePreview, boundedCount, createInfo, itemCount, RenderProps, stateValue, VisWidget } from './widgetUtils';
+import { indexedFields, squarePreview, boundedCount, createInfo, itemCount, RenderProps, stateValue, VisWidget, numberValue as n, textValue as s } from './widgetUtils';
 import type { RxWidgetInfo } from "@iobroker/types-vis-2";
 
 type Kind = "masonry" | "grid";
 type Data = Record<string, unknown> & { countViews?: number };
-const s = (v: unknown, d = ""): string =>
-  v === undefined || v === null || v === "" || v === "null" ? d : typeof v === "string" ? v : typeof v === "number" || typeof v === "boolean" || typeof v === "bigint" ? String(v) : d;
-const n = (v: unknown, d = 0): number =>
-  v === undefined || v === null || v === "" || !Number.isFinite(Number(v))
-    ? d
-    : Number(v);
-
 const visibilityFields = [
   {
     name: "visibleResolutionGreaterThan",

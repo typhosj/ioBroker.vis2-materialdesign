@@ -47,7 +47,7 @@ describe('widget accessibility', () => {
         const widget = new MaterialDesignAlerts(widgetProps);
         setData(widget, { oid: 'test.0.alerts', showMaxAlerts: 1 }, { 'test.0.alerts.val': JSON.stringify([{ text: 'Warning' }]) });
         const html = renderToStaticMarkup(widget.renderWidgetBody(renderProps));
-        expect(html).toContain('aria-label="Close alert"');
+        expect(html).toContain('aria-label="ariaCloseAlert"');
         expect(html).toContain('type="button"');
     });
 

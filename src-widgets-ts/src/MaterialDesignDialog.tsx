@@ -5,7 +5,7 @@ import { squarePreview ,
   createInfo,
   setStateValue,
   sizeCss,
-  stateValue, sanitizeHtml, iconField, liftWidgetLayer } from './widgetUtils';
+  stateValue, sanitizeHtml, iconField, liftWidgetLayer, boolValue as b, numberValue as n, textValue as s } from './widgetUtils';
 import type { RxWidgetInfo } from "@iobroker/types-vis-2";
 import { renderIcon } from "./MaterialDesignButtons";
 
@@ -16,16 +16,6 @@ type Data = Record<string, unknown> & {
   contains_view?: string;
   src?: string;
 };
-const s = (v: unknown, d = ""): string =>
-  v === undefined || v === null || v === "" || v === "null" ? d : typeof v === "string" ? v : typeof v === "number" || typeof v === "boolean" || typeof v === "bigint" ? String(v) : d;
-const n = (v: unknown, d = 0): number =>
-  v === undefined || v === null || v === "" || !Number.isFinite(Number(v))
-    ? d
-    : Number(v);
-const b = (v: unknown, d = false): boolean =>
-  v === undefined || v === null || v === ""
-    ? d
-    : v === true || v === "true" || v === 1 || v === "1";
 const buttonFields = [
   {
     name: "buttonStyle",
