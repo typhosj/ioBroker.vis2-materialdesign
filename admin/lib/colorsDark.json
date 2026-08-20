@@ -189,43 +189,43 @@
         "id": "dark.charts.value",
         "desc": "valuesFontColor",
         "defaultValue": 2,
-        "widget": "Bar Chart, Pie Chart, Line History Chart, JSON Chart"
+        "widget": "Bar Chart, Pie Chart, Line History Chart"
     },
     {
         "id": "dark.charts.y_axis_title",
         "desc": "yAxisTitleColor",
         "defaultValue": 2,
-        "widget": "Bar Chart, Pie Chart, Line History Chart, JSON Chart"
+        "widget": "Bar Chart, Line History Chart, JSON Chart"
     },
     {
         "id": "dark.charts.y_axis_values",
         "desc": "yAxisValueLabelColor",
         "defaultValue": 2,
-        "widget": "Bar Chart, Pie Chart, Line History Chart, JSON Chart"
+        "widget": "Bar Chart, Line History Chart, JSON Chart"
     },
     {
         "id": "dark.charts.y_axis_gridlines",
         "desc": "yAxisGridLinesColor",
         "defaultValue": 6,
-        "widget": "Bar Chart, Pie Chart, Line History Chart, JSON Chart"
+        "widget": "Bar Chart, Line History Chart"
     },
     {
         "id": "dark.charts.x_axis_title",
         "desc": "xAxisTitleColor",
         "defaultValue": 2,
-        "widget": "Bar Chart, Pie Chart, Line History Chart, JSON Chart"
+        "widget": "Bar Chart, JSON Chart"
     },
     {
         "id": "dark.charts.x_axis_values",
         "desc": "xAxisValueLabelColor",
         "defaultValue": 2,
-        "widget": "Bar Chart, Pie Chart, Line History Chart, JSON Chart"
+        "widget": "Bar Chart, Line History Chart, JSON Chart"
     },
     {
         "id": "dark.charts.x_axis_gridlines",
         "desc": "xAxisGridLinesColor",
         "defaultValue": 6,
-        "widget": "Bar Chart, Pie Chart, Line History Chart, JSON Chart"
+        "widget": "Bar Chart, Line History Chart, JSON Chart"
     },
     {
         "id": "dark.charts.legend",
@@ -789,7 +789,7 @@
         "id": "dark.slider.background",
         "desc": "colorSliderBg",
         "defaultValue": 7,
-        "widget": "Slider, Slider Round"
+        "widget": "Slider Round"
     },
     {
         "id": "dark.slider.control",
@@ -861,7 +861,7 @@
         "id": "dark.switch.on_hover",
         "desc": "colorSwitchHoverTrue",
         "defaultValue": 0,
-        "widget": "Switch, List"
+        "widget": "Switch"
     },
     {
         "id": "dark.switch.off",
@@ -1114,137 +1114,5 @@
         "desc": "imageColor",
         "defaultValue": 0,
         "widget": "Value"
-    },
-    {
-        "id": "dark.scripts.adapterStatus.title",
-        "desc": "title color",
-        "defaultValue": 2,
-        "widget": "AdapterStatus [Script]"
-    },
-    {
-        "id": "dark.scripts.adapterStatus.subTitle",
-        "desc": "instance color",
-        "defaultValue": 1,
-        "widget": "AdapterStatus [Script]"
-    },
-    {
-        "id": "dark.scripts.adapterStatus.datapoints.desc",
-        "desc": "description color",
-        "defaultValue": 2,
-        "widget": "AdapterStatus [Script]"
-    },
-    {
-        "id": "dark.scripts.adapterStatus.datapoints.value",
-        "desc": "value color",
-        "defaultValue": 1,
-        "widget": "AdapterStatus [Script]"
-    },
-    {
-        "id": "dark.scripts.adapterStatus.datapoints.icon",
-        "desc": "icon color",
-        "defaultValue": 0,
-        "widget": "AdapterStatus [Script]"
-    },
-    {
-        "id": "dark.scripts.adapterStatus.statusBar.active",
-        "desc": "statusbar: adapter is active",
-        "defaultValue": 8,
-        "widget": "AdapterStatus [Script]"
-    },
-    {
-        "id": "dark.scripts.adapterStatus.statusBar.notActive",
-        "desc": "statusbar: adapter is not active",
-        "defaultValue": 10,
-        "widget": "AdapterStatus [Script]"
-    },
-    {
-        "id": "dark.scripts.adapterStatus.statusBar.notConnected",
-        "desc": "statusbar: adapter is notConnected",
-        "defaultValue": 9,
-        "widget": "AdapterStatus [Script]"
-    },
-    {
-        "id": "dark.scripts.adapterStatus.statusBar.deactivated",
-        "desc": "statusbar: adapter is deactivated",
-        "value": "#A9A9A9",
-        "widget": "AdapterStatus [Script]"
-    },
-    {
-        "id": "dark.scripts.adapterStatus.statusBar.schedule",
-        "desc": "statusbar: adapter is from type schedule",
-        "value": "#90EE90",
-        "widget": "AdapterStatus [Script]"
-    },
-    {
-        "id": "dark.scripts.adapterStatus.statusBar.extension",
-        "desc": "statusbar: adapter is from type extension",
-        "value": "#44739e",
-        "widget": "AdapterStatus [Script]"
-    },
-    {
-        "id": "dark.scripts.adapterStatus.statusBar.once",
-        "desc": "statusbar: adapter is from type once",
-        "value": "#44739e",
-        "widget": "AdapterStatus [Script]"
-    },
-    {
-        "id": "dark.scripts.adapterStatus.icons.upgradeable",
-        "desc": "icon upgradeable",
-        "value": "#ec0909",
-        "widget": "AdapterStatus [Script]"
-    },
-    {
-        "id": "dark.scripts.adapterStatus.icons.logParser.warn",
-        "desc": "logParser warn icon",
-        "defaultValue": 9,
-        "widget": "AdapterStatus [Script]"
-    },
-    {
-        "id": "dark.scripts.adapterStatus.icons.logParser.error",
-        "desc": "logParser error icon",
-        "defaultValue": 10,
-        "widget": "AdapterStatus [Script]"
-    },
-    {
-        "id": "dark.scripts.adapterStatus.select.background",
-        "desc": "Select: background",
-        "defaultValue": 0,
-        "widget": "AdapterStatus [Script]"
-    },
-    {
-        "id": "dark.scripts.adapterStatus.select.border",
-        "desc": "Select: border",
-        "value": "#a1a1a1",
-        "widget": "AdapterStatus [Script]"
-    },
-    {
-        "id": "dark.scripts.adapterStatus.select.border_hover",
-        "desc": "Select: border hover",
-        "defaultValue": 5,
-        "widget": "AdapterStatus [Script]"
-    },
-    {
-        "id": "dark.scripts.adapterStatus.select.border_selected",
-        "desc": "Select: border selected",
-        "defaultValue": 5,
-        "widget": "AdapterStatus [Script]"
-    },
-    {
-        "id": "dark.scripts.adapterStatus.select.text",
-        "desc": "Select: text",
-        "defaultValue": 5,
-        "widget": "AdapterStatus [Script]"
-    },
-    {
-        "id": "dark.scripts.adapterStatus.select.label",
-        "desc": "Select: label text",
-        "defaultValue": 5,
-        "widget": "AdapterStatus [Script]"
-    },
-    {
-        "id": "dark.scripts.adapterStatus.select.icon",
-        "desc": "Select: icons",
-        "defaultValue": 5,
-        "widget": "AdapterStatus [Script]"
     }
 ]

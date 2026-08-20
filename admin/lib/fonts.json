@@ -9,13 +9,13 @@
         "id": "button.default.text",
         "desc": "textFontFamily",
         "defaultValue": 0,
-        "widget": "Buttons, Dialog, Button Navigation, Button Link, Button State, Button State Multi, Button Addition, Button Toggle, Dialog iFrame"
+        "widget": "Dialog, Button Navigation, Button Link, Button State, Button State Multi, Button Addition, Button Toggle, Dialog iFrame"
     },
     {
         "id": "button.vertical.text",
         "desc": "textFontFamily",
         "defaultValue": 0,
-        "widget": "Buttons, Button Navigation vertical, Button Link vertical, Button State vertical, Button State Multi vertical, Button Addition vertical, Button Toggle vertical"
+        "widget": "Button Navigation vertical, Button Link vertical, Button State vertical, Button State Multi vertical, Button Addition vertical, Button Toggle vertical"
     },
     {
         "id": "calendar.control",
@@ -69,31 +69,31 @@
         "id": "charts.value",
         "desc": "valuesFontFamily",
         "defaultValue": 2,
-        "widget": "Bar Chart, Pie Chart, Line History Chart, JSON Chart"
+        "widget": "Bar Chart, Pie Chart, Line History Chart"
     },
     {
         "id": "charts.y_axis_title",
         "desc": "yAxisTitleFontFamily",
         "defaultValue": 0,
-        "widget": "Bar Chart, Pie Chart, Line History Chart, JSON Chart"
+        "widget": "Bar Chart, Line History Chart"
     },
     {
         "id": "charts.y_axis_values",
         "desc": "yAxisValueFontFamily",
         "defaultValue": 2,
-        "widget": "Bar Chart, Pie Chart, Line History Chart, JSON Chart"
+        "widget": "Bar Chart, Line History Chart"
     },
     {
         "id": "charts.x_axis_title",
         "desc": "xAxisTitleFontFamily",
         "defaultValue": 0,
-        "widget": "Bar Chart, Pie Chart, Line History Chart, JSON Chart"
+        "widget": "Bar Chart"
     },
     {
         "id": "charts.x_axis_values",
         "desc": "xAxisValueFontFamily",
         "defaultValue": 2,
-        "widget": "Bar Chart, Pie Chart, Line History Chart, JSON Chart"
+        "widget": "Bar Chart, Line History Chart"
     },
     {
         "id": "charts.legend",
@@ -346,29 +346,5 @@
         "desc": "appendTextFontFamily",
         "defaultValue": 0,
         "widget": "Value"
-    },
-    {
-        "id": "scripts.adapterStatus.title",
-        "desc": "title text font",
-        "defaultValue": 0,
-        "widget": "AdapterStatus [Script]"
-    },
-    {
-        "id": "scripts.adapterStatus.subTitle",
-        "desc": "instance text font",
-        "defaultValue": 3,
-        "widget": "AdapterStatus [Script]"
-    },
-    {
-        "id": "scripts.adapterStatus.datapoints.desc",
-        "desc": "description text font",
-        "defaultValue": 2,
-        "widget": "AdapterStatus [Script]"
-    },
-    {
-        "id": "scripts.adapterStatus.datapoints.value",
-        "desc": "value text font",
-        "defaultValue": 2,
-        "widget": "AdapterStatus [Script]"
     }
 ]
