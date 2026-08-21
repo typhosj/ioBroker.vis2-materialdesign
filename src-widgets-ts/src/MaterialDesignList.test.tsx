@@ -77,4 +77,14 @@ describe('list styling attributes', () => {
         // image above the text, and draw a card frame around the header.
         expect(left).not.toContain('mdc-card');
     });
+
+    // A fixed row height plus the clipping container swallowed the bottom padding, so the option
+    // did nothing in any setting; the height has to stay a minimum for it to take part.
+    it('reserves the header padding on every side', () => {
+        const html = render({ ...row, headers: 'head', header_padding_top: 4, header_padding_right: 8, header_padding_bottom: 12, header_padding_left: 16 });
+        expect(html).toContain('padding:4px 8px 12px 16px');
+        expect(html).toContain('box-sizing:border-box');
+        expect(html).toContain('min-height:60px');
+        expect(html).not.toContain('height:65px');
+    });
 });
