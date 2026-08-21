@@ -66,6 +66,10 @@ Report current VIS 2 problems in the
 [GitHub issue tracker](https://github.com/typhosj/ioBroker.vis2-materialdesign/issues).
 
 ## Changelog
+### **WORK IN PROGRESS**
+
+- (typhosj) Fixed the calendar month grid showing the view background through its day cells: the days and the weekday header were left transparent, so on a view with a dark background or a background image the grid looked empty and the day numbers were unreadable. Both now paint the widget's own surface, and the month view's weekday names follow the dark theme like the week and day views already did. An explicitly set day, header or label color still wins
+
 ### 0.3.5 (2026-08-20)
 
 - (typhosj) Fixed the Bar Chart rendering nothing at all, and the Pie Chart tooltip and the Value widget throwing, when a decimals field was given a minimum above its maximum — which is what filling in "min decimals" and leaving "max decimals" empty adds up to. The maximum is lifted to the minimum now instead of breaking the widget
