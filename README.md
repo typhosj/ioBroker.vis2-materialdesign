@@ -68,6 +68,7 @@ Report current VIS 2 problems in the
 ## Changelog
 ### **WORK IN PROGRESS**
 
+- (typhosj) Fixed the "padding bottom" of the List and Icon List header having no effect in any setting: the header row had a fixed height, so the bottom padding hung below its content box and the header container clipped it away. The height is a minimum now and all four paddings take part - more padding at the bottom lifts the header text, which is what an alignment "bottom" would have done. Its default drops from 20 to 0, because those 20 px were never drawn
 - (typhosj) Fixed the calendar month grid showing the view background through its day cells: the days and the weekday header were left transparent, so on a view with a dark background or a background image the grid looked empty and the day numbers were unreadable. Both now paint the widget's own surface, and the month view's weekday names follow the dark theme like the week and day views already did. An explicitly set day, header or label color still wins
 
 ### 0.3.5 (2026-08-20)

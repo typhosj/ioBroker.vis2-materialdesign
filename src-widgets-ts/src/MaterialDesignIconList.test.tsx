@@ -38,4 +38,10 @@ describe('icon list box layout', () => {
         expect(html).not.toContain('height:calc(100% - 6px)');
         expect(html).toContain('flex:0 0 auto');
     });
+
+    it('reserves the header padding on every side', () => {
+        const html = render({ ...list, headers: 'head', header_padding_bottom: 12 });
+        expect(html).toContain('padding:6px 16px 12px 16px');
+        expect(html).toContain('min-height:60px');
+    });
 });
