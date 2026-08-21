@@ -127,6 +127,7 @@ a reason to wait with an upgrade.
 - (typhosj) Fixed the Bar and Line History charts cutting off their bottom axis and legend when "use card" is on: the chart kept the full card height and the card title pushed it out of the widget
 - (typhosj) Added an alternating row color to the Table widget, so every second row can carry its own background (upstream wish #127)
 - (typhosj) Added background color, border color, border width and corner radius for the value labels of the Bar, Pie and Line History charts (upstream wish #68)
+- (typhosj) Fixed the calendar month grid showing the view background through its day cells: the days and the weekday header were left transparent, so on a view with a dark background or a background image the grid looked empty and the day numbers were unreadable. Both now paint the widget's own surface, and the month view's weekday names follow the dark theme like the week and day views already did. An explicitly set day, header or label color still wins
 - (typhosj) Documented how a widget shows the value of a state inside its texts — an object id in curly braces in any text or HTML field, which is what makes a List show several values below each other instead of one Value widget per state. The object id of a list row only controls that row (reported in the forum)
 
 ### 0.3.5 (2026-08-20)
