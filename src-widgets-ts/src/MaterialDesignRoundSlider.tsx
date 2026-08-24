@@ -3,6 +3,7 @@ import React from 'react';
 import type { RxWidgetInfo, VisRxWidgetProps } from '@iobroker/types-vis-2';
 
 import { cleanColor, num, snapToStep } from './MaterialDesignProgress';
+import { fill, withAutoFill } from './deviceFill';
 import { m3ColorExplicit } from './MaterialDesignButtons';
 import { squarePreview, RenderProps, SliderWriter, VisWidget, createInfo, designStyle, designStyleClasses, setStateValue, sizeCss, sliderKeyValue, stateValue, sanitizeHtml } from './widgetUtils';
 
@@ -42,6 +43,19 @@ export interface RoundSliderData {
     textForValueGreaterThan?: string;
 }
 
+
+// Issue #15: picking the datapoint fills what the object's own metadata already says.
+const autoFillMap = {
+    oid: [
+        fill.unit('valueLabelUnit'),
+        fill.min('min'),
+        fill.max('max'),
+        fill.step('step'),
+        fill.readOnly('readOnly'),
+        // HomeMatic and friends put the busy flag next to the level as WORKING.
+        fill.sibling('oid-working', ['indicator.working', 'working']),
+    ],
+};
 
 const attrs: RxWidgetInfo['visAttrs'] = [
     {
@@ -180,7 +194,7 @@ export default class MaterialDesignRoundSlider extends VisWidget {
 
     static getWidgetInfo(): RxWidgetInfo {
         return {
-            ...createInfo('tplVis2-materialdesign-Slider-Round', 'Slider Round', attrs, ['color']),
+            ...createInfo('tplVis2-materialdesign-Slider-Round', 'Slider Round', withAutoFill(attrs, autoFillMap), ['color']),
             visPrev: squarePreview('F04C5'),
             visDefaultStyle: { width: 100, height: 100 },
         };

@@ -3,7 +3,8 @@ import React from 'react';
 import type { RxWidgetInfo, VisRxWidgetProps } from '@iobroker/types-vis-2';
 
 import { squarePreview, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, sizeCss, stateValue, sanitizeHtml } from './widgetUtils';
-import { ProgressData, cleanColor, num, progressState } from './MaterialDesignProgress';
+import { ProgressData, cleanColor, num, progressState, progressFillMap } from './MaterialDesignProgress';
+import { withAutoFill } from './deviceFill';
 
 
 const attrs: RxWidgetInfo['visAttrs'] = [
@@ -71,7 +72,7 @@ export default class MaterialDesignProgressCircular extends VisWidget {
 
     static getWidgetInfo(): RxWidgetInfo {
         return {
-            ...createInfo('tplVis2-materialdesign-Progress-Circular', 'Progress Circular', attrs, ['color']),
+            ...createInfo('tplVis2-materialdesign-Progress-Circular', 'Progress Circular', withAutoFill(attrs, progressFillMap), ['color']),
             visPrev: squarePreview('F07AF'),
             visDefaultStyle: { width: 70, height: 70 },
         };

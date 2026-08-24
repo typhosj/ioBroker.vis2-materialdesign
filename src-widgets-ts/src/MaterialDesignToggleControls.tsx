@@ -3,6 +3,7 @@ import React from 'react';
 import type { RxWidgetInfo, VisRxWidgetProps } from '@iobroker/types-vis-2';
 
 import { renderIcon, m3ColorExplicit } from './MaterialDesignButtons';
+import { fill, withAutoFill } from './deviceFill';
 import { squarePreview, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, iconField, m3Switch, parseActionValue, setStateValue, sizeCss, stateValue, stringValue } from './widgetUtils';
 
 export interface ToggleControlData {
@@ -81,6 +82,18 @@ const lockFields = [
     { name: 'lockIconColor', label: 'lockIconColor', type: 'color' },
     { name: 'lockFilterGrayscale', label: 'lockFilterGrayscale', type: 'slider', min: 0, max: 100, step: 1, default: 30 },
 ];
+
+// Issue #15: picking the datapoint fills what the object's own metadata already says.
+const autoFillMap = {
+    oid: [
+        fill.boolText('labelTrue', true),
+        fill.boolText('labelFalse', false),
+        fill.toggleType('toggleType'),
+        fill.toggleValue('valueOn', true),
+        fill.toggleValue('valueOff', false),
+        fill.readOnly('readOnly'),
+    ],
+};
 
 function attrs(kind: ControlKind): RxWidgetInfo['visAttrs'] {
     const colorFields =
@@ -176,7 +189,7 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
 
         static getWidgetInfo(): RxWidgetInfo {
             return {
-                ...createInfo(def.id, def.name, attrs(def.kind), ['color', 'lock']),
+                ...createInfo(def.id, def.name, withAutoFill(attrs(def.kind), autoFillMap), ['color', 'lock']),
                 visPrev: preview(def),
                 visDefaultStyle: {
                     width: def.kind === 'switch' ? 80 : 76,

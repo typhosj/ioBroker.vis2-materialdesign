@@ -3,6 +3,7 @@ import React from 'react';
 import type { RxWidgetInfo, WidgetData } from '@iobroker/types-vis-2';
 
 import { renderIcon } from './MaterialDesignButtons';
+import { fill, withAutoFill } from './deviceFill';
 import { MAX_DYNAMIC_ITEMS, squarePreview, RenderProps, VisWidget, accessibleText, boundedCount, createInfo, designStyle, indexedFields, designStyleClasses, iconField, itemCount, parseActionValue, safeWidgetUrl, setStateValue, stateValue, sanitizeHtml, stringValue, boolValue as b, numberValue as n, textValue as s } from './widgetUtils';
 
 type Data = Record<string, unknown> & {
@@ -42,6 +43,17 @@ interface Item {
     visibilityCondition: string;
     visibilityConditionValue: unknown;
 }
+
+// Issue #15: picking the datapoint of a row fills what the object's own metadata already says.
+const autoFillMap = {
+    oid: [
+        fill.name('label'),
+        fill.place('subLabel'),
+        fill.unit('valueAppendix'),
+        fill.icon('listImage'),
+        fill.readOnly('readOnly'),
+    ],
+};
 
 const attrs: RxWidgetInfo['visAttrs'] = [
     { name: 'common', fields: [
@@ -232,7 +244,7 @@ export default class MaterialDesignIconList extends VisWidget {
     private m3IconColor(data: Data, color: string): string { return color || (this.isM3(data) ? 'var(--md-sys-color-primary)' : '#44739e'); }
 
     static getWidgetInfo(): RxWidgetInfo {
-        return { ...createInfo('tplVis2-materialdesign-Icon-List', 'Icon List', attrs, ['listItemLayout', 'listItemCardBackground', 'iconListHeader', 'lock']), visPrev: squarePreview('F0572'), visDefaultStyle: { width: 400, height: 270 } };
+        return { ...createInfo('tplVis2-materialdesign-Icon-List', 'Icon List', withAutoFill(attrs, autoFillMap), ['listItemLayout', 'listItemCardBackground', 'iconListHeader', 'lock']), visPrev: squarePreview('F0572'), visDefaultStyle: { width: 400, height: 270 } };
     }
 
     getWidgetInfo(): RxWidgetInfo { return MaterialDesignIconList.getWidgetInfo(); }

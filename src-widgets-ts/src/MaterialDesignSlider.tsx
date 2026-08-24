@@ -3,6 +3,7 @@ import React from 'react';
 import type { RxWidgetInfo, VisRxWidgetProps } from '@iobroker/types-vis-2';
 
 import { cleanColor, num, snapToStep } from './MaterialDesignProgress';
+import { fill, withAutoFill } from './deviceFill';
 import { m3ColorExplicit } from './MaterialDesignButtons';
 import { squarePreview, RenderProps, SliderWriter, VisWidget, boundedCount, createInfo, designStyle, designStyleClasses, setStateValue, sizeCss, sliderKeyValue, stateValue, sanitizeHtml } from './widgetUtils';
 
@@ -83,6 +84,20 @@ export interface SliderData {
     useLabelRules?: boolean;
 }
 
+
+// Issue #15: picking the datapoint fills what the object's own metadata already says.
+const autoFillMap = {
+    oid: [
+        fill.name('prepandText'),
+        fill.unit('valueLabelUnit'),
+        fill.min('min'),
+        fill.max('max'),
+        fill.step('step'),
+        fill.readOnly('readOnly'),
+        // HomeMatic and friends put the busy flag next to the level as WORKING.
+        fill.sibling('oid-working', ['indicator.working', 'working']),
+    ],
+};
 
 const attrs: RxWidgetInfo['visAttrs'] = [
     {
@@ -240,7 +255,7 @@ export default class MaterialDesignSlider extends VisWidget {
 
     static getWidgetInfo(): RxWidgetInfo {
         return {
-            ...createInfo('tplVis2-materialdesign-Slider', 'Slider', attrs, ['tickLayout', 'color', 'thumbLabelLayout']),
+            ...createInfo('tplVis2-materialdesign-Slider', 'Slider', withAutoFill(attrs, autoFillMap), ['tickLayout', 'color', 'thumbLabelLayout']),
             visPrev: squarePreview('F1542'),
             visDefaultStyle: { width: 200, height: 100 },
         };

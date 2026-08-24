@@ -3,6 +3,7 @@ import React from 'react';
 import type { RxWidgetInfo, WidgetData } from '@iobroker/types-vis-2';
 
 import { renderIcon } from './MaterialDesignButtons';
+import { fill, withAutoFill } from './deviceFill';
 import { MAX_DYNAMIC_ITEMS, squarePreview, RenderProps, VisWidget, accessibleText, boundedCount, createInfo, designStyle, indexedFields, designStyleClasses, iconField, itemCount, m3Switch, parseActionValue, safeWidgetUrl, setStateValue, sizeCss, stateValue, sanitizeHtml, boolValue as b, numberValue as n, textValue as s } from './widgetUtils';
 
 type Data = Record<string, unknown> & { listItemDataMethod?: string; countListItems?: number; json_string_oid?: string };
@@ -20,6 +21,11 @@ const fontSizeStyle = (v: unknown): { className: string; fontSize: string | unde
 };
 
 const fonts = ['auto', 'headline1', 'headline2', 'headline3', 'headline4', 'headline5', 'headline6', 'subtitle1', 'subtitle2', 'body1', 'body2', 'caption', 'button', 'overline', 'xx-small', 'x-small', 'small', 'medium', 'large', 'x-large', 'xx-large', 'smaller', 'larger'];
+// Issue #15: picking the datapoint of a row fills what the object's own metadata already says.
+const autoFillMap = {
+    oid: [fill.name('label'), fill.valueBinding('rightLabel'), fill.icon('listImage')],
+};
+
 const attrs: RxWidgetInfo['visAttrs'] = [
     { name: 'listLayout', label: 'group_listLayout', fields: [
         { name: 'listType', label: 'listType', type: 'select', options: ['text', 'buttonState', 'buttonToggle', 'buttonToggle_readonly', 'buttonNav', 'buttonLink', 'switch', 'switch_readonly', 'checkbox', 'checkbox_readonly'], default: 'text' },
@@ -135,7 +141,7 @@ const listCss = '.materialdesign-list .mdc-list{list-style:none;margin:0;padding
 export default class MaterialDesignList extends VisWidget {
     private listRef = React.createRef<HTMLUListElement>();
     private lastRowSignature = '';
-    static getWidgetInfo(): RxWidgetInfo { return { ...createInfo('tplVis2-materialdesign-List', 'List', attrs, ['listHeader', 'listItemLayout', 'color', 'font', 'fontSize']), visPrev: squarePreview('F0279'), visDefaultStyle: { width: 400, height: 270 } }; }
+    static getWidgetInfo(): RxWidgetInfo { return { ...createInfo('tplVis2-materialdesign-List', 'List', withAutoFill(attrs, autoFillMap), ['listHeader', 'listItemLayout', 'color', 'font', 'fontSize']), visPrev: squarePreview('F0279'), visDefaultStyle: { width: 400, height: 270 } }; }
     getWidgetInfo(): RxWidgetInfo { return MaterialDesignList.getWidgetInfo(); }
     private feedback(data: Data): void { if (n(data.vibrateOnMobilDevices, 50) > 0) navigator.vibrate?.(n(data.vibrateOnMobilDevices, 50)); if (b(data.clickSoundPlay)) { const audio = new Audio('widgets/vis2-materialdesign/materialdesign-widgets-click-sound.mp3'); audio.volume = Math.max(0, Math.min(1, n(data.clickSoundVolume, .5))); void audio.play().catch(() => undefined); } }
     private activate(data: Data, value: unknown, current: unknown, row: Item): void { const type = s(data.listType); if (type.endsWith('_readonly') || type === 'text') return; this.feedback(data); if (type === 'checkbox' || type === 'switch') setStateValue(this.props, row.objectId, value as ioBroker.StateValue); else if (type === 'buttonToggle') setStateValue(this.props, row.objectId, !current); else if (type === 'buttonState') setStateValue(this.props, row.objectId, parseActionValue(s(row.buttonStateValue))); else if (type === 'buttonNav') this.props.context?.changeView?.(row.buttonNavView); else if (type === 'buttonLink') { const href = safeWidgetUrl(row.buttonLink); if (href) window.open(href, '_blank', 'noopener,noreferrer'); } }

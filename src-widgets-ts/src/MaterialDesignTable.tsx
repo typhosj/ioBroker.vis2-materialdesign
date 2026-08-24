@@ -1,5 +1,6 @@
 import React from 'react';
 import type { RxWidgetInfo } from '@iobroker/types-vis-2';
+import { fill, withAutoFill } from './deviceFill';
 import { squarePreview, RenderProps, VisWidget, createInfo, indexedFields, itemCount, designStyle, designStyleClasses, stateValue, sanitizeHtml, boolValue as b, numberValue as n, textValue as s } from './widgetUtils';
 
 type Data = Record<string, unknown> & { oid?: string; dataJson?: string; countCols?: number };
@@ -28,6 +29,12 @@ const tableCss = '.materialdesign-table .mdc-data-table__header-cell,.materialde
 // off, and inline wins, so the option keeps working.
 const tableM3Css = '.materialdesign-table.mdw-style-material3 .materialdesign-table-card{background:var(--md-sys-color-surface-container-low);border-radius:var(--md-sys-shape-corner-medium)}'
     + '.materialdesign-table.mdw-style-material3 .materialdesign-table-card--outlined{border-color:var(--md-sys-color-outline-variant)}';
+// Issue #15: the columns of a JSON table are the keys of its first row, in the order the table
+// reads them.
+const autoFillMap = {
+    oid: [fill.jsonColumns('countCols', 'label')],
+};
+
 const attrs: RxWidgetInfo['visAttrs'] = [
     { name: 'common', fields: [{ name: 'oid', label: 'oid', type: 'id' }, { name: 'dataJson', label: 'dataJson', type: 'html' }, { name: 'countCols', label: 'countCols', type: 'number', default: 1 }] },
     { name: 'tableLayout', label: 'group_tableLayout', fields: [{ name: 'tableLayout', label: 'tableLayout', type: 'select', options: ['standard', 'card', 'cardOutlined'], default: 'standard' }, { name: 'showHeader', label: 'showHeader', type: 'checkbox', default: true }, { name: 'fixedHeader', label: 'fixedHeader', type: 'checkbox' }, { name: 'roundBorder', label: 'roundBorder', type: 'checkbox', default: true }, { name: 'headerRowHeight', label: 'headerRowHeight', type: 'number' }, { name: 'headerTextSize', label: 'headerTextSize', type: 'text' }, { name: 'headerFontFamily', label: 'headerFontFamily', type: 'fontname' }, { name: 'rowHeight', label: 'rowHeight', type: 'number' }] },
@@ -37,7 +44,7 @@ const attrs: RxWidgetInfo['visAttrs'] = [
 
 export default class MaterialDesignTable extends VisWidget {
     private sortKey = ''; private sortAsc = true; private hoverRow = -1;
-    static getWidgetInfo(): RxWidgetInfo { return { ...createInfo('tplVis2-materialdesign-Table', 'Table', attrs, ['color']), visPrev: squarePreview('F04EB'), visDefaultStyle: { width: 400, height: 250 } }; }
+    static getWidgetInfo(): RxWidgetInfo { return { ...createInfo('tplVis2-materialdesign-Table', 'Table', withAutoFill(attrs, autoFillMap), ['color']), visPrev: squarePreview('F04EB'), visDefaultStyle: { width: 400, height: 250 } }; }
     getWidgetInfo(): RxWidgetInfo { return MaterialDesignTable.getWidgetInfo(); }
     renderWidgetBody(props: RenderProps): React.JSX.Element {
         super.renderWidgetBody(props);

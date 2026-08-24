@@ -30,14 +30,14 @@ export default defineConfig({
                 'src-widgets-ts/src/MaterialDesignDialog{View,IFrame}.tsx',
                 'src-widgets-ts/src/MaterialDesign{Grid,Masonry}Views.tsx',
             ],
-            // Set just under the measured values (68.01 / 58.93 / 64.13 / 69.92), so removing a test
+            // Set just under the measured values (71.30 / 60.83 / 68.23 / 73.43), so removing a test
             // trips the gate. The previous numbers sat ~20 points below the actual coverage and
             // could only have failed after a collapse, which is not a gate.
             thresholds: {
-                statements: 68,
-                branches: 58,
-                functions: 64,
-                lines: 69,
+                statements: 70,
+                branches: 59,
+                functions: 67,
+                lines: 72,
             },
         },
     },
