@@ -3,6 +3,7 @@ import React from 'react';
 import type { RxWidgetInfo, VisRxWidgetProps } from '@iobroker/types-vis-2';
 
 import { renderIcon } from './MaterialDesignButtons';
+import { fill, withAutoFill } from './deviceFill';
 import { squarePreview, RenderProps, VisWidget, createInfo, iconField, parseActionValue, setStateValue, sizeCss, stateValue, stringValue } from './widgetUtils';
 
 export interface ToggleControlData {
@@ -81,6 +82,18 @@ const lockFields = [
     { name: 'lockFilterGrayscale', label: 'lockFilterGrayscale', type: 'slider', min: 0, max: 100, step: 1, default: 30 },
 ];
 
+// Issue #15: picking the datapoint fills what the object's own metadata already says.
+const autoFillMap = {
+    oid: [
+        fill.boolText('labelTrue', true),
+        fill.boolText('labelFalse', false),
+        fill.toggleType('toggleType'),
+        fill.toggleValue('valueOn', true),
+        fill.toggleValue('valueOff', false),
+        fill.readOnly('readOnly'),
+    ],
+};
+
 function attrs(kind: ControlKind): RxWidgetInfo['visAttrs'] {
     const colorFields =
         kind === 'switch'
@@ -101,12 +114,15 @@ function attrs(kind: ControlKind): RxWidgetInfo['visAttrs'] {
                   { name: 'labelColorTrue', label: 'labelColorTrue', type: 'color' },
               ];
 
-    return [
-        { name: 'common', label: 'group_common', fields: baseFields },
-        { name: 'label', label: 'group_label', fields: labelFields },
-        { name: 'color', label: 'group_color', fields: colorFields },
-        { name: 'lock', label: 'group_lock', fields: lockFields },
-    ] as RxWidgetInfo['visAttrs'];
+    return withAutoFill(
+        [
+            { name: 'common', label: 'group_common', fields: baseFields },
+            { name: 'label', label: 'group_label', fields: labelFields },
+            { name: 'color', label: 'group_color', fields: colorFields },
+            { name: 'lock', label: 'group_lock', fields: lockFields },
+        ] as RxWidgetInfo['visAttrs'],
+        autoFillMap,
+    );
 }
 
 function asNumber(value: unknown, fallback: number): number {

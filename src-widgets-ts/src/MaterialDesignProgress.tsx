@@ -3,6 +3,7 @@ import React from 'react';
 import type { RxWidgetInfo, RxWidgetInfoAttributesField, VisRxWidgetProps } from '@iobroker/types-vis-2';
 
 import { squarePreview, BaseRxData, RenderProps, VisWidget, createInfo, sizeCss, stateValue, sanitizeHtml } from './widgetUtils';
+import { fill, withAutoFill } from './deviceFill';
 
 export interface ProgressData extends BaseRxData {
     min?: number;
@@ -42,6 +43,11 @@ export interface ProgressData extends BaseRxData {
 
 export const linearPreview =
     '<div id="prev_tplVis-materialdesign-Progress" style="position: relative; text-align: initial; display: flex; justify-content:center;"><div class="vis-widget_prev materialdesign-widget materialdesign-progress vis-tpl-materialdesign-Progress " style="width: 100px; height: 30px; left: 105px; top: 68px; position: absolute; --vue-progress-progress-color:#44739e; --vue-progress-progress-color-background:rgba(161, 161, 161, 0.26); --vue-progress-progress-color-text:#44739e; --vue-progress-progress-color-text-size:12px; --vue-progress-progress-color-text-font-family:RobotoCondensed-Light; --vue-progress-progress-color-text-align:end; z-index: 4;" data-tmodified="true" data-zmodified="true"> <div class="materialdesign-vuetify-progress" style="width: 100%; height: 100%; display: flex; justify-content: center;"><div role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="41" class="v-progress-linear v-progress-linear--rounded theme--light" style="height: 30px;"><div class="v-progress-linear__background primary" style="opacity: 0.3; left: 41%; width: 59%;"></div><div class="v-progress-linear__buffer"></div><div class="v-progress-linear__determinate primary" style="width: 41%;"></div><div class="v-progress-linear__content"><div class="materialdesign-vuetify-progress-value-label" style="width: 100%; margin-left: 10px; margin-right: 10px;">41 %</div></div></div></div><div class="ui-resizable-handle ui-resizable-n" style="z-index: 90;"></div><div class="ui-resizable-handle ui-resizable-w" style="z-index: 90;"></div><div class="ui-resizable-handle ui-resizable-nw" style="z-index: 90;"></div><div class="ui-resizable-handle ui-resizable-ne" style="z-index: 90;"></div><div class="ui-resizable-handle ui-resizable-sw" style="z-index: 90;"></div></div></div>';
+
+// Issue #15: picking the datapoint fills what the object's own metadata already says.
+export const progressFillMap = {
+    oid: [fill.unit('valueLabelUnit'), fill.min('min'), fill.max('max'), fill.decimals('valueMaxDecimals')],
+};
 
 const commonFields: RxWidgetInfoAttributesField[] = [
     { name: 'oid', label: 'oid', type: 'id' },
@@ -158,7 +164,7 @@ export default class MaterialDesignProgress extends VisWidget {
 
     static getWidgetInfo(): RxWidgetInfo {
         return {
-            ...createInfo('tplVis2-materialdesign-Progress', 'Progress', linearAttrs),
+            ...createInfo('tplVis2-materialdesign-Progress', 'Progress', withAutoFill(linearAttrs, progressFillMap)),
             visPrev: squarePreview('F03F0'),
             visDefaultStyle: { width: 100, height: 30 },
         };

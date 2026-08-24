@@ -5,6 +5,7 @@ import type { RxWidgetInfo } from '@iobroker/types-vis-2';
 import { renderIcon } from './MaterialDesignButtons';
 import { cleanColor, num } from './MaterialDesignProgress';
 import { indexedFields, squarePreview, RenderProps, VisWidget, createInfo, itemCount, iconField, setStateValue, sizeCss, stateValue, stringValue } from './widgetUtils';
+import { fill, withAutoFill } from './deviceFill';
 
 interface SelectData {
     oid?: string;
@@ -101,6 +102,11 @@ interface SelectItem {
     imageColor?: string;
     selectedImageColor?: string;
 }
+
+// Issue #15: picking the datapoint fills what the object's own metadata already says.
+const autoFillMap = {
+    oid: [fill.name('inputLabelText'), fill.stateList('countSelectItems', 'value', 'label')],
+};
 
 const attrs: RxWidgetInfo['visAttrs'] = [
     {
@@ -488,7 +494,7 @@ export default class MaterialDesignSelect extends VisWidget {
 
     static getWidgetInfo(): RxWidgetInfo {
         return {
-            ...createInfo('tplVis2-materialdesign-Select', 'Select', attrs),
+            ...createInfo('tplVis2-materialdesign-Select', 'Select', withAutoFill(attrs, autoFillMap)),
             visPrev: squarePreview('F1400'),
             visDefaultStyle: { width: 150, height: 38 },
         };

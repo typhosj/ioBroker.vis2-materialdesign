@@ -4,6 +4,7 @@ import type { RxWidgetInfo, VisRxWidgetProps } from '@iobroker/types-vis-2';
 
 import { renderIcon } from './MaterialDesignButtons';
 import { cleanColor, num } from './MaterialDesignProgress';
+import { fill, withAutoFill } from './deviceFill';
 import { squarePreview, RenderProps, VisWidget, createInfo, iconField, setStateValue, sizeCss, stateValue } from './widgetUtils';
 
 interface InputData {
@@ -61,6 +62,11 @@ interface InputData {
     appendOuterIconSize?: number;
     appendOuterIconColor?: string;
 }
+
+// Issue #15: picking the datapoint fills what the object's own metadata already says.
+const autoFillMap = {
+    oid: [fill.name('inputLabelText'), fill.unit('inputSuffix'), fill.inputType('inputType')],
+};
 
 const attrs: RxWidgetInfo['visAttrs'] = [
     {
@@ -394,7 +400,7 @@ export default class MaterialDesignInput extends VisWidget {
 
     static getWidgetInfo(): RxWidgetInfo {
         return {
-            ...createInfo('tplVis2-materialdesign-Input', 'Input', attrs),
+            ...createInfo('tplVis2-materialdesign-Input', 'Input', withAutoFill(attrs, autoFillMap)),
             visPrev: squarePreview('F060E'),
             visDefaultStyle: { width: 150, height: 38 },
         };

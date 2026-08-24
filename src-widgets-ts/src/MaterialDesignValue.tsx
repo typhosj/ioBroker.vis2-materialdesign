@@ -4,6 +4,7 @@ import type { RxWidgetInfo, VisRxWidgetProps } from '@iobroker/types-vis-2';
 
 import { squarePreview, BaseRxData, RenderProps, VisWidget, createInfo, iconField, sizeCss, stateValue, formatMoment, formatDurationTokens, humanizeDuration, visLocale, sanitizeHtml, stringValue } from './widgetUtils';
 import { renderIcon } from './MaterialDesignButtons';
+import { fill, withAutoFill } from './deviceFill';
 
 export interface ValueData extends BaseRxData {
     targetType?: 'auto' | 'number' | 'string' | 'boolean' | 'linked';
@@ -41,6 +42,18 @@ export interface ValueData extends BaseRxData {
     isHiddenOnLoad?: boolean;
 }
 
+
+// Issue #15: picking the datapoint fills what the object's own metadata already says.
+const autoFillMap = {
+    oid: [
+        fill.name('prepandText'),
+        fill.unit('valueLabelUnit'),
+        fill.decimals('maxDecimals'),
+        fill.icon('image'),
+        fill.boolText('textOnTrue', true),
+        fill.boolText('textOnFalse', false),
+    ],
+};
 
 const attrs: RxWidgetInfo['visAttrs'] = [
     {
@@ -213,7 +226,7 @@ export default class MaterialDesignValue extends VisWidget {
 
     static getWidgetInfo(): RxWidgetInfo {
         return {
-            ...createInfo('tplVis2-materialdesign-value', 'Value', attrs),
+            ...createInfo('tplVis2-materialdesign-value', 'Value', withAutoFill(attrs, autoFillMap)),
             visPrev: squarePreview('F0199'),
             visDefaultStyle: {
                 width: 100,

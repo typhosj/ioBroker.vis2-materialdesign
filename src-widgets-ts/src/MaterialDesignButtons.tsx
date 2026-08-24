@@ -2,6 +2,7 @@ import React from 'react';
 
 import type { RxWidgetInfo, VisRxWidgetProps } from '@iobroker/types-vis-2';
 
+import { fill, withAutoFill, type FillMap } from './deviceFill';
 import { indexedFields, squarePreview, PressState, RenderProps, SliderWriter, VisWidget, createInfo, itemCount, iconField, parseActionValue, safeWidgetUrl, setStateValue, sizeCss, stateValue, sanitizeHtml, stringValue } from './widgetUtils';
 
 type ButtonKind = 'navigation' | 'link' | 'state' | 'multiState' | 'addition' | 'toggle' | 'slider';
@@ -157,6 +158,29 @@ const actionFields = {
         { name: 'angleArc', label: 'angleArc', type: 'number', default: 360 },
     ],
 } satisfies Record<ButtonKind, Record<string, unknown>[]>;
+
+// Issue #15: picking the datapoint fills what the object's own metadata already says. Only the
+// kinds that carry an oid of their own; navigation and link have no object to read.
+function autoFillMap(def: ButtonDefinition): FillMap {
+    const text = def.layout === 'icon' ? [] : [fill.name('buttontext')];
+    const icon = fill.icon('image');
+    if (def.kind === 'state') {
+        return { oid: [...text, icon, fill.firstState('value')] };
+    }
+    if (def.kind === 'toggle') {
+        return {
+            oid: [
+                ...text,
+                icon,
+                fill.toggleType('toggleType'),
+                fill.toggleValue('valueOn', true),
+                fill.toggleValue('valueOff', false),
+                fill.readOnly('readOnly'),
+            ],
+        };
+    }
+    return {};
+}
 
 function attrs(def: ButtonDefinition): RxWidgetInfo['visAttrs'] {
     const isIcon = def.layout === 'icon';
@@ -459,7 +483,7 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
 
         static getWidgetInfo(): RxWidgetInfo {
             return {
-                ...createInfo(def.id, def.name, attrs(def)),
+                ...createInfo(def.id, def.name, withAutoFill(attrs(def), autoFillMap(def))),
                 visWidgetLabel: widgetLabel(def),
                 visPrev: preview(def),
                 visDefaultStyle: {

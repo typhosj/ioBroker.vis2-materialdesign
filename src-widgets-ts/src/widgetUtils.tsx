@@ -4,6 +4,8 @@ import '@fontsource/roboto-condensed/files/roboto-condensed-latin-400-normal.wof
 
 import type { RxRenderWidgetProps, RxWidgetInfo, RxWidgetInfoAttributesField, VisRxWidgetProps, VisRxWidgetState, WidgetData } from '@iobroker/types-vis-2';
 import { IconFilePicker, type PickerSocket, type PickerTexts, type PickerTheme } from './IconFilePicker';
+// A custom field writes straight into the store, so it has to set the sentinel itself.
+import { changedKeys, markTouchedIn } from './autoFillKeys';
 import type VisRxWidget from '@iobroker/types-vis-2/visRxWidget';
 import colors from '../../admin/lib/colors.json';
 import fonts from '../../admin/lib/fonts.json';
@@ -517,7 +519,11 @@ export function iconField(name: string, label: string, def?: string): RxWidgetIn
             return (
                 <IconFilePicker
                     label={VisWidget.t(label)}
-                    onChange={value => onDataChange({ [key]: value })}
+                    // The editor merges what this gets into EVERY selected widget, so it carries
+                    // the changed keys only - a whole data object would clone this widget onto them.
+                    onChange={value =>
+                        onDataChange(changedKeys(markTouchedIn({ ...rec, [key]: value }, key), rec))
+                    }
                     socket={ctx?.socket}
                     texts={pickerTexts}
                     theme={ctx?.theme}

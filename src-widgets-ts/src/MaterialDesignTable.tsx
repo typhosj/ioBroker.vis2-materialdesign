@@ -1,5 +1,6 @@
 import React from 'react';
 import type { RxWidgetInfo } from '@iobroker/types-vis-2';
+import { fill, withAutoFill } from './deviceFill';
 import { squarePreview, RenderProps, VisWidget, createInfo, indexedFields, itemCount, stateValue, sanitizeHtml, boolValue as b, numberValue as n, textValue as s } from './widgetUtils';
 
 type Data = Record<string, unknown> & { oid?: string; dataJson?: string; countCols?: number };
@@ -24,6 +25,12 @@ const tableCss = '.materialdesign-table .mdc-data-table__header-cell,.materialde
     + '.materialdesign-table .mdc-data-table__header-cell:focus-visible{outline:2px solid #44739e;outline-offset:-2px}'
     + '.materialdesign-table .mdc-data-table__header-cell{font-weight:500;letter-spacing:.00714em}'
     + '.materialdesign-table .mdc-data-table__cell{letter-spacing:.01786em}';
+// Issue #15: the columns of a JSON table are the keys of its first row, in the order the table
+// reads them.
+const autoFillMap = {
+    oid: [fill.jsonColumns('countCols', 'label')],
+};
+
 const attrs: RxWidgetInfo['visAttrs'] = [
     { name: 'common', fields: [{ name: 'oid', label: 'oid', type: 'id' }, { name: 'dataJson', label: 'dataJson', type: 'html' }, { name: 'countCols', label: 'countCols', type: 'number', default: 1 }] },
     { name: 'tableLayout', label: 'group_tableLayout', fields: [{ name: 'tableLayout', label: 'tableLayout', type: 'select', options: ['standard', 'card', 'cardOutlined'], default: 'standard' }, { name: 'showHeader', label: 'showHeader', type: 'checkbox', default: true }, { name: 'fixedHeader', label: 'fixedHeader', type: 'checkbox' }, { name: 'roundBorder', label: 'roundBorder', type: 'checkbox', default: true }, { name: 'headerRowHeight', label: 'headerRowHeight', type: 'number' }, { name: 'headerTextSize', label: 'headerTextSize', type: 'text' }, { name: 'headerFontFamily', label: 'headerFontFamily', type: 'fontname' }, { name: 'rowHeight', label: 'rowHeight', type: 'number' }] },
@@ -33,7 +40,7 @@ const attrs: RxWidgetInfo['visAttrs'] = [
 
 export default class MaterialDesignTable extends VisWidget {
     private sortKey = ''; private sortAsc = true; private hoverRow = -1;
-    static getWidgetInfo(): RxWidgetInfo { return { ...createInfo('tplVis2-materialdesign-Table', 'Table', attrs), visPrev: squarePreview('F04EB'), visDefaultStyle: { width: 400, height: 250 } }; }
+    static getWidgetInfo(): RxWidgetInfo { return { ...createInfo('tplVis2-materialdesign-Table', 'Table', withAutoFill(attrs, autoFillMap)), visPrev: squarePreview('F04EB'), visDefaultStyle: { width: 400, height: 250 } }; }
     getWidgetInfo(): RxWidgetInfo { return MaterialDesignTable.getWidgetInfo(); }
     renderWidgetBody(props: RenderProps): React.JSX.Element {
         super.renderWidgetBody(props);
