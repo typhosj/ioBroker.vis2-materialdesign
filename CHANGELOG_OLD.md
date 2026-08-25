@@ -1,6 +1,12 @@
 # Older changes
 
 Older changelog entries are archived here by the release script once the changelog in the README grows past the most recent releases. The current changelog lives in the README.
+## 0.3.1 (2026-07-23)
+
+- (typhosj) Added the combined icon/image picker to the remaining widgets (checkbox, input, select, switch)
+- (typhosj) Removed the legacy VIS 1 example scripts (`examples/`) from the repository
+- (typhosj) Expanded test coverage for the slider, round slider and value widgets
+
 ## 0.3.0 (2026-07-22)
 
 - (typhosj) Removed all VIS 1 legacy: the bundled `materialdesign` VIS 1 widget set and `materialdesign.html` are gone; the adapter no longer ships or depends on any VIS 1 files
@@ -11,7 +17,6 @@ Older changelog entries are archived here by the release script once the changel
 - (typhosj) Restored full visual parity of the ported widgets against the original VIS 1 versions and migrated the widget documentation to VIS 2
 - (typhosj) Reworked the widget documentation with per-widget editor screenshots that expand the relevant option groups and describe every non-obvious setting (English and German)
 - (typhosj) Fixed six widget editor group headers (title, text, card action, linked value, striped, list header) that showed untranslated keys
-
 
 ## 0.2.0 (2026-07-13)
 
