@@ -15,6 +15,34 @@ assert.strictEqual(pkg.version, io.common.version, "package and io-package versi
 assert.ok(io.common.authors?.length, "io-package common.authors must be set");
 assert.ok(Object.keys(io.common.news || {}).length <= 7, "common.news may contain at most seven entries");
 
+// vite builds from src-widgets-ts/ and resolves its deps from that tree's OWN node_modules, while
+// tsc and vitest type-check against the root tree. A dependency bumped in only one of them ships a
+// bundle built against something the tests never saw. Compare what is INSTALLED, which is what
+// actually ships — the declared ranges are only a promise about it.
+const widgetPkg = readJson("src-widgets-ts/package.json");
+const rootDeps = { ...pkg.devDependencies, ...pkg.dependencies };
+const installedVersion = (base, dep) => {
+    try {
+        return readJson(path.join(base, "node_modules", dep, "package.json")).version;
+    } catch {
+        return null;
+    }
+};
+// Worthless without both trees installed, so it says so rather than skipping quietly.
+assert.ok(installedVersion("src-widgets-ts", "vite"), "src-widgets-ts/node_modules is missing — run `npm ci --prefix src-widgets-ts` (or `npm run build`) before this gate");
+for (const dep of Object.keys(widgetPkg.dependencies || {})) {
+    if (!(dep in rootDeps)) continue;
+    const widgetVersion = installedVersion("src-widgets-ts", dep);
+    const rootVersion = installedVersion(".", dep);
+    if (!widgetVersion || !rootVersion) continue;
+    // major.minor, not major: a minor is where the API moves, and this is what lets both
+    // package.json files carry a `~` range instead of an exact pin — the range can then not drift
+    // past what this asserts. Not full equality: the two lockfiles are resolved at different times,
+    // so a patch apart (@vitejs/plugin-react 6.0.3 vs 6.0.4 right now) is npm churn, not drift.
+    const minor = (version) => version.split(".").slice(0, 2).join(".");
+    assert.strictEqual(minor(widgetVersion), minor(rootVersion), `${dep} installed minor differs: src-widgets-ts has ${widgetVersion}, root has ${rootVersion} — bump BOTH package.json files and npm install in both`);
+}
+
 for (const object of objects) {
     assert.ok(object._id, "object needs _id");
     assert.ok(object.type, `${object._id} needs type`);

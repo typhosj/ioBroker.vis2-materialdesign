@@ -38,7 +38,6 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm test
-      - run: npm run test:pr-gate
 
   # `widgets/` and `admin/assets/` are committed build output, and nothing else in this workflow
   # runs the build — so a source change released without a rebuild used to ship the OLD bundle
@@ -58,6 +57,9 @@ jobs:
       - run: npm run build
       - name: Committed bundles must match the build
         run: git diff --exit-code -- widgets admin/assets src-widgets-ts/src/generated
+      # In this job and not in adapter-tests: pr-gate compares the two node_modules trees against
+      # each other, and only this job installs src-widgets-ts.
+      - run: npm run test:pr-gate
 
   deploy:
     needs: [check-and-lint, adapter-tests, build-is-current]
