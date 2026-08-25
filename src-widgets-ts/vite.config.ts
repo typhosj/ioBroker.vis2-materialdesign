@@ -82,9 +82,13 @@ export default {
         "./MaterialDesignTable": "./src/MaterialDesignTable",
         "./MaterialDesignTopAppBar": "./src/MaterialDesignTopAppBar",
         "./MaterialDesignValue": "./src/MaterialDesignValue",
-        // No `./translations` expose: with visWidgets.i18n === true vis-2 fetches ONE language
-        // file from `<widget dir>/i18n/` instead of loading all eleven as a ~515 kB chunk in
-        // every runtime view. tasks.js copies admin/i18n there.
+        // Keep this expose. `visWidgets.i18n: true` would let vis-2 fetch one language file
+        // instead of this ~515 kB chunk, but vis-2 2.15.4 builds that fetch URL from the value it
+        // already rewrote for registerRemotes ("./vis-2/widgets/…") and resolves it against a page
+        // that is itself under /vis-2/, so it 404s. Every attribute group with an explicit
+        // `label: 'group_x'` then renders its raw key, because the editor puts those through
+        // I18n.t() while label-less groups go through window.vis._(). See visLoadWidgets.tsx:213.
+        "./translations": "./src/translations",
       },
       remotes: {},
       shared: moduleFederationShared(pack),
