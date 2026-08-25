@@ -33,9 +33,12 @@ for (const dep of Object.keys(widgetPkg.dependencies || {})) {
     const widgetVersion = installedVersion("src-widgets-ts", dep);
     const rootVersion = installedVersion(".", dep);
     if (!widgetVersion || !rootVersion) continue;
-    // ponytail: major-only comparison; patch/minor npm churn between the two lockfiles is noise,
-    // tighten to full equality if a minor-version API drift ever ships a broken bundle.
-    assert.strictEqual(widgetVersion.split(".")[0], rootVersion.split(".")[0], `${dep} installed major differs: src-widgets-ts has ${widgetVersion}, root has ${rootVersion} — bump BOTH package.json files and npm install in both`);
+    // major.minor, not major: a minor is where the API moves, and this is what lets both
+    // package.json files carry a `~` range instead of an exact pin — the range can then not drift
+    // past what this asserts. Not full equality: the two lockfiles are resolved at different times,
+    // so a patch apart (@vitejs/plugin-react 6.0.3 vs 6.0.4 right now) is npm churn, not drift.
+    const minor = (version) => version.split(".").slice(0, 2).join(".");
+    assert.strictEqual(minor(widgetVersion), minor(rootVersion), `${dep} installed minor differs: src-widgets-ts has ${widgetVersion}, root has ${rootVersion} — bump BOTH package.json files and npm install in both`);
 }
 
 // 0.4.0 of this package ships one extensionless relative ESM import in
