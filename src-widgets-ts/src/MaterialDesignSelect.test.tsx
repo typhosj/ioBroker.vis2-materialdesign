@@ -47,7 +47,7 @@ describe('select data sources and writes', () => {
             rxData: { oid: 'test.0.mode', listDataMethod: 'multistatesObject' },
             values: {},
         });
-        open(select);
+        void open(select);
         await Promise.resolve();
         await Promise.resolve();
         expect(getObject).toHaveBeenCalledWith('test.0.mode');
