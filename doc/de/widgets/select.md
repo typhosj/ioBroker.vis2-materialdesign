@@ -43,6 +43,32 @@ entspricht dem [Eingabe](input.md)-Widget. Beschriftungen, Löschen-/Aufklapp-Ic
 und Farben liegen in eigenen optionalen Gruppen. JSON-Einträge können `value`,
 `text`, `subText`, `icon` und `iconColor` nutzen.
 
+**Untertext der Eingabe**
+
+- **Text** – ein Hinweis unter dem Feld, mit eigener Schriftart, -größe und -farbe.
+- **immer anzeigen** – eingeschaltet steht der Hinweis dauerhaft unter dem Feld,
+  ausgeschaltet erscheint er nur, solange die Liste geöffnet ist.
+
+**Zählerlayout**
+
+- **Zähler anzeigen** – gibt aus, wie viele Einträge die Liste anbietet. Das ist
+  eine Anzahl von Einträgen, keine Zeichenzahl: ein Select hat kein Maximum, gegen
+  das gezählt werden könnte.
+
+**Layout Eingabe** (weitere Felder)
+
+- **Hintergrundfarbe hover / selektiert** und **Randfarbe hover** füllen die
+  beiden Stufen zwischen Ruhezustand und geöffneter Liste. Jede Stufe fällt auf
+  die vorherige zurück, wenn sie nicht gesetzt ist — ein Feld mit nur einer
+  Ruhefarbe sieht also unverändert aus.
+- **automatisch fokussieren** – fokussiert das Feld beim Öffnen der View. Im
+  Editor bleibt es aus, wo ein Feld, das sich beim Anordnen den Fokus greift, nur
+  stört.
+
+**Beschriftung der Eingabe**
+
+- **Versatz x / y** verschieben die Beschriftung, wie beim [Eingabe](input.md)-Widget.
+
 **Symbole**
 
 Für das Löschen-, das Aufklapp- (Menüpfeil), das vorangestellte, das innere
@@ -50,3 +76,15 @@ vorangestellte und das äußere angehängte Symbol lässt sich ein Icon oder ein
 Bild auswählen.
 
 <img src="../../media/vis2_select_editor_icons.png" width="340" alt="Select-Symbolfelder">
+
+## Nur Autocomplete
+
+Autocomplete bringt zwei eigene Felder neben den gemeinsamen mit:
+
+- **Eingabemodus** – *write* nimmt freien Text an, *select* lässt nur Einträge
+  aus der Liste zu.
+- **Eingabetyp** – `text`, `date` oder `time` für das Filterfeld. `date` und
+  `time` übergeben an die Auswahl des Browsers, alles andere bleibt Text. Ein
+  Select hat keine Texteingabe, deshalb gibt es diese Einstellung nur bei
+  Autocomplete.
+

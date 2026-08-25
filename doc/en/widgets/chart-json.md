@@ -48,9 +48,15 @@ screenshot is German.
 
 - **General** – the object id of the JSON state described above and the global **chart type** (`bar` or `line`) used by datasets without their own `type`.
 
-The card layout, shared **Legend**, **Tooltip** and axis groups from
+**Bar chart layout** – **bar width** as a percentage of the slot a category owns,
+the same setting the [Bar chart](chart-bar.md) uses.
+
+The card layout
+, shared **Legend**, **Tooltip** and axis groups from
 [Charts](charts.md) apply;
-per-dataset appearance comes from the JSON properties below.
+per-dataset appearance comes from the JSON properties below. Unlike Bar and Pie,
+this chart shows the legend by default. **disable hover effects** turns the
+highlight under the pointer off.
 
 ## Dataset properties
 

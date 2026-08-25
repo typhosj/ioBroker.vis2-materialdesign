@@ -18,7 +18,7 @@ Eintrag. Nicht aufgeführte Einstellungen sind selbsterklärend.
 
 - **Objekt-ID** – erhält den gewählten Menü-Index; ein optionaler zweiter State erhält den **Namen** des gewählten Eintrags.
 - **Anzahl Menüeinträge** – Anzahl der indizierten Eintragsgruppen (Editor-Methode).
-- **Standard- / Standardwert deaktivieren** – welcher Eintrag vorausgewählt ist, oder keiner.
+- **Fallback-Wert, wenn nicht in Benutzergruppe** / **Fallback-Wert deaktivieren** – welcher Eintrag vorausgewählt ist, solange die Objekt-ID noch keinen Wert hat, oder keiner. Trotz des Namens hat das Feld nichts mit Benutzergruppen zu tun; diese Funktion wurde nie portiert.
 
 **Top App Bar Layout**
 
@@ -37,7 +37,16 @@ Die Menüeinträge stammen aus den Daten- und Eintragsgruppen:
 - **Datenmethode** – indizierte Editor-Einträge oder ein JSON-String.
 - **Menü-ID** – der für diesen Eintrag geschriebene Wert.
 - **Beschriftung / Kopfzeile / Trenner** – Eintragstext, Abschnittskopf-Flag und Trennlinie.
-- **Icon + Farbe**, **Untermenüs** und **Berechtigungsgruppe / Sichtbarkeit** pro Eintrag.
+- **Icon + Farbe** und **Untermenüs** pro Eintrag.
+
+Die Navigationsleiste selbst kennt noch einige Einstellungen:
+
+- **auf mobilen Geräten vibrieren [s]** – die Leiste vibriert bei der Auswahl eines Eintrags so viele Sekunden lang. Nicht jeder Browser und jedes Gerät unterstützt das; siehe [Browserhinweis](../README.md#browserhinweis).
+- **Listenelement hover Farbe** und **Element selektiert / hover** färben die Zeile unter dem Zeiger im Menü und im Untermenü, **Hintergrund** füllt die Unterliste.
+
+Berechtigungen je Eintrag nach ioBroker-Benutzergruppe wurden nie nach VIS 2
+portiert; die zugehörigen Editor-Felder sind entfallen. Die Hälfte davon hätte
+wie eine Zugriffsbeschränkung ausgesehen, ohne eine zu sein.
 
 ## Zwischen Ansichten umschalten
 

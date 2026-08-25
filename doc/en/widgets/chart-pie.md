@@ -23,8 +23,10 @@ Settings not listed below are self-explanatory.
 
 - **General** – data source (editor segments or one JSON state), segment count, object id, **type** (pie or doughnut) and the **cutout** that sizes the empty center. Per editor segment, an indexed group adds its object id, label and color.
 
-The shared **Chart layout**, **Legend** and **Tooltip** groups from
-[Charts](charts.md) apply here too.
+The shared **Chart layout**, **Legend**, **Values**, **Tooltip** and hover groups
+from [Charts](charts.md) apply here too. The value label is written into the
+slice and uses the **minimum / maximum decimals** of the Values group — the
+tooltip carries its own decimals.
 
 ## JSON format
 

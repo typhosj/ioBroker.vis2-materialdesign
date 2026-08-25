@@ -23,6 +23,7 @@ selbsterklärend.
 
 - **Anzahl der Spalten / Abstand zwischen Views** – das Grundraster auf dem Desktop.
 - **Anzahl der Views** – wie viele indizierte Gruppen **View [n]** existieren.
+- **Ausrichtung** – wie die Spalten im Widget sitzen: links, mittig, rechts oder Blocksatz. Auch Masonry beachtet das.
 - Die Gruppen **Handy Einstellungen** und **Tablet Einstellungen** überschreiben die Spaltenzahl je Bildschirmgröße.
 
 **View [n]**
@@ -30,6 +31,7 @@ selbsterklärend.
 - **View** (`Seite`) – die eingebettete VIS-2-Ansicht.
 - **Höhe / Breite / Sortierung** – Größe und Position im Raster (Grid nutzt feste Zeilen-/Spaltenspannen).
 - **Sichtbarkeits-Objekt / -Bedingung / -Wert** – diese View nur zeigen, wenn ein State passt.
+- **sichtbar, wenn Auflösung größer als / kleiner als** – blendet diese View außerhalb der genannten Widget-Breite aus. Eine leere Grenze bedeutet keine Grenze auf dieser Seite: eine View mit nur einer Untergrenze bleibt also beliebig breit sichtbar.
 
 **Advanced View** wählt per State eine einzelne eingebettete Ansicht; siehe
 [Advanced View in Widget](html-widgets.md).

@@ -22,6 +22,7 @@ Nicht aufgeführte Einstellungen sind selbsterklärend.
 - **Slider-Breite / Griffgröße** – Strichstärke und Knopfgröße.
 - **rtl** – kehrt die Richtung um (gegen/im Uhrzeigersinn).
 - **Nur lesen** – zeigt den Wert an, nimmt aber keine Eingabe an.
+- **Wert erst beim Loslassen senden** – während des Ziehens wird nichts geschrieben, sondern nur einmal beim Loslassen. Ohne die Option schreibt der Zug höchstens einmal je 200 ms und beim Loslassen den Rest; siehe [Slider](slider.md#schreiben-während-des-ziehens).
 
 **Beschriftung**
 

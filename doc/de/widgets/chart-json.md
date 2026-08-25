@@ -48,9 +48,15 @@ daher ist der Screenshot deutsch.
 
 - **Allgemein** – die Objekt-ID des oben beschriebenen JSON-States und der globale **Diagrammtyp** (`bar` oder `line`) für Datenreihen ohne eigenes `type`.
 
-Kartenlayout sowie die gemeinsamen Gruppen **Legende**, **Tooltip** und Achsen
+**Balkendiagramm Layout** – **Balkenbreite** als Prozentsatz des Platzes, den eine
+Kategorie belegt; dieselbe Einstellung wie beim [Balkendiagramm](chart-bar.md).
+
+Kartenlayout
+ sowie die gemeinsamen Gruppen **Legende**, **Tooltip** und Achsen
 aus [Diagramme](charts.md) gelten; das Aussehen je Datenreihe stammt aus den
-JSON-Eigenschaften unten.
+JSON-Eigenschaften unten. Anders als Balken und Kreis zeigt dieses Diagramm die
+Legende standardmäßig. **Effekt für selektiert / hover deaktivieren** schaltet die
+Hervorhebung unter dem Zeiger ab.
 
 ## Eigenschaften einer Datenreihe
 

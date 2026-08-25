@@ -20,6 +20,7 @@ Nicht aufgeführte Einstellungen sind selbsterklärend.
 - **Ausrichtung / Umkehren** – horizontal oder vertikal, sowie invertierte Richtung.
 - **Min / Max / Schritt** – Wertebereich und Schrittweite.
 - **Nur lesen** – zeigt den Wert an, schreibt aber nie.
+- **Wert erst beim Loslassen senden** – während des Ziehens wird nichts geschrieben, sondern nur einmal, wenn der Zeiger losgelassen wird.
 
 **Schritte Layout (Teilstriche)**
 
@@ -38,3 +39,18 @@ Nicht aufgeführte Einstellungen sind selbsterklärend.
 
 - **Regler-Label zeigen** – aus, beim Ziehen oder immer.
 - Regler-**Größe**, Hintergrund- und Schriftfarben folgen.
+
+## Schreiben während des Ziehens
+
+Ein Zug würde sonst bei jeder Zeigerbewegung einen State schreiben — hunderte
+Schreibvorgänge, denen Bus und angeschlossenes Gerät nicht folgen können, sodass
+eine Zigbee-Lampe dem Finger Sekunden hinterherhinkt. Das Widget sendet deshalb
+die erste Bewegung sofort, damit ein Tippen weiterhin reagiert, begrenzt den Rest
+auf einen Schreibvorgang je 200 ms und schreibt beim Loslassen den Rest heraus:
+Der Wert, auf dem der Finger stehen bleibt, ist immer der Wert, der ankommt.
+
+**Wert erst beim Loslassen senden** geht weiter und schreibt während des Ziehens
+gar nichts. Der Regler folgt in beiden Fällen dem Finger, nur das Schreiben
+unterscheidet sich. Sinnvoll für Geräte, die keine Zwischenwerte sehen sollen.
+Slider, Runder Slider und der Icon-Button-Slider verhalten sich hier gleich.
+

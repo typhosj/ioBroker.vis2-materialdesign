@@ -37,10 +37,8 @@ The `8` variant adds indexed state-value-to-view entries:
 - **not if invisible** – while the widget is hidden its views are dropped
   instead of kept running in the background.
 
-**Troubleshooting:** with **debug** enabled the widget logs the state value and
-the resolved view to the browser console on every switch.
-
 Use [Responsive Layout](responsive-layout.md) instead when multiple child views
+
 must be arranged at the same time.
 
 The state that selects the view usually comes from a menu: the

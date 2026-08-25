@@ -38,10 +38,8 @@ Die `8`-Variante ergänzt indizierte State-Wert-zu-View-Einträge:
 - **nicht wenn unsichtbar** – ist das Widget ausgeblendet, werden die Ansichten
   abgeräumt statt im Hintergrund weiterzulaufen.
 
-**Fehlersuche:** ist **Debug** aktiv, protokolliert das Widget bei jedem
-Ansichtswechsel State-Wert und getroffene Ansicht in der Browser-Konsole.
-
 Sollen mehrere Child Views gleichzeitig angeordnet werden, stattdessen
+
 [Responsives Layout](responsive-layout.md) verwenden.
 
 Der State, der die Ansicht auswählt, kommt typischerweise aus einem Menü: die

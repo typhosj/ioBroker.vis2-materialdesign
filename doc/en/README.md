@@ -24,6 +24,20 @@ A complete browser/runtime compatibility matrix has not been tested yet.
 Use **Value** for a first test: select an object under `oid`, configure unit and
 decimal places, then save the view.
 
+## Fields filled from the picked object
+
+Picking an object under `oid` fills what that object already says about itself:
+name, unit, min / max / step, decimals, its states, its icon and its room /
+function reach the fields that carry them. Value, Slider, Slider Round,
+Progress, Progress Circular, Switch, Checkbox, Button State, Button Toggle,
+Select, Autocomplete, Input, List, IconList and Table take part.
+
+A field is written only while its value is not yours: anything you typed, and
+anything carrying a binding, stays untouched. **refill fields from the object**,
+in the same group as the object id, ignores that rule — it names what it would
+replace and asks first. That button is the answer to an object whose metadata
+changed later, because the automatic fill never writes over your value.
+
 ## Use a theme
 
 Theme use is optional:
@@ -38,6 +52,20 @@ This places the matching theme references in the selected widget. Widget values
 changed afterwards remain individual overrides. The global JavaScript script in
 the adapter configuration is only needed when scripts must access theme values
 directly.
+
+### Light or dark
+
+Which half of the theme a widget shows is decided by the state
+`vis2-materialdesign.0.colors.darkTheme`. It holds three settings:
+
+- `auto` – follow the theme VIS 2 itself runs in. This is the default for new
+  installations.
+- `light` / `dark` – force one of the two, whatever VIS 2 does.
+
+The state keeps `type: mixed`, so the `true` / `false` written by existing
+installations and existing scripts stays valid and still means `dark` / `light`.
+Each widget resolves the setting for itself and writes its colors onto its own
+element, so two widgets never overwrite each other's theme.
 
 ## Choose a widget by task
 

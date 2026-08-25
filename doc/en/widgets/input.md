@@ -24,8 +24,14 @@ ioBroker system language, so the screenshots are German.
 
 - **layout** – outlined, filled, solo (borderless) and the rounded / shaped variants.
 - **alignment** – horizontal alignment of the entered text.
+- **background color hover** – fills the stage between resting and focused. Left empty, the resting color is kept.
 
-Character counter and clear icon (**Counter layout**), and labels, hints,
+**Sub text of input**
+
+- **text** – the hint under the field, with its own font, size and color.
+- **always show** – on, the hint stands under the field permanently. Off, it appears only while the field is focused, matching [Select](select.md).
+
+Character counter and clear icon (**Counter layout**), and labels,
 prefix/suffix, inner icons and colors live in their own optional groups.
 
 **Icons**

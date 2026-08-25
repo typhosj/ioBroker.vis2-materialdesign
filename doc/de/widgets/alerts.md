@@ -27,6 +27,7 @@ aufgeführte Einstellungen sind selbsterklärend.
 - **dicht / Höhe / Abstand unten** – Kompaktheit, Schattentiefe und Abstand zwischen Meldungen.
 - **Rand-Layout** – Rahmenstil jeder Meldung.
 - **Schließen-Icon / Farbe** – das Schließen-Icon und seine Farbe; Schließen entfernt die Meldung aus dem State.
+- **Schließen Symbol Farbe hover / selektiert** – färbt dieses Icon, solange es gedrückt gehalten wird.
 
 ```json
 [

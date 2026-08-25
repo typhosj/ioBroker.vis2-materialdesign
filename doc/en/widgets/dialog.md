@@ -39,7 +39,9 @@ The **iFrame** variant replaces the embedded view with a web page:
 - **scroll X / Y / seamless** – scrolling and seamless embedding options.
 
 The trigger button text/style, dialog size, header, footer and action buttons
-have their own layout groups.
+have their own layout groups. **button size** (small / medium / large) sizes the
+close button and **press color** fills it while it is held, in the windowed
+dialog as well as in fullscreen.
 
 For permanently embedded content without a dialog, see
 [Advanced View in Widget](html-widgets.md).

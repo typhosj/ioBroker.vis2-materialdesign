@@ -38,7 +38,6 @@ Zeitreihe. Ohne eigenen Legendentext wird die Objekt-ID angezeigt.
 
 <img src="../../media/vis2_chart_line_history_editor_2.png" width="340" alt="Linienverlauf Datensatz und Linien">
 
-
 | Einstellung | Wirkung |
 | --- | --- |
 | Objekt-ID | State mit aktivierter History-Aufzeichnung |
@@ -54,8 +53,12 @@ Chart-Timeout erhöhen.
 
 ## Verlauf und Achsen
 
-- `steppedLine` zeichnet Zustandswechsel als Stufen statt als direkte Verbindung.
+- `steppedLine`
+ zeichnet Zustandswechsel als Stufen statt als direkte Verbindung.
 - Füllfarbe schattiert den Bereich unter einer Linie; ohne eigene Füllfarbe wird eine transparente Linienfarbe verwendet.
 - Neu angelegte Datensätze teilen standardmäßig eine Y-Achse. Deren Position, Titel und Grenzen stammen aus der ersten Datensatzgruppe. Leere Min-/Max-Felder behalten automatische Skalierung.
 - X-Achsen-Zeitformat verwendet Moment-Format-Token, beispielsweise `HH:mm` für eine 24-Stunden-Anzeige. Dasselbe Format wird auf Sekunden, Minuten, Stunden und Tage angewendet.
 - Tooltip-Modus `index` vergleicht Reihen am gleichen X-Wert; `nearest` zeigt den nächstgelegenen Punkt.
+- **Linien zwischen Punkten ohne Daten zeichnen** verbindet über Lücken hinweg, statt die Linie zu unterbrechen.
+- **Werte anzeigen** beschriftet die Punkte auf der Linie. Anders als bei Balken und Kreis ist das hier standardmäßig aus: eine Verlaufslinie trägt hunderte Punkte, und eine Beschriftung an jedem davon ist eine Textwand. **jeden n-ten Wert beschriften** dünnt sie aus. Dezimalstellen, Einheit, Schrift und Box dieser Beschriftungen liegen je Datensatz in dessen eigener Gruppe.
+

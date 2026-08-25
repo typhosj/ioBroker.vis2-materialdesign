@@ -32,6 +32,8 @@ aufgeklappt. Nicht aufgeführte Einstellungen sind selbsterklärend.
 - **Einheit** – an den Wert angehängter Text.
 - **eigene Beschriftung** – freier Text/Binding, wenn der Stil *eigene* ist.
 
-Die Gruppe **Streifen** aktiviert und gestaltet ein Streifenmuster. Unter
+Die Gruppe **Streifen** aktiviert und gestaltet ein Streifenmuster;
+**Streifenabstand** gibt dem Muster eine feste Breite. Unter
+
 **Farben** ersetzen zwei optionale Schwellenfarben (je mit Bedingung) die
 Standardfarbe, sobald der Wert sie überschreitet.

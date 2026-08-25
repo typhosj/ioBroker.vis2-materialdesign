@@ -37,5 +37,18 @@ aufgeführte Einstellungen sind selbsterklärend.
 
 Eine eigene Gruppe **Logikwert Formatierung** erscheint, sobald der Zieltyp
 boolesch ist: Sie enthält die **Texte für true / false** und eine **Bedingung**,
-die bei nicht-booleschen Eingaben über den true/false-Zustand entscheidet. Der
-Änderungseffekt hebt aktualisierte Werte kurz hervor.
+die bei nicht-booleschen Eingaben über den true/false-Zustand entscheidet.
+
+**Wertänderungseffekt**
+
+- **aktiviert** – bei jeder Wertänderung wechselt der Wert für die eingestellte
+  **Dauer** (Voreinstellung 750 ms) auf Effekt-Schriftfarbe und -größe und kehrt
+  danach zurück. Der erste Wert ist das Eintreffen des States und keine
+  Änderung — ein Dashboard leuchtet beim Laden also nicht auf.
+
+**Verknüpfter Wert**
+
+- **Beim Laden versteckt** – hält das Widget unsichtbar, bis sein State da ist.
+  Es belegt seinen Platz weiterhin, sodass das Layout nicht springt, sobald der
+  Wert erscheint.
+

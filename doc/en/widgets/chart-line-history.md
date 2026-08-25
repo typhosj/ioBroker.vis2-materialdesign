@@ -38,7 +38,6 @@ text, the Object ID is displayed.
 
 <img src="../../media/vis2_chart_line_history_editor_2.png" width="340" alt="Line history dataset and line options">
 
-
 | Setting | Effect |
 | --- | --- |
 | Object ID | state with enabled history recording |
@@ -54,6 +53,9 @@ check recording and the selected range first, then increase Chart timeout.
 ## Lines and axes
 
 - `steppedLine` draws state changes as steps instead of direct connections.
+- **draw lines between points with no data** connects across gaps instead of interrupting the line.
+- **show values** labels the points on the line. It is off by default here, unlike Bar and Pie: a history line carries hundreds of points and a label on each of them is a wall of text. **label every nth value** thins them out. Decimals, unit, font and box of these labels are per dataset, in the dataset's own group.
+
 - Fill color shades the area below a line; without a custom fill color, a transparent line color is used.
 - Newly configured datasets share one Y axis by default. Its position, title and limits come from the first dataset group. Empty min/max fields retain automatic scaling.
 - X-axis time format uses Moment format tokens, for example `HH:mm` for a 24-hour display. The same format is applied to seconds, minutes, hours and days.

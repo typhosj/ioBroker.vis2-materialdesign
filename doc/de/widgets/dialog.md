@@ -38,7 +38,10 @@ Die Variante **iFrame** ersetzt die eingebettete View durch eine Webseite:
 - **Scroll X / Y / seamless** – Scroll- und nahtlose Einbettungsoptionen.
 
 Text/Stil des Auslöse-Buttons, Dialoggröße, Kopfzeile, Fußzeile und
-Aktionsbuttons haben eigene Layoutgruppen.
+Aktionsbuttons haben eigene Layoutgruppen. **Schaltflächengröße** (small /
+medium / large) bestimmt die Größe des Schließen-Buttons, **Farbe gedrückt**
+füllt ihn, solange er gedrückt wird — im gefensterten Dialog ebenso wie im
+Vollbild.
 
 Für dauerhaft eingebettete Inhalte ohne Dialog siehe
 [Advanced View in Widget](html-widgets.md).

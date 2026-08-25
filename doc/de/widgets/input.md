@@ -23,10 +23,15 @@ aufgeklappt. Nicht aufgeführte Einstellungen sind selbsterklärend.
 
 - **Layout** – outlined, filled, solo (randlos) sowie die rounded-/shaped-Varianten.
 - **Ausrichtung** – horizontale Ausrichtung des eingegebenen Texts.
+- **Hintergrundfarbe hover** – füllt die Stufe zwischen Ruhezustand und Fokus. Leer gelassen bleibt die Ruhefarbe stehen.
+
+**Untertext der Eingabe**
+
+- **Text** – der Hinweis unter dem Feld, mit eigener Schriftart, -größe und -farbe.
+- **immer anzeigen** – eingeschaltet steht der Hinweis dauerhaft unter dem Feld, ausgeschaltet erscheint er nur, solange das Feld fokussiert ist — wie bei [Select](select.md).
 
 Zeichenzähler und Löschen-Icon (**Zählerlayout**) sowie Beschriftungen,
-Hinweise, Prefix/Suffix, innere Icons und Farben liegen in eigenen optionalen
-Gruppen.
+Prefix/Suffix, innere Icons und Farben liegen in eigenen optionalen Gruppen.
 
 **Symbole**
 

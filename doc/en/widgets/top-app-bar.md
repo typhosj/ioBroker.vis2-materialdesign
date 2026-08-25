@@ -19,7 +19,7 @@ ioBroker system language, so the screenshots are German.
 
 - **object id** – receives the selected menu index; an optional second state receives the selected item **name**.
 - **number of menu items** – count of indexed item groups (editor method).
-- **default / disable default value** – which item is preselected, or none.
+- **fallback value if not in user group** / **disable fallback value** – which item is preselected while the object id has no value yet, or none. Despite its name the field has nothing to do with user groups; that feature was never ported.
 
 **Top App Bar layout**
 
@@ -37,7 +37,16 @@ Menu entries come from the data and item groups:
 - **data method** – indexed editor entries or a JSON string.
 - **menu id** – value written for this entry.
 - **label / header / divider** – entry text, section header flag and separator.
-- **icon + color**, **submenus** and **permission group / visibility** per entry.
+- **icon + color** and **submenus** per entry.
+
+The drawer itself has a few more settings:
+
+- **vibrate on mobil devices [s]** – the drawer vibrates for this many seconds when an entry is selected. Not every browser and device supports it; see the [browser note](../README.md#browser-note).
+- **list item hover color** and **element selected / hover** paint the row under the pointer in the menu and in a submenu, **background** fills the sub list.
+
+Per-entry permission handling by ioBroker user group was never ported to VIS 2 and
+its editor fields are gone. Half of it would have looked like an access
+restriction without being one.
 
 ## Switching views
 

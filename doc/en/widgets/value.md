@@ -38,5 +38,18 @@ screenshots are German.
 
 A separate **Boolean formatting** group appears once the target type is boolean:
 it holds the **text for true / false** and a **condition** value that decides the
-true/false state for non-boolean inputs. The change effect briefly highlights
-updated values.
+true/false state for non-boolean inputs.
+
+**Value change effect**
+
+- **enabled** – every time the value changes it switches to the effect font
+  color and font size for the configured **duration** (750 ms by default) and
+  then returns. The first value is the state arriving, not a change, so a
+  dashboard does not light up while it loads.
+
+**Linked value**
+
+- **hidden on load** – keeps the widget invisible until its state has arrived.
+  It still holds its box, so the layout around it does not jump when the value
+  appears.
+

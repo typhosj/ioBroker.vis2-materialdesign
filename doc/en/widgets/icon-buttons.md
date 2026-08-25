@@ -36,6 +36,8 @@ The **Slider** variant turns the button into a circular value slider:
 - **angle offset / arc** – where the arc starts and how far it sweeps.
 - **slider width / thickness** – geometry of the arc.
 - **foreground / background color** and **show in front / always** – arc colors and when the arc is visible.
+- **colorize / colorize factor** – dims the icon with the value: at the low end the icon is darkened by the factor, at the high end it keeps its full brightness. The factor runs from `0` (no dimming) to `1` (dark at the low end), default `0.5`.
+- **send value on release** – writes only when the pointer comes up. Without it the drag writes at most once per 200 ms and flushes on release; see [Slider](slider.md#writing-while-dragging).
 
 Material Design icon names, local image paths, URLs and data URLs are supported.
 Single-color SVGs can be recolored with the icon color.

@@ -24,6 +24,22 @@ Eine vollständige Browser-/Runtime-Kompatibilitätsmatrix ist noch nicht getest
 Für den ersten Test eignet sich **Wertanzeige**: Datenpunkt unter `oid` wählen,
 Einheit und Nachkommastellen einstellen, View speichern.
 
+## Felder aus dem gewählten Objekt befüllen
+
+Wird unter `oid` ein Objekt gewählt, übernimmt das Widget, was dieses Objekt
+bereits über sich selbst sagt: Name, Einheit, Min / Max / Schritt,
+Nachkommastellen, seine States, sein Icon und sein Raum / seine Funktion
+erreichen die Felder, die sie tragen. Beteiligt sind Wertanzeige, Slider, Runder
+Slider, Fortschritt, Kreisfortschritt, Switch, Checkbox, Button State, Button
+Toggle, Select, Autocomplete, Eingabe, Liste, IconList und Tabelle.
+
+Ein Feld wird nur beschrieben, solange sein Wert nicht von Ihnen stammt: alles
+selbst Getippte und alles mit einer Bindung bleibt unangetastet. **Felder neu
+aus dem Objekt befüllen** in derselben Gruppe wie die Objekt-ID ignoriert diese
+Regel — der Knopf nennt vorher, was er ersetzen würde, und fragt nach. Er ist
+die Antwort auf ein Objekt, dessen Metadaten sich später geändert haben, denn
+das automatische Befüllen schreibt nie über Ihren Wert.
+
 ## Theme verwenden
 
 Theme-Nutzung ist optional:
@@ -38,6 +54,21 @@ Dabei werden die passenden Theme-Referenzen in das ausgewählte Widget übernomm
 Danach gesetzte Widget-Werte bleiben individuelle Überschreibungen. Das globale
 JavaScript-Skript in der Adapterkonfiguration ist nur nötig, wenn Skripte direkt
 auf Theme-Werte zugreifen sollen.
+
+### Hell oder dunkel
+
+Welche Hälfte des Themes ein Widget zeigt, entscheidet der State
+`vis2-materialdesign.0.colors.darkTheme`. Er kennt drei Einstellungen:
+
+- `auto` – folgt dem Theme, in dem VIS 2 selbst läuft. Voreinstellung für neue
+  Installationen.
+- `light` / `dark` – erzwingt eines von beiden, unabhängig von VIS 2.
+
+Der State bleibt `type: mixed`: die `true` / `false`, die bestehende
+Installationen und bestehende Skripte schreiben, bleiben gültig und bedeuten
+weiterhin `dark` / `light`. Jedes Widget löst die Einstellung für sich selbst auf
+und schreibt seine Farben auf sein eigenes Element, sodass sich zwei Widgets nie
+gegenseitig das Theme überschreiben.
 
 ## Widget nach Aufgabe wählen
 

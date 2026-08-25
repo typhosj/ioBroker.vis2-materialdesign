@@ -27,16 +27,51 @@ so the screenshots are German.
 
 <img src="../../media/vis2_charts_editor_overview.png" width="340" alt="Shared chart layout and legend options">
 
+**Distance from top / left / right / bottom** – padding between the plot and the
+edge of the widget. A side left empty keeps the spacing chart.js picks itself.
+The four fields sit in **General** for Bar and Pie, in **Chart layout** for JSON
+Chart and Line History.
+
 **Chart layout** – general appearance: background colors, value-axis defaults
 (min / max, decimals) and animation duration.
 
 **Card background** – optionally wraps the chart and an HTML title in a Material
-Design card.
+Design card. **title font size** sizes that title.
 
-**Legend** – whether the legend is shown and its **position**: top / bottom
-arrange entries horizontally, left / right vertically.
+**Legend** – whether the legend is shown and how it looks. Bar, Pie and JSON
+Chart share one legend:
 
-**Tooltip** – shows values when a chart element is touched or hovered.
+- **legend position** – top / bottom arrange entries horizontally, left / right
+  vertically, and decide whether the legend sits before or after the plot.
+- **activate legend point layout** – round dots instead of square boxes.
+- **legend box width** – size of that marker; font, color, padding and the
+  distance to the plot follow.
+
+Bar and Pie keep the legend switched off until it is enabled, JSON Chart shows it
+by default.
+
+**Values** (*bar chart values layout* / *pie chart values layout*, and per dataset
+in Line History) – the labels drawn onto the chart itself:
+
+- **show values** – `on` labels every bar, slice or point, `off` none, `auto`
+  leaves it to chart.js. Bar and Pie default to on, Line History to off: a
+  history line carries hundreds of points and a label on each of them is a wall
+  of text.
+- **label every nth value** – thins the labels out, for example `5` to label
+  every fifth point.
+- Font, color, box and placement of the labels follow in the same group.
+
+**Tooltip** – shows values when a chart element is touched or hovered. Besides the
+colors, its geometry is configurable: **arrow size**, **tooltip distance**,
+**border radius**, **x-padding** / **y-padding**, **title distance to bottom**
+and **show color box**. **text appendix** is appended after the value (Bar and
+Pie), and **text minimum / maximum decimals** format the tooltip number — these
+are separate from the value labels, which carry their own decimals.
+
+**Hover effects** – **disable hover effects**, in the Chart layout group, turns
+the highlight off completely; without it, **hover color** (Bar, Pie) and **hover
+border color / width** (Pie) paint the element under the pointer.
 
 A **color scheme** distributes a palette across datasets that have no individual
 color.
+

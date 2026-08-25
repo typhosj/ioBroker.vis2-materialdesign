@@ -23,15 +23,34 @@ German. Settings not listed below are self-explanatory.
 <img src="../../media/vis2_chart_bar_editor.png" width="340" alt="Bar chart general and bar layout options">
 
 - **General** – data source (editor datasets or one JSON state), dataset count, object id and **chart type** (vertical or horizontal). Per editor dataset, an indexed group adds its object id, axis label, color and tooltip texts.
-- **Bar chart layout** – bar thickness and spacing.
+- **Bar chart layout** – **bar width** as a percentage of the slot a category owns (`80` by default): lower values leave more air between the bars.
 
 <img src="../../media/vis2_chart_bar_editor_2.png" width="340" alt="Bar chart axis and tooltip options">
 
 - **Y axis** – axis title, position (left / right), gridlines and axis/label visibility. The value-axis **minimum / maximum** live in the Chart layout group (empty = automatic scaling).
 - **Tooltip** – enable the tooltip and set its colors; a per-dataset `tooltipText` overrides the generated text.
 
-The shared **Chart layout**, **Legend** and color-scheme groups from
-[Charts](charts.md) apply here too.
+The shared **Chart layout**, **Legend**, **Values**, **Tooltip** and color-scheme
+groups from [Charts](charts.md) apply here too. The bar label above each bar is
+its `valueText` plus the appendix.
+
+## Axis settings
+
+These live in the axis groups and reach whichever axis plays the role in the
+current orientation — horizontal presentation swaps values and categories.
+
+| Setting | Effect |
+| --- | --- |
+| **axis auto skip of labels** | drops category labels that would collide instead of overlapping them |
+| **min. / max. label rotation** | how far category labels may be turned |
+| **x-axis offset** / **x-axis gridlines offset** | shift the category axis and its gridlines by half a slot |
+| **value steps of axis** | fixed distance between two value ticks |
+| **minimum / maximum number of decimal places** | number formatting of the value ticks |
+
+| **maximum number of axis labels** | upper limit on the value ticks drawn |
+| **append text to axis values** | unit appended to every value tick |
+
+Leave all of them empty and chart.js formats the ticks itself.
 
 ## JSON format
 

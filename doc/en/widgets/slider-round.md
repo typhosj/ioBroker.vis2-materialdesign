@@ -23,6 +23,7 @@ language, so the screenshots are German.
 - **slider width / handle size** – stroke thickness and knob size.
 - **rtl** – reverses the direction (counter-/clockwise).
 - **read only** – shows the value without accepting input.
+- **send value on release** – nothing is written while the knob is dragged, only once when the pointer comes up. Without it the drag writes at most once per 200 ms and flushes on release; see [Slider](slider.md#writing-while-dragging).
 
 **Label**
 

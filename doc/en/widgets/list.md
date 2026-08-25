@@ -21,6 +21,15 @@ language, so the screenshots are German.
 - **list type** – text row, state / toggle / navigation / link button, switch or checkbox.
 - **list layout** – standard, card or outlined card.
 - **divider style** – separator drawn between rows.
+- **scroll to top on change** – jumps back to the first row whenever the rows change, instead of keeping the old scroll position under new content.
+
+**List item layout**
+
+- **position of control** – whether the button, switch or checkbox sits left or right of the row text; **distance between control and text** sets the gap.
+
+**List header**
+
+- **position of headline image** – where the header image sits relative to the header text; **distance between headline text and image** sets the gap between them.
 
 **Data of the list**
 
@@ -35,6 +44,9 @@ Each row is configured in its own indexed **List item [n]** group:
 - **label / subLabel / right label** – primary, secondary and right-aligned text.
 - **icon + active color** – row icon and its on-state color.
 - **button / toggle values** – the value(s) written by the button/toggle list types.
+
+The **Colors** group additionally holds **list item selected color** for the
+focused row and **hover color of switch** for the switch under the pointer.
 
 Minimal JSON example:
 

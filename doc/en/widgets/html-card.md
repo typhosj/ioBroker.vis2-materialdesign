@@ -34,5 +34,9 @@ The **Card action** group makes the card clickable:
 - **control type** – open a URL or write a state.
 - **href / state object + value** – the target used by the chosen control type.
 
+The **Colors** group holds **title background color**, which paints the title
+area behind title and subtitle.
+
 Content fields (title, subtitle, text) accept VIS 2 HTML/bindings. Use only
 trusted HTML.
+

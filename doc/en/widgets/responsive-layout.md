@@ -23,6 +23,7 @@ follows the ioBroker system language, so the screenshots are German.
 
 - **number of columns / spacing between views** – the base grid used on desktop.
 - **number of views** – how many indexed **View [n]** groups exist.
+- **alignment** – how the columns sit inside the widget: left, center, right or justify. Masonry honours this too.
 - The **Phone settings** and **Tablet settings** groups override the column count per screen size.
 
 **View [n]**
@@ -30,6 +31,7 @@ follows the ioBroker system language, so the screenshots are German.
 - **view** (`Seite`) – the embedded VIS 2 view.
 - **height / width / order** – size and position within the grid (Grid uses explicit row/column spans).
 - **visibility object / condition / value** – show this view only when a state matches.
+- **visible when resolution greater than / less than** – hide this view outside the widget width it names. An empty bound means no bound on that side, so a view with only a lower limit stays visible however wide the screen gets.
 
 **Advanced View** selects a single embedded view from a state value; see
 [Advanced View in Widget](html-widgets.md).

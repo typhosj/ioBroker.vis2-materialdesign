@@ -28,6 +28,7 @@ language, so the screenshots are German.
 - **dense / elevation / margin bottom** – compactness, shadow depth and spacing between alerts.
 - **border layout** – border style of each alert.
 - **close icon / color** – the dismiss icon and its color; closing removes the alert from the state.
+- **icon close color hover / selected** – colors that icon while it is held.
 
 ```json
 [

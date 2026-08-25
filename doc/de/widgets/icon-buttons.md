@@ -35,5 +35,7 @@ Die Variante **Slider** macht aus dem Button einen kreisförmigen Wert-Slider:
 - **Winkelversatz / Bogen** – wo der Bogen beginnt und wie weit er verläuft.
 - **Slider-Breite / -Stärke** – Geometrie des Bogens.
 - **Vordergrund-/Hintergrundfarbe** und **im Vordergrund / immer zeigen** – Bogenfarben und Sichtbarkeit.
+- **Einfärben / Einfärbungsfaktor** – dunkelt das Icon mit dem Wert ab: am unteren Ende um den Faktor abgedunkelt, am oberen Ende in voller Helligkeit. Der Faktor reicht von `0` (keine Abdunklung) bis `1` (am unteren Ende dunkel), Voreinstellung `0.5`.
+- **Wert erst beim Loslassen senden** – schreibt nur beim Loslassen. Ohne die Option schreibt der Zug höchstens einmal je 200 ms und beim Loslassen den Rest; siehe [Slider](slider.md#schreiben-während-des-ziehens).
 
 Unterstützt werden Material-Design-Iconnamen, lokale Bilder, URLs und Data-URLs.

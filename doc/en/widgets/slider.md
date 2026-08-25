@@ -21,6 +21,7 @@ language, so the screenshots are German.
 - **orientation / reverse** – horizontal or vertical, and inverted direction.
 - **min / max / step** – value range and increment.
 - **read only** – shows the value but never writes it.
+- **send value on release** – nothing is written while the thumb is dragged, only once when the pointer comes up.
 
 **Scale (ticks)**
 
@@ -39,3 +40,17 @@ language, so the screenshots are German.
 
 - **show thumb label** – off, while dragging or always.
 - Thumb **size**, background and font colors follow.
+
+## Writing while dragging
+
+A drag would otherwise write a state on every pointer move — hundreds of writes
+the bus and the device behind it cannot keep up with, which leaves a Zigbee lamp
+seconds behind the finger. The widget therefore sends the first move at once, so
+a tap still reacts, limits the rest to one write per 200 ms, and flushes on
+release: the value the finger stopped on is always the value that lands.
+
+**send value on release** goes further and writes nothing at all during the drag.
+The thumb follows the finger in both modes; only the writing differs. Use it for
+devices that should not see intermediate values. Slider, Slider Round and the
+Icon Button Slider behave the same way here.
+

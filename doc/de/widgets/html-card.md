@@ -33,5 +33,9 @@ Die Gruppe **Kartenaktion** macht die Karte klickbar:
 - **Steuerungstyp** – URL öffnen oder State schreiben.
 - **href / State-Objekt + Wert** – das vom gewählten Steuerungstyp genutzte Ziel.
 
+Die Gruppe **Farben** enthält **Titel Hintergrundfarbe**, die den Titelbereich
+hinter Titel und Untertitel füllt.
+
 Inhaltsfelder (Titel, Untertitel, Text) unterstützen VIS-2-HTML/Bindings. Nur
 vertrauenswürdiges HTML nutzen.
+

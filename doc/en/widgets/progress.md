@@ -33,6 +33,8 @@ ioBroker system language, so the screenshots are German.
 - **unit** – text appended to the value.
 - **custom label** – free text/binding used when the style is *custom*.
 
-The **Striped** group enables and styles a stripe pattern. In **Colors**, two
+The **Striped** group enables and styles a stripe pattern; **stripe distance**
+gives the pattern a fixed width. In **Colors**, two
+
 optional threshold colors (each with a condition) replace the normal progress
 color once the value passes them.
