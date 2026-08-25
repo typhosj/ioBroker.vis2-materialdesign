@@ -154,16 +154,39 @@ export function tooltipNumber(data: Record<string, unknown>, value: unknown): st
 // @types/chart.js allows. The strict typing is re-applied at the `new Chart` call.
 type Props = { type: string; data: object; options: object };
 
+// A chart.js v2 instance, as much of it as this file touches. Reassigning `data`/`options` and
+// calling `update()` is the documented v2 way to re-render an existing chart.
+type ChartInstance = { destroy(): void; update(): void; data: object; options: object };
+
 export function MaterialDesignChartCanvas({ type, data, options }: Props): React.JSX.Element {
   const canvas = useRef<HTMLCanvasElement>(null);
-  const chart = useRef<{ destroy(): void } | null>(null);
+  const chart = useRef<ChartInstance | null>(null);
+  // What is already on the instance, by identity. The create effect records what it built with so
+  // the update effect below does not immediately re-run it (which would replay the mount animation).
+  const applied = useRef<{ data: object; options: object } | null>(null);
+  // Callers build `data`/`options` as fresh object literals inside their render, so putting them in
+  // this dependency array would destroy and rebuild the chart on EVERY parent render — i.e. on
+  // every state update — restarting the animation and closing any open tooltip. Only the chart
+  // TYPE needs a new instance; everything else is handed to the existing one.
   useEffect(() => {
     if (!canvas.current) return;
     chart.current?.destroy();
     chart.current = new Chart(canvas.current, { type, data, options, plugins: [ChartDataLabels, chartAreaBackground] });
+    applied.current = { data, options };
     return () => {
       chart.current?.destroy();
+      chart.current = null;
+      applied.current = null;
     };
-  }, [type, data, options]);
+    // (`data`/`options` are deliberately NOT dependencies here - the effect below applies them.)
+  }, [type]);
+  useEffect(() => {
+    const instance = chart.current;
+    if (!instance || (applied.current?.data === data && applied.current?.options === options)) return;
+    applied.current = { data, options };
+    instance.data = data;
+    instance.options = options;
+    instance.update();
+  }, [data, options]);
   return <canvas className="materialdesign-chart-container" style={{ height: "100%", width: "100%" }} ref={canvas} />;
 }

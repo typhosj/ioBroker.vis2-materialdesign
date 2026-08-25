@@ -261,7 +261,8 @@ export default class MaterialDesignChartLineHistory extends VisWidget {
     this.alive = true;
     this.update();
   }
-  componentDidUpdate(): void {
+  componentDidUpdate(prevProps: typeof this.props, prevState: typeof this.state): void {
+    super.componentDidUpdate(prevProps, prevState);
     this.update();
   }
   componentWillUnmount(): void {
@@ -272,16 +273,26 @@ export default class MaterialDesignChartLineHistory extends VisWidget {
   }
   private signature(d: Data): string {
     const count = itemCount(d.dataCount);
+    const method = s(d.refreshMethod, "timeInterval");
     return JSON.stringify({
       d,
       time: stateValue(this.state, s(d.time_interval_oid)),
-      trigger: stateValue(
-        this.state,
-        s(d.manualRefreshTrigger),
-      ),
-      values: Array.from({ length: count }, (_, i) =>
-        stateValue(this.state as VisRxWidgetState, s(item(d, "oid", i))),
-      ),
+      // `byObject` is the mode that refreshes on the trigger state; the other two must not see
+      // it, or a write to the trigger would re-query on top of their own schedule.
+      trigger:
+        method === "byObject"
+          ? stateValue(this.state, s(d.manualRefreshTrigger))
+          : undefined,
+      // Only `realtime` re-queries the history adapter when a live value arrives. With the
+      // values unconditionally in the key, `timeInterval` fired on every value change instead
+      // of on its interval, and `byObject` never waited for its trigger at all - the setting
+      // could only ever add refreshes, never restrict them.
+      values:
+        method === "realtime"
+          ? Array.from({ length: count }, (_, i) =>
+              stateValue(this.state as VisRxWidgetState, s(item(d, "oid", i))),
+            )
+          : undefined,
     });
   }
   private update(): void {

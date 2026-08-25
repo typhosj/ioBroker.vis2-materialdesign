@@ -60,4 +60,49 @@ describe('line history loading', () => {
         await Promise.resolve();
         expect(inspection.series).toEqual([]);
     });
+
+    it('only re-queries on a live value in realtime mode', async () => {
+        const build = (refreshMethod: string): { widget: MaterialDesignChartLineHistory; getHistory: ReturnType<typeof vi.fn> } => {
+            const getHistory = vi.fn().mockResolvedValue([{ ts: 100, val: 1 }]);
+            const widget = new MaterialDesignChartLineHistory(fixture<ConstructorParameters<typeof MaterialDesignChartLineHistory>[0]>({ context: { socket: { getHistory, subscribeState: vi.fn().mockResolvedValue(undefined), unsubscribeState: vi.fn() } } }));
+            widget.state = fixture<typeof widget.state>({
+                rxData: { historyAdapterInstance: 'history.0', refreshMethod, dataCount: 1, oid: 'test.0.value', manualRefreshTrigger: 'test.0.trigger' },
+                values: { 'test.0.value.val': 1 },
+            });
+            return { widget, getHistory };
+        };
+        // A new live value arrives: vis-2 re-renders, which lands in componentDidUpdate.
+        const tick = (widget: MaterialDesignChartLineHistory, values: Record<string, unknown>): void => {
+            widget.state = fixture<typeof widget.state>({ ...widget.state, values });
+            widget.componentDidUpdate(fixture<never>({}), fixture<never>({}));
+        };
+
+        // timeInterval refreshes on its own schedule and byObject waits for its trigger state, so
+        // neither may put a history query on the bus just because a data value changed.
+        for (const method of ['timeInterval', 'byObject']) {
+            const { widget, getHistory } = build(method);
+            widget.componentDidMount();
+            await vi.waitFor(() => expect(getHistory).toHaveBeenCalledTimes(1));
+            tick(widget, { 'test.0.value.val': 2 });
+            await Promise.resolve();
+            expect(getHistory, method).toHaveBeenCalledTimes(1);
+            widget.componentWillUnmount();
+        }
+
+        // byObject reacts to its trigger...
+        const byObject = build('byObject');
+        byObject.widget.componentDidMount();
+        await vi.waitFor(() => expect(byObject.getHistory).toHaveBeenCalledTimes(1));
+        tick(byObject.widget, { 'test.0.value.val': 1, 'test.0.trigger.val': 7 });
+        await vi.waitFor(() => expect(byObject.getHistory).toHaveBeenCalledTimes(2));
+        byObject.widget.componentWillUnmount();
+
+        // ...and realtime reacts to the value itself.
+        const realtime = build('realtime');
+        realtime.widget.componentDidMount();
+        await vi.waitFor(() => expect(realtime.getHistory).toHaveBeenCalledTimes(1));
+        tick(realtime.widget, { 'test.0.value.val': 2 });
+        await vi.waitFor(() => expect(realtime.getHistory).toHaveBeenCalledTimes(2));
+        realtime.widget.componentWillUnmount();
+    });
 });
