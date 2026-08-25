@@ -27,7 +27,10 @@ type Group = {
 };
 type WidgetModule = { default?: { getWidgetInfo?: () => { visAttrs?: Group[]; id?: string; visName?: string } } };
 
-const modules = import.meta.glob<WidgetModule>('./MaterialDesign*.tsx', { eager: true });
+// The negative pattern matters: a `MaterialDesign*.test.tsx` sitting next to the widgets is picked
+// up by this glob too, and its describes then run inside THIS file — without the module mocks that
+// test set up for itself, which is a confusing failure to read.
+const modules = import.meta.glob<WidgetModule>(['./MaterialDesign*.tsx', '!./MaterialDesign*.test.tsx'], { eager: true });
 
 describe('indexed attribute groups', () => {
     const widgets = Object.entries(modules)

@@ -210,6 +210,27 @@ type Props = { type: string; data: object; options: object };
 export function MaterialDesignChartCanvas({ type, data, options }: Props): React.JSX.Element {
   const canvas = useRef<HTMLCanvasElement>(null);
   const chart = useRef<Chart | null>(null);
+  // What is already on the instance, by identity. The create effect records what it built with so
+  // the update effect below does not immediately re-run it (which would replay the mount animation).
+  const applied = useRef<{ data: object; options: object } | null>(null);
+  // A malformed config must not white-screen the whole vis view; log the shape that failed.
+  const fail = (error: unknown): void => {
+    chart.current = null;
+    applied.current = null;
+    const opt = options as { scales?: Record<string, { type?: string }> };
+    const dsAxes = ((data as { datasets?: { xAxisID?: string; yAxisID?: string }[] }).datasets || []).map(
+      d => ({ x: d.xAxisID, y: d.yAxisID }),
+    );
+    console.error("materialdesign chart render failed", error, {
+      type,
+      scales: opt.scales ? Object.keys(opt.scales) : undefined,
+      datasetAxes: dsAxes,
+    });
+  };
+  // Callers build `data`/`options` as fresh object literals inside their render, so putting them in
+  // this dependency array would destroy and rebuild the chart on EVERY parent render — i.e. on
+  // every state update — restarting the animation and closing any open tooltip. Only the chart
+  // TYPE needs a new instance; everything else is handed to the existing one.
   useEffect(() => {
     if (!canvas.current) return;
     chart.current?.destroy();
@@ -220,22 +241,29 @@ export function MaterialDesignChartCanvas({ type, data, options }: Props): React
         options,
         plugins: [ChartDataLabels, chartAreaBackground],
       });
+      applied.current = { data, options };
     } catch (error) {
-      // A malformed config must not white-screen the whole vis view; log the shape that failed.
-      chart.current = null;
-      const opt = options as { scales?: Record<string, { type?: string }> };
-      const dsAxes = ((data as { datasets?: { xAxisID?: string; yAxisID?: string }[] }).datasets || []).map(
-        d => ({ x: d.xAxisID, y: d.yAxisID }),
-      );
-      console.error("materialdesign chart render failed", error, {
-        type,
-        scales: opt.scales ? Object.keys(opt.scales) : undefined,
-        datasetAxes: dsAxes,
-      });
+      fail(error);
     }
     return () => {
       chart.current?.destroy();
+      chart.current = null;
+      applied.current = null;
     };
-  }, [type, data, options]);
+    // (`data`/`options` are deliberately NOT dependencies here - the effect below applies them.)
+  }, [type]);
+  useEffect(() => {
+    const instance = chart.current;
+    if (!instance || (applied.current?.data === data && applied.current?.options === options)) return;
+    applied.current = { data, options };
+    try {
+      instance.data = data as never;
+      instance.options = options as never;
+      instance.update();
+    } catch (error) {
+      instance.destroy();
+      fail(error);
+    }
+  }, [data, options]);
   return <canvas className="materialdesign-chart-container" style={{ height: "100%", width: "100%" }} ref={canvas} />;
 }
