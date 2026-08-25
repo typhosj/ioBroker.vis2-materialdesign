@@ -82,7 +82,9 @@ export default {
         "./MaterialDesignTable": "./src/MaterialDesignTable",
         "./MaterialDesignTopAppBar": "./src/MaterialDesignTopAppBar",
         "./MaterialDesignValue": "./src/MaterialDesignValue",
-        "./translations": "./src/translations",
+        // No `./translations` expose: with visWidgets.i18n === true vis-2 fetches ONE language
+        // file from `<widget dir>/i18n/` instead of loading all eleven as a ~515 kB chunk in
+        // every runtime view. tasks.js copies admin/i18n there.
       },
       remotes: {},
       shared: moduleFederationShared(pack),
