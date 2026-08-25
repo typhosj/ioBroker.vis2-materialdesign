@@ -170,7 +170,7 @@
     ],
     "visWidgets": {
       "vis2MaterialDesignWidgets": {
-        "i18n": true,
+        "i18n": "component",
         "name": "vis2MaterialDesignWidgets",
         "url": "vis2-materialdesign/customWidgets.js",
         "bundlerType": "module",
