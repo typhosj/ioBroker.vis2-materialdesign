@@ -258,7 +258,7 @@ export function MaterialDesignChartCanvas({ type, data, options }: Props): React
     applied.current = { data, options };
     try {
       instance.data = data as never;
-      instance.options = options as never;
+      instance.options = options;
       instance.update();
     } catch (error) {
       instance.destroy();

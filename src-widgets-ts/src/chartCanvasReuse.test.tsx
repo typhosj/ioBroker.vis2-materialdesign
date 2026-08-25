@@ -7,6 +7,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const { instances, ChartMock } = vi.hoisted(() => {
     const created: Array<{ data: unknown; options: unknown; update: () => void; destroy: () => void; updates: number; destroyed: number }> = [];
     class ChartRecorder {
+        // The module reads both at import time. No `plugins` key and no `register`, so the datalabels
+        // default and the controller registration are skipped — this test draws nothing.
+        static defaults = {};
         data: unknown;
         options: unknown;
         updates = 0;
