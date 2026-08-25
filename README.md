@@ -66,7 +66,7 @@ Report current VIS 2 problems in the
 [GitHub issue tracker](https://github.com/typhosj/ioBroker.vis2-materialdesign/issues).
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 0.4.0 (2026-08-25)
 
 - (typhosj) Added automatic filling of the widget fields from the metadata of the datapoint you pick (issue #15): name, unit, min/max/step, decimals, the states, the icon and the room/function of the object reach the fields that carry them, in Value, Slider, Round Slider, Progress, Progress Circular, Switch, Checkbox, Button State, Button Toggle, Select, Autocomplete, Input, List, Icon List and Table. A value you typed is never overwritten, not even when it happens to equal the default, and a field you cleared stays empty — the new **refill fields from the object** button in the same section does it anyway and names beforehand what it would overwrite. A list row also gets its right-hand column as a binding to the state, the Select builds its menu entries from the states, the Table takes its columns from the JSON it reads, and the sliders pick up a WORKING datapoint sitting next to the level. A binding you set counts as your own value, because the binding dialog leaves no other trace; an icon the object only resolves inside its own adapter folder is dropped in favour of what its role says, so no widget shows a broken image; and a menu built from the states clears the entries above its new count, which the button names before it does it
 - (typhosj) Fixed the "padding bottom" of the List and Icon List header having no effect in any setting: the header row had a fixed height, so the bottom padding hung below its content box and the header container clipped it away. The height is a minimum now and all four paddings take part - more padding at the bottom lifts the header text, which is what an alignment "bottom" would have done. Its default drops from 20 to 0, because those 20 px were never drawn
@@ -162,12 +162,6 @@ Report current VIS 2 problems in the
 
 - (typhosj) Fixed the "npm run test:package" CI check to run the standard `@iobroker/testing` package-file validation again (it was shadowed by a project-specific script of the same name)
 - (typhosj) Removed the unused `axios` devDependency
-
-### 0.3.1 (2026-07-23)
-
-- (typhosj) Added the combined icon/image picker to the remaining widgets (checkbox, input, select, switch)
-- (typhosj) Removed the legacy VIS 1 example scripts (`examples/`) from the repository
-- (typhosj) Expanded test coverage for the slider, round slider and value widgets
 
 [Older changelog entries](CHANGELOG_OLD.md)
 
