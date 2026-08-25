@@ -10,7 +10,8 @@ import type VisRxWidget from '@iobroker/types-vis-2/visRxWidget';
 import colors from '../../admin/lib/colors.json';
 import fonts from '../../admin/lib/fonts.json';
 import fontSizes from '../../admin/lib/fontSizes.json';
-// Importing ./translations here would pull its ~500 kB editor chunk into every widget.
+// Only the `group_*` headers: the full dictionary is fetched per language by vis-2 from
+// `widgets/<name>/i18n/`, but group headers go through the legacy dictionary bridged below.
 import groupLabels from './generated/groupLabels.json';
 import '../../fonts.css';
 import './mdi-font.css';
@@ -229,7 +230,11 @@ export function humanizeDuration(totalSeconds: number, locale?: string): string 
 // `style` is in here for two reasons: its rules are page-wide, so one state value could hide or
 // cover the whole VIS view, and its text content is re-parsed on the way back out - the
 // math/mglyph/style shape turns an inert `<img onerror>` inside it into a live element.
-const UNSAFE_ELEMENTS = 'script,style,iframe,object,embed,base,meta,link,form,noscript';
+// `animate`/`set`/`animateTransform` are in here because they write OTHER elements' attributes at
+// run time: `<svg><a><animate attributeName="href" to="javascript:…">` sets a URL the attribute
+// pass below never sees, since neither `attributeName` nor `to`/`values`/`from` is a URL attribute
+// on the animation element itself.
+const UNSAFE_ELEMENTS = 'script,style,iframe,object,embed,base,meta,link,form,noscript,animate,set,animateTransform,animateMotion';
 const HTML_ENTITIES: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
 const URL_ATTRS = new Set(['href', 'src', 'xlink:href', 'action', 'formaction', 'background', 'poster', 'data']);
 export function sanitizeHtml(input: unknown): string {
@@ -690,6 +695,8 @@ function cssVariable(type: ThemeType, id: string): string {
     return `--materialdesign-widget-theme-font-size-${normalized}`;
 }
 
+// Instance `.0` is hard-coded because io-package sets `common.singleton: true` — there can only be
+// one. If that flag ever goes, this (and the admin's namespace) has to become the real instance.
 export function themeStateId(type: ThemeType, id: string, dark = false): string {
     if (type === 'colors') return `vis2-materialdesign.0.colors.${dark ? id.replace(/^light\./, 'dark.') : id}`;
     return `vis2-materialdesign.0.${type}.${id}`;
@@ -801,9 +808,15 @@ export function resolveDarkTheme(value: ioBroker.StateValue | undefined, themeTy
     return themeType === 'dark';
 }
 
-export function applyThemeVariables(data: Record<string, unknown>, values: Record<string, ioBroker.StateValue> | undefined): void {
-    // No document during the vis-2 server-side prerender, and the widget data may be null.
-    if (typeof document === 'undefined' || !data || !values) return;
+export function applyThemeVariables(target: HTMLElement | null | undefined, data: Record<string, unknown>, values: Record<string, ioBroker.StateValue> | undefined): void {
+    // The variables go on the WIDGET element, not on document.documentElement. Every widget writes
+    // the same variable names, so a page-wide write means the widget that rendered last decides the
+    // colors for all of them — two widgets on one view resolving `dark` differently used to fight
+    // over the whole page. On our own element they still reach the entire widget subtree by
+    // inheritance, and nothing outside it.
+    // `target` is null during the vis-2 server-side prerender and before the first mount; `data`
+    // may be null there too (the unguarded Object.keys(null) threw "cannot call visUtils").
+    if (!target || !data || !values) return;
     const dark = darkThemeOid(data);
     const isDark = values[`${dark}.val`] === true || values[`${dark}.val`] === 'true';
     Object.keys(data).filter(key => key.startsWith('__mdwTheme_') && !key.endsWith('_dark')).forEach(key => {
@@ -813,7 +826,7 @@ export function applyThemeVariables(data: Record<string, unknown>, values: Recor
         if (!parts) return;
         const variable = cssVariable(parts[1] as ThemeType, decodeThemeId(parts[2]));
         // Font sizes carry no unit in the theme state; without 'px' a var() resolves to a unitless number and is ignored.
-        if (value !== undefined && value !== null) document.documentElement.style.setProperty(variable, parts[1] === 'fontSizes' ? `${value}px` : String(value));
+        if (value !== undefined && value !== null) target.style.setProperty(variable, parts[1] === 'fontSizes' ? `${value}px` : String(value));
     });
 }
 
@@ -974,6 +987,24 @@ export class VisWidget extends BaseVisWidget {
         if (this.resolvedStyle === 'material3') {
             this.subscribeM3Seeds();
         }
+        this.applyTheme();
+    }
+
+    // Writing CSS variables is a DOM side effect, so it runs after the commit — not from render(),
+    // where React is free to call it twice or throw the result away.
+    componentDidUpdate(prevProps: typeof this.props, prevState: typeof this.state): void {
+        super.componentDidUpdate?.(prevProps, prevState);
+        this.applyTheme();
+    }
+
+    private applyTheme(): void {
+        const rxData = this.state?.rxData as unknown as Record<string, unknown> | undefined;
+        if (!rxData) return;
+        applyThemeVariables(this.refService?.current, rxData, { ...this.state.values, [`${darkThemeOid(rxData)}.val`]: this.isDarkTheme() });
+        // The M3 seeds stay on document.documentElement on purpose (see applyM3SeedVariables): they
+        // must lose to the `--md-sys-*` tokens each widget root declares. They also come from one
+        // shared state, so every widget writes the same values and cannot fight over them.
+        if (this.m3SeedSubscribed && designStyle(rxData) === 'material3') applyM3SeedVariables(this.m3SeedValues);
     }
 
     componentWillUnmount(): void {
@@ -992,13 +1023,6 @@ export class VisWidget extends BaseVisWidget {
 
     protected isDarkTheme(): boolean {
         return resolveDarkTheme(this.darkThemeSetting, this.props.context?.themeType);
-    }
-
-    render(): React.JSX.Element | null {
-        const rxData = { ...this.state.rxData };
-        applyThemeVariables(rxData, { ...this.state.values, [`${darkThemeOid(rxData)}.val`]: this.isDarkTheme() });
-        if (this.m3SeedSubscribed && designStyle(rxData) === 'material3') applyM3SeedVariables(this.m3SeedValues);
-        return super.render();
     }
 }
 

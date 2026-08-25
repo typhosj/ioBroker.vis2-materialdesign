@@ -283,7 +283,8 @@ export class MaterialDesignDialog extends VisWidget {
     this.startMeasure();
     this.syncModalFocus();
   }
-  componentDidUpdate(): void {
+  componentDidUpdate(prevProps: typeof this.props, prevState: typeof this.state): void {
+    super.componentDidUpdate(prevProps, prevState);
     this.startMeasure();
     this.syncModalFocus();
   }

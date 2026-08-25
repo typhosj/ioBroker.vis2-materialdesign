@@ -402,7 +402,8 @@ export class MaterialDesignViews extends VisWidget {
     if (this.root.current) this.observer.observe(this.root.current);
     this.startMeasure();
   }
-  componentDidUpdate(): void {
+  componentDidUpdate(prevProps: typeof this.props, prevState: typeof this.state): void {
+    super.componentDidUpdate(prevProps, prevState);
     this.startMeasure();
   }
   componentWillUnmount(): void {

@@ -39,18 +39,31 @@ describe('widget utilities', () => {
             [light!.name!]: light!.default,
             [`${light!.name}_dark`]: fields.find(field => field.name === `${light!.name}_dark`)?.default,
         };
-        applyThemeVariables(data, {
+        const element = document.createElement('div');
+        applyThemeVariables(element, data, {
             'vis2-materialdesign.0.colors.darkTheme.val': false,
             [`${light!.default}.val`]: '#112233',
             [`${data[`${light!.name}_dark`]}.val`]: '#445566',
         });
-        expect(document.documentElement.style.getPropertyValue('--materialdesign-widget-theme-color-calendar-border')).toBe('#112233');
+        expect(element.style.getPropertyValue('--materialdesign-widget-theme-color-calendar-border')).toBe('#112233');
 
-        applyThemeVariables(data, {
+        applyThemeVariables(element, data, {
             'vis2-materialdesign.0.colors.darkTheme.val': true,
             [`${data[`${light!.name}_dark`]}.val`]: '#445566',
         });
-        expect(document.documentElement.style.getPropertyValue('--materialdesign-widget-theme-color-calendar-border')).toBe('#445566');
+        expect(element.style.getPropertyValue('--materialdesign-widget-theme-color-calendar-border')).toBe('#445566');
+        // The variables must stay off the document: two widgets on one view write the same names,
+        // and a page-wide write lets whichever rendered last decide the colors for both.
+        expect(document.documentElement.style.getPropertyValue('--materialdesign-widget-theme-color-calendar-border')).toBe('');
+
+        // Two widgets, different dark resolution, same variable — each keeps its own value.
+        const other = document.createElement('div');
+        applyThemeVariables(other, data, {
+            'vis2-materialdesign.0.colors.darkTheme.val': false,
+            [`${light!.default}.val`]: '#112233',
+        });
+        expect(element.style.getPropertyValue('--materialdesign-widget-theme-color-calendar-border')).toBe('#445566');
+        expect(other.style.getPropertyValue('--materialdesign-widget-theme-color-calendar-border')).toBe('#112233');
     });
 
     it('resolves the dark-theme oid, falling back to the shared default', () => {
@@ -333,6 +346,10 @@ describe('widget utilities', () => {
         expect(sanitizeHtml('<object data="javascript:alert(1)"></object>')).toBe('');
         expect(sanitizeHtml('<form action="javascript:alert(1)"><button>x</button></form>')).toBe('');
         expect(sanitizeHtml('<iframe srcdoc="<script>alert(1)</script>"></iframe>')).toBe('');
+        // SVG animation elements write ANOTHER element's attribute at run time, so the URL never
+        // appears on an attribute the loop below inspects. They go out whole.
+        expect(sanitizeHtml('<svg><a><animate attributeName="href" to="javascript:alert(1)" /><text>x</text></a></svg>')).not.toContain('javascript:');
+        expect(sanitizeHtml('<svg><set attributeName="onload" to="alert(1)" /></svg>')).toBe('<svg></svg>');
         // handler names are matched case-insensitively, and a leading space does not smuggle a scheme
         expect(sanitizeHtml('<img src=x ONERROR=alert(1)>')).toBe('<img src="x">');
         expect(sanitizeHtml('<a href=" javascript:alert(1)">x</a>')).toBe('<a>x</a>');
