@@ -252,7 +252,11 @@ export function humanizeDuration(totalSeconds: number, locale?: string): string 
 // `style` is in here for two reasons: its rules are page-wide, so one state value could hide or
 // cover the whole VIS view, and its text content is re-parsed on the way back out - the
 // math/mglyph/style shape turns an inert `<img onerror>` inside it into a live element.
-const UNSAFE_ELEMENTS = 'script,style,iframe,object,embed,base,meta,link,form,noscript';
+// `animate`/`set`/`animateTransform` are in here because they write OTHER elements' attributes at
+// run time: `<svg><a><animate attributeName="href" to="javascript:…">` sets a URL the attribute
+// pass below never sees, since neither `attributeName` nor `to`/`values`/`from` is a URL attribute
+// on the animation element itself.
+const UNSAFE_ELEMENTS = 'script,style,iframe,object,embed,base,meta,link,form,noscript,animate,set,animateTransform,animateMotion';
 const HTML_ENTITIES: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
 const URL_ATTRS = new Set(['href', 'src', 'xlink:href', 'action', 'formaction', 'background', 'poster', 'data']);
 export function sanitizeHtml(input: unknown): string {
@@ -557,6 +561,8 @@ function cssVariable(type: ThemeType, id: string): string {
     return `--materialdesign-widget-theme-font-size-${normalized}`;
 }
 
+// Instance `.0` is hard-coded because io-package sets `common.singleton: true` — there can only be
+// one. If that flag ever goes, this (and the admin's namespace) has to become the real instance.
 export function themeStateId(type: ThemeType, id: string, dark = false): string {
     if (type === 'colors') return `vis2-materialdesign.0.colors.${dark ? id.replace(/^light\./, 'dark.') : id}`;
     return `vis2-materialdesign.0.${type}.${id}`;
@@ -672,12 +678,15 @@ export function resolveDarkTheme(value: ioBroker.StateValue | undefined, themeTy
     return themeType === 'dark';
 }
 
-export function applyThemeVariables(data: Record<string, unknown>, values: Record<string, ioBroker.StateValue> | undefined): void {
-    // Client-only: this writes CSS custom properties onto document.documentElement. During the
-    // vis-2 server-side prerender there is no document, and the widget data may be null — either
-    // would throw ("cannot call visUtils: Cannot convert undefined or null to object" for the
-    // unguarded Object.keys(null)). Skip entirely when we cannot / need not touch the DOM.
-    if (typeof document === 'undefined' || !data || !values) return;
+export function applyThemeVariables(target: HTMLElement | null | undefined, data: Record<string, unknown>, values: Record<string, ioBroker.StateValue> | undefined): void {
+    // The variables go on the WIDGET element, not on document.documentElement. Every widget writes
+    // the same variable names, so a page-wide write means the widget that rendered last decides the
+    // colors for all of them — two widgets on one view resolving `dark` differently used to fight
+    // over the whole page. On our own element they still reach the entire widget subtree by
+    // inheritance, and nothing outside it.
+    // `target` is null during the vis-2 server-side prerender and before the first mount; `data`
+    // may be null there too (the unguarded Object.keys(null) threw "cannot call visUtils").
+    if (!target || !data || !values) return;
     const dark = darkThemeOid(data);
     const isDark = values[`${dark}.val`] === true || values[`${dark}.val`] === 'true';
     Object.keys(data).filter(key => key.startsWith('__mdwTheme_') && !key.endsWith('_dark')).forEach(key => {
@@ -687,7 +696,7 @@ export function applyThemeVariables(data: Record<string, unknown>, values: Recor
         if (!parts) return;
         const variable = cssVariable(parts[1] as ThemeType, decodeThemeId(parts[2]));
         // Font sizes carry no unit in the theme state; legacy appended 'px' (setCssFontSizes). Without it a `var()` resolves to a unitless number and is ignored as a CSS font-size.
-        if (value !== undefined && value !== null) document.documentElement.style.setProperty(variable, parts[1] === 'fontSizes' ? `${value}px` : String(value));
+        if (value !== undefined && value !== null) target.style.setProperty(variable, parts[1] === 'fontSizes' ? `${value}px` : String(value));
     });
 }
 
@@ -725,6 +734,20 @@ export class VisWidget extends BaseVisWidget {
     componentDidMount(): void {
         super.componentDidMount();
         this.subscribeDarkTheme(darkThemeOid(this.state?.rxData as unknown as Record<string, unknown> | undefined));
+        this.applyTheme();
+    }
+
+    // Writing CSS variables is a DOM side effect, so it runs after the commit — not from render(),
+    // where React is free to call it twice or throw the result away.
+    componentDidUpdate(prevProps: typeof this.props, prevState: typeof this.state): void {
+        super.componentDidUpdate?.(prevProps, prevState);
+        this.applyTheme();
+    }
+
+    private applyTheme(): void {
+        const rxData = this.state?.rxData as unknown as Record<string, unknown> | undefined;
+        if (!rxData) return;
+        applyThemeVariables(this.refService?.current, rxData, { ...this.state.values, [`${darkThemeOid(rxData)}.val`]: this.isDarkTheme() });
     }
 
     // Editing the dark-theme state in the editor used to leave the widget on the old subscription
@@ -745,11 +768,6 @@ export class VisWidget extends BaseVisWidget {
         return resolveDarkTheme(this.darkThemeSetting, this.props.context?.themeType);
     }
 
-    render(): React.JSX.Element | null {
-        const rxData = { ...this.state.rxData };
-        applyThemeVariables(rxData, { ...this.state.values, [`${darkThemeOid(rxData)}.val`]: this.isDarkTheme() });
-        return super.render();
-    }
 }
 
 export type RenderProps = RxRenderWidgetProps;

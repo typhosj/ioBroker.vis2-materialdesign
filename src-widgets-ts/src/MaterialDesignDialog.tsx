@@ -276,7 +276,8 @@ export class MaterialDesignDialog extends VisWidget {
     super.componentDidMount();
     this.startMeasure();
   }
-  componentDidUpdate(): void {
+  componentDidUpdate(prevProps: typeof this.props, prevState: typeof this.state): void {
+    super.componentDidUpdate(prevProps, prevState);
     this.startMeasure();
   }
   componentWillUnmount(): void {
