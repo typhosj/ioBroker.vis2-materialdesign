@@ -28,6 +28,8 @@ const installedVersion = (base, dep) => {
         return null;
     }
 };
+// Worthless without both trees installed, so it says so rather than skipping quietly.
+assert.ok(installedVersion("src-widgets-ts", "vite"), "src-widgets-ts/node_modules is missing — run `npm ci --prefix src-widgets-ts` (or `npm run build`) before this gate");
 for (const dep of Object.keys(widgetPkg.dependencies || {})) {
     if (!(dep in rootDeps)) continue;
     const widgetVersion = installedVersion("src-widgets-ts", dep);
