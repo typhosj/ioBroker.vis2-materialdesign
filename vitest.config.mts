@@ -22,7 +22,6 @@ export default defineConfig({
                 'src-widgets-ts/src/**/*.d.ts',
                 'src-widgets-ts/src/generated/**',
                 'src-widgets-ts/src/index.tsx',
-                'src-widgets-ts/src/translations.ts',
                 'src-widgets-ts/src/MaterialDesignAdvancedViewInWidget*.tsx',
                 'src-widgets-ts/src/MaterialDesignButton{Adition,Link,Navigation,State,StateMulti,Toggle}{,Vertical}.tsx',
                 'src-widgets-ts/src/MaterialDesignIconButton*.tsx',
