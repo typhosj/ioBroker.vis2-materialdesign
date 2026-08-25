@@ -163,10 +163,14 @@
         "admin": ">=7.6.20"
       }
     ],
-    "dependencies": [],
+    "dependencies": [
+      {
+        "js-controller": ">=6.0.11"
+      }
+    ],
     "visWidgets": {
       "vis2MaterialDesignWidgets": {
-        "i18n": "component",
+        "i18n": true,
         "name": "vis2MaterialDesignWidgets",
         "url": "vis2-materialdesign/customWidgets.js",
         "bundlerType": "module",

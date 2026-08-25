@@ -30,6 +30,12 @@ function copyAllFiles() {
     if (existsSync(`${srcTs}build/assets`)) {
         cpSync(`${srcTs}build/assets`, `${widgetTarget}/assets`, { recursive: true });
     }
+    // vis-2 loads the widget-set dictionary itself (io-package visWidgets.i18n === true) and
+    // fetches exactly ONE language from `<widget dir>/i18n/<lang>.json` — see vis-2
+    // visLoadWidgets. Shipping the files here replaces the `./translations` module-federation
+    // expose, which vis-2 pulled into every RUNTIME view as a single ~515 kB chunk containing all
+    // eleven languages.
+    cpSync(`${__dirname}/admin/i18n`, `${widgetTarget}/i18n`, { recursive: true });
     if (existsSync(staticSource)) {
         cpSync(staticSource, widgetTarget, { recursive: true });
     }
