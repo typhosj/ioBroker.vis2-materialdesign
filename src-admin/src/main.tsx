@@ -21,7 +21,8 @@ function str(value: unknown): string { return typeof value === 'string' || typeo
 // Admin adapter translations load per-language at runtime — only English plus the active language —
 // so the config bundle no longer inlines all 11 dictionaries (~124 kB gz). Vite still emits each
 // admin/i18n/<lang>.json as its own lazy chunk; the open config fetches just what it needs. The
-// full dictionaries still back the vis widget editor via the separate widget bundle.
+// vis widget editor gets the same files a second way: tasks.js copies admin/i18n into the widget
+// directory, and vis-2 fetches the one language it needs from there (io-package visWidgets.i18n).
 const KNOWN_LANGS = ['de', 'en', 'es', 'fr', 'it', 'nl', 'pl', 'pt', 'ru', 'uk', 'zh-cn'];
 const translations: Record<string, Record<string, string>> = {};
 
@@ -37,7 +38,7 @@ async function loadLang(lang: string): Promise<void> {
 }
 // GenericApp's constructor merges `translations` into the framework dictionary and calls
 // I18n.setTranslations itself, after bootstrap() has populated the active languages.
-const t = (text: string): string => I18n.t(text);
+const t = (text: string, ...args: string[]): string => I18n.t(text, ...args);
 
 const HEX = /^#[0-9a-f]{6}$/i;
 
@@ -274,11 +275,17 @@ class MaterialDesignAdmin extends GenericApp<GenericAppProps, GenericAppState> {
         }
         await this.socket.setState(id, value, true);
     }
+    // Each theme entry costs a getObject plus a setState (plus a setObject when it changed), and
+    // there are several hundred of them. One at a time that is a Save dialog frozen for tens of
+    // seconds over a remote admin connection, so the entries — which are independent of each other
+    // — go out in bounded batches. The bound keeps a slow ioBroker socket from being flooded.
+    private static readonly SYNC_BATCH = 20;
+
     private async syncRuntimeStates(): Promise<void> {
         const config = this.state.native as NativeConfig;
         const namespace = `${this.adapterName}.${this.instance}`;
         const ensuredChannels = new Set<string>();
-        await this.socket.setState(`${namespace}.sentry`, config.sentryReport === true, true);
+        const wanted: Array<{ id: string; name: string; value: string | number }> = [];
         // The seed is derived to a full scheme HERE, once per save, and only the result travels to
         // the widgets — see ../../MATERIAL3_PLAN.md Phase 9.1. An empty or unparseable seed writes an
         // empty state, which makes every widget fall back to the generated baseline in
@@ -296,15 +303,22 @@ class MaterialDesignAdmin extends GenericApp<GenericAppProps, GenericAppState> {
             const defaults = readDefaults(config, theme);
             const entries = readEntries(config, theme, defaults);
             for (const [index, value] of defaults.entries()) {
-                const id = defaultSlotId(namespace, theme, index);
-                await this.ensureAncestorChannels(id, namespace, ensuredChannels);
-                await this.setThemeState(id, `${t(`${theme}Default`)} ${index}`, value);
+                wanted.push({ id: defaultSlotId(namespace, theme, index), name: `${t(`${theme}Default`)} ${index}`, value });
             }
             for (const entry of entries) {
-                const id = themeStateId(namespace, theme, entry.id);
-                await this.ensureAncestorChannels(id, namespace, ensuredChannels);
-                await this.setThemeState(id, t(entry.desc), entry.value ?? '');
+                wanted.push({ id: themeStateId(namespace, theme, entry.id), name: t(entry.desc), value: entry.value ?? '' });
             }
+        }
+        await this.socket.setState(`${namespace}.sentry`, config.sentryReport === true, true);
+        // Channels strictly before the states under them, or the tree gets orphaned states. The
+        // Set collapses this to the handful of DISTINCT channels, so it is a few round-trips.
+        for (const { id } of wanted) {
+            await this.ensureAncestorChannels(id, namespace, ensuredChannels);
+        }
+        for (let start = 0; start < wanted.length; start += MaterialDesignAdmin.SYNC_BATCH) {
+            await Promise.all(
+                wanted.slice(start, start + MaterialDesignAdmin.SYNC_BATCH).map(({ id, name, value }) => this.setThemeState(id, name, value)),
+            );
         }
         await this.socket.setState(`${namespace}.lastchange`, Date.now(), true);
     }
@@ -330,7 +344,15 @@ class MaterialDesignAdmin extends GenericApp<GenericAppProps, GenericAppState> {
             lines.push(`${path}.getValue = function () { return getState("${id}").val; };`);
         });
         const id = `script.js.global.MaterialDesignWidgets.${namespace.replace('.', '')}`;
-        await this.socket.setObject(id, { type: 'script', common: { name: String(config.scriptName ?? 'Theme'), expert: true, engineType: 'Javascript/js', engine: `system.adapter.${javascriptInstance}`, source: lines.join('\n'), debug: false, verbose: false, enabled: true } });
+        const existing = await this.socket.getObject(id);
+        // setObject replaces the script whole, so a script the user edited is gone without a word,
+        // and writing an enabled global script restarts the javascript instance. Both are the
+        // user's call. (`<br>` is in the legacy dictionary entry; window.confirm shows plain text.)
+        if (!window.confirm(t('After the script has been generated, the %s instance will be restarted!<br><br>Do you want to continue?', javascriptInstance).replace(/<br\s*\/?>/g, '\n'))) {
+            return;
+        }
+        const previous = existing?.common;
+        await this.socket.setObject(id, { type: 'script', common: { name: String(config.scriptName ?? 'Theme'), expert: true, engineType: 'Javascript/js', engine: `system.adapter.${javascriptInstance}`, source: lines.join('\n'), debug: false, verbose: false, enabled: (previous as { enabled?: boolean } | undefined)?.enabled ?? true } });
         this.showAlert(t('generate script'), 'success');
     }
     onSave(isClose?: boolean): void {
