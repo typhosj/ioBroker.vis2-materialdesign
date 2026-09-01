@@ -445,7 +445,7 @@ export default class MaterialDesignChartLineHistory extends VisWidget {
       const labelColor = s(item(d, "valuesFontColor", i), dsColor);
       const perSeries: Data = { designStyle: d.designStyle };
       for (const key of ["showValues", "valuesSteps", "valuesFontFamily", "valuesFontSize", "valuesBackgroundColor", "valuesBorderColor", "valuesBorderWidth", "valuesBorderRadius"]) perSeries[key] = item(d, key, i);
-      return datalabelsConfig(perSeries, index => ({ color: labelColor, text: `${n(points[index]?.val).toLocaleString(visLocale(), { maximumFractionDigits: max, minimumFractionDigits: min })}${append}` }), { align: "top", anchor: "end" });
+      return datalabelsConfig(perSeries, context => ({ color: labelColor, text: `${n(points[n(context.dataIndex)]?.val).toLocaleString(visLocale(), { maximumFractionDigits: max, minimumFractionDigits: min })}${append}` }), { align: "top", anchor: "end" });
     };
     // Without a label callback the tooltip prints chart.js' raw default, so the decimals and the
     // appended unit configured right next to it stayed dead.

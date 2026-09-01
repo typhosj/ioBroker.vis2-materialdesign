@@ -50,12 +50,16 @@ if (Chart.defaults.plugins) {
   };
 }
 
-type LabelContext = Parameters<typeof labelColorFor>[0];
+// chart.js hands the datalabels callbacks a `datasetIndex` too; `labelColorFor` has no use for it,
+// so it is added here rather than widening that function's contract.
+type LabelContext = Parameters<typeof labelColorFor>[0] & { datasetIndex?: number };
 
 // `valuesSteps` thins the labels out (every n-th item); 0/1 shows all.
+// `label` receives the whole chart.js context, not just the data index: a chart with more than one
+// dataset (the JSON chart) needs `datasetIndex` to find its value; single-dataset charts ignore it.
 export function datalabelsConfig(
   data: Record<string, unknown>,
-  label: (index: number) => { text: string; color?: string },
+  label: (context: LabelContext) => { text: string; color?: string },
   defaults: { align: string; anchor: string },
 ): object {
   const show = textValue(data.showValues, "showValuesOn");
@@ -78,10 +82,10 @@ export function datalabelsConfig(
     borderColor: textValue(data.valuesBorderColor) || null,
     borderRadius: numberValue(data.valuesBorderRadius),
     borderWidth: numberValue(data.valuesBorderWidth),
-    color: (context: LabelContext): string => label(context.dataIndex).color || (onElement ? labelColorFor(context) : offElementColor(context)),
+    color: (context: LabelContext): string => label(context).color || (onElement ? labelColorFor(context) : offElementColor(context)),
     display: show === "showValuesOff" ? false : (context: LabelContext): boolean | string => (context.dataIndex % steps === 0 ? visible : false),
     font: { family: textValue(data.valuesFontFamily) || undefined, size: numberValue(data.valuesFontSize, 12) },
-    formatter: (_value: unknown, context: LabelContext): string => label(context.dataIndex).text,
+    formatter: (_value: unknown, context: LabelContext): string => label(context).text,
     offset: numberValue(data.valuesPositionOffset, 4),
     rotation: numberValue(data.valuesRotation),
     textAlign: textValue(data.valuesTextAlign, "center"),

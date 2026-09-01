@@ -79,7 +79,7 @@ describe('datalabelsConfig', () => {
         display: boolean | ((context: { dataIndex: number }) => boolean | string);
         formatter: (value: unknown, context: { dataIndex: number }) => string;
     };
-    const label = (index: number): { text: string; color?: string } => [{ text: '10 kWh' }, { text: '20 kWh', color: '#123456' }][index];
+    const label = (context: { dataIndex: number }): { text: string; color?: string } => [{ text: '10 kWh' }, { text: '20 kWh', color: '#123456' }][context.dataIndex];
     const build = (data: Record<string, unknown>): Cfg => datalabelsConfig(data, label, { align: 'end', anchor: 'center' }) as Cfg;
 
     it('takes position, font and rotation from the saved options', () => {

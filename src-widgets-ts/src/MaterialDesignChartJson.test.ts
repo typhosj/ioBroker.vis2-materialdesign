@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { distinctAxisGraphs, graphAxisId, graphColor, jsonChartSegments, jsonChartValue } from './MaterialDesignChartJson';
+import { distinctAxisGraphs, graphAxisId, graphColor, jsonChartSegments, jsonChartValue, jsonLabelText } from './MaterialDesignChartJson';
 
 describe('MaterialDesignChartJson gaps', () => {
     it('keeps missing values distinct from numeric zero', () => {
@@ -44,5 +44,26 @@ describe('distinctAxisGraphs', () => {
     it('collapses graphs with no explicit yAxis_id onto the shared default axis', () => {
         const graphs = [{}, {}, {}];
         expect(distinctAxisGraphs(graphs)).toHaveLength(1); // all default to yAxis_id_0
+    });
+});
+
+describe('jsonLabelText', () => {
+    it('leaves a missing value unlabelled instead of printing a zero', () => {
+        expect(jsonLabelText({}, null)).toBe('');
+    });
+
+    // The decimal separator comes from the runtime locale; the test must not pin it.
+    const dot = (text: string): string => text.replace(',', '.');
+
+    it('appends the unit and honours the decimal options', () => {
+        expect(dot(jsonLabelText({ valuesMaxDecimals: 1, valuesAppendText: ' kWh' }, 13.5))).toBe('13.5 kWh');
+        expect(dot(jsonLabelText({ valuesMaxDecimals: 2 }, 0.09))).toBe('0.09');
+        expect(jsonLabelText({}, 13.5)).toBe('14'); // without options Intl rounds to whole numbers
+    });
+
+    // Intl throws when min > max, and the editor stores a min without a max readily enough.
+    it('survives a minimum without a maximum', () => {
+        expect(() => jsonLabelText({ valuesMinDecimals: 2 }, 1)).not.toThrow();
+        expect(dot(jsonLabelText({ valuesMinDecimals: 2 }, 1))).toBe('1.00');
     });
 });

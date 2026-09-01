@@ -19,7 +19,7 @@ describe('datalabels registration', () => {
 });
 
 describe('datalabelsConfig', () => {
-    const label = (index: number) => ({ text: `v${index}` });
+    const label = (context: { dataIndex: number }) => ({ text: `v${context.dataIndex}` });
 
     it('shows every value by default and honors the off switch', () => {
         const on = datalabelsConfig({}, label, { align: 'top', anchor: 'end' }) as Record<string, unknown>;
