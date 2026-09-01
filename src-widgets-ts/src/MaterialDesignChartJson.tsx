@@ -272,6 +272,11 @@ const attrs: RxWidgetInfo["visAttrs"] = [
         default: true,
       },
       color("xAxisGridLinesColor"),
+      {
+        name: "xAxisOffsetGridLines",
+        label: "xAxisOffsetGridLines",
+        type: "checkbox",
+      },
     ],
   },
   // Feldnamen wie im Bar-Chart, damit beide Widgets dieselben Optionen und i18n-Keys teilen.
@@ -317,6 +322,13 @@ const attrs: RxWidgetInfo["visAttrs"] = [
       { name: "yAxisTitle", label: "yAxisTitle", type: "text" },
       color("yAxisTitleColor"),
       color("yAxisValueLabelColor"),
+      {
+        name: "yAxisShowGridLines",
+        label: "yAxisShowGridLines",
+        type: "checkbox",
+        default: true,
+      },
+      color("yAxisGridLinesColor"),
     ],
   },
 ];
@@ -360,7 +372,8 @@ export default class MaterialDesignChartJson extends VisWidget {
       stacked: b(graph.barIsStacked),
       title: s(data.yAxisTitle), titleColor: s(data.yAxisTitleColor, isM3 ? m3.text : ""),
       labelColor: s(data.yAxisValueLabelColor, isM3 ? m3.text : ""),
-      gridColor: isM3 ? m3.grid : "",
+      gridDisplay: b(data.yAxisShowGridLines, true),
+      gridColor: s(data.yAxisGridLinesColor, isM3 ? m3.grid : ""),
       min: optN((graph as Record<string, unknown>).yAxis_min), max: optN((graph as Record<string, unknown>).yAxis_max),
     })]);
     const xAxis = chartAxis({
@@ -371,6 +384,9 @@ export default class MaterialDesignChartJson extends VisWidget {
       labelColor: s(data.xAxisValueLabelColor, isM3 ? m3.text : ""),
       gridDisplay: b(data.xAxisShowGridLines, true),
       gridColor: s(data.xAxisGridLinesColor, isM3 ? m3.grid : ""),
+      // Auf einer Kategorieachse liegen die Linien sonst mitten durch die Balkengruppe. Mit
+      // offset stehen sie zwischen den Kategorien, also als Trenner. Unset laesst alles wie bisher.
+      gridOffset: data.xAxisOffsetGridLines === "" || data.xAxisOffsetGridLines === undefined ? undefined : b(data.xAxisOffsetGridLines),
     });
     const scales = { x: xAxis, ...Object.fromEntries(yEntries) };
     const chartjs = <MaterialDesignChartCanvas type={s(data.chartType, "bar")} data={{ labels, datasets: graphs.map((graph, i) => { const color = graphColor(graph, i, palette, data.globalColor); const dsColor = isM3 && color === "#44739e" ? m3.primary : color; return { type: s(graph.type, s(data.chartType, "bar")), label: s(graph.legendText), data: (graph.data || []).map(jsonChartValue), borderColor: dsColor, backgroundColor: b(graph.line_UseFillColor) ? s(graph.line_FillColor, `${dsColor}33`) : dsColor, borderWidth: n(graph.line_Thickness, n(graph.barBorderWidth, 2)), stepped: b(graph.line_steppedLine), spanGaps: b(graph.line_spanGaps, true), fill: b(graph.line_UseFillColor), barPercentage: data.barWidth === undefined || data.barWidth === "" ? undefined : Math.max(0, Math.min(1, n(data.barWidth, 80) / 100)), yAxisID: axisId(graph), stack: b(graph.barIsStacked) ? String(n((graph as Record<string, unknown>).barStackId, 0)) : undefined }; }) }} options={{ responsive: true, maintainAspectRatio: false, layout: layoutConfig(data), hover: b(data.disableHoverEffects) ? { mode: null } : undefined, animation: { duration: n(data.animationDuration, 1000) }, scales, plugins: { legend: { display: false }, mdwChartArea: { color: s(data.chartAreaBackgroundColor) }, tooltip: tooltipConfig(data), datalabels: datalabelsConfig(
