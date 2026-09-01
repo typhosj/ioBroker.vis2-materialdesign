@@ -54,7 +54,8 @@ describe('buildBars', () => {
 
     it('formats valueText with configured min/max decimals when not explicitly provided', () => {
         const bars = buildBars({ valuesMinDecimals: 2, valuesMaxDecimals: 2 }, null, 1, [], () => 3);
-        expect(bars[0].valueText).toBe((3).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+        // The decimal separator comes from the runtime locale; the test must not pin it.
+        expect(bars[0].valueText.replace(',', '.')).toBe('3.00');
     });
 });
 

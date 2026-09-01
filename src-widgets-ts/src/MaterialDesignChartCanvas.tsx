@@ -8,7 +8,7 @@ import {
 } from "chart.js";
 import ChartDataLabels from "chartjs-plugin-datalabels";
 
-import { boolValue, designStyle, m3OnColor, numberValue, textValue } from "./widgetUtils";
+import { boolValue, designStyle, m3OnColor, numberValue, textValue, visLocale } from "./widgetUtils";
 import { CHART_TEXT_COLOR } from "./chartAxis";
 
 // The shared coercions all take a fallback. These two are the other half: a field the user left
@@ -147,7 +147,7 @@ export function tooltipNumber(data: Record<string, unknown>, value: unknown): st
   if (raw === undefined || (min === undefined && max === undefined)) return undefined;
   // Intl throws when min > max, which the editor lets you configure one field at a time.
   const lower = Math.max(0, Math.min(20, min ?? 0));
-  return raw.toLocaleString(undefined, {
+  return raw.toLocaleString(visLocale(), {
     minimumFractionDigits: lower,
     maximumFractionDigits: Math.max(lower, Math.min(20, max ?? Math.max(min ?? 0, 2))),
   });

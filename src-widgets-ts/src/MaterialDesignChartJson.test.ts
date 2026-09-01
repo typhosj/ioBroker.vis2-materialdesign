@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { distinctAxisGraphs, graphAxisId, graphColor, jsonChartSegments, jsonChartValue, jsonLabelText } from './MaterialDesignChartJson';
+import { distinctAxisGraphs, graphAxisId, graphColor, jsonChartSegments, jsonChartValue, jsonDatalabels, jsonLabelText } from './MaterialDesignChartJson';
 
 describe('MaterialDesignChartJson gaps', () => {
     it('keeps missing values distinct from numeric zero', () => {
@@ -65,5 +65,22 @@ describe('jsonLabelText', () => {
     it('survives a minimum without a maximum', () => {
         expect(() => jsonLabelText({ valuesMinDecimals: 2 }, 1)).not.toThrow();
         expect(dot(jsonLabelText({ valuesMinDecimals: 2 }, 1))).toBe('1.00');
+    });
+});
+
+describe('jsonDatalabels', () => {
+    const graphs = [{ data: [1, 2] }, { data: [10, 20] }];
+
+    it('draws no label until the option is set', () => {
+        expect(jsonDatalabels({}, graphs)).toMatchObject({ display: false });
+        expect(jsonDatalabels({ showValues: 'showValuesOn' }, graphs)).not.toMatchObject({ display: false });
+    });
+
+    it('reads the value off the dataset the label belongs to', () => {
+        const config = jsonDatalabels({ showValues: 'showValuesOn' }, graphs) as {
+            formatter: (value: unknown, context: { datasetIndex: number; dataIndex: number }) => string;
+        };
+        expect(config.formatter(0, { datasetIndex: 1, dataIndex: 1 })).toBe('20');
+        expect(config.formatter(0, { datasetIndex: 0, dataIndex: 1 })).toBe('2');
     });
 });

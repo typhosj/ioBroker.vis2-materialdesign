@@ -1,5 +1,5 @@
 import React from "react";
-import { squarePreview, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, stateValue, sanitizeHtml, boolValue as b, numberValue as n, textValue as s } from './widgetUtils';
+import { squarePreview, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, stateValue, sanitizeHtml, visLocale, boolValue as b, numberValue as n, textValue as s } from './widgetUtils';
 import type { RxWidgetInfo } from "@iobroker/types-vis-2";
 import { colorSchemes, scheme } from "./MaterialDesignColorScheme";
 import { ChartLegend, MaterialDesignChartCanvas, datalabelsConfig, layoutConfig, tooltipConfig } from "./MaterialDesignChartCanvas";
@@ -49,7 +49,16 @@ export function jsonLabelText(data: Data, value: number | null): string {
   // Intl throws when min > max, and a min without a max is what the editor stores when only one of
   // the two fields is filled in.
   const maxDecimals = Math.max(minDecimals, n(data.valuesMaxDecimals, 0));
-  return `${value.toLocaleString(undefined, { minimumFractionDigits: minDecimals, maximumFractionDigits: maxDecimals })}${s(data.valuesAppendText)}`;
+  return `${value.toLocaleString(visLocale(), { minimumFractionDigits: minDecimals, maximumFractionDigits: maxDecimals })}${s(data.valuesAppendText)}`;
+}
+export function jsonDatalabels(data: Data, graphs: Graph[]): object {
+  return datalabelsConfig(
+    // Unset keeps the labels off: this widget drew none before the option group existed, and an
+    // existing chart must not sprout them on upgrade.
+    { ...data, showValues: s(data.showValues, "showValuesOff") },
+    context => ({ color: s(data.valuesFontColor) || undefined, text: jsonLabelText(data, jsonChartValue((graphs[n(context.datasetIndex)]?.data || [])[n(context.dataIndex)])) }),
+    { align: "top", anchor: "end" },
+  );
 }
 export function graphColor(graph: Graph, index: number, palette: string[], globalColor: unknown): string {
   return s(graph.color, palette[index] || s(globalColor, "#44739e"));
@@ -279,9 +288,6 @@ const attrs: RxWidgetInfo["visAttrs"] = [
       },
     ],
   },
-  // Feldnamen wie im Bar-Chart, damit beide Widgets dieselben Optionen und i18n-Keys teilen.
-  // Default ist hier bewusst "off": bis diese Gruppe kam, zeichnete das JSON-Chart nie Labels --
-  // bestehende Charts sollen nicht ploetzlich welche bekommen.
   {
     name: "barValuesLayout",
     label: "group_barValuesLayout",
@@ -384,17 +390,12 @@ export default class MaterialDesignChartJson extends VisWidget {
       labelColor: s(data.xAxisValueLabelColor, isM3 ? m3.text : ""),
       gridDisplay: b(data.xAxisShowGridLines, true),
       gridColor: s(data.xAxisGridLinesColor, isM3 ? m3.grid : ""),
-      // Auf einer Kategorieachse liegen die Linien sonst mitten durch die Balkengruppe. Mit
-      // offset stehen sie zwischen den Kategorien, also als Trenner. Unset laesst alles wie bisher.
+      // On a category axis the lines otherwise run through the middle of a bar group; with the
+      // offset they stand between the categories. Unset keeps the previous placement.
       gridOffset: data.xAxisOffsetGridLines === "" || data.xAxisOffsetGridLines === undefined ? undefined : b(data.xAxisOffsetGridLines),
     });
     const scales = { x: xAxis, ...Object.fromEntries(yEntries) };
-    const chartjs = <MaterialDesignChartCanvas type={s(data.chartType, "bar")} data={{ labels, datasets: graphs.map((graph, i) => { const color = graphColor(graph, i, palette, data.globalColor); const dsColor = isM3 && color === "#44739e" ? m3.primary : color; return { type: s(graph.type, s(data.chartType, "bar")), label: s(graph.legendText), data: (graph.data || []).map(jsonChartValue), borderColor: dsColor, backgroundColor: b(graph.line_UseFillColor) ? s(graph.line_FillColor, `${dsColor}33`) : dsColor, borderWidth: n(graph.line_Thickness, n(graph.barBorderWidth, 2)), stepped: b(graph.line_steppedLine), spanGaps: b(graph.line_spanGaps, true), fill: b(graph.line_UseFillColor), barPercentage: data.barWidth === undefined || data.barWidth === "" ? undefined : Math.max(0, Math.min(1, n(data.barWidth, 80) / 100)), yAxisID: axisId(graph), stack: b(graph.barIsStacked) ? String(n((graph as Record<string, unknown>).barStackId, 0)) : undefined }; }) }} options={{ responsive: true, maintainAspectRatio: false, layout: layoutConfig(data), hover: b(data.disableHoverEffects) ? { mode: null } : undefined, animation: { duration: n(data.animationDuration, 1000) }, scales, plugins: { legend: { display: false }, mdwChartArea: { color: s(data.chartAreaBackgroundColor) }, tooltip: tooltipConfig(data), datalabels: datalabelsConfig(
-      // Ohne gesetzte Option bleiben die Labels aus -- dieses Widget zeichnete frueher gar keine.
-      { ...data, showValues: s(data.showValues, "showValuesOff") },
-      context => ({ color: s(data.valuesFontColor) || undefined, text: jsonLabelText(data, jsonChartValue((graphs[n(context.datasetIndex)]?.data || [])[n(context.dataIndex)])) }),
-      { align: "top", anchor: "end" },
-    ) } }} />;
+    const chartjs = <MaterialDesignChartCanvas type={s(data.chartType, "bar")} data={{ labels, datasets: graphs.map((graph, i) => { const color = graphColor(graph, i, palette, data.globalColor); const dsColor = isM3 && color === "#44739e" ? m3.primary : color; return { type: s(graph.type, s(data.chartType, "bar")), label: s(graph.legendText), data: (graph.data || []).map(jsonChartValue), borderColor: dsColor, backgroundColor: b(graph.line_UseFillColor) ? s(graph.line_FillColor, `${dsColor}33`) : dsColor, borderWidth: n(graph.line_Thickness, n(graph.barBorderWidth, 2)), stepped: b(graph.line_steppedLine), spanGaps: b(graph.line_spanGaps, true), fill: b(graph.line_UseFillColor), barPercentage: data.barWidth === undefined || data.barWidth === "" ? undefined : Math.max(0, Math.min(1, n(data.barWidth, 80) / 100)), yAxisID: axisId(graph), stack: b(graph.barIsStacked) ? String(n((graph as Record<string, unknown>).barStackId, 0)) : undefined }; }) }} options={{ responsive: true, maintainAspectRatio: false, layout: layoutConfig(data), hover: b(data.disableHoverEffects) ? { mode: null } : undefined, animation: { duration: n(data.animationDuration, 1000) }, scales, plugins: { legend: { display: false }, mdwChartArea: { color: s(data.chartAreaBackgroundColor) }, tooltip: tooltipConfig(data), datalabels: jsonDatalabels(data, graphs) } }} />;
     // Keep the canvas from eating the whole flex box, else the legend spills outside the widget frame.
     const chartBox = (
       <div style={{ flex: 1, minWidth: 0, minHeight: 0, position: "relative" }}>{chartjs}</div>

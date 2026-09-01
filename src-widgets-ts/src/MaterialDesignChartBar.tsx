@@ -1,5 +1,5 @@
 import React from "react";
-import { MAX_DYNAMIC_ITEMS, squarePreview, indexedFields, itemCount, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, stateValue, sanitizeHtml, boolValue as b, numberValue as n, textValue as s } from './widgetUtils';
+import { MAX_DYNAMIC_ITEMS, squarePreview, indexedFields, itemCount, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, stateValue, sanitizeHtml, visLocale, boolValue as b, numberValue as n, textValue as s } from './widgetUtils';
 import type { RxWidgetInfo } from "@iobroker/types-vis-2";
 import { colorSchemes, scheme } from "./MaterialDesignColorScheme";
 import { ChartLegend, MaterialDesignChartCanvas, datalabelsConfig, layoutConfig, tooltipConfig, tooltipNumber } from "./MaterialDesignChartCanvas";
@@ -56,7 +56,7 @@ export function buildBars(data: Data, source: Record<string, unknown>[] | null, 
       ),
       valueText: s(
         row?.valueText,
-        s(indexed(data, "valueText", i), value.toLocaleString(undefined, { minimumFractionDigits: minDecimals, maximumFractionDigits: decimals })),
+        s(indexed(data, "valueText", i), value.toLocaleString(visLocale(), { minimumFractionDigits: minDecimals, maximumFractionDigits: decimals })),
       ),
       // Empty means "not configured": the label color is then derived from the bar it is drawn on.
       valueColor: s(
@@ -547,7 +547,7 @@ export default class MaterialDesignChartBar extends VisWidget {
       ...(on(data.axisMaxLabel) === undefined ? {} : { maxTicksLimit: on(data.axisMaxLabel) }),
       ...((data.axisValueMinDigits === undefined || data.axisValueMinDigits === "") && (data.axisValueMaxDigits === undefined || data.axisValueMaxDigits === "") && !valueSuffix
         ? {}
-        : { callback: (value: unknown) => `${Number.isFinite(Number(value)) ? Number(value).toLocaleString(undefined, valueDigits) : s(value)}${valueSuffix}` }),
+        : { callback: (value: unknown) => `${Number.isFinite(Number(value)) ? Number(value).toLocaleString(visLocale(), valueDigits) : s(value)}${valueSuffix}` }),
     };
     const catAxis = axisOf(horizontal ? "y" : "x");
     if (data.axisLabelAutoSkip !== undefined && data.axisLabelAutoSkip !== "") {

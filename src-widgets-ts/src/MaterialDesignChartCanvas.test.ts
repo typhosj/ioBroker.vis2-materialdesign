@@ -97,8 +97,9 @@ describe('tooltipConfig geometry', () => {
 
 describe('tooltipNumber', () => {
     it('formats with the configured decimals, and stays out of the way without them', () => {
-        expect(tooltipNumber({ tooltipValueMinDecimals: 2, tooltipValueMaxDecimals: 2 }, 3.14159))
-            .toBe((3.14159).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+        // The decimal separator comes from the runtime locale; the test must not pin it.
+        expect(tooltipNumber({ tooltipValueMinDecimals: 2, tooltipValueMaxDecimals: 2 }, 3.14159)?.replace(',', '.'))
+            .toBe('3.14');
         expect(tooltipNumber({}, 3.14159)).toBeUndefined();
         expect(tooltipNumber({ tooltipValueMaxDecimals: 1 }, 'not a number')).toBeUndefined();
     });
