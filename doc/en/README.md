@@ -67,6 +67,33 @@ classic style already uses: `auto` takes it from VIS 2's own theme, `light` and
 `dark` force one. The **Design** tab derives the complete Material 3
 scheme from one seed color; leave the seed empty for Google's baseline palette.
 
+### Setting the scheme from a script
+
+The finished scheme lives in the `vis2-materialdesign.0.colors.md3Scheme` state
+as JSON text the widgets read directly — unlike the seed color, a scheme written
+by a script takes effect immediately, without saving the **Design** tab:
+
+```json
+{
+  "light": { "primary": "#65558f", "on-primary": "#ffffff", "surface": "#fef7ff" },
+  "dark":  { "primary": "#cfbdfe", "on-primary": "#36275d", "surface": "#141218" }
+}
+```
+
+Both blocks are optional and are evaluated independently. These 18 role names are
+accepted:
+
+`primary`, `on-primary`, `primary-container`, `on-primary-container`,
+`secondary`, `secondary-container`, `on-secondary-container`, `tertiary`,
+`error`, `surface`, `surface-container-low`, `surface-container`,
+`surface-container-high`, `on-surface`, `on-surface-variant`, `outline`,
+`outline-variant`, `scrim`
+
+A value must be a hex color (`#abc` or `#aabbcc`). Unknown role names, other
+color formats and invalid JSON are ignored, and every role you leave out falls
+back to Google's baseline palette — so an empty state means the full baseline
+palette. The font comes from `vis2-materialdesign.0.fonts.md3Font` the same way.
+
 Each widget page shows both styles side by side in light and dark mode.
 
 **show advanced options**, right below the style, reveals the rarely used option

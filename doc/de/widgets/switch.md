@@ -29,7 +29,9 @@ selbsterklärend.
 - **Beschriftungsposition** – links, rechts oder aus.
 - **Beschriftungs-Klick aktivieren** – ein Klick auf die Beschriftung schaltet den Wert um, nicht nur der Schalter.
 
-**Farben** steuert Thumb, Track, Aktiv- und Hoverfarben. **Verriegeln** ergänzt
+**Farben** steuert Thumb, Track, Aktiv- und Hoverfarben; im Stil Material 3
+kommt dort **Material-3-Schalter mit Häkchen** dazu, das ein Häkchen in den
+eingeschalteten Griff zeichnet. **Verriegeln** ergänzt
 Entsperren und eine automatische Wiederverriegelung; für das **Symbol** lässt
 sich ein Icon oder ein Bild auswählen.
 

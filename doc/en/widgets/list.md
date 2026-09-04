@@ -16,33 +16,62 @@ language, so the screenshots are German.
 
 <img src="../../media/vis2_list_editor_overview.png" width="340" alt="List layout and data options">
 
-**List layout**
+**layout of list**
 
-- **list type** – text row, state / toggle / navigation / link button, switch or checkbox.
-- **list layout** – standard, card or outlined card.
-- **divider style** – separator drawn between rows.
+- **type of list** – applies to every row: `text`, `Button State`, `toggle Button`,
+  `toggle Button (read only)`, `Button Navigation`, `Button Link`, `switch`,
+  `Switch (read only)`, `checkbox` or `checkbox (read only)`. The read-only variants
+  show the state but write nothing.
+- **layout** – `standard`, `card` or `cardOutlined`.
+- **divider style** – `standard`, `padded` or `inset`.
 
-**Data of the list**
+**list header**
 
-- **data method** – indexed editor entries or a JSON object state.
-- **number of entries** – how many indexed row groups exist (editor method).
+- **header** – headline above the list, with its own alignment, height, paddings, color, font and icon. Left empty, no header is drawn.
 
-Each row is configured in its own indexed **List item [n]** group:
+**data of list**
+
+- **input method for the list data** – `via editor` (indexed row groups) or `JSON string` (one state carries every row).
+- **Editor: count of list items** – how many indexed row groups exist.
+- **JSON-String: object id** – the state holding the JSON array, only for the `JSON string` method.
+
+Each row is configured in its own indexed **layout of list item [n]** group:
 
 <img src="../../media/vis2_list_editor_2.png" width="340" alt="Indexed list item entry">
 
-- **object id** – state controlled by the row (switch, checkbox, button). It
+- **oid** – state controlled by the row (switch, checkbox, button). It
   does not display a value — put a binding into one of the texts for that, see
   [Show values inside texts](../README.md#show-values-inside-texts).
-- **label / subLabel / right label** – primary, secondary and right-aligned text.
-- **icon + active color** – row icon and its on-state color.
-- **button / toggle values** – the value(s) written by the button/toggle list types.
+- **headline** – group headline above this row, to split a list into sections.
+- **Label / second text / text on right / second text on right** – the four texts of a row.
+- **icon / icon color** and **icon active / icon active color** – row icon, swapped for the active state. Without an active icon the normal one stays.
+- **divider** – divider below this row.
+- **Button State: value** – the value a `Button State` row writes.
+- **Button Navigation: View** – target view of a `Button Navigation` row.
+- **Button Link: URL** – address of a `Button Link` row.
 
-Minimal JSON example:
+With the `JSON string` method the state holds an array of objects, whose keys are
+named differently from the editor fields:
 
 ```json
 [{ "objectId": "0_userdata.0.light", "text": "Light", "subText": "Living room", "image": "lightbulb" }]
 ```
+
+| Key | Editor field |
+|---|---|
+| `objectId` | oid |
+| `text` / `subText` | Label / second text |
+| `rightText` / `rightSubText` | text on right / second text on right |
+| `image` / `imageColor` | icon / icon color |
+| `imageActive` / `imageActiveColor` | icon active / icon active color |
+| `header` | headline |
+| `showDivider` | divider |
+| `buttonStateValue` | Button State: value |
+| `buttonNavView` | Button Navigation: View |
+| `buttonLink` | Button Link: URL |
+
+Keys you leave out stay empty; without `text` a row reads `Item n`. Anything past
+100 entries is cut off, and invalid JSON shows a red error row instead of the list.
 
 ## Design style
 

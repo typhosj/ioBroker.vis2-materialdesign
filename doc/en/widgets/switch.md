@@ -29,7 +29,9 @@ ioBroker system language, so the screenshots are German.
 - **label position** – left, right or off.
 - **enable label click** – lets a click on the label toggle the value, not only the switch.
 
-The optional **Colors** group controls thumb, track, active and hover colors.
+The **Colors** group controls thumb, track, active and hover colors; in the
+Material 3 style it also holds **Material 3 switch with check icon**, which draws
+a check mark inside the switched-on thumb.
 **Locking** adds an unlock overlay and an automatic re-lock delay; for its **icon**
 you can select an icon or an image.
 

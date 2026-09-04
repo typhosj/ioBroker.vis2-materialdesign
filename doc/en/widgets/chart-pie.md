@@ -23,6 +23,10 @@ Settings not listed below are self-explanatory.
 
 - **General** – data source (editor segments or one JSON state), segment count, object id, **type** (pie or doughnut) and the **cutout** that sizes the empty center. Per editor segment, an indexed group adds its object id, label and color.
 
+The value labels on the segments live in the **pie chart values layout:**
+group, see
+[Values drawn on the chart](charts.md#values-drawn-on-the-chart).
+
 The shared **Chart layout**, **Legend** and **Tooltip** groups from
 [Charts](charts.md) apply here too.
 

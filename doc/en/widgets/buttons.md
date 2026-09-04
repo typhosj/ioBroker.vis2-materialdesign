@@ -25,7 +25,11 @@ listed below are self-explanatory.
 - **Link** – URL and *open in new window*.
 - **State** – object id and the value written on click.
 - **Addition** – *value* is the step, a plain number to count up and a `-` prefix to count down. *Min/Max* clamps the result: `0;100` sets both ends, a single number bounds the direction of the step – with a step of `5`, `50` is the maximum; with a step of `-1`, `5` is the minimum. Empty means unbounded.
-- **Toggle** – *toggle type* (`boolean` or custom off / on value) and *push button* (write on press and release).
+- **Toggle** – *type of toggle* (`boolean`, or `value` with its own *value for on* /
+  *value for off*), *push button* (write on press and release) and *Read only*
+  (shows the state, writes nothing). With `value`, *state if value unequal to 'on'
+  condition* decides how a third value counts: `off` means only the on-value
+  switches on, `on` means everything but the off-value does.
 
 **Label**
 
@@ -48,6 +52,12 @@ action runs.
 - **unelevated** – the same filled container without the shadow.
 - **outlined** – outline only, transparent container.
 - **text** – label only, neither outline nor container.
+
+**Material 3 button variant** (*Material 3* style only, in the same place)
+
+- **filled** (default), **tonal**, **elevated**, **outlined** and **text**. The icon
+  buttons carry a **Material 3 icon button variant** instead, with `standard`,
+  `filled`, `tonal` and `outlined`.
 
 **On state** – *label true*, *active label color*, *active background*, *active
 image* and *active image color* apply while the button is active. Active means

@@ -23,6 +23,10 @@ deutsch. Nicht aufgeführte Einstellungen sind selbsterklärend.
 
 - **Allgemein** – Datenquelle (Editor-Abschnitte oder ein JSON-State), Anzahl der Abschnitte, Objekt-ID, **Typ** (Kreis oder Ring) und der **Ausschnitt**, der die leere Mitte bemisst. Je Editor-Abschnitt ergänzt eine indizierte Gruppe dessen Objekt-ID, Beschriftung und Farbe.
 
+Die Wertelabels an den Segmenten liegen in der Gruppe
+**Kreisdiagrammwerte Layout:**, siehe
+[Werte am Diagramm](charts.md#werte-am-diagramm).
+
 Die gemeinsamen Gruppen **Diagramm Layout**, **Legende** und **Tooltip** aus
 [Diagramme](charts.md) gelten hier ebenfalls.
 

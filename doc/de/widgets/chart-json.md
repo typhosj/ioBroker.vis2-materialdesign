@@ -48,8 +48,11 @@ daher ist der Screenshot deutsch.
 
 - **Allgemein** – die Objekt-ID des oben beschriebenen JSON-States und der globale **Diagrammtyp** (`bar` oder `line`) für Datenreihen ohne eigenes `type`.
 
-Kartenlayout sowie die gemeinsamen Gruppen **Legende**, **Tooltip** und Achsen
-aus [Diagramme](charts.md) gelten; das Aussehen je Datenreihe stammt aus den
+- **x-Achse** / **y-Achse** – Titel, Position, Farben, **Gitterlinien anzeigen** und **Farbe der Gitternetzlinien**. **Versatz der x-Achsen-Gitterlinien** legt die Linien zwischen die Kategorien statt mitten hindurch — passend für Balken.
+- **Balkendiagrammwerte Layout:** – schreibt die Werte an die Balken und Punkte, siehe [Werte am Diagramm](charts.md#werte-am-diagramm). Vorbelegt ist hier `Nein`, ein Diagramm ohne gesetzte Optionen zeichnet also weiter keine Labels.
+
+Kartenlayout sowie die gemeinsamen Gruppen **Legende** und **Tooltip** aus
+[Diagramme](charts.md) gelten ebenfalls; das Aussehen je Datenreihe stammt aus den
 JSON-Eigenschaften unten.
 
 ## Eigenschaften einer Datenreihe

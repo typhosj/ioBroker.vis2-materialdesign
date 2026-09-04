@@ -48,7 +48,10 @@ screenshot is German.
 
 - **General** – the object id of the JSON state described above and the global **chart type** (`bar` or `line`) used by datasets without their own `type`.
 
-The card layout, shared **Legend**, **Tooltip** and axis groups from
+- **x axis** / **y axis** – title, position, colors, **show gridlines** and **gridlines color**. **x-axis gridlines offset** puts the lines between the categories instead of through them — what bars want.
+- **bar chart values layout:** – writes the values onto the bars and points, see [Values drawn on the chart](charts.md#values-drawn-on-the-chart). It defaults to `no` here, so a chart with none of these options set keeps drawing no labels.
+
+The card layout and the shared **Legend** and **Tooltip** groups from
 [Charts](charts.md) apply;
 per-dataset appearance comes from the JSON properties below.
 

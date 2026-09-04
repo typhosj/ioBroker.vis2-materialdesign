@@ -30,6 +30,10 @@ German. Settings not listed below are self-explanatory.
 - **Y axis** – axis title, position (left / right), gridlines and axis/label visibility. The value-axis **minimum / maximum** live in the Chart layout group (empty = automatic scaling).
 - **Tooltip** – enable the tooltip and set its colors; a per-dataset `tooltipText` overrides the generated text.
 
+The value labels on the bars live in the **bar chart values layout:**
+group, see
+[Values drawn on the chart](charts.md#values-drawn-on-the-chart).
+
 The shared **Chart layout**, **Legend** and color-scheme groups from
 [Charts](charts.md) apply here too.
 

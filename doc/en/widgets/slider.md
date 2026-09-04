@@ -17,28 +17,32 @@ language, so the screenshots are German.
 
 **General**
 
-- **oid** – the value state; **oid-working** optionally reports that a device is still moving to the target.
-- **orientation / reverse** – horizontal or vertical, and inverted direction.
-- **min / max / step** – value range and increment.
-- **read only** – shows the value but never writes it.
+- **oid** – the value state; **working object ID** optionally reports that a device is still moving to the target.
+- **orientation** (`horizontal`, `vertical`) and **invert slider** – inverted direction.
+- **min / max / step** – value range and increment, 0, 100 and 1 by default. If min equals max, the widget uses min + 100.
+- **Read only** – shows the value but never writes it.
+- **Send value on release** – writes once at the end instead of while dragging.
+- **knob size** – `small`, `medium` or `big`, for touchscreen use.
 
 **Scale (ticks)**
 
-- **show ticks** – draws tick marks along the track.
-- **tick labels** – shows the value at each tick; tick size and colors follow.
+- **show steps** – `don't display`, `show when operated` or `always show`.
+- **text of steps (comma separated)** – the tick captions, e.g. `off, half, full`. The number of captions also decides how many ticks are drawn; without captions it follows min, max and step.
 
 <img src="../../media/vis2_slider_editor_2.png" width="340" alt="Slider label and thumb label options">
 
 **Label**
 
-- **prepend text** – caption shown left of the slider.
-- **value label style / unit** – raw value or percent, plus a unit suffix.
-- **min / max texts** and **less-than / greater-than replacement texts** – show fixed text at the ends or below/above a limit instead of the number.
+- **text prepanded** – caption shown left of the slider, with its own width, color and font.
+- **show value** (on by default), **value caption style** (`value` or `percent`) and **unit** – the number beside the slider. **distance label** is its width in pixels (default 50).
+- **text for value less or equal than minimum / maximum** – fixed text at the two ends instead of the number. The second field applies at the maximum; the editor label is misleading.
+- **'smaller than' condition for the text of the value** / **text for 'smaller than'** and the "greater than" counterpart – replace the number below or above a limit, e.g. "off" under 1.
 
-**Thumb label**
+**layout of the controller label**
 
-- **show thumb label** – off, while dragging or always.
-- Thumb **size**, background and font colors follow.
+- **show label** – `don't display`, `show when operated` or `always show`.
+- **use rules of the text** – the thumb label reuses the replacement texts of the value caption; without it, it always shows the bare number.
+- Thumb size, background and font colors follow.
 
 ## Design style
 

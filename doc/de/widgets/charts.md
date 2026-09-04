@@ -41,3 +41,21 @@ ordnen Einträge horizontal an, links/rechts vertikal.
 **Tooltip** – zeigt Werte beim Berühren oder Überfahren eines Diagrammelements.
 
 Ein **Farbschema** verteilt eine Palette auf Datensätze ohne eigene Farbe.
+
+## Werte am Diagramm
+
+Alle vier Diagramme können ihre Werte direkt an die Balken, Segmente oder Punkte
+schreiben. Die Felder heißen überall gleich, stehen aber an unterschiedlichen
+Stellen: im Balken- und im JSON-Diagramm in der Gruppe **Balkendiagrammwerte
+Layout:**, im Kreisdiagramm in **Kreisdiagrammwerte Layout:** und im
+Linienverlaufsdiagramm je Datensatz in dessen indizierter Gruppe.
+
+- **Werte anzeigen** – `Ja`, `Nein` oder `automatisch` (nur wo genug Platz ist).
+- **jeden n-ten Wert beschriften** – dünnt dichte Reihen aus.
+- **minimale / maximale Dezimalstellen** und **Werte Textanhang** – Format und Einheit.
+- **Positionierung**, **Position ausrichten**, **Werte Positionsoffset**, **Textausrichtung** und **Textrotation** – wo das Label relativ zum Datenpunkt sitzt.
+- Schriftfarbe, -art und -größe.
+- **Hintergrundfarbe Wertelabel**, **Rahmenfarbe Wertelabel**, **Rahmenbreite Wertelabel** und **Eckenradius Wertelabel** – setzen das Label in eine eigene Box, damit es auf einem farbigen Balken lesbar bleibt.
+
+Die Gruppen von Balken-, JSON- und Kreisdiagramm liegen hinter **Erweiterte
+Optionen anzeigen**.

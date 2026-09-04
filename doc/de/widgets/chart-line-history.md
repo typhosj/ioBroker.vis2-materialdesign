@@ -60,6 +60,7 @@ Chart-Timeout erhöhen.
 - X-Achsen-Zeitformat verwendet Moment-Format-Token, beispielsweise `HH:mm` für eine 24-Stunden-Anzeige. Dasselbe Format wird auf Sekunden, Minuten, Stunden und Tage angewendet.
 - Die Beschriftung der X-Achse hat eine eigene Farbe, Schriftart und Schriftgröße, wie die der Y-Achse. Leer gelassen gelten die Vorgaben des Diagramms.
 - Tooltip-Modus `index` vergleicht Reihen am gleichen X-Wert; `nearest` zeigt den nächstgelegenen Punkt.
+- Die Wertelabels an den Punkten liegen in derselben Datensatzgruppe wie die Linie, samt Hintergrund, Rahmen und Eckenradius, siehe [Werte am Diagramm](charts.md#werte-am-diagramm).
 
 ## Gestaltungsstil
 

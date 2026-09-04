@@ -30,6 +30,10 @@ deutsch. Nicht aufgeführte Einstellungen sind selbsterklärend.
 - **y-Achse** – Achsentitel, Position (links / rechts), Gitterlinien und Sichtbarkeit von Achse/Beschriftung. Das **Minimum / Maximum** der Wertachse liegt in der Gruppe Diagramm Layout (leer = automatische Skalierung).
 - **Tooltip** – Tooltip aktivieren und Farben setzen; ein `tooltipText` je Datensatz ersetzt den erzeugten Text.
 
+Die Wertelabels an den Balken liegen in der Gruppe
+**Balkendiagrammwerte Layout:**, siehe
+[Werte am Diagramm](charts.md#werte-am-diagramm).
+
 Die gemeinsamen Gruppen **Diagramm Layout**, **Legende** und Farbschema aus
 [Diagramme](charts.md) gelten hier ebenfalls.
 

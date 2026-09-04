@@ -40,3 +40,20 @@ arrange entries horizontally, left / right vertically.
 
 A **color scheme** distributes a palette across datasets that have no individual
 color.
+
+## Values drawn on the chart
+
+All four charts can write their values right onto the bars, segments or points.
+The fields are named alike everywhere but sit in different places: in the bar and
+JSON chart in the **bar chart values layout:** group, in the pie chart in **pie
+chart values layout:**, and in the line history chart per dataset, inside its
+indexed group:
+
+- **show values** – `yes`, `no` or `automatic` (only where there is room).
+- **label every nth value** – thins out dense series.
+- **minimal / maximal decimals** and **values text appendix** – format and unit.
+- **positioning**, **position align**, **values position offset**, **text align** and **text rotation** – where the label sits relative to the data point.
+- font color, family and size.
+- **value label background color**, **value label border color**, **value label border width** and **value label corner radius** – put the label into a box of its own so it stays readable on a colored bar.
+
+The groups of the bar, JSON and pie chart sit behind **show advanced options**.

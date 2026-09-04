@@ -24,7 +24,11 @@ Variante im Widget-Set **Material Design** wählen, markieren und den Reiter
 - **Link** – URL und *in neuem Fenster öffnen*.
 - **State** – Objekt-ID und der beim Klick geschriebene Wert.
 - **Addition** – *Wert* ist die Schrittweite, als Zahl ohne Vorzeichen für aufwärts und mit `-` für abwärts. *Min/Max* begrenzt das Ergebnis: `0;100` setzt beide Enden, eine einzelne Zahl begrenzt die Richtung der Schrittweite – bei `5` als Schritt ist `50` das Maximum, bei `-1` als Schritt ist `5` das Minimum. Leer heißt unbegrenzt.
-- **Toggle** – *Umschalttyp* (`boolean` oder eigene Aus-/Ein-Werte) und *Taster* (bei Drücken und Loslassen schreiben).
+- **Toggle** – *Art der Umschaltung* (`boolean` oder `value` mit eigenem *Wert für
+  ein* / *Wert für aus*), *Taster* (bei Drücken und Loslassen schreiben) und *Nur
+  lesen* (zeigt den Zustand, schreibt nichts). Bei `value` entscheidet *Zustand,
+  wenn der Wert nicht der Bedingung 'Ein' entspricht*, wie ein dritter Wert gilt:
+  `off` heißt nur der Ein-Wert schaltet an, `on` heißt alles außer dem Aus-Wert.
 
 **Beschriftung**
 
@@ -47,6 +51,12 @@ Entsperr-Klick vor der Aktion.
 - **unelevated** – dieselbe gefüllte Fläche ohne Schatten.
 - **outlined** – nur Rahmen, Fläche transparent.
 - **text** – nur Beschriftung, weder Rahmen noch Fläche.
+
+**Material-3-Schaltflächenvariante** (nur Stil *Material 3*, an derselben Stelle)
+
+- **filled** (Vorgabe), **tonal**, **elevated**, **outlined** und **text**. Die
+  Icon-Buttons haben stattdessen die **Material-3-Icon-Schaltflächenvariante** mit
+  `standard`, `filled`, `tonal` und `outlined`.
 
 **Ein-Zustand** – *Beschriftung true*, *Beschriftungsfarbe für true*, *aktiver
 Hintergrund*, *aktives Bild* und *aktive Bildfarbe* gelten, solange der Button

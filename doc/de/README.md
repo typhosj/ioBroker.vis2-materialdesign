@@ -69,6 +69,34 @@ Der Dark-Mode folgt demselben Datenpunkt
 **Design** leitet das komplette Material-3-Schema aus einer Seed-Farbe ab; ohne
 Seed gilt Googles Basispalette.
 
+### Das Schema per Skript setzen
+
+Das fertige Schema liegt im Datenpunkt `vis2-materialdesign.0.colors.md3Scheme`
+als JSON-Text, den die Widgets direkt lesen — anders als die Seed-Farbe wirkt ein
+per Skript geschriebenes Schema sofort, ohne Speichern im Tab **Design**:
+
+```json
+{
+  "light": { "primary": "#65558f", "on-primary": "#ffffff", "surface": "#fef7ff" },
+  "dark":  { "primary": "#cfbdfe", "on-primary": "#36275d", "surface": "#141218" }
+}
+```
+
+Beide Blöcke sind optional und werden unabhängig voneinander ausgewertet. Erlaubt
+sind diese 18 Rollennamen:
+
+`primary`, `on-primary`, `primary-container`, `on-primary-container`,
+`secondary`, `secondary-container`, `on-secondary-container`, `tertiary`,
+`error`, `surface`, `surface-container-low`, `surface-container`,
+`surface-container-high`, `on-surface`, `on-surface-variant`, `outline`,
+`outline-variant`, `scrim`
+
+Als Wert ist nur eine Hex-Farbe (`#abc` oder `#aabbcc`) zulässig. Unbekannte
+Rollennamen, andere Farbformate und ungültiges JSON werden übergangen, und jede
+nicht gesetzte Rolle fällt auf Googles Basispalette zurück — ein leerer
+Datenpunkt bedeutet also die komplette Basispalette. Die Schriftart kommt
+genauso aus `vis2-materialdesign.0.fonts.md3Font`.
+
 Jede Widget-Seite zeigt beide Stile nebeneinander, hell und dunkel.
 
 **Erweiterte Optionen anzeigen** direkt unter dem Stil blendet die selten

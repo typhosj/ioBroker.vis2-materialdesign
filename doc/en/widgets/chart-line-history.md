@@ -59,6 +59,7 @@ check recording and the selected range first, then increase Chart timeout.
 - X-axis time format uses Moment format tokens, for example `HH:mm` for a 24-hour display. The same format is applied to seconds, minutes, hours and days.
 - The X-axis labels take a color, font and font size of their own, the way the Y-axis labels always did. Left empty, the chart defaults apply.
 - Tooltip mode `index` compares datasets at the same X value; `nearest` shows the closest point.
+- The value labels on the points sit in the same dataset group as the line, background, border and corner radius included, see [Values drawn on the chart](charts.md#values-drawn-on-the-chart).
 
 ## Design style
 
