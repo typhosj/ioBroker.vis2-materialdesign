@@ -529,7 +529,10 @@ export class MaterialDesignViews extends VisWidget {
           const isVisible =
             inRange &&
             (!s(d[`visibilityOid${index}`]) ||
-              !visible(
+              // A condition that holds SHOWS the view. This read used to be negated, so
+              // "== 1" hid the view exactly while the state was 1; MaterialDesignIconList
+              // has always evaluated the same operators this way round.
+              visible(
                 stateValue(
                   this.state,
                   s(d[`visibilityOid${index}`]),

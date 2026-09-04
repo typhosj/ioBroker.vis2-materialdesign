@@ -151,7 +151,9 @@ const actionFields = {
         { name: 'sendValueOnRelease', label: 'sendValueOnRelease', type: 'checkbox' },
         { name: 'valueOff', label: 'valueOff', type: 'number' },
         { name: 'valueOn', label: 'valueOn', type: 'number' },
-        { name: 'sliderWidth', label: 'sliderWidth', type: 'number', default: 20 },
+        // Same data key as the round slider's stroke width, but this one is the arc's diameter —
+        // hence its own label. Renaming the key would drop the value from every saved widget.
+        { name: 'sliderWidth', label: 'sliderDiameter', type: 'number', default: 20 },
         { name: 'sliderThikness', label: 'sliderThikness', type: 'number' },
         { name: 'showInFront', label: 'showInFront', type: 'checkbox' },
         { name: 'showAlways', label: 'showAlways', type: 'checkbox' },

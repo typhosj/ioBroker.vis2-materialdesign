@@ -12,9 +12,10 @@ function widget<T extends MaterialDesignGridViews | MaterialDesignMasonryViews>(
     Kind: new (props: never) => T,
     rxData: Record<string, unknown>,
     width: number,
+    values: Record<string, unknown> = {},
 ): T {
     const instance = new Kind(fixture<never>({ context: {} }));
-    instance.state = fixture<typeof instance.state>({ rxData, values: {} });
+    instance.state = fixture<typeof instance.state>({ rxData, values });
     (instance as unknown as { width: number }).width = width;
     // Embedding a child view is vis-2's job; the tests only care about the box around it.
     (instance as unknown as { getWidgetView: (view: string) => React.JSX.Element }).getWidgetView = view => <span>{view}</span>;
@@ -42,6 +43,27 @@ describe('per-view resolution bounds', () => {
     it('treats an empty bound as no bound', () => {
         const openEnded = { countViews: 1, View0: 'wide', visibleResolutionGreaterThan0: 400, visibleResolutionLessThan0: '' };
         expect(markup(widget(MaterialDesignGridViews, openEnded, 4000))).toContain('display:block');
+    });
+});
+
+describe('per-view visibility condition', () => {
+    // The condition that holds SHOWS the view. It used to be read negated, which made every
+    // "== value" configuration do the exact opposite of what the field promises.
+    const data = { countViews: 1, View0: 'onlyWhenOne', visibilityOid0: 'x.0.mode', visibilityConditionValue0: '1' };
+
+    it('shows the view while the condition holds and hides it otherwise', () => {
+        expect(markup(widget(MaterialDesignGridViews, data, 1200, { 'x.0.mode.val': 1 }))).toContain('display:block');
+        expect(markup(widget(MaterialDesignGridViews, data, 1200, { 'x.0.mode.val': 2 }))).toContain('display:none');
+    });
+
+    it('applies the chosen operator, not just equality', () => {
+        const greater = { ...data, visibilityCondition0: '>' };
+        expect(markup(widget(MaterialDesignGridViews, greater, 1200, { 'x.0.mode.val': 5 }))).toContain('display:block');
+        expect(markup(widget(MaterialDesignGridViews, greater, 1200, { 'x.0.mode.val': 0 }))).toContain('display:none');
+    });
+
+    it('leaves a view without a visibility object visible', () => {
+        expect(markup(widget(MaterialDesignGridViews, { countViews: 1, View0: 'always' }, 1200))).toContain('display:block');
     });
 });
 
