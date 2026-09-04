@@ -39,7 +39,9 @@ The **iFrame** variant replaces the embedded view with a web page:
 
 **iFrame settings**
 
-- **source** – the URL shown in the iFrame.
+- **source** – the URL shown in the iFrame. Only `http:` and `https:` addresses
+  count (plus `mailto:`/`tel:`); a `data:` or `javascript:` value is dropped and the
+  frame stays empty.
 - **disable sandbox** – lifts the iFrame sandbox; only for trusted content that
   does not run otherwise.
 - **horizontal scrolling / vertical scrolling / seamless** – scrollbars and

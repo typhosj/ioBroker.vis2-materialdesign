@@ -38,7 +38,9 @@ Die Variante **iFrame** ersetzt die eingebettete Ansicht durch eine Webseite:
 
 **iFrame Einstellungen**
 
-- **Quelle** – die im iFrame angezeigte URL.
+- **Quelle** – die im iFrame angezeigte URL. Es zählen nur `http:`- und
+  `https:`-Adressen (sowie `mailto:`/`tel:`); ein `data:`- oder `javascript:`-Wert
+  wird verworfen und der Rahmen bleibt leer.
 - **Sandbox deaktivieren** – hebt die iFrame-Sandbox auf; nur für
   vertrauenswürdige Inhalte, die sonst nicht laufen.
 - **horizontal scrollen / vertikal scrollen / nahtlos** – Scrollbalken und
