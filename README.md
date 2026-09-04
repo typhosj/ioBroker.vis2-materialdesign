@@ -100,9 +100,10 @@ Report current VIS 2 problems in the
 
 Feedback on the Material 3 style — how it looks and feels next to what you know
 from the original adapter, not only what crashes — has its own form:
-[Material 3 beta feedback](https://github.com/typhosj/ioBroker.vis2-materialdesign/issues/new?template=material3_beta_feedback.md).
-Material 3 stays opt-in per widget while the beta runs, so nothing you report is
-a reason to wait with an upgrade.
+[Material 3 design feedback](https://github.com/typhosj/ioBroker.vis2-materialdesign/issues/new?template=material3_feedback.md).
+Material 3 is the style newly inserted widgets get; the classic style stays a
+full per-widget option and is not deprecated, so nothing you report is a reason
+to wait with an upgrade.
 
 ## Changelog
 ### **WORK IN PROGRESS**

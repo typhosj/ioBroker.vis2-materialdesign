@@ -1,8 +1,7 @@
 ---
-name: Material 3 beta feedback
+name: Material 3 design feedback
 about: How the Material 3 style behaves in your project — not a crash, just what looks or feels wrong
 title: '[M3] [widget name]: [what looks or feels wrong]'
-labels: 'material3-beta'
 ---
 
 **Which widget, and which design style?**
@@ -11,7 +10,7 @@ Widget type, and whether it is set to `legacy` or `material3` (Style → Design 
 **What did you expect, and what do you see?**
 Screenshots of the same widget in both styles say more than a description. If you
 know the widget from the original VIS Material Design adapter, say how it looked
-there — behavioral familiarity is exactly what this beta cannot test on its own.
+there — that behavioral familiarity is what this form is for.
 
 **Is anything explicitly configured on that widget?**
 Material 3 only fills in values you left empty. A color, font, size or height you
