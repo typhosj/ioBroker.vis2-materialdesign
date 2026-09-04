@@ -12,9 +12,8 @@ Template-IDs verwenden das Suffix `-vertical`, zum Beispiel
 
 ## Editor-Einstellungen
 
-Der Screenshot zeigt die Gruppen **Allgemein**, **Beschriftung** und
-**Bild / Icon** aufgeklappt. Nicht aufgeführte Einstellungen sind
-selbsterklärend.
+Der Screenshot zeigt die Gruppen **Allgemein**, **Beschriftung** und **Symbol**
+aufgeklappt. Nicht aufgeführte Einstellungen sind selbsterklärend.
 
 <img src="../../media/vis2_buttons_vertical_editor_overview.png" width="340" alt="Vertikaler Button Allgemein, Beschriftung und Icon">
 
@@ -23,17 +22,30 @@ selbsterklärend.
 
 **Beschriftung**
 
-- **Ausrichtung** – vertikale Anordnung von Icon und Text.
-- **Abstand zwischen Text und Bild** – Abstand zwischen Icon und Beschriftung.
-- **Beschriftungsbreite** – feste Textbreite.
+- **Ausrichtung** – waagerechte Ausrichtung von Icon und Text in der Spalte:
+  links, Mitte (Vorgabe) oder rechts. Die Reihenfolge von Icon und Text steuert
+  dagegen **Bildposition** in der Gruppe **Symbol**.
+- **Abstand zwischen Text und Bild** – Abstand zwischen Icon und Beschriftung,
+  Vorgabe 2 px.
+- **Buttontext / Beschriftung True** – Text; im Ein-Zustand kann ein zweiter
+  Text erscheinen.
 
-**Bild / Icon**
+Die **Textbreite** der waagerechten Buttons gibt es hier nicht — in der Spalte
+läuft der Text über die volle Breite.
 
-- **Bild** – Material-Design-Iconname oder Bildquelle über dem Text.
-- **Icon-Farbe / Ein-Zustand-Farbe** – einfarbiges Icon umfärben, mit eigener Farbe für den Ein-Zustand.
+**Symbol**
 
-Optionale Gruppen **Farben**, **Feedback** und **Verriegeln** überschreiben das
-Thema und schützen vor versehentlicher Bedienung.
+- **Bild** – Material-Design-Iconname oder Bildquelle, dazu **aktives Bild** für
+  den Ein-Zustand.
+- **Bildfarbe / aktive Bildfarbe** – einfarbiges Icon umfärben, mit eigener
+  Farbe für den Ein-Zustand.
+- **Bildposition** – `oben` (Vorgabe) oder `unten`, also Icon über oder unter
+  dem Text.
+- **Bildhöhe** – Icongröße, Vorgabe 26 px.
+
+Die Gruppen **Farben** und **Verriegeln** erscheinen erst, wenn in **Allgemein**
+der Schalter **Erweiterte Optionen anzeigen** gesetzt ist. Vibration und
+Klickton stehen nicht in einer eigenen Gruppe, sondern unten in **Allgemein**.
 
 ## Gestaltungsstil
 

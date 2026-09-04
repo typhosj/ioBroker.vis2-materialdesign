@@ -10,25 +10,32 @@ the updated queue is written back to the state. Template id:
 
 ## Editor settings
 
-The screenshot shows the **General** and **Layout** groups expanded. Settings not
+The screenshot shows the **Common** and **layout** groups expanded. Settings not
 listed below are self-explanatory. The editor UI follows the ioBroker system
 language, so the screenshots are German.
 
 <img src="../../media/vis2_alerts_editor_overview.png" width="340" alt="Alerts general and layout options">
 
-**General**
+**Common**
 
 - **object id** – state holding the JSON alert array.
-- **max alerts** – how many alerts are shown at once.
-- **min screen resolution** – hides the widget below this screen width.
+- **show max alerts** – how many alerts are shown at once, default 3. Empty or
+  `0` shows every alert in the queue (100 at most).
+- **hide below screen width [px]** – hides the widget below this screen width.
   The rule applies to this widget only, so several alerts widgets in one view can use different widths.
 
-**Layout**
+**layout**
 
-- **layout** – normal, outlined or tile.
-- **dense / elevation / margin bottom** – compactness, shadow depth and spacing between alerts.
-- **border layout** – border style of each alert.
-- **close icon / color** – the dismiss icon and its color; closing removes the alert from the state.
+- **layout** – `normal`, `outlined` or `tile`. The values are untranslated in
+  the editor: `outlined` draws a border instead of a filled surface, `tile`
+  removes the rounded corners.
+- **slim / shadow / distance between alerts** – compactness (on by default),
+  shadow depth 0–24 and the gap below each alert in pixels.
+- **frame** – on which side each alert gets the 6 px colored stripe from
+  `borderColor`: none, top, right, left or bottom.
+- **icon close** / **icon close color** / **icon close color hover / selected** –
+  the dismiss icon, its color and the color while it is held down. Closing
+  removes the alert from the state.
 
 ```json
 [
@@ -43,7 +50,12 @@ language, so the screenshots are German.
 ]
 ```
 
-The state must contain a JSON array. Invalid JSON is shown as an error in the widget.
+Every property is optional. `text` may contain HTML (`<b>`, `<br>`, links);
+scripts and event attributes are stripped before it is shown. `borderColor`
+only has an effect while **frame** is not set to `none`.
+
+The state must contain a JSON array. Invalid JSON is shown as an error in the
+widget. An empty state shows nothing at all.
 
 ## Design style
 

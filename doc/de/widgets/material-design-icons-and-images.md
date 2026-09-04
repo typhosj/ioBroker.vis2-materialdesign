@@ -20,13 +20,17 @@ Der Screenshot zeigt das **Icon**-Widget mit aufgeklappter Gruppe
 
 **Allgemein (Icon-Widget)**
 
-- **Bild** – ein Material-Design-Icon-Name (z. B. `lightbulb`), ein Bildpfad/URL oder eine Data-URL.
-- **Icon-Farbe** – färbt einfarbige SVG/Icons per CSS-Maske um; mehrfarbige Bilder bleiben unverändert.
-- **Icon-Größe für Bild verwenden** / **Breite / Höhe** – erzwingt eine feste Icon-Größe statt der automatischen.
-- **Objekt-ID** – optional; nur nötig, wenn das Icon auf einen Zustandswert reagieren soll.
+- **Symbol** – ein Material-Design-Icon-Name (z. B. `lightbulb`), ein Bildpfad/URL oder eine Data-URL.
+- **Symbolgröße** – Kantenlänge in Pixeln, Vorgabe 50.
+- **Symbolfarbe** – färbt einfarbige SVG/Icons per CSS-Maske um; mehrfarbige Bilder bleiben unverändert.
+
+Das sind alle Felder: das Icon-Widget liest keinen State und hat keine
+Objekt-ID. Soll ein Icon auf einen Wert reagieren, ist das [Wert-Widget](value.md)
+oder ein [Button](buttons.md) das richtige.
 
 Das Widget **Farbschema-Vorschau** zeigt die verfügbaren Material-Design-Paletten,
-**Installierte Version** die paketierte Widget-Version – beide brauchen keine Optionen.
+**Installierte Version** die paketierte Widget-Version. Beide haben außer
+**Gestaltungsstil** und den Theme-Feldern keine Einstellungen.
 
 Icon-/Bildfelder akzeptieren Material-Design-Namen, gängige Bildpfade, HTTP(S)-
 URLs und Data-URLs. SVG-Masken unterstützen eine einzelne konfigurierte Farbe.

@@ -13,21 +13,25 @@ Template ids: `tplVis2-materialdesign-Icon`,
 
 ## Editor settings
 
-The screenshot shows the **Icon** widget with its **General** group expanded.
+The screenshot shows the **Icon** widget with its **Common** group expanded.
 Settings not listed below are self-explanatory. The editor UI follows the
 ioBroker system language, so the screenshots are German.
 
 <img src="../../media/vis2_material_design_icons_and_images_editor_overview.png" width="340" alt="Icon editor options">
 
-**General (Icon widget)**
+**Common (Icon widget)**
 
-- **image** – a Material Design icon name (e.g. `lightbulb`), an image path/URL or a data URL.
+- **icon** – a Material Design icon name (e.g. `lightbulb`), an image path/URL or a data URL.
+- **icon size** – edge length in pixels, 50 by default.
 - **icon color** – recolors single-color SVG/icons through a CSS mask; multi-color images stay unchanged.
-- **use icon size for image** / **width / height** – force a fixed icon size instead of the automatic one.
-- **object id** – optional; only needed when the icon should react to a state value.
+
+That is every field: the icon widget reads no state and has no object id. When an
+icon has to react to a value, the [value widget](value.md) or a
+[button](buttons.md) is the right one.
 
 The **Color Scheme Preview** widget shows the available Material Design palettes,
-and **Installed Version** shows the packaged widget version — both need no options.
+and **Installed Version** shows the packaged widget version. Neither has settings
+beyond **design style** and the theme fields.
 
 Icon/image fields accept Material Design icon names, common image paths, HTTP(S)
 URLs and data URLs. SVG masks support a single configured color.

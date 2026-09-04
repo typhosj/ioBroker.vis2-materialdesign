@@ -18,21 +18,35 @@ selbsterklärend.
 
 **Allgemein**
 
-- **Art der Umschaltung** – `boolean` schreibt `true`/`false`; `value` schreibt stattdessen die unten gesetzten Werte **Wert für aus** / **Wert für ein**.
-- **Zustand, wenn der Wert nicht der Bedingung 'Ein' entspricht** – welcher Zustand (an/aus) angezeigt wird, wenn der gelesene Wert weder zum Aus- noch zum Ein-Wert passt.
-- **auf mobilen Geräten vibrieren [s]** – haptische Rückmeldung beim Drücken (nur mobil).
-- **Klicksound-Lautstärke** – Lautstärke des Klicksounds, wenn *Klicksound abspielen* aktiv ist.
+- **Art der Umschaltung** – `boolean` liest und schreibt `true`/`false`; **Wert**
+  liest und schreibt stattdessen **Wert für aus** / **Wert für ein**. Nur bei
+  `boolean` gilt streng `true` als Ein; jeder andere Wert ist Aus.
+- **Zustand, wenn der Wert nicht der Bedingung 'Ein' entspricht** – greift nur
+  bei der Umschaltung **Wert**: `an` zeigt jeden Wert als Ein, der nicht dem
+  Aus-Wert entspricht, `aus` nur den genauen Ein-Wert.
+- **auf mobilen Geräten vibrieren [ms]** – Dauer der haptischen Rückmeldung beim
+  Drücken in Millisekunden (nur mobil), Vorgabe 50; `0` schaltet die Vibration ab.
+- **Klicksound abspielen** / **Klicksound-Lautstärke** – Klickton beim Schalten
+  und seine Lautstärke von 0 bis 1 (Vorgabe 0,5).
 - **Nur lesen** – zeigt den Zustand an, schreibt aber nie.
 
 **Beschriftung**
 
 - **Beschriftung False / True** – Text neben der Box im Aus- / Ein-Zustand.
 - **Beschriftungsposition** – links, rechts oder aus.
-- **Beschriftungs-Klick aktivieren** – ein Klick auf die Beschriftung schaltet den Wert um, nicht nur die Box.
+- **Beschriftungs-Klick aktivieren** – ein Klick auf die Beschriftung schaltet
+  den Wert um, nicht nur die Box. Vorgabe: an.
+- **Wert-Schriftart / Wert Schriftgröße** – Schrift der Beschriftung.
 
-**Farben** steuert Box, Rahmen, Hover- und Labelfarben. **Verriegeln** ergänzt
-Entsperren und eine automatische Wiederverriegelung; für das **Symbol** lässt
-sich ein Icon oder ein Bild auswählen.
+**Farben** steuert **Kontrollkästchen Farbe**, **Randfarbe**, **Farbe selektiert
+/ hover** sowie **Beschriftungsfarbe** und **Beschriftungsfarbe für true**.
+
+**Verriegeln** legt eine Sperre über das Widget: **Verriegeln aktivieren**
+schaltet sie ein, ein Klick auf das Symbol entriegelt, und **automatisch
+Verriegeln nach [s]** (Vorgabe 10) verriegelt wieder. **Graufilter, wenn
+verriegelt** (Vorgabe 30 %) blasst das gesperrte Widget aus; für das **Symbol**
+lässt sich ein Icon oder ein Bild auswählen, seine Position setzen
+**Symbolabstand von oben / links [%]**.
 
 <img src="../../media/vis2_checkbox_editor_lock.png" width="340" alt="Symbolfeld der Gruppe Verriegeln">
 

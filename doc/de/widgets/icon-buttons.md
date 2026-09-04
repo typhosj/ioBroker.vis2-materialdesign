@@ -20,21 +20,35 @@ Die Screenshots zeigen einen normalen Icon-Button und die kreisförmige Variante
 **Allgemein** – die Aktionsfelder entsprechen der jeweiligen
 [Button](buttons.md)-Variante (Zielansicht, URL, Objekt-ID und Wert, …).
 
-**Bild / Icon**
+Der Icon-Button hat keine Gruppe **Beschriftung** — ihm fehlt der Text.
 
-- **Bild** – Material-Design-Iconname oder Bildquelle.
-- **Icon-Farbe / Ein-Zustand-Farbe** – einfarbiges Icon umfärben; eine eigene Farbe kann den Ein-Zustand markieren.
-- **Icon-Größe** – Größe des Icons im runden Button.
+**Symbol**
+
+- **Bild** / **aktives Bild** – Material-Design-Iconname oder Bildquelle, das
+  zweite für den Ein-Zustand.
+- **Bildfarbe / aktive Bildfarbe** – einfarbiges Icon umfärben; eine eigene
+  Farbe kann den Ein-Zustand markieren.
+- **Bildhöhe** – Größe des Icons im runden Button.
 
 Die Variante **Slider** macht aus dem Button einen kreisförmigen Wert-Slider:
 
 <img src="../../media/vis2_icon_buttons_editor_2.png" width="340" alt="Icon-Button Slider-Variante">
 
-- **nur Slider** – Wertsteuerung ohne Klickaktion.
-- **Wert aus / ein** – auf den Bogen abgebildeter Wertebereich.
-- **Winkelversatz / Bogen** – wo der Bogen beginnt und wie weit er verläuft.
-- **Slider-Breite / -Stärke** – Geometrie des Bogens.
-- **Vordergrund-/Hintergrundfarbe** und **im Vordergrund / immer zeigen** – Bogenfarben und Sichtbarkeit.
+- **Nur Slider** – Wertsteuerung ohne Klickaktion.
+- **Wert erst beim Loslassen senden** – schreibt den Wert nur einmal am Ende der
+  Bewegung statt fortlaufend beim Ziehen.
+- **Wert für aus / Wert für ein** – auf den Bogen abgebildeter Wertebereich,
+  Vorgabe 0 bis 100.
+- **Winkelversatz / Bogenwinkel** – wo der Bogen beginnt (0 heißt oben) und wie
+  viel Grad er umfasst, Vorgabe 360.
+- **Schieberegler Durchmesser** – Durchmesser des Bogens, 48 bis 160 px; die
+  Strichstärke setzt **Slider-Dicke** (Vorgabe 4 px).
+- **Vordergrundfarbe / Hintergrundfarbe** – Bogen und Bogenspur.
+- **Vorne anzeigen** legt den Bogen über das Icon statt darunter, **Immer
+  anzeigen** hält ihn sichtbar; ohne den Schalter erscheint er nur bei Hover
+  oder Berührung.
+- **Einfärben** / **Einfärbungsfaktor** – dimmt das Icon mit sinkendem Wert; der
+  Faktor (Vorgabe 0,5) bestimmt, wie stark.
 
 Unterstützt werden Material-Design-Iconnamen, lokale Bilder, URLs und Data-URLs.
 

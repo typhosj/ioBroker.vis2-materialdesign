@@ -18,24 +18,37 @@ ioBroker system language, so the screenshots are German.
 
 <img src="../../media/vis2_icon_buttons_editor_overview.png" width="340" alt="Icon button general and icon options">
 
-**General** – the action fields match the corresponding [button](buttons.md)
+**Common** – the action fields match the corresponding [button](buttons.md)
 variant (target view, URL, object id and value, …).
 
-**Image / Icon**
+The icon button has no **labeling** group — it carries no text.
 
-- **image** – Material Design icon name or image source.
-- **icon color / on-state color** – recolor a single-color icon; a separate color can mark the on state.
-- **icon size** – size of the icon inside the round button.
+**icon**
+
+- **Image** / **active image** – Material Design icon name or image source, the
+  second one for the on state.
+- **image color / active image color** – recolor a single-color icon; a separate
+  color can mark the on state.
+- **image height** – size of the icon inside the round button.
 
 The **Slider** variant turns the button into a circular value slider:
 
 <img src="../../media/vis2_icon_buttons_editor_2.png" width="340" alt="Icon button slider variant options">
 
-- **slider only** – value control without the click action.
-- **value off / on** – value range mapped onto the arc.
-- **angle offset / arc** – where the arc starts and how far it sweeps.
-- **slider width / thickness** – geometry of the arc.
-- **foreground / background color** and **show in front / always** – arc colors and when the arc is visible.
+- **Slider only** – value control without the click action.
+- **Send value on release** – writes the value once at the end of the drag
+  instead of continuously.
+- **value for off / value for on** – value range mapped onto the arc, 0 to 100
+  by default.
+- **Angle offset / Arc angle** – where the arc starts (0 is the top) and how
+  many degrees it sweeps, 360 by default.
+- **slider diameter** – diameter of the arc, 48 to 160 px; the stroke width is
+  **Slider thickness** (4 px by default).
+- **Foreground color / background color** – arc and arc track.
+- **Show in front** puts the arc above the icon instead of below it, **Always
+  show** keeps it visible; without it the arc only appears on hover or touch.
+- **Colorize** / **Colorize factor** – dims the icon as the value drops; the
+  factor (0.5 by default) sets how strongly.
 
 Material Design icon names, local image paths, URLs and data URLs are supported.
 Single-color SVGs can be recolored with the icon color.

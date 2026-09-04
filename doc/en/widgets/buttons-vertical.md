@@ -12,28 +12,41 @@ Template ids use the suffix `-vertical`, for example
 
 ## Editor settings
 
-The screenshot shows the **General**, **Label** and **Image / Icon** groups
+The screenshot shows the **Common**, **labeling** and **icon** groups
 expanded. Settings not listed below are self-explanatory. The editor UI follows
 the ioBroker system language, so the screenshots are German.
 
 <img src="../../media/vis2_buttons_vertical_editor_overview.png" width="340" alt="Vertical button general, label and icon options">
 
-**General** – the action fields match the corresponding normal
+**Common** – the action fields match the corresponding normal
 [button](buttons.md) (Navigation, Link, State, Multi State, Addition, Toggle).
 
-**Label**
+**labeling**
 
-- **alignment** – vertical arrangement of icon and text.
-- **distance between text and image** – spacing between the icon and the caption.
-- **label width** – fixed caption width.
+- **alignment** – horizontal alignment of icon and text inside the column: left,
+  center (default) or right. Their order is set by **image position** in the
+  **icon** group instead.
+- **distance between text and image** – spacing between the icon and the
+  caption, 2 px by default.
+- **Button text / Label true** – caption; a second text can be shown in the on
+  state.
 
-**Image / Icon**
+The **text width** of the horizontal buttons does not exist here — in a column
+the caption uses the full width.
 
-- **image** – Material Design icon name or image source shown above the text.
-- **icon color / on-state color** – recolor a single-color icon, with a separate color for the on state.
+**icon**
 
-Optional **Colors**, **Feedback** and **Locking** groups override the theme and
-protect the button against accidental activation.
+- **Image** – Material Design icon name or image source, plus **active image**
+  for the on state.
+- **image color / active image color** – recolor a single-color icon, with a
+  separate color for the on state.
+- **image position** – `top` (default) or `bottom`, so the icon sits above or
+  below the text.
+- **image height** – icon size, 26 px by default.
+
+The **colors** and **Locking** groups only appear once **show advanced options**
+is ticked in **Common**. Vibration and the click sound have no group of their
+own — they sit at the bottom of **Common**.
 
 ## Design style
 

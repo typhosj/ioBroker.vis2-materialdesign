@@ -17,21 +17,34 @@ the ioBroker system language, so the screenshots are German.
 
 **General**
 
-- **type of toggle** – `boolean` writes `true`/`false`; `value` writes the custom **off value** / **on value** below instead.
-- **state if value unequal to on** – which state (on/off) is shown when the read value matches neither the off nor the on value.
-- **vibrate on mobile devices [s]** – haptic feedback duration on press (mobile only).
-- **click sound volume** – volume of the click sound when *play click sound* is enabled.
+- **type of toggle** – `boolean` reads and writes `true`/`false`; `Value` reads
+  and writes **value for off** / **value for on** instead. Under `boolean` only
+  a strict `true` counts as on, everything else is off.
+- **state if value unequal to 'on' condition** – only applies to the `Value`
+  toggle: `on` treats every value that is not the off value as on, `off` accepts
+  only the exact on value.
+- **vibrate on mobile devices [ms]** – haptic feedback duration on press in
+  milliseconds (mobile only), default 50; `0` turns the vibration off.
+- **Play click sound** / **Click sound volume** – click tone when switching and
+  its volume from 0 to 1 (default 0.5).
 - **read only** – shows the state but never writes it.
 
 **Label**
 
-- **label False / label True** – text shown next to the box in the off / on state.
-- **label position** – left, right or off.
-- **enable label click** – lets a click on the label toggle the value, not only the box.
+- **Label false / Label true** – text shown next to the box in the off / on state.
+- **Label position** – left, right or off.
+- **activate label click** – lets a click on the label toggle the value, not
+  only the box. On by default.
+- **Value font / value font size** – font of the label.
 
-The optional **Colors** group controls box, border, hover and label colors.
-**Locking** adds an unlock overlay and an automatic re-lock delay; for its **icon**
-you can select an icon or an image.
+The **colors** group controls **checkbox color**, **border color**, **hover
+color of checkbox**, **label color** and **active label color**.
+
+**Locking** puts a lock over the widget: **enable Locking** switches it on, a
+click on the icon unlocks, and **auto Locking after [s]** (default 10) locks
+again. **gray filter if locked** (default 30 %) fades the locked widget; for its
+**icon** you can select an icon or an image, and **symbol distance from top /
+left [%]** places it.
 
 <img src="../../media/vis2_checkbox_editor_lock.png" width="340" alt="Locking group icon field">
 

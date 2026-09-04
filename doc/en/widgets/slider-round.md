@@ -9,29 +9,44 @@ A circular native VIS 2 slider for numeric states. Template id:
 
 ## Editor settings
 
-The screenshot shows the **General** and **Label** groups expanded. Settings not
+The screenshot shows the **Common** and **labeling** groups expanded. Settings not
 listed below are self-explanatory. The editor UI follows the ioBroker system
 language, so the screenshots are German.
 
 <img src="../../media/vis2_slider_round_editor_overview.png" width="340" alt="Round slider general and label options">
 
-**General**
+**Common**
 
-- **oid** – value state; **oid-working** optionally reports that a device is still moving.
-- **min / max / step** – value range and increment.
-- **start angle / arc length** – where the circular track begins and how far it sweeps.
-- **slider width / handle size** – stroke thickness and knob size.
-- **rtl** – reverses the direction (counter-/clockwise).
-- **read only** – shows the value without accepting input.
+- **Object ID** – value state; **working object ID** disables the slider while
+  that state reports the device is still moving.
+- **Minimum / Maximum / steps** – value range and increment (1 by default).
+- **Send value on release** – writes once at the end of the drag instead of
+  continuously; the knob follows the finger either way.
+- **start angle / arc length** – where the circular track begins (135° by
+  default) and how many degrees it sweeps (270° by default).
+- **slider thickness** (3 by default) and **knob size** (6 by default) count in
+  percent of the widget edge, not in pixels — the drawing sits in a 100×100 grid.
+- **knob size factor** – multiplies the knob size permanently, 1.5 by default.
+- **slider movement from right to left** – reverses the direction.
+- **Read only** – shows the value without accepting input.
 
-**Label**
+**labeling**
 
-- **value label style / unit** – raw value or percent, plus a unit suffix.
-- **vertical position** – places the value label in the center.
-- **min / max texts** and **less-than / greater-than replacement texts** – show fixed text below/above a limit instead of the number.
+- **show value** – value label in the center, on by default; **vertical text
+  position of value** moves it up or down.
+- **value caption style / unit** – `value` appends the unit to the raw value,
+  `percent` shows the floored percentage instead and drops the unit.
+- **text for value less or equal than minimum** applies from the minimum down;
+  **text for value less or equal than maximum**, despite its label, applies from
+  the **maximum** up.
+- **'smaller than' condition for the text of the value** / **text for 'smaller
+  than'** – the text shows between the minimum (exclusive) and that limit
+  (inclusive); **'greater than' condition for the text of the value** / **text
+  for 'greater than'** likewise from that limit up to just below the maximum.
 
-The **Colors** group controls the track background, the active arc (before/after
-the knob) and the knob itself.
+The **colors** group (**background**, **color before regulator**, **color of
+regulator**, **color after regulator**, **text color of value**) only appears
+once **show advanced options** is ticked in **Common**.
 
 ## Design style
 

@@ -13,23 +13,46 @@ and `tplVis2-materialdesign-view-in-widget8`.
 
 ## Editor settings
 
-The screenshot shows the **General** group and one indexed **View** entry of the
+The screenshot shows the **Common** group and one indexed **View** entry of the
 Masonry container. Settings not listed below are self-explanatory. The editor UI
 follows the ioBroker system language, so the screenshots are German.
 
 <img src="../../media/vis2_responsive_layout_editor_overview.png" width="340" alt="Responsive layout general and view options">
 
-**General**
+**Common** (Masonry)
 
-- **number of columns / spacing between views** – the base grid used on desktop.
-- **number of views** – how many indexed **View [n]** groups exist.
-- The **Phone settings** and **Tablet settings** groups override the column count per screen size.
+- **number of columns** (3 by default, 12 at most) and **distance between
+  views** – the base grid used on desktop.
+- **number of views** – how many indexed **View [n]** groups exist, 3 by default.
+- **alignment** – `left`, `center` (default), `right` or `justify` for the
+  content of the columns.
+
+**Common** (Grid) replaces the column count with a **column span** from 1 to 12
+as the default for every view, plus **vertical alignment** and **horizontal
+alignment**. Grid always counts in a 12-column grid: a view with a span of 3
+takes a quarter of the width.
+
+The **mobile phone settings** and **tablet settings** groups only appear once
+**show advanced options** is ticked. Per breakpoint (portrait and landscape)
+they set the switching width, for Masonry the column count and the gap, for Grid
+the column span. Defaults: phone portrait up to 393 px (1 column), landscape up
+to 754 px (2), tablet portrait up to 768 px (2), landscape up to 1024 px (3),
+above that the desktop value.
 
 **View [n]**
 
-- **view** (`Seite`) – the embedded VIS 2 view.
-- **height / width / order** – size and position within the grid (Grid uses explicit row/column spans).
-- **visibility object / condition / value** – show this view only when a state matches.
+- **view** – the embedded VIS 2 view. An empty field shows a dashed placeholder.
+- **height of view** – fixed height; empty means the tile measures its own
+  content. **width of view** exists on Masonry only, **column span** (with the
+  four phone/tablet spans) on Grid only.
+- **sort order** – position in the grid; without it the index counts.
+- **visible when resolution greater than** / **less than** – hides the view
+  outside that widget width. Both fields are optional.
+- **object id for visibility**, **condition for visibility** (`==`, `!=`, `<=`,
+  `>=`, `<`, `>`, `consist`, `not consist`, `exist`, `not exist`) and **value
+  for visibility** – a condition that holds **shows** the view: `==` with `1`
+  means "only show while the state is `1`". Up to 1.0.0 this was inverted;
+  anyone who flipped their condition back then flips it back now.
 
 **Advanced View** selects a single embedded view from a state value; see
 [Advanced View in Widget](html-widgets.md).

@@ -18,16 +18,23 @@ aufgeführte Einstellungen sind selbsterklärend.
 **Allgemein**
 
 - **Objekt-ID** – State mit dem JSON-Meldungs-Array.
-- **max. Meldungen** – wie viele Meldungen gleichzeitig gezeigt werden.
-- **min. Bildschirmauflösung** – blendet das Widget unterhalb dieser Breite aus.
+- **zeige max. Alerts** – wie viele Meldungen gleichzeitig gezeigt werden,
+  Vorgabe 3. Leer oder `0` zeigt alle Meldungen der Warteschlange (maximal 100).
+- **ausblenden unter Bildschirmbreite [px]** – blendet das Widget unterhalb dieser Breite aus.
   Die Regel gilt nur für dieses Widget, mehrere Alerts-Widgets einer Ansicht können also unterschiedliche Breiten verwenden.
 
 **Layout**
 
-- **Layout** – normal, umrandet oder Kachel.
-- **dicht / Höhe / Abstand unten** – Kompaktheit, Schattentiefe und Abstand zwischen Meldungen.
-- **Rand-Layout** – Rahmenstil jeder Meldung.
-- **Schließen-Icon / Farbe** – das Schließen-Icon und seine Farbe; Schließen entfernt die Meldung aus dem State.
+- **Layout** – `normal`, `outlined` oder `tile`. Die Werte stehen im Editor roh
+  da: `outlined` zeichnet einen Rahmen statt einer Fläche, `tile` nimmt die
+  abgerundeten Ecken weg.
+- **schlank / Schatten / Abstand zwischen Alerts** – Kompaktheit (Vorgabe an),
+  Schattentiefe 0–24 und der Abstand unter jeder Meldung in Pixeln.
+- **Rahmen** – auf welcher Seite jede Meldung den 6 px breiten Farbstreifen aus
+  `borderColor` bekommt: keine, oben, rechts, links oder unten.
+- **Schließen Symbol** / **Schließen Symbol Farbe** / **Schließen Symbol Farbe
+  hover / selektiert** – das Schließen-Icon, seine Farbe und die Farbe, solange
+  es gedrückt wird. Schließen entfernt die Meldung aus dem State.
 
 ```json
 [
@@ -42,7 +49,12 @@ aufgeführte Einstellungen sind selbsterklärend.
 ]
 ```
 
+Alle Eigenschaften sind optional. `text` darf HTML enthalten (`<b>`, `<br>`,
+Links); Skripte und Ereignis-Attribute werden vor dem Anzeigen entfernt.
+`borderColor` wirkt nur, wenn **Rahmen** nicht auf „keine“ steht.
+
 Der State muss ein JSON-Array enthalten. Ungültiges JSON erscheint als Fehler.
+Ein leerer State zeigt gar nichts an.
 
 ## Gestaltungsstil
 

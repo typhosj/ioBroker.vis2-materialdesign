@@ -16,28 +16,56 @@ Eintrag. Nicht aufgeführte Einstellungen sind selbsterklärend.
 
 **Allgemein**
 
-- **Objekt-ID** – erhält den gewählten Menü-Index; ein optionaler zweiter State erhält den **Namen** des gewählten Eintrags.
-- **Anzahl Menüeinträge** – Anzahl der indizierten Eintragsgruppen (Editor-Methode).
-- **Standard- / Standardwert deaktivieren** – welcher Eintrag vorausgewählt ist, oder keiner.
+- **Objekt-ID** – erhält den Index des gewählten Eintrags.
+- **Objekt-ID für ausgewählte Menüelement-ID oder Name** – optionaler zweiter
+  State; er erhält die **Menüpunkt-ID** des Eintrags, ersatzweise dessen
+  Beschriftung. Bei einem Untermenü steht dort `Eltern.Kind`.
+- **Index der Navigationselemente anzeigen** – stellt jeder Beschriftung im
+  Drawer ihren Index als `[0]`, `[1]` … voran. Praktisch beim Verdrahten der
+  eingebetteten Ansichten, danach wieder abschalten.
+- **Anzahl der Navigationselemente** – Anzahl der indizierten Eintragsgruppen.
+- **Vorauswahl, solange die Objekt-ID keinen Wert hat** – der Index, der bis zum
+  ersten Menüklick ausgewählt ist; **Vorauswahl deaktivieren** lässt dann nichts
+  ausgewählt.
 
 **Top App Bar Layout**
 
-- **Layout** – Standard, dicht oder kurz.
-- **Titel / gewählten Eintrag als Titel zeigen** – fester Titel oder der aktive Menüeintrag als Titel.
-- **Farben** – Titel-, Hintergrund- und Icon-Farben.
+- **Layout** – `standard`, `dense` oder `short`; die Werte stehen im Editor roh da.
+- **Titel** – fester Titel, Vorgabe „Material Design Widgets“.
+- **Titel des ausgewählten Navigationsleistenelements anzeigen** (Vorgabe an)
+  ersetzt ihn durch den aktiven Menüeintrag, **Symbol des ausgewählten
+  Navigationsleistenelements anzeigen** stellt dessen Icon davor.
+- Farben und Schrift des Balkens setzen die Felder darunter, dazu **z-Index**
+  (Vorgabe 998) für die Stapelreihenfolge gegenüber anderen Widgets.
 
-Die Gruppe **Navigationsleiste: Layout** bestimmt den Drawer-Modus (modal,
-permanent oder automatisch ab einer Bildschirmbreite), Drawer-Breite, Kopfzeile
-und Sichtbarkeit der Beschriftungen.
+Die Gruppe **Navigationsleiste: Layout** bestimmt das **Layout** des Drawers
+(`modal`, `permanent` oder `auto` — `auto` bleibt bis zur unter **Layout 'auto':
+automatische Änderung des Layouts bei Auflösung größer** gesetzten Breite modal,
+Vorgabe 800 px), **Breite**, **Zeilenüberschrift anzeigen** samt **Kopfzeile
+Text**, **Beschriftungen für Listenelemente anzeigen** (aus heißt: nur Symbole)
+und den **Trennlinien Stil** (`standard`, `padded`, `inset`, ebenfalls roh).
+
+Die drei Gruppen **Navigationsleiste: Farben**, **Untermenü-Layout** und
+**Untermenüfarben** erscheinen erst mit dem Schalter **Erweiterte Optionen
+anzeigen** in **Allgemein**.
 
 Die Menüeinträge stammen aus den Daten- und Eintragsgruppen:
 
 <img src="../../media/vis2_top_app_bar_editor_2.png" width="340" alt="Top App Bar Menüdaten und Eintrag">
 
-- **Datenmethode** – indizierte Editor-Einträge oder ein JSON-String.
-- **Menü-ID** – der für diesen Eintrag geschriebene Wert.
-- **Beschriftung / Kopfzeile / Trenner** – Eintragstext, Abschnittskopf-Flag und Trennlinie.
-- **Icon + Farbe**, **Untermenüs** und **Berechtigungsgruppe / Sichtbarkeit** pro Eintrag.
+- **Eingabemethode für die Navigationselemente** – **über den Editor** (die
+  indizierte Gruppe **Navigationsleiste: Element**) oder **JSON-String**. Bei
+  JSON verschwindet die indizierte Gruppe, und **JSON-Sting für
+  Navigationselemente** hält ein Array aus `{ "text", "menuId", "icon",
+  "iconColor", "header", "divider", "subMenus" }`.
+- **Menüpunkt-ID** – der Wert, den die zweite Objekt-ID für diesen Eintrag
+  bekommt. Der Index in der ersten Objekt-ID hängt nicht daran.
+- **Beschriftung / Überschrift / Trennlinie** – Eintragstext, ein Abschnittskopf
+  über dem Eintrag und eine Trennlinie darunter.
+- **Bild** samt Farben und **Untermenüs** – letzteres ein JSON-Array im selben
+  Format wie oben. Ein Eintrag mit Untermenü klappt beim Klick nur auf; **Wert
+  auch schreiben, wenn Eintrag zum Untermenü umschalten gedrückt wird** schreibt
+  zusätzlich seinen Index.
 
 ## Gestaltungsstil
 

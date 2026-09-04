@@ -19,7 +19,7 @@ listed below are self-explanatory.
 
 <img src="../../media/vis2_buttons_editor_overview.png" width="340" alt="Button general and label options">
 
-**General** – the action fields depend on the chosen variant:
+**Common** – the action fields depend on the chosen variant:
 
 - **Navigation** – target VIS 2 view to open.
 - **Link** – URL and *open in new window*.
@@ -31,20 +31,24 @@ listed below are self-explanatory.
   condition* decides how a third value counts: `off` means only the on-value
   switches on, `on` means everything but the off-value does.
 
-**Label**
+**labeling**
 
-- **button text / label true** – caption; a second text can be shown in the on state.
-- **alignment** – icon/text arrangement inside the button.
+- **Button text / Label true** – caption; a second text can be shown in the on state.
+- **text width** – caption width in percent, `0` means automatic. The
+  **alignment** of the [vertical buttons](buttons-vertical.md) does not exist
+  here; **image position** in the **icon** group puts the icon left or right.
 
 The **Multi State** variant replaces the single value with indexed object/value
 rows, each with its own delay:
 
 <img src="../../media/vis2_buttons_editor_2.png" width="340" alt="Multi State indexed object/value entry">
 
-The **Image / Icon** group takes a Material Design icon name or image source (with
-a separate on-state color), **Colors** overrides the theme, **Feedback** adds
-haptics and a click sound, and **Locking** requires an unlock click before the
-action runs.
+The **icon** group takes a Material Design icon name or image source (with its
+own **active image** and on-state color) and puts the icon left or right of the
+text via **image position**. **colors** overrides the theme and **Locking**
+requires an unlock click before the action runs — both groups only appear once
+**show advanced options** is ticked in **Common**. Vibration and the click sound
+have no group of their own and sit at the bottom of **Common**.
 
 **Button style** (*Classic* style only)
 
@@ -67,7 +71,7 @@ the current page in a navigation bar. *Link*, *Addition* and *Multi State* have 
 on state.
 
 **Color precedence** – two groups can paint the same surface, the color from
-**Colors** wins:
+**colors** wins:
 
 - *primary color* overrides *background*; while active *active background* wins.
 - *secondary color* overrides *image color* (and the label color as long as none is set).

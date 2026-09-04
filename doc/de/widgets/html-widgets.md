@@ -23,23 +23,29 @@ sind selbsterklärend.
   `view-in-widget` ist der Wert der **Name** der Ansicht (String, exakt wie im
   Editor); bei `view-in-widget8` ist es der **Index** `0 … n` der unten
   konfigurierten Ansichten (Zahl, `true`/`false` zählen als `1`/`0`).
-- **Ansichten** – die anzeigbaren VIS-2-Ansichten.
-- **Einblenden / Ausblenden** – Übergang beim Wechsel zwischen Ansichten.
-- **Vorrendern** – Ansichten optional geladen halten, damit der Wechsel sofort
-  erfolgt. Die Eingabefelder erscheinen erst, wenn **beim Laden gerenderte
-  Ansichten** auf mindestens `0` gesetzt ist, und wirken zusammen mit **alle
-  Ansichten rendern**.
+- **Einblenddauer [ms] / Ausblenddauer [ms]** – Übergang beim Wechsel zwischen
+  Ansichten, je 50 ms Vorgabe.
 
-Die `8`-Variante ergänzt indizierte State-Wert-zu-View-Einträge:
+Nur `view-in-widget` (die Ansicht kommt aus dem State-Wert):
 
+- **Überblendeffekt** – `swing` (Vorgabe) oder `linear`; beides sind rohe Werte
+  im Editor.
+- **alle Ansichten rendern** zusammen mit **beim Laden gerenderte Ansichten**
+  hält weitere Ansichten im Voraus geladen: die Zahl öffnet in der Gruppe
+  **Vorab-Rendering:** so viele Felder **Ansicht**. Ohne den Schalter bleibt die
+  Liste wirkungslos, und nur die gewählte Ansicht ist gemountet.
+- **Fehlermeldung ausblenden** – unterdrückt „error: view not found.“, wenn der
+  State auf keine Ansicht zeigt; das Widget bleibt dann einfach leer.
+
+Nur `view-in-widget8` (die Ansicht kommt aus einer Liste):
+
+- **Anzahl Ansichten** – wie viele Felder **Ansicht** die Gruppe **Ansichten:**
+  öffnet. Der State-Wert ist der Index in genau diese Liste.
 - **geladen halten** – alle konfigurierten Ansichten bleiben gemountet, der
   Wechsel erfolgt dadurch sofort. Ohne die Option wird nur die gewählte Ansicht
   gerendert.
 - **nicht wenn unsichtbar** – ist das Widget ausgeblendet, werden die Ansichten
   abgeräumt statt im Hintergrund weiterzulaufen.
-
-**Fehlersuche:** ist **Debug** aktiv, protokolliert das Widget bei jedem
-Ansichtswechsel State-Wert und getroffene Ansicht in der Browser-Konsole.
 
 Sollen mehrere Child Views gleichzeitig angeordnet werden, stattdessen
 [Responsives Layout](responsive-layout.md) verwenden.

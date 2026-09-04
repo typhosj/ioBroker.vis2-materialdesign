@@ -12,33 +12,40 @@ Template ids: `tplVis2-materialdesign-view-in-widget` and
 
 ## Editor settings
 
-The screenshot shows the **General** group. Settings not listed below are
+The screenshot shows the **Common** group. Settings not listed below are
 self-explanatory. The editor UI follows the ioBroker system language, so the
 screenshots are German.
 
 <img src="../../media/vis2_html_widgets_editor_overview.png" width="340" alt="Advanced view in widget general options">
 
-**General**
+**Common**
 
-- **object id** – the state whose value selects the embedded view. For
+- **Object ID** – the state whose value selects the embedded view. For
   `view-in-widget` the value is the view **name** (string, exactly as in the
   editor); for `view-in-widget8` it is the **index** `0 … n` of the views
   configured below (number, `true`/`false` count as `1`/`0`).
-- **views** – the VIS 2 views that can be shown.
-- **fade in / out** – transition when switching between views.
-- **pre-render** – optionally keep views mounted so switching is instant. The
-  entry fields only appear once **views rendered on load** is set to at least
-  `0`, and they take effect together with **render all views**.
+- **fade-in duration [ms] / fade-out duration [ms]** – transition when switching
+  between views, 50 ms each by default.
 
-The `8` variant adds indexed state-value-to-view entries:
+`view-in-widget` only (the view comes from the state value):
 
+- **fade effect** – `swing` (default) or `linear`; both are untranslated values
+  in the editor.
+- **render all views** together with **views rendered on load** keeps further
+  views mounted in advance: the number opens that many **view** fields in the
+  **pre-rendering:** group. Without the switch the list has no effect and only
+  the selected view is mounted.
+- **hide error message** – suppresses "error: view not found." when the state
+  points at no view; the widget simply stays empty.
+
+`view-in-widget8` only (the view comes from a list):
+
+- **number of views** – how many **view** fields the **views:** group opens. The
+  state value is the index into exactly that list.
 - **keep loaded** – all configured views stay mounted, which makes switching
   instant. Without it only the selected view is rendered.
-- **not if invisible** – while the widget is hidden its views are dropped
+- **not while invisible** – while the widget is hidden its views are dropped
   instead of kept running in the background.
-
-**Troubleshooting:** with **debug** enabled the widget logs the state value and
-the resolved view to the browser console on every switch.
 
 Use [Responsive Layout](responsive-layout.md) instead when multiple child views
 must be arranged at the same time.

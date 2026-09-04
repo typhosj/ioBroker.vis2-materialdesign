@@ -15,29 +15,56 @@ ioBroker system language, so the screenshots are German.
 
 <img src="../../media/vis2_top_app_bar_editor_overview.png" width="340" alt="Top app bar general and bar layout options">
 
-**General**
+**Common**
 
-- **object id** – receives the selected menu index; an optional second state receives the selected item **name**.
-- **number of menu items** – count of indexed item groups (editor method).
-- **default / disable default value** – which item is preselected, or none.
+- **Object ID** – receives the index of the selected entry.
+- **Object Id for selected menu item id or name** – optional second state; it
+  receives the entry's **menu item id**, falling back to its label. For a
+  submenu entry it holds `parent.child`.
+- **show index of navigation items** – prefixes every drawer label with its
+  index as `[0]`, `[1]` … Handy while wiring the embedded views, switch it off
+  afterwards.
+- **count of navigation items** – number of indexed item groups.
+- **preselected index while the object ID has no value** – the index selected
+  until the first menu click; **disable preselection** leaves nothing selected
+  instead.
 
-**Top App Bar layout**
+**top app bar layout**
 
-- **layout** – standard, dense or short.
-- **title / show selected item as title** – fixed title, or the active menu entry as the title.
-- **colors** – title, background and icon colors.
+- **layout** – `standard`, `dense` or `short`; the values are untranslated in
+  the editor.
+- **title** – fixed title, "Material Design Widgets" by default.
+- **show title of selected navigation bar item** (on by default) replaces it
+  with the active menu entry, **show icon of selected navigation bar item** puts
+  that entry's icon in front of it.
+- The fields below set the bar's colors and font, plus a **z-index** (998 by
+  default) for stacking against other widgets.
 
-The **Navigation bar: Layout** group sets the drawer mode (modal, permanent or
-automatic above a screen width), drawer width, header and label visibility.
+The **navigation bar layout** group sets the drawer **layout** (`modal`,
+`permanent` or `auto` — `auto` stays modal up to the width in **layout 'auto':
+layout auto change on resoltuion higher than**, 800 px by default), its
+**width**, **show row heading** with **header text**, **show list items labels**
+(off means icons only) and the **divider style** (`standard`, `padded`, `inset`,
+untranslated as well).
+
+The three groups **navigation bar colors**, **sub menu layout** and **sub menu
+colors** only appear once **show advanced options** is ticked in **Common**.
 
 Menu entries come from the data and item groups:
 
 <img src="../../media/vis2_top_app_bar_editor_2.png" width="340" alt="Top app bar menu data and item options">
 
-- **data method** – indexed editor entries or a JSON string.
-- **menu id** – value written for this entry.
-- **label / header / divider** – entry text, section header flag and separator.
-- **icon + color**, **submenus** and **permission group / visibility** per entry.
+- **input method for the navigation items** – **via editor** (the indexed **item
+  of navigation bar** group) or **JSON string**. With JSON the indexed group
+  disappears and **JSON Sting for navigation items** holds an array of
+  `{ "text", "menuId", "icon", "iconColor", "header", "divider", "subMenus" }`.
+- **menu item id** – the value the second object id receives for this entry. The
+  index in the first object id does not depend on it.
+- **label / header / divider** – entry text, a section heading above the entry
+  and a separator below it.
+- **icon** with its colors and **submenus** – the latter a JSON array in the
+  same format as above. An entry with a submenu only expands on click; **set
+  value on click at item that toggle submenu** also writes its index.
 
 ## Design style
 

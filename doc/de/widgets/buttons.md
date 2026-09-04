@@ -32,18 +32,23 @@ Variante im Widget-Set **Material Design** wählen, markieren und den Reiter
 
 **Beschriftung**
 
-- **Buttontext / Beschriftung true** – Text; im Ein-Zustand kann ein zweiter Text erscheinen.
-- **Ausrichtung** – Anordnung von Icon/Text im Button.
+- **Buttontext / Beschriftung True** – Text; im Ein-Zustand kann ein zweiter Text erscheinen.
+- **Textbreite** – Breite der Beschriftung in Prozent, `0` heißt automatisch.
+  Die **Ausrichtung** der [vertikalen Buttons](buttons-vertical.md) gibt es hier
+  nicht; Icon links oder rechts setzt **Bildposition** in der Gruppe **Symbol**.
 
 Die Variante **Multi State** ersetzt den einzelnen Wert durch indizierte
 Objekt-/Wert-Zeilen mit jeweils eigener Verzögerung:
 
 <img src="../../media/vis2_buttons_editor_2.png" width="340" alt="Multi-State indizierter Objekt-/Wert-Eintrag">
 
-Die Gruppe **Bild / Icon** nimmt einen Material-Design-Iconnamen oder eine
-Bildquelle (mit eigener Ein-Zustand-Farbe), **Farben** überschreibt das Thema,
-**Feedback** ergänzt Haptik und Klicksound, und **Verriegeln** verlangt einen
-Entsperr-Klick vor der Aktion.
+Die Gruppe **Symbol** nimmt einen Material-Design-Iconnamen oder eine Bildquelle
+(mit eigenem **aktiven Bild** und eigener Farbe für den Ein-Zustand) und setzt
+über **Bildposition** das Icon links oder rechts vom Text. **Farben**
+überschreibt das Thema, **Verriegeln** verlangt einen Entsperr-Klick vor der
+Aktion — beide Gruppen erscheinen erst mit dem Schalter **Erweiterte Optionen
+anzeigen** in **Allgemein**. Vibration und Klickton stehen ohne eigene Gruppe
+unten in **Allgemein**.
 
 **Schaltflächenstil** (nur Stil *Klassisch*)
 
