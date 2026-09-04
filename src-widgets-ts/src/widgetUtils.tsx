@@ -493,10 +493,29 @@ export type DesignStyle = 'legacy' | 'material3';
 
 // Module-level: designStyle() is called synchronously from ~30 widgets and cannot await a socket.
 export const DEFAULT_DESIGN_STYLE_OID = 'vis2-materialdesign.0.designStyle';
-let projectDesignStyle: DesignStyle = 'legacy';
+export const PROJECT_DESIGN_STYLE_CACHE_KEY = 'mdw.projectDesignStyle';
+
+// The socket answer arrives after the first paint, so a widget on `Project default` would render
+// legacy and only then switch — visible as a flash on every panel load. The last value seen in this
+// browser is the best guess available before the socket answers; a value changed elsewhere is
+// corrected as soon as onProjectDesignStyleChanged fires.
+function cachedProjectDesignStyle(): DesignStyle {
+    try {
+        return window.localStorage?.getItem(PROJECT_DESIGN_STYLE_CACHE_KEY) === 'material3' ? 'material3' : 'legacy';
+    } catch {
+        return 'legacy'; // private mode / storage blocked
+    }
+}
+
+let projectDesignStyle: DesignStyle = cachedProjectDesignStyle();
 
 export function setProjectDesignStyle(value: ioBroker.StateValue | undefined): void {
     projectDesignStyle = value === 'material3' ? 'material3' : 'legacy';
+    try {
+        window.localStorage?.setItem(PROJECT_DESIGN_STYLE_CACHE_KEY, projectDesignStyle);
+    } catch {
+        // Nothing to do — the next load just falls back to legacy again.
+    }
 }
 
 export function designStyle(data: Record<string, unknown> | null | undefined): DesignStyle {

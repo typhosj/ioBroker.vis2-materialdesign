@@ -220,6 +220,29 @@ describe('widget utilities', () => {
         }
     });
 
+    // Without the cache a `Project default` widget paints legacy on every load until the socket
+    // answers, then switches — the flash this remembers away.
+    it('remembers the project style so the first paint after a reload is already right', async () => {
+        try {
+            setProjectDesignStyle('material3');
+            expect(window.localStorage.getItem('mdw.projectDesignStyle')).toBe('material3');
+
+            vi.resetModules();
+            const reloaded = await import('./widgetUtils');
+            expect(reloaded.designStyle({ designStyle: 'default' })).toBe('material3');
+
+            setProjectDesignStyle('legacy');
+            vi.resetModules();
+            const again = await import('./widgetUtils');
+            expect(again.designStyle({ designStyle: 'default' })).toBe('legacy');
+        } finally {
+            window.localStorage.removeItem('mdw.projectDesignStyle');
+            setProjectDesignStyle('legacy');
+            window.localStorage.removeItem('mdw.projectDesignStyle');
+            vi.resetModules();
+        }
+    });
+
     // Only the M3 case reaches this: every caller guards with its own `isM3`, and no CSS selects a
     // legacy class. The dark flag is the only thing left to decide.
     it('designStyleClasses adds only a root class plus the shared dark flag', () => {
