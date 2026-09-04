@@ -26,3 +26,22 @@ describe('table row colors (upstream #127)', () => {
         expect(count(html, '#111111')).toBe(4);
     });
 });
+
+// The columns used to be `Object.keys(row)[index]` — read per row, so a row carrying one key fewer
+// silently shifted every one of its columns left.
+describe('table columns', () => {
+    it('reads every row against the first row\'s keys', () => {
+        const html = render({
+            dataJson: '[{"a":"a1","b":"b1"},{"b":"b2"}]',
+            countCols: 2,
+        });
+        // Two rows of two cells each. The second row has no "a", so its first cell stays empty and
+        // "b2" belongs in its SECOND cell — reading that row's own keys put it in the first.
+        const cells = html.split('<td').slice(1);
+        expect(cells).toHaveLength(4);
+        expect(cells[0]).toContain('a1');
+        expect(cells[1]).toContain('b1');
+        expect(cells[2]).not.toContain('b2');
+        expect(cells[3]).toContain('b2');
+    });
+});

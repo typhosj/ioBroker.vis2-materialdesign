@@ -7,7 +7,7 @@ import { squarePreview ,
   designStyleClasses,
   setStateValue,
   sizeCss,
-  stateValue, accessibleText, sanitizeHtml, iconField, liftWidgetLayer, boolValue as b, numberValue as n, textValue as s } from './widgetUtils';
+  stateValue, accessibleText, safeWidgetUrl, sanitizeHtml, iconField, liftWidgetLayer, boolValue as b, numberValue as n, textValue as s } from './widgetUtils';
 import type { RxWidgetInfo } from "@iobroker/types-vis-2";
 import { renderIcon } from "./MaterialDesignButtons";
 
@@ -425,7 +425,10 @@ export class MaterialDesignDialog extends VisWidget {
               : "allow-modals allow-forms allow-pointer-lock allow-popups allow-same-origin allow-scripts"
           }
           seamless={b(d.seamless)}
-          src={s(d.src)}
+          // The one navigation sink that still took its URL unchecked. `javascript:` in an iframe's
+          // src runs in this document's origin — the default sandbox here carries
+          // `allow-scripts allow-same-origin`, which the spec treats as no sandbox at all.
+          src={safeWidgetUrl(d.src)}
           style={{
             border: 0,
             height: fullscreen ? "100%" : s(d.viewHeight, "400px"),

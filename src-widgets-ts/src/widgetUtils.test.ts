@@ -321,6 +321,19 @@ describe('widget utilities', () => {
         expect(formatDurationTokens(-61, 'mm:ss')).toBe('-01:01');
     });
 
+    // moment's escape convention, which MDW 1.x configs already carry: every d/h/m/s of a unit label
+    // was otherwise a token, so `hh:mm [Std]` came out as `08:30 St0`.
+    it('keeps [bracketed] text out of both token replacers', () => {
+        expect(formatDurationTokens(3661, 'hh:mm [Std]')).toBe('01:01 Std');
+        expect(formatMoment(new Date(2024, 0, 5, 9, 7, 3), 'HH:mm [Uhr]')).toBe('09:07 Uhr');
+    });
+
+    // A label's letters used to decide which units were "present", so the `d` of [Stunden] claimed
+    // the days unit and stole the overflow that mm was supposed to accumulate.
+    it('decides the present units on the tokens alone', () => {
+        expect(formatDurationTokens(3700, 'mm [Stunden]')).toBe('61 Stunden');
+    });
+
     it('humanizes a duration to its largest unit, localized', () => {
         expect(humanizeDuration(7200, 'en-US')).toBe('2 hours');
         expect(humanizeDuration(45, 'en-US')).toBe('45 seconds');

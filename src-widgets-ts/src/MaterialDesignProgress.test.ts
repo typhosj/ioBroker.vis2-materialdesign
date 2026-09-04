@@ -12,6 +12,13 @@ describe('progress normalization', () => {
         expect(progressState(false, data({ min: 10, max: 20 }))).toMatchObject({ percent: 0, raw: 10 });
     });
 
+    // VIS2 stores a cleared number field as '', and `Number('')` is a finite 0 that beat the
+    // declared default: min = max = 0 pinned the bar at 0 % whatever the state said.
+    it('falls back to the default range when min/max were emptied', () => {
+        expect(progressState(25, data({ min: '' as unknown as number, max: '' as unknown as number })))
+            .toMatchObject({ percent: 25, raw: 25 });
+    });
+
     it('supports inverted, value and custom labels', () => {
         expect(progressState(25, data({ invertValue: true }))).toMatchObject({ percent: 75 });
         expect(progressState(12.34, data({ valueLabelStyle: 'progressValue', valueLabelUnit: ' °C', valueMaxDecimals: 1 })).label)

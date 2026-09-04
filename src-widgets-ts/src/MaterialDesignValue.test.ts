@@ -2,17 +2,38 @@ import { describe, expect, it } from 'vitest';
 
 import { renderToStaticMarkup } from 'react-dom/server';
 
-import MaterialDesignValue, { formatBoolean, formatNumber, formattedValue, replaceValue, type ValueData } from './MaterialDesignValue';
+import MaterialDesignValue, { formatBoolean, formatNumber, formattedValue, type ValueData } from './MaterialDesignValue';
 
 const data = (overrides: Partial<ValueData>): ValueData => overrides as unknown as ValueData;
 
 describe('MaterialDesignValue formatting', () => {
-    describe('replaceValue', () => {
-        it('substitutes #value with the numeric value', () => {
-            expect(replaceValue('#value * 2', 21)).toBe('21 * 2');
+    describe('#value expressions', () => {
+        it('calculates with the numeric value', () => {
+            expect(formatNumber(21, data({ calculate: '#value * 2' }))).toBe('42');
         });
-        it('falls back to the text form for non-numeric values', () => {
-            expect(replaceValue('[#value]', 'abc')).toBe('[abc]');
+        // `#value` used to be spliced into the compiled source, so a state anyone could write ran as
+        // code on every dashboard showing the widget.
+        it('never executes code held in the state value', () => {
+            const flag = globalThis as unknown as { __mdwPwned?: boolean };
+            delete flag.__mdwPwned;
+            formatNumber('(globalThis.__mdwPwned = true, 1)', data({ calculate: '#value * 1000' }));
+            expect(flag.__mdwPwned).toBeUndefined();
+        });
+        // A string value compiled to a bare identifier and threw a ReferenceError out of render,
+        // which blanks the whole VIS2 view.
+        it('compares a string value without throwing', () => {
+            expect(formatBoolean('on', data({ condition: '#value === "on"', textOnTrue: 'AN', textOnFalse: 'AUS' }))).toBe('AN');
+        });
+        it('keeps the raw value when the expression is broken', () => {
+            expect(formatNumber(21, data({ calculate: '#value +' }))).toBe('21');
+        });
+    });
+
+    describe('cleared number fields', () => {
+        // VIS2 stores a cleared number field as '', and `Number('')` is a finite 0 — which used to
+        // drop every decimal place the value had.
+        it('treats an emptied maxDecimals as unset, not as zero', () => {
+            expect(formatNumber(3.5, data({ maxDecimals: '' as unknown as number }))).toMatch(/^3[.,]5$/);
         });
     });
 

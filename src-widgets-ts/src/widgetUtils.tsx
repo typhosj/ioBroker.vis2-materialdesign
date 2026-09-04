@@ -78,6 +78,13 @@ export function numberValue(value: unknown, fallback = 0): number {
     return value === undefined || value === null || value === '' || !Number.isFinite(Number(value)) ? fallback : Number(value);
 }
 
+// The same "not set" rule as numberValue, but with no default to fall back to: `undefined` keeps the
+// key out of a chart.js config or an Intl option entirely, where a 0 would overwrite the library's
+// own default rather than leave it alone.
+export function optionalNumber(value: unknown): number | undefined {
+    return value === undefined || value === null || value === '' || !Number.isFinite(Number(value)) ? undefined : Number(value);
+}
+
 export function boolValue(value: unknown, fallback = false): boolean {
     return value === undefined || value === null || value === '' ? fallback : value === true || value === 'true' || value === 1 || value === '1';
 }
@@ -157,6 +164,16 @@ export function visLocale(): string | undefined {
     return win.vis?.language || win.systemLang || window.navigator.language;
 }
 
+// moment's escape convention, which both formatters below replaced: text in [brackets] is literal.
+// Without it every d/h/m/s of a unit label was a token — `hh:mm [Std]` rendered `08:30 St0` — and
+// existing MDW 1.x configs carry those brackets already.
+function replaceTokens(template: string, pattern: RegExp, replace: (token: string) => string): string {
+    return template
+        .split(/(\[[^\]]*\])/)
+        .map(part => (part.startsWith('[') && part.endsWith(']') ? part.slice(1, -1) : part.replace(pattern, replace)))
+        .join('');
+}
+
 // Longer tokens must precede shorter ones so YYYY beats YY.
 export function formatMoment(date: Date, token: string, locale?: string): string {
     if (!token) return '';
@@ -185,22 +202,25 @@ export function formatMoment(date: Date, token: string, locale?: string): string
         A: () => (date.getHours() < 12 ? 'AM' : 'PM'),
         a: () => (date.getHours() < 12 ? 'am' : 'pm'),
     };
-    return token.replace(/YYYY|YY|MMMM|MMM|MM|M|dddd|ddd|dd|DD|D|HH|H|hh|h|mm|m|ss|s|A|a/g, match => (map[match] ? map[match]() : match));
+    return replaceTokens(token, /YYYY|YY|MMMM|MMM|MM|M|dddd|ddd|dd|DD|D|HH|H|hh|h|mm|m|ss|s|A|a/g, match => (map[match] ? map[match]() : match));
 }
 
 // The largest unit present accumulates the overflow, matching moment-duration-format.
 export function formatDurationTokens(totalSeconds: number, template: string): string {
     const units: Array<[string, number]> = [['d', 86400], ['h', 3600], ['m', 60], ['s', 1]];
-    if (!units.some(([letter]) => template.includes(letter))) return String(totalSeconds);
+    // Which units the template asks for is decided on the tokens ALONE: a `[Stunden]` label contains
+    // a `d`, and counting that as the days unit handed it the overflow that `hh` was supposed to get.
+    const tokens = template.replace(/\[[^\]]*\]/g, '');
+    if (!units.some(([letter]) => tokens.includes(letter))) return String(totalSeconds);
     const sign = totalSeconds < 0 ? '-' : '';
     let remainder = Math.abs(Math.floor(totalSeconds));
     const values: Record<string, number> = {};
     for (const [letter, per] of units) {
-        if (!template.includes(letter)) continue;
+        if (!tokens.includes(letter)) continue;
         values[letter] = Math.floor(remainder / per);
         remainder %= per;
     }
-    return sign + template.replace(/dd|hh|mm|ss|d|h|m|s/g, token => {
+    return sign + replaceTokens(template, /dd|hh|mm|ss|d|h|m|s/g, token => {
         const value = values[token[0]];
         if (value === undefined) return token;
         return token.length === 2 ? String(value).padStart(2, '0') : String(value);

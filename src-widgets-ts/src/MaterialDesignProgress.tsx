@@ -3,7 +3,7 @@ import React from 'react';
 import type { RxWidgetInfo, RxWidgetInfoAttributesField, VisRxWidgetProps } from '@iobroker/types-vis-2';
 
 import { fill, withAutoFill } from './deviceFill';
-import { squarePreview, BaseRxData, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, sizeCss, stateValue, sanitizeHtml } from './widgetUtils';
+import { squarePreview, BaseRxData, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, numberValue, sizeCss, stateValue, sanitizeHtml } from './widgetUtils';
 
 export interface ProgressData extends BaseRxData {
     min?: number;
@@ -108,10 +108,11 @@ export const linearAttrs: RxWidgetInfo['visAttrs'] = [
     { name: 'label', fields: [...labelFields, { name: 'textAlign', label: 'textAlign', type: 'select', options: ['start', 'center', 'end'], default: 'end' }] },
 ];
 
-export function num(value: unknown, fallback = 0): number {
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : fallback;
-}
+// The shared coercion, not a local `Number()`: VIS2 stores a cleared number field as '' or null, and
+// `Number('')` is a finite 0 that silently beat the declared default — a Progress whose `max` had
+// been emptied got min = max = 0 and sat at 0 % forever. Slider/RoundSlider/ProgressCircular import
+// this same `num`, so the guard has to live here.
+export const num = numberValue;
 
 // Strips binary-float noise (step 0.1 -> 0.1*3 = 0.30000000000000004).
 export function snapToStep(value: number, step: number): number {

@@ -254,14 +254,18 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
                 );
 
             const toggle = (): void => {
+                // Same condition as the cursor below: a locked control still reacts (unlocking is a
+                // real interaction), a read-only one does nothing — and must not buzz and click
+                // either, which it did while the feedback ran ahead of this check.
+                if (data.readOnly && !locked) {
+                    return;
+                }
                 feedback(data);
                 if (locked) {
                     this.unlock(data);
                     return;
                 }
-                if (!data.readOnly) {
-                    writeValue(this.props, data, !on);
-                }
+                writeValue(this.props, data, !on);
             };
 
             const controlFilter = locked ? `grayscale(${asNumber(data.lockFilterGrayscale, 0)}%)` : undefined;

@@ -4,7 +4,7 @@ import type { RxWidgetInfo, VisRxWidgetProps } from '@iobroker/types-vis-2';
 import { symbolName } from './IconFilePicker';
 import { fill, withAutoFill, type FillMap } from './deviceFill';
 
-import { squarePreview, PressState, RenderProps, SliderWriter, VisWidget, createInfo, indexedFields, itemCount, designStyle, designStyleClasses, iconField, parseActionValue, safeWidgetUrl, setStateValue, sizeCss, stateValue, sanitizeHtml, stringValue } from './widgetUtils';
+import { squarePreview, PressState, RenderProps, SliderWriter, VisWidget, createInfo, indexedFields, itemCount, designStyle, designStyleClasses, iconField, numberValue, parseActionValue, safeWidgetUrl, setStateValue, sizeCss, stateValue, sanitizeHtml, stringValue } from './widgetUtils';
 
 type ButtonKind = 'navigation' | 'link' | 'state' | 'multiState' | 'addition' | 'toggle' | 'slider';
 type ButtonLayout = 'default' | 'vertical' | 'icon';
@@ -286,10 +286,9 @@ function color(value: unknown, fallback: string): string {
     return typeof value === 'string' && value && !value.startsWith('#mdwTheme:') ? value : fallback;
 }
 
-function numeric(value: unknown, fallback = 0): number {
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : fallback;
-}
+// The shared coercion, not a local `Number()`: VIS2 stores a cleared number field as '' or null, and
+// `Number('')` is a finite 0 that silently beats the declared default.
+const numeric = numberValue;
 
 function isImageSource(value: string): boolean {
     const normalized = value.toLowerCase();
@@ -547,8 +546,16 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
         }
 
         activate(data: ButtonData, current: ioBroker.StateValue | undefined): void {
+            const locked = this.isLocked(data);
+            // A locked button still reacts (unlocking is a real interaction), a read-only one does
+            // nothing — and must not buzz and click either, which it did while the feedback ran ahead
+            // of this check. `readOnly` only exists on the toggle and slider kinds; it is undefined,
+            // and therefore harmless, on the rest.
+            if (data.readOnly && !locked) {
+                return;
+            }
             feedback(data);
-            if (this.isLocked(data)) {
+            if (locked) {
                 this.unlock(data);
                 return;
             }

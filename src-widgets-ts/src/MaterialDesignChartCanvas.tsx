@@ -8,13 +8,12 @@ import {
 } from "chart.js";
 import ChartDataLabels from "chartjs-plugin-datalabels";
 
-import { boolValue, designStyle, m3OnColor, numberValue, textValue, visLocale } from "./widgetUtils";
+import { boolValue, designStyle, m3OnColor, numberValue, optionalNumber, textValue, visLocale } from "./widgetUtils";
 import { CHART_TEXT_COLOR } from "./chartAxis";
 
-// The shared coercions all take a fallback. These two are the other half: a field the user left
-// empty has to stay `undefined` so the key is omitted from the chart.js config entirely, rather
-// than overwriting a chart.js default with a zero or an empty string.
-const optionalNumber = (value: unknown): number | undefined => (value === "" || value === null || value === undefined || !Number.isFinite(Number(value)) ? undefined : Number(value));
+// The shared coercions all take a fallback. `optionalNumber` (in widgetUtils, next to them) and this
+// one are the other half: a field the user left empty has to stay `undefined` so the key is omitted
+// from the chart.js config entirely, rather than overwriting a chart.js default with a zero.
 const optionalText = (value: unknown): string | undefined => (typeof value === "string" && value ? value : undefined);
 
 // Deliberately not `chart.js/auto`, which drags in the radar/polar/bubble/scatter/time engine we

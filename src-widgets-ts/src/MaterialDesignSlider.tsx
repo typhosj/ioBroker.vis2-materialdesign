@@ -450,6 +450,12 @@ export default class MaterialDesignSlider extends VisWidget {
                                         </div>
                                         <div
                                             onPointerDown={event => {
+                                                // Before the haptics and the capture, not after: a read-only or
+                                                // "working"-locked slider used to buzz and click on every touch
+                                                // while refusing to move.
+                                                if (disabled) {
+                                                    return;
+                                                }
                                                 feedback(data);
                                                 event.currentTarget.setPointerCapture(event.pointerId);
                                                 this.writeFromPointer(event, data, disabled);
@@ -470,6 +476,10 @@ export default class MaterialDesignSlider extends VisWidget {
                                                 if (event.currentTarget.hasPointerCapture(event.pointerId)) {
                                                     event.currentTarget.releasePointerCapture(event.pointerId);
                                                 }
+                                                // The gesture was taken away (scroll, call, palm). Releasing the
+                                                // capture alone left the throttled write queued, so the value the
+                                                // finger was on when it was interrupted still landed a moment later.
+                                                this.writer.cancel();
                                             }}
                                             style={{ cursor: disabled ? 'default' : 'pointer', height: '100%', inset: 0, position: 'absolute', touchAction: 'none', width: '100%', zIndex: 2 }}
                                         />
