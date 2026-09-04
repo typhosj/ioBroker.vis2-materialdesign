@@ -44,12 +44,17 @@ auf Theme-Werte zugreifen sollen.
 Jedes Widget wird in einem von zwei Stilen dargestellt, wählbar im Tab **WIDGET**
 unter **Allgemein → Gestaltungsstil**:
 
-- **Klassisch** – das gewohnte Aussehen aus der Material-Design-2-Zeit, Standard.
 - **Material 3** – Farbrollen, Formen, Typografie und State-Layer von Material 3.
+  Vorbelegung für neu eingefügte Widgets.
+- **Klassisch** – das gewohnte Aussehen aus der Material-Design-2-Zeit.
 - **Projektstandard** – folgt dem Stil aus dem Tab **Design** der
   Adapterkonfiguration, damit ein ganzes Projekt zentral umgestellt werden kann.
 
 <img src="../media/vis2_style_editor_basic.png" width="300" alt="Gestaltungsstil in der Gruppe Allgemein">
+
+Neu eingefügte Widgets erscheinen in Material 3. Bestehende Projekte bleiben
+unverändert klassisch, bis du ein Widget umstellst oder den Projektstandard im
+Tab **Design** änderst.
 
 Material 3 ändert nur die Darstellung. Datenpunkte, Optionsnamen, Werte,
 Schreibverhalten, Timer und Navigation sind in beiden Stilen identisch, und die

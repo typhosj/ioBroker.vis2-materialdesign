@@ -44,12 +44,17 @@ directly.
 Every widget renders in one of two styles, selected in the **WIDGET** tab under
 **General → design style**:
 
-- **Classic** – the established Material Design 2-era look, the default.
-- **Material 3** – Material 3 color roles, shape, type and state layers.
+- **Material 3** – Material 3 color roles, shape, type and state layers. Preset
+  for newly inserted widgets.
+- **Classic** – the established Material Design 2-era look.
 - **Project default** – follows the style set in the adapter's **Design** tab, so
   a whole project can be switched centrally.
 
 <img src="../media/vis2_style_editor_basic.png" width="300" alt="Design style in the General group">
+
+Newly inserted widgets appear in Material 3. Existing projects stay classic and
+unchanged until you switch a widget over or change the project default in the
+**Design** tab.
 
 Material 3 changes presentation only. Object ids, option names, values, write
 behaviour, timers and navigation are identical in both styles, and setting a

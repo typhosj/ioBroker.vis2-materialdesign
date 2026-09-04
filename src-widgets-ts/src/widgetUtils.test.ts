@@ -139,7 +139,7 @@ describe('widget utilities', () => {
         expect(subscribeState).toHaveBeenCalledWith('custom.0.dark', expect.any(Function));
     });
 
-    it('every widget receives the same designStyle field via createInfo(), strictly defaulting to legacy', () => {
+    it('every widget receives the same designStyle field via createInfo(), inserting as material3 while saved widgets stay legacy', () => {
         const info = createInfo('test-widget', 'Calendar', []);
         const commonGroup = info.visAttrs?.find(group => group.name === 'common');
         const field = commonGroup?.fields.find(candidate => candidate.name === 'designStyle') as { options?: Array<{ value: string }>; default?: string } | undefined;
@@ -147,7 +147,8 @@ describe('widget utilities', () => {
         expect(commonGroup?.fields[0]?.name).toBe('designStyle');
         expect(commonGroup?.fields[1]?.name).toBe('useTheme');
         expect(field?.options?.map(option => option.value)).toEqual(['default', 'legacy', 'material3']);
-        expect(field?.default).toBe('default');
+        // Insert default. Flipping this back to 'default' would silently un-ship Material 3 for 1.0.0.
+        expect(field?.default).toBe('material3');
 
         const withOwnCommon = createInfo('test-widget-2', 'Calendar', [{ name: 'common', fields: [{ name: 'oid', type: 'id' }] }]);
         const merged = withOwnCommon.visAttrs?.find(group => group.name === 'common')?.fields || [];
@@ -155,9 +156,12 @@ describe('widget utilities', () => {
         expect(merged[merged.length - 1]?.name).toBe('oid');
         expect(withOwnCommon.visAttrs?.filter(group => group.name === 'common')).toHaveLength(1);
 
-        // Compat rule #4: missing/unknown value always means legacy.
+        // Compat rule #4: missing/unknown value always means legacy. The insert default above is the
+        // ONLY thing that changed in 1.0.0 — a saved widget from 0.3.x (no key) or 0.4.0 ('default')
+        // must keep rendering classic, or every existing project repaints itself on update.
         expect(designStyle(undefined)).toBe('legacy');
         expect(designStyle({})).toBe('legacy');
+        expect(designStyle({ designStyle: 'default' })).toBe('legacy');
         expect(designStyle({ designStyle: 'material3' })).toBe('material3');
         expect(designStyle({ designStyle: 'not-a-real-style' })).toBe('legacy');
     });

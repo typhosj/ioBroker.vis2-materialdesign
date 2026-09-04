@@ -24,11 +24,16 @@ VIS Material Design widget work by Scrounger.
 Every widget ships two presentations, selected per widget in the editor under
 **General → design style**:
 
-- **Classic** (default): the established Material Design 2-era look. Unchanged,
-  and what every existing and every newly inserted widget uses.
-- **Material 3**: Material 3 color roles, shape, type and state layers.
+- **Material 3**: Material 3 color roles, shape, type and state layers. The
+  preset for newly inserted widgets.
+- **Classic**: the established Material Design 2-era look. Unchanged, and what
+  every widget of an existing project keeps using.
 - **Project default**: follows the default style set in the adapter's **Design**
   tab, for switching a whole project at once.
+
+Newly inserted widgets appear in Material 3. Existing projects stay classic and
+unchanged until you switch a widget over or change the project default in the
+**Design** tab.
 
 Material 3 changes presentation only. Component IDs, option names, object IDs,
 state values, write behaviour, timers and navigation are identical in both
@@ -102,7 +107,7 @@ a reason to wait with an upgrade.
 ## Changelog
 ### **WORK IN PROGRESS**
 
-- (typhosj) Added a second design style, **Material 3**, selectable per widget under General → design style, plus **Project default** for switching a whole project at once from the adapter's new **Design** tab. Classic stays the default for every existing and every newly inserted widget, and switching back restores the old look exactly — the style changes presentation only, never component ids, option names, object ids, values, write behaviour, timers or navigation
+- (typhosj) Added a second design style, **Material 3**, selectable per widget under General → design style, plus **Project default** for switching a whole project at once from the adapter's new **Design** tab. Material 3 is the preset for newly inserted widgets; every widget of an existing project stays classic until you switch it over, and switching back restores the old look exactly — the style changes presentation only, never component ids, option names, object ids, values, write behaviour, timers or navigation
 - (typhosj) Added the Material 3 color system: one seed color in the **Design** tab derives the complete scheme — all 18 roles, light and dark, with every `on-*` and `-container` pair — into `vis2-materialdesign.0.colors.md3Scheme`, which the widgets read. An empty seed gives Google's contrast-verified baseline palette. The color math runs once per save in the admin, never in the widget runtime
 - (typhosj) Added the Material 3 type scale, shape scale and component geometry, plus the static half of Material 3 Expressive (state layers, elevation, corner and motion tokens). A size, color or font you set explicitly still wins in both styles — Material 3 only fills in what you left empty
 - (typhosj) Added **Material Symbols Outlined** as an opt-in second icon source next to Material Design Icons. Pick it in any icon field with the **Symbols** button; names are stored with an `ms-` prefix. Both fonts are self-hosted, and a panel downloads one only when a glyph from it is actually drawn

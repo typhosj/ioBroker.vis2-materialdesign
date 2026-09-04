@@ -444,7 +444,10 @@ function fieldIsSet(field: RxWidgetInfoAttributesField, data: WidgetData): boole
 
 export function createInfo(id: string, name: string, attrs: RxWidgetInfo['visAttrs'], advancedGroups: readonly string[] = []): RxWidgetInfo {
     const shared: RxWidgetInfoAttributesField[] = [
-        { name: 'designStyle', type: 'select', label: 'designStyle', options: [{ value: 'default', label: 'designStyle_default' }, { value: 'legacy', label: 'legacy' }, { value: 'material3', label: 'material3' }], default: 'default' },
+        // Material 3 for NEWLY inserted widgets only: VIS2 materialises declared defaults at insert
+        // time and never revisits saved widgets, so this cannot repaint an existing project. The
+        // project fallback below and the adapter's designStyle state both stay 'legacy' for that.
+        { name: 'designStyle', type: 'select', label: 'designStyle', options: [{ value: 'default', label: 'designStyle_default' }, { value: 'legacy', label: 'legacy' }, { value: 'material3', label: 'material3' }], default: 'material3' },
         ...themeFields(name),
     ];
     const advanced = new Set(advancedGroups);
