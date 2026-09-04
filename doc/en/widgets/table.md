@@ -26,6 +26,11 @@ language, so the screenshots are German.
 - **show header / fixed header** – header row and whether it stays on scroll.
 - **row height / round border** – row spacing and rounded corners.
 
+**Color**
+
+- **row background / row background odd** – with the second color set, the two
+  alternate row by row; left empty, the first one applies to every row.
+
 Each column is configured in its own indexed group:
 
 <img src="../../media/vis2_table_editor_2.png" width="340" alt="Indexed table column options">
@@ -36,13 +41,14 @@ Each column is configured in its own indexed group:
 - **width / alignment / no-wrap** – column sizing and text behaviour.
 - **prefix / suffix** – text added around the cell value.
 
-Display order follows the JSON property order.
+The columns are the properties of the **first** row, in its order.
 
 ```json
 [{ "device": "Temperature", "room": "Living room", "value": "22.4 °C" }]
 ```
 
-Use a JSON object with the same property order for every row.
+Every further row is read against those columns: a property a row does not have
+leaves its cell empty and does not shift the remaining columns.
 
 The table shows only what that JSON contains. To list individual states below
 each other without building a JSON first, the [List](list.md) with bindings in

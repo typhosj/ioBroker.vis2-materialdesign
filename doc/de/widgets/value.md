@@ -28,7 +28,7 @@ aufgeführte Einstellungen sind selbsterklärend.
 
 - **Min./Max.-Nachkommastellen** – Anzahl der angezeigten Dezimalstellen.
 - **Einheit** – an die Zahl angehängter Einheitentext.
-- **Berechnung** – mathematischer Ausdruck, der vor der Anzeige auf den Wert angewendet wird (z. B. `x/1000` für Wh → kWh).
+- **Berechnung** – mathematischer Ausdruck, der vor der Anzeige auf den Wert angewendet wird. Der Wert steht als `#value` im Ausdruck, z. B. `#value/1000` für Wh → kWh. Ein Ausdruck ohne `#value` wird nicht ausgewertet.
 - **in Dauer / in Zeitstempel umwandeln** – eine Sekundenzahl als `hh:mm:ss` bzw. einen Zeitstempel als formatiertes Datum/Zeit darstellen.
 
 <img src="../../media/vis2_value_editor_2.png" width="340" alt="Wertanzeige Symbol-Optionen">

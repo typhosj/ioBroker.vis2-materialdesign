@@ -29,7 +29,7 @@ screenshots are German.
 
 - **min / max decimals** – number of fractional digits shown.
 - **unit** – unit text appended to the number.
-- **calculation** – math expression applied to the value before display (e.g. `x/1000` for Wh → kWh).
+- **calculation** – math expression applied to the value before display. The value is available as `#value`, e.g. `#value/1000` for Wh → kWh. An expression without `#value` is not evaluated.
 - **convert to duration / to timestamp** – render a number of seconds as `hh:mm:ss`, or a timestamp as a formatted date/time.
 
 <img src="../../media/vis2_value_editor_2.png" width="340" alt="Value icon options">

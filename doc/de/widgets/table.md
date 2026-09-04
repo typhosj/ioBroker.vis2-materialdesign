@@ -25,6 +25,12 @@ Nicht aufgeführte Einstellungen sind selbsterklärend.
 - **Kopf zeigen / fixierter Kopf** – Kopfzeile und ob sie beim Scrollen bleibt.
 - **Zeilenhöhe / abgerundeter Rand** – Zeilenabstand und runde Ecken.
 
+**Farbe**
+
+- **Zeilenhintergrund / Zeilenhintergrund ungerade** – ist die zweite Farbe
+  gesetzt, wechseln sich beide zeilenweise ab; bleibt sie leer, gilt die erste
+  für alle Zeilen.
+
 Jede Spalte wird in ihrer eigenen indizierten Gruppe konfiguriert:
 
 <img src="../../media/vis2_table_editor_2.png" width="340" alt="Indizierte Tabellenspalte">
@@ -35,13 +41,14 @@ Jede Spalte wird in ihrer eigenen indizierten Gruppe konfiguriert:
 - **Breite / Ausrichtung / kein Umbruch** – Spaltengröße und Textverhalten.
 - **Präfix / Suffix** – Text um den Zellenwert.
 
-Die Anzeige folgt der JSON-Eigenschaftsreihenfolge.
+Die Spalten sind die Eigenschaften der **ersten** Zeile, in deren Reihenfolge.
 
 ```json
 [{ "geraet": "Temperatur", "raum": "Wohnzimmer", "wert": "22,4 °C" }]
 ```
 
-In jeder Zeile dieselbe JSON-Eigenschaftsreihenfolge verwenden.
+Jede weitere Zeile wird gegen diese Spalten gelesen: eine Eigenschaft, die einer
+Zeile fehlt, lässt ihre Zelle leer und verschiebt die übrigen Spalten nicht.
 
 Die Tabelle zeigt nur, was in diesem JSON steht. Sollen einzelne Datenpunkte
 untereinander erscheinen, ohne sie vorher in ein JSON zu schreiben, ist die
