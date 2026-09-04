@@ -15,27 +15,48 @@ language, so the screenshots are German.
 
 <img src="../../media/vis2_html_card_editor_overview.png" width="340" alt="Card layout and image options">
 
-**General**
+**Common**
 
-- **card layout** – Basic, Basic Header, Header Overlay or Horizontal.
-- **card style** – default or outlined.
+- **input method for the list data** – `via editor` (title, subtitle, text and
+  image live in the fields) or `JSON string` (one state carries them).
+- **JSON-String: object id** – the state for the `JSON string` method. Its value
+  is an object with `title`, `subTitle`, `body` and `image`; if it is not valid
+  JSON the card shows a red error message instead of the title.
+- **layout** – `Basic` (image on top, title below), `BasicHeader` (title above
+  the image), `BasicHeaderOverlay` (title inside the image) or `Horizontal`
+  (image on the left).
+- **style** – `default` or `outlined` (an outline instead of a shadow).
+- **show scrollbar** – lets the text section scroll when it is taller than the card.
 
-**Image**
+**title / text**
 
-- **image** – image source (path, URL or data URL).
-- **refresh object / delay** – reload the image when a state changes, after a delay.
-- **refresh on wake-up / view change** – additional reload triggers.
+- **show heading / show subtitle / show text** – hide the three sections
+  individually.
+- **title / subtitle / HTML** – the contents. They accept HTML and bindings, see
+  [Show values inside texts](../README.md#show-values-inside-texts). Use only
+  trusted HTML.
+- **title font size / text size** – the Material Design typography steps instead
+  of fixed pixel values.
+- **sub title height / text height** – a fixed height for that section.
 
-The **Card action** group makes the card clickable:
+**image**
+
+- **Image** – image source (path, URL or data URL).
+- **object id for refresh** – when this state changes, the image is reloaded.
+  That only works for a URL or an absolute path, not for a data URL.
+- **delay of refresh through object id** – wait in milliseconds before the
+  reload, 180000 at most.
+- **animation duration of refresh through object id** – length of the cross-fade.
+- **refresh after wake-up / refresh on view change** – additional reload triggers.
+
+The **card action** group makes the card clickable:
 
 <img src="../../media/vis2_html_card_editor_2.png" width="340" alt="Card action options">
 
-- **click type** – which region reacts (whole card, image or text).
-- **control type** – open a URL or write a state.
-- **href / state object + value** – the target used by the chosen control type.
-
-Content fields (title, subtitle, text) accept VIS 2 HTML/bindings. Use only
-trusted HTML.
+- **clickable area** – `none` switches the action off; every other setting
+  (`card`, `Image`, `text`) makes the whole card clickable.
+- **action on click** – `link` opens the **URL** in a new tab, `state` writes the
+  **value to write** into the **Object ID for action**.
 
 ## Design style
 

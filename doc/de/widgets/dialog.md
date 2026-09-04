@@ -24,21 +24,42 @@ iFrame-Gruppe. Nicht aufgeführte Einstellungen sind selbsterklärend.
 
 **Allgemein**
 
-- **Öffnungsmethode** – lokaler Button oder Datenpunkt. Beim Datenpunkt öffnet boolesch `true` den Dialog, Schließen schreibt `false`.
-- **Öffnen-Datenpunkt** – der State, der die Datenpunkt-Methode steuert.
-- **Vollbild unterhalb Auflösung** – zeigt den Dialog unterhalb dieser Bildschirmbreite im Vollbild.
-- **eingebettete View** (`contains_view`) – die im Dialog gezeigte VIS-2-Ansicht (View-Variante).
+- **Methode zum Anzeigen des Dialogs** – `Schaltfläche` (der eigene Button des
+  Widgets öffnet ihn) oder `Datenpunkt`.
+- **Boolescher Schalter zum Anzeigen des Dialogs** – der State für die Methode
+  `Datenpunkt`: `true` öffnet den Dialog, das Schließen schreibt `false` zurück.
+- **Vollbilddialog anzeigen, wenn die Auflösung niedriger ist als** – unterhalb
+  dieser Fensterbreite in Pixeln füllt der Dialog den Bildschirm.
+- **Ansicht** – die im Dialog gezeigte VIS-2-Ansicht (nur View-Variante).
 
-Die Variante **iFrame** ersetzt die eingebettete View durch eine Webseite:
+Die Variante **iFrame** ersetzt die eingebettete Ansicht durch eine Webseite:
 
 <img src="../../media/vis2_dialog_editor_2.png" width="340" alt="iFrame-Dialog Einstellungen">
 
-- **URL** – im iFrame angezeigte Seite.
-- **keine Sandbox** – deaktiviert die iFrame-Sandbox; nur für vertrauenswürdige Inhalte.
-- **Scroll X / Y / seamless** – Scroll- und nahtlose Einbettungsoptionen.
+**iFrame Einstellungen**
 
-Text/Stil des Auslöse-Buttons, Dialoggröße, Kopfzeile, Fußzeile und
-Aktionsbuttons haben eigene Layoutgruppen.
+- **Quelle** – die im iFrame angezeigte URL.
+- **Sandbox deaktivieren** – hebt die iFrame-Sandbox auf; nur für
+  vertrauenswürdige Inhalte, die sonst nicht laufen.
+- **horizontal scrollen / vertikal scrollen / nahtlos** – Scrollbalken und
+  nahtlose Einbettung.
+
+**Layout Dialog**
+
+- **maximale Breite / Höhe / Abstand zum Rand** – Größe des Dialogs; die Breite
+  darf auch eine CSS-Angabe wie `96vw` sein.
+- **Schließen beim Klicken außerhalb** – abgeschaltet bleibt nur der
+  Schließen-Button.
+- **Überlagerungsfarbe des Hintergrunds / Transparenz** – die abgedunkelte Fläche
+  hinter dem Dialog.
+- **Höhe der Kopfzeile / Höhe der Fußzeile / Trennlinie anzeigen / z-Index** –
+  Aufbau des Dialograhmens.
+
+**Button Layout** gestaltet den auslösenden Button (**Buttontext**,
+**Schaltflächenstil**, Symbol, Farben), **Layout Kopfzeile** den **Titel** —
+ohne eigenen Titel steht der Name der Ansicht dort — und **Layout der
+Schaltflächen in der Dialogfußzeile** den Schließen-Button (**Text des
+Schließen-Buttons**, Position, Größe, volle Breite).
 
 Für dauerhaft eingebettete Inhalte ohne Dialog siehe
 [Advanced View in Widget](html-widgets.md).

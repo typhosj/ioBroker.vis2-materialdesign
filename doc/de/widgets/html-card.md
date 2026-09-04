@@ -16,25 +16,49 @@ aufgeführte Einstellungen sind selbsterklärend.
 
 **Allgemein**
 
-- **Kartenlayout** – Basic, Basic Header, Header Overlay oder Horizontal.
-- **Kartenstil** – Standard oder umrandet.
+- **Eingabemethode für die Listendaten** – `über den Editor` (Titel, Untertitel,
+  Text und Bild stehen in den Feldern) oder `JSON-String` (ein State liefert sie).
+- **JSON-String: Objekt-ID** – der State für die Methode `JSON-String`. Sein Wert
+  ist ein Objekt mit `title`, `subTitle`, `body` und `image`; ist er kein gültiges
+  JSON, steht statt des Titels eine rote Fehlermeldung in der Karte.
+- **Layout** – `Basic` (Bild oben, Titel darunter), `BasicHeader` (Titel über dem
+  Bild), `BasicHeaderOverlay` (Titel im Bild) oder `Horizontal` (Bild links).
+- **Stil** – `Standard` oder `outlined` (Rahmen statt Schatten).
+- **Bildlaufleiste anzeigen** – lässt den Textbereich scrollen, wenn er länger
+  ist als die Karte.
+
+**Titel / Text**
+
+- **Überschrift anzeigen / Untertitel anzeigen / Text anzeigen** – blenden die
+  drei Abschnitte einzeln aus.
+- **Titel / Untertitel / HTML** – die Inhalte. Sie dürfen HTML und Bindungen
+  enthalten, siehe [Werte in Texten anzeigen](../README.md#werte-in-texten-anzeigen).
+  Nur vertrauenswürdiges HTML nutzen.
+- **Schriftgröße des Titels / Textgröße** – die Typografiestufen von Material
+  Design statt fester Pixelwerte.
+- **Höhe des Untertitels / Texthöhe** – feste Höhe des jeweiligen Abschnitts.
 
 **Bild**
 
 - **Bild** – Bildquelle (Pfad, URL oder Data-URL).
-- **Refresh-Objekt / Verzögerung** – lädt das Bild bei State-Änderung nach, mit Verzögerung.
-- **Refresh bei Aufwachen / Ansichtswechsel** – weitere Auslöser für das Neuladen.
+- **Objekt-ID zum Aktualisieren** – ändert sich dieser State, wird das Bild neu
+  geladen. Das funktioniert nur bei einer URL oder einem absoluten Pfad, nicht
+  bei einer Data-URL.
+- **Verzögerung der Aktualisierung durch Objekt-ID** – Wartezeit in Millisekunden
+  vor dem Neuladen, höchstens 180000.
+- **Animationsdauer der Aktualisierung durch Objekt-ID** – Dauer der Überblendung.
+- **nach dem Aufwachen aktualisieren / beim Ansichtswechsel aktualisieren** –
+  weitere Auslöser für das Neuladen.
 
 Die Gruppe **Kartenaktion** macht die Karte klickbar:
 
 <img src="../../media/vis2_html_card_editor_2.png" width="340" alt="Kartenaktion">
 
-- **Klicktyp** – welcher Bereich reagiert (ganze Karte, Bild oder Text).
-- **Steuerungstyp** – URL öffnen oder State schreiben.
-- **href / State-Objekt + Wert** – das vom gewählten Steuerungstyp genutzte Ziel.
-
-Inhaltsfelder (Titel, Untertitel, Text) unterstützen VIS-2-HTML/Bindings. Nur
-vertrauenswürdiges HTML nutzen.
+- **klickbarer Bereich** – `keine` schaltet die Aktion ab; jede andere
+  Einstellung (`Karte`, `Bild`, `Text`) macht die ganze Karte klickbar.
+- **Aktion beim Klick** – `Link` öffnet die **URL** in einem neuen Tab,
+  `Datenpunkt` schreibt den **zu schreibenden Wert** in die **Objekt-ID für
+  Aktion**.
 
 ## Gestaltungsstil
 

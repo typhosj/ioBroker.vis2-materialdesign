@@ -17,31 +17,50 @@ language, so the screenshots are German.
 
 **General**
 
-- **oid / data JSON** – a JSON array taken from a state, or entered directly as text.
-- **column count** – number of indexed **Column [n]** groups.
+- **Object ID** – a state whose value is a JSON array of the rows.
+- **data as JSON** – the same data entered directly as text, when no state
+  carries it. The object id wins as soon as it is set.
+- **number of columns** – number of indexed **column layout [n]** groups.
 
-**Layout**
+**layout**
 
-- **table layout** – standard, card or outlined card.
-- **show header / fixed header** – header row and whether it stays on scroll.
-- **row height / round border** – row spacing and rounded corners.
+- **table layout** – `standard`, `card` or `cardOutlined` (a card with an outline
+  instead of a shadow).
+- **show row heading** – the header row carrying the column labels.
+- **fixed table headline** – the header row stays put while scrolling.
+- **rounded edges** – rounded corners; switched off the frame stays square.
+- **row heading height / row heading textsize / row heading fontfamily** – apply
+  to the header row only, **row height** applies to the data rows only.
 
-**Color**
+**colors**
 
-- **row background / row background odd** – with the second color set, the two
-  alternate row by row; left empty, the first one applies to every row.
+- **background color row / background color odd row** – with the second color
+  set, the two alternate row by row; left empty, the first one applies to every
+  row.
+- **hover background color row** – color of the row under the mouse pointer.
+- **divider** – line between the rows; the last row gets none.
+- **border color** – frame around the table.
 
-Each column is configured in its own indexed group:
+Each column is configured in its own indexed **column layout [n]** group:
 
 <img src="../../media/vis2_table_editor_2.png" width="340" alt="Indexed table column options">
 
-- **label** – column header text.
-- **column type** – text or image cell.
-- **sort key** – the JSON property this column reads and sorts by.
-- **width / alignment / no-wrap** – column sizing and text behaviour.
-- **prefix / suffix** – text added around the cell value.
+- **show column** – switched off the column is dropped without renumbering the
+  remaining ones.
+- **Label** – column header text. It only names the column, it does not pick
+  which JSON property the column shows.
+- **column type** – `text` or `Image`. With `Image` the cell value is a URL and
+  **image size** caps its width.
+- **object name for sorting** – the JSON property a click on this column header
+  sorts by. Left empty, the property the column itself shows is used. A second
+  click reverses the direction.
+- **column width (wordwrap must be active) / text alignment / no wordwrap** –
+  column sizing and text behaviour.
+- **Prefix / Suffix** – text added around the cell value. Both may contain
+  `#[obj.name]`, which is replaced by the `name` property of the same row.
 
-The columns are the properties of the **first** row, in its order.
+The columns are the properties of the **first** row, in its order: **column
+layout [0]** shows the first property, **[1]** the second and so on.
 
 ```json
 [{ "device": "Temperature", "room": "Living room", "value": "22.4 °C" }]

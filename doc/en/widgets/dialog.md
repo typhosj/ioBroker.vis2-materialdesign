@@ -17,29 +17,48 @@ Left: a dialog embedding a VIS 2 view (a room control panel). Right: a dialog em
 
 ## Editor settings
 
-The screenshots show the view dialog's **General** group and the iFrame group.
+The screenshots show the view dialog's **Common** group and the iFrame group.
 Settings not listed below are self-explanatory. The editor UI follows the
 ioBroker system language, so the screenshots are German.
 
 <img src="../../media/vis2_dialog_editor_overview.png" width="340" alt="View dialog general options">
 
-**General**
+**Common**
 
-- **opening method** – a local button or a datapoint. With a datapoint, a boolean `true` opens the dialog and closing writes `false`.
-- **open datapoint** – the state that controls the datapoint method.
-- **fullscreen below resolution** – show the dialog fullscreen under this screen width.
-- **embedded view** (`contains_view`) – the VIS 2 view shown inside the dialog (view variant).
+- **method to show dialog** – `button` (the widget's own button opens it) or
+  `datapoint`.
+- **boolean switch to show dialog** – the state for the `datapoint` method:
+  `true` opens the dialog, closing writes `false` back.
+- **show fullscreen dialog if resolution is lower than** – below this window
+  width in pixels the dialog fills the screen.
+- **view** – the VIS 2 view shown inside the dialog (view variant only).
 
 The **iFrame** variant replaces the embedded view with a web page:
 
 <img src="../../media/vis2_dialog_editor_2.png" width="340" alt="iFrame dialog settings">
 
-- **URL** – page shown in the iFrame.
-- **no sandbox** – disables the iFrame sandbox; use only for trusted content.
-- **scroll X / Y / seamless** – scrolling and seamless embedding options.
+**iFrame settings**
 
-The trigger button text/style, dialog size, header, footer and action buttons
-have their own layout groups.
+- **source** – the URL shown in the iFrame.
+- **disable sandbox** – lifts the iFrame sandbox; only for trusted content that
+  does not run otherwise.
+- **horizontal scrolling / vertical scrolling / seamless** – scrollbars and
+  seamless embedding.
+
+**Dialog Layout**
+
+- **max width / height / distance to border** – the size of the dialog; the width
+  may also be a CSS value such as `96vw`.
+- **closing on click outside** – switched off, only the close button remains.
+- **overlay color of background / transparency** – the dimmed area behind the
+  dialog.
+- **height of header / height of footer / show divider / z-Index** – the frame
+  around the content.
+
+**Button Layout** styles the trigger button (**Button text**, **button style**,
+icon, colors), **title layout** the **title** — without one, the view's name is
+shown — and **layout of dialog footer buttons** the close button (**text of close
+button**, position, size, full width).
 
 For permanently embedded content without a dialog, see
 [Advanced View in Widget](html-widgets.md).

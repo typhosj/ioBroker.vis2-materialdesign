@@ -16,25 +16,41 @@ aufgeklappt. Nicht aufgeführte Einstellungen sind selbsterklärend.
 
 **Allgemein**
 
-- **Min / Max** – bildet den State-Wert auf 0–100 Prozent ab.
+- **Minimum / Maximum** – bilden den State-Wert auf 0–100 Prozent ab. Ein
+  boolescher State zählt `true` als Maximum und `false` als Minimum, Werte
+  außerhalb werden auf die Grenzen gekappt.
 - **Umkehren** – füllt von der gegenüberliegenden Seite.
-- **Wert invertieren** – zeigt den verbleibenden statt des erreichten Prozentwerts.
+- **Wert invertieren** – füllt den Balken auf den verbleibenden Prozentwert; die
+  Beschriftung zeigt weiter den erreichten.
 
 **Layout**
 
-- **abgerundet** – rundet die Balkenenden.
-- **unbestimmt** – Daueranimation, die den Wert ignoriert (Busy-Anzeige).
-- **Drehung** – dreht den gesamten Balken um einen Winkel.
+- **abgerundete Ecken** – rundet die Balkenenden.
+- **unbestimmt - kontinuierlich animiert** – Daueranimation, die den Wert
+  ignoriert (Busy-Anzeige).
+- **90 Grad drehen** – `Ja` stellt den Balken senkrecht.
 
 **Beschriftung**
 
-- **Beschriftungsstil** – Prozent, Rohwert oder eigene Vorlage.
-- **Einheit** – an den Wert angehängter Text.
-- **eigene Beschriftung** – freier Text/Binding, wenn der Stil *eigene* ist.
+- **Wert anzeigen** – blendet die Beschriftung im Balken aus.
+- **Wertbeschriftungsstil** – `Prozent`, `Wert` (der State-Wert mit **Einheit**)
+  oder `Benutzerdefiniert`.
+- **benutzerdefiniertes Beschriftung** – freier Text für den Stil
+  `Benutzerdefiniert`. `[#value]` setzt den State-Wert ein, `[#percent]` den
+  Prozentwert, also z. B. `[#value] von 500 W ([#percent] %)`.
+- **Kommastellen** – Nachkommastellen beider Zahlen.
+- **Textausrichtung** – `Anfang`, `Mitte` oder `Ende`.
 
-Die Gruppe **Streifen** aktiviert und gestaltet ein Streifenmuster. Unter
-**Farben** ersetzen zwei optionale Schwellenfarben (je mit Bedingung) die
-Standardfarbe, sobald der Wert sie überschreitet.
+**Farben**
+
+- **Farbe Fortschritt / Hintergrundfarbe** – Balken und Spur.
+- **Bedingung für Farbe 1 Fortschritt [>] / Farbe 1 Fortschritt** und dasselbe
+  Paar für Farbe 2 – die Bedingung ist ein **Prozentwert**, nicht der State-Wert:
+  über der ersten Bedingung gilt Farbe 1, über der zweiten Farbe 2.
+
+Die Gruppe **Streifen** aktiviert und gestaltet ein Streifenmuster
+(**gestreift**, **Streifenwinkel**, drei Streifenbreiten und
+**Streifenabstand**).
 
 ## Gestaltungsstil
 

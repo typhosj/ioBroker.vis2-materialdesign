@@ -16,32 +16,51 @@ Nicht aufgeführte Einstellungen sind selbsterklärend.
 
 **Allgemein**
 
-- **oid / Daten-JSON** – ein JSON-Array aus einem State oder direkt als Text eingegeben.
-- **Spaltenanzahl** – Anzahl der indizierten Gruppen **Spaltenlayout [n]**.
+- **Objekt-ID** – ein State, dessen Wert ein JSON-Array der Zeilen ist.
+- **Daten als JSON** – dieselben Daten direkt als Text, wenn kein State sie liefert.
+  Die Objekt-ID hat Vorrang, sobald sie gesetzt ist.
+- **Anzahl der Spalten** – Anzahl der indizierten Gruppen **Spaltenlayout [n]**.
 
 **Layout**
 
-- **Tabellenlayout** – Standard, Karte oder umrandete Karte.
-- **Kopf zeigen / fixierter Kopf** – Kopfzeile und ob sie beim Scrollen bleibt.
-- **Zeilenhöhe / abgerundeter Rand** – Zeilenabstand und runde Ecken.
+- **Tabellenlayout** – `standard`, `Karte` oder `cardOutlined` (Karte mit Rahmen
+  statt Schatten).
+- **Zeilenüberschrift anzeigen** – die Kopfzeile mit den Spaltenbeschriftungen.
+- **feste Tabellenüberschrift** – die Kopfzeile bleibt beim Scrollen stehen.
+- **abgerundeten Ecken** – runde Ecken; abgeschaltet bleibt der Rahmen eckig.
+- **Zeilenüberschriftenhöhe / Zeilenüberschrift Textgröße / Zeilenüberschrift
+  Schriftart** – gelten nur für die Kopfzeile, **Zeilenhöhe** nur für die Datenzeilen.
 
-**Farbe**
+**Farben**
 
-- **Zeilenhintergrund / Zeilenhintergrund ungerade** – ist die zweite Farbe
-  gesetzt, wechseln sich beide zeilenweise ab; bleibt sie leer, gilt die erste
-  für alle Zeilen.
+- **Hintergrundfarbe Zeile / Hintergrundfarbe ungerade Zeile** – ist die zweite
+  Farbe gesetzt, wechseln sich beide zeilenweise ab; bleibt sie leer, gilt die
+  erste für alle Zeilen.
+- **Hintergrundfarbe Zeile Hover** – Farbe der Zeile unter dem Mauszeiger.
+- **Trennlinie** – Linie zwischen den Zeilen; die letzte Zeile bekommt keine.
+- **Rahmenfarbe** – Rahmen um die Tabelle.
 
-Jede Spalte wird in ihrer eigenen indizierten Gruppe konfiguriert:
+Jede Spalte wird in ihrer eigenen indizierten Gruppe **Spaltenlayout [n]** konfiguriert:
 
 <img src="../../media/vis2_table_editor_2.png" width="340" alt="Indizierte Tabellenspalte">
 
-- **Beschriftung** – Spaltenkopftext.
-- **Spaltentyp** – Text- oder Bildzelle.
-- **Sortierschlüssel** – die JSON-Eigenschaft, die die Spalte liest und sortiert.
-- **Breite / Ausrichtung / kein Umbruch** – Spaltengröße und Textverhalten.
-- **Präfix / Suffix** – Text um den Zellenwert.
+- **Spalte anzeigen** – abgeschaltet fällt die Spalte weg, ohne die Nummerierung
+  der übrigen zu verschieben.
+- **Beschriftung** – Spaltenkopftext. Er benennt die Spalte nur, er wählt nicht
+  aus, welche JSON-Eigenschaft sie zeigt.
+- **Spaltentyp** – `Text` oder `Bild`. Bei `Bild` ist der Zellenwert eine URL,
+  **Bildgröße** begrenzt die Breite.
+- **Objektname zum Sortieren** – die JSON-Eigenschaft, nach der ein Klick auf
+  diesen Spaltenkopf sortiert. Leer wird nach der Eigenschaft sortiert, die die
+  Spalte selbst zeigt. Ein zweiter Klick dreht die Richtung.
+- **Spaltenbreite (Zeilenumbruch muss aktiv sein) / Textausrichtung / kein
+  Zeilenumbruch** – Spaltengröße und Textverhalten.
+- **Präfix / Suffix** – Text um den Zellenwert. Beide dürfen `#[obj.name]`
+  enthalten und setzen dort die Eigenschaft `name` derselben Zeile ein.
 
-Die Spalten sind die Eigenschaften der **ersten** Zeile, in deren Reihenfolge.
+Die Spalten sind die Eigenschaften der **ersten** Zeile, in deren Reihenfolge:
+**Spaltenlayout [0]** zeigt die erste Eigenschaft, **[1]** die zweite und so
+weiter.
 
 ```json
 [{ "geraet": "Temperatur", "raum": "Wohnzimmer", "wert": "22,4 °C" }]

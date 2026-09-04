@@ -22,32 +22,60 @@ screenshots are German.
 
 <img src="../../media/vis2_select_editor_overview.png" width="340" alt="Select menu data, layout and item options">
 
-**Data of the menu**
+**Common**
 
-- **data method** – *value list*, *JSON string*, *JSON object* or *states of the object* (uses the enum values of the bound object).
-- **value list / labels / icons** – semicolon-separated lists that build the entries, e.g. values `1;2;3`, labels `Living room;Kitchen;Bath`, icons `sofa;silverware-fork-knife;shower`.
+- **Object ID** – the state the selection is written to and the displayed value
+  is read from.
+- Autocomplete only: **input mode** – `write` writes typed text that matches no
+  entry straight into the state, `select` discards it.
+- Autocomplete only: **input type** – `text`, `date` or `time` for the input field.
 
-**Menu layout**
+**data of menu**
 
-- **list position / offset** – where the dropdown opens relative to the field.
-- **show selected icon** – marks the active entry with a check.
-- **open on clear** – reopens the list after the value is cleared.
+- **input method for the menu data** – `via editor` (indexed **menu item [n]**
+  groups), `JSON string`, `Object has multistate` (the `states` of the object
+  behind the object id) or `value list`.
+- **Editor: count of menu items** – how many indexed **menu item [n]** groups exist.
+- **value list / value list: labels / value list: images** – three
+  semicolon-separated lists read position by position, e.g. values `1;2;3`,
+  labels `Living room;Kitchen;Bath`, images `sofa;silverware-fork-knife;shower`.
+  Without a label the value itself is shown.
+- **JSON string** – an array of objects with `value`, `text`, `subText`, `icon`,
+  `iconColor` and `iconColorSelectedTextField`. An entry without `value` is
+  skipped, one without `text` shows its value.
 
-**Menu item**
+**menu layout**
 
-- Per-entry **value**, **label**, **subLabel**, **icon** and **icon color** when the entries are configured in the editor.
-- The **+** button in the header of the last **menu item** group adds an entry, the two buttons next to it clone and delete one. That last group shows only its header — it is the add bar, not an entry.
-- An entry without a **value** uses its **label** as the value written to the object.
+- **position / use position offset** – whether the menu opens `auto`, `top` or
+  `bottom`.
+- **open Menu at using clear button** – clearing the value opens the list again.
+- **show icon of selected item** – where in the input field the selected entry's
+  icon appears: `don't display`, `prepend`, `prepend-inner` or `append-outer`. It
+  replaces the fixed icon in that slot.
+- **show value** – each menu row also shows its value to the right of the text.
+- Row height, fonts and colors of the list each cover the normal, hovered and
+  selected state.
 
-The **Input layout** group (outlined / filled / solo, rounded / shaped) matches the
-[Input](input.md) widget. Labels, clear / collapse icons and colors live in their
-own optional groups. JSON entries can use `value`, `text`, `subText`, `icon` and
-`iconColor`.
+**menu item [n]**
 
-**Icons**
+These groups only appear for the `via editor` method.
 
-For the clear, collapse (menu arrow), prepend, inner-prepend and outer-append icons
-you can select an icon or an image.
+- **Value** – what is written into the state. Left empty, the **Label** is written.
+- **Label / second text** – the two text lines of the entry.
+- **icon / icon color** – the icon of the menu row.
+- **selected icon color for textfield** – the color of that same icon once it sits
+  in the input field as the selected entry.
+
+The **layout input** group (`regular`, `solo`, `solo-rounded`, `solo-shaped`,
+`filled`, `filled-rounded`, `filled-shaped`, `outlined`, `outlined-rounded`,
+`outlined-shaped`) matches the [Input](input.md) widget, as do **label of input**,
+**appendixs of the input**, **sub text of input** and **counter layout**.
+
+**icons**
+
+The **text delete icon**, the **menu open symbol** (the collapse arrow), the
+**prefixed icon**, the **inner prefixed symbol** and the **outer appended symbol**
+each take an icon or an image plus size and color.
 
 <img src="../../media/vis2_select_editor_icons.png" width="340" alt="Select icon fields">
 
@@ -55,8 +83,8 @@ you can select an icon or an image.
 
 The **Classic** (left) and **Material 3** (right) style side by side, see
 [Design style](../README.md#design-style): the regular, filled and outlined
-layouts, options with icons, a value column, the clear icon and autocomplete
-while typing and after selection.
+layouts, entries with icons, the value column, the clear icon, plus autocomplete
+while typing and after picking an entry.
 
 <img src="../../media/vis2_select_styles.png" alt="Select and autocomplete in the Classic and the Material 3 style">
 

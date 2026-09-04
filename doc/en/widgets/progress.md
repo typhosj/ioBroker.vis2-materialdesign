@@ -9,33 +9,47 @@ A linear VIS 2 progress indicator for numeric or boolean states. Template id:
 
 ## Editor settings
 
-The screenshot shows the **General**, **Layout** and **Label** groups expanded.
-Settings not listed below are self-explanatory. The editor UI follows the
-ioBroker system language, so the screenshots are German.
+The screenshot shows the **General**, **layout** and **labeling** groups
+expanded. Settings not listed below are self-explanatory. The editor UI follows
+the ioBroker system language, so the screenshots are German.
 
 <img src="../../media/vis2_progress_editor_overview.png" width="340" alt="Progress general, layout and label options">
 
 **General**
 
-- **min / max** – map the state value onto 0–100 percent.
-- **reverse** – fills from the opposite side.
-- **invert value** – shows the remaining percentage instead of the reached one.
+- **Minimum / Maximum** – map the state value onto 0–100 percent. A boolean state
+  counts `true` as the maximum and `false` as the minimum; values outside the
+  range are clamped.
+- **Reverse** – fills from the opposite side.
+- **invert value** – fills the bar to the remaining percentage; the label keeps
+  showing the reached one.
 
-**Layout**
+**layout**
 
-- **rounded** – rounds the bar ends.
-- **indeterminate** – continuous animation that ignores the value (busy indicator).
-- **rotate** – rotates the whole bar by a given angle.
+- **rounded corners** – rounds the ends of the bar.
+- **indeterminate - continuously animates** – a permanent animation that ignores
+  the value (busy indicator).
+- **rotate 90 degrees** – `yes` stands the bar upright.
 
-**Label**
+**labeling**
 
-- **label style** – percent, raw value or a custom template.
-- **unit** – text appended to the value.
-- **custom label** – free text/binding used when the style is *custom*.
+- **show value** – hides the label inside the bar.
+- **value caption style** – `percent`, `value` (the state value plus **unit**) or
+  `custom`.
+- **custom label** – free text for the `custom` style. `[#value]` inserts the
+  state value, `[#percent]` the percentage, e.g. `[#value] of 500 W ([#percent] %)`.
+- **decimal points** – decimals of both numbers.
+- **text alignment** – `start`, `center` or `end`.
 
-The **Striped** group enables and styles a stripe pattern. In **Colors**, two
-optional threshold colors (each with a condition) replace the normal progress
-color once the value passes them.
+**colors**
+
+- **color progress / background color** – the bar and its track.
+- **condition for color 1 progress [>] / color 1 progress** and the same pair for
+  color 2 – the condition is a **percentage**, not the state value: above the
+  first condition color 1 applies, above the second color 2.
+
+The **striped** group turns on and styles a stripe pattern (**striped**,
+**Stripe angle**, three stripe widths and **Stripe distance**).
 
 ## Design style
 

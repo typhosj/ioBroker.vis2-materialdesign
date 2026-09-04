@@ -21,36 +21,65 @@ Datumsformat-Gruppen. Nicht aufgeführte Einstellungen sind selbsterklärend.
 **Allgemein**
 
 - **Objekt-ID** – State mit dem JSON-Termin-Array.
-- **Kalenderansicht** – Monat, Woche oder Tag.
+- **Kalenderansicht** – `Monat`, `Woche` oder `Tag`.
 
 **Layout**
 
-- **Wochentage / Kurze Wochentage** – volle oder abgekürzte Wochentagsnamen.
-- **Rahmen- / Tageshintergrundfarben** – Raster- und Tageszellenfarben.
+- **anzuzeigende Wochentage** – kommagetrennte Wochentagsnummern, 0 = Sonntag bis
+  6 = Samstag. Die Reihenfolge ist auch die Anzeigereihenfolge, der Standard
+  `1,2,3,4,5,6,0` beginnt also montags. `1,2,3,4,5` blendet das Wochenende aus.
+- **Zeige Kurznamen für Wochentage** – `Mo` statt `Montag`.
+- **Rahmenfarbe / Hintergrundfarbe / Hintergrundfarbe für andere Monate** – Raster
+  und Tageszellen; die letzte gilt für die Tage, die im Monatsraster aus dem
+  Vor- oder Folgemonat stammen.
 
 Termindarstellung und Datumsformate haben eigene Gruppen:
 
 <img src="../../media/vis2_calendar_editor_2.png" width="340" alt="Kalender Termin- und Datumsformat">
 
-- **Termin-Überlappungsmodus** – wie gleichzeitige Termine in Wochen- und
-  Tagesansicht angeordnet werden: *Spalte* teilt die Breite unter ihnen auf,
-  *Stapel* legt sie versetzt übereinander. In der Monatsansicht stehen Termine
-  ohnehin untereinander, dort wirkt die Einstellung nicht.
-- **Terminhöhe / Schriften** – Größe und Typografie der Termine.
-- **benutzerdefinierte Datumsformate** – je Ansicht Kopf- und Tagesformat mit Datums-Token (z. B. `dddd`, `D. MMMM`).
+**Terminlayout**
 
-Die Gruppen für Kopfzeile, Kalenderwochen, Bedienung und Zeitachse gestalten die
-übrige Kalenderoberfläche. Zwei Einstellungen dort sind nicht selbsterklärend:
+- **Modusüberlappung** – wie gleichzeitige Termine in Wochen- und Tagesansicht
+  angeordnet werden: `Spalte` teilt die Breite unter ihnen auf, `stack` legt sie
+  versetzt übereinander. In der Monatsansicht stehen Termine ohnehin
+  untereinander, dort wirkt die Einstellung nicht.
+- **Höhe** – Höhe eines Termins, dazu Schriftgröße und Schriftart der Termine.
+
+**benutzerdefinierte Datumsformate**
+
+- Je Ansicht ein Format für **Kopfzeile** und **Tag**, mit Datums-Token
+  (z. B. `dddd`, `D. MMMM`). Leer gelassen gilt das Format des Gebietsschemas.
+
+**Zeitachsenlayout** (nur Wochen- und Tagesansicht)
+
+- **Startstunde / Endstunde** – der gezeigte Ausschnitt des Tages.
+- **Intervall in Minuten** – Abstand der Rasterlinien, z. B. 30 oder 60.
+- **zeige kurze Intervalle als Text** – abgeschaltet werden nur die vollen
+  Stunden beschriftet.
+- **Zeitformat** – `Gebietsschema`, `24h` oder `12h`.
+- **aktuelle Uhrzeit anzeigen / Farbe aktuelle Uhrzeit** – Linie auf der
+  aktuellen Uhrzeit, minütlich nachgeführt.
+- **Hintergrundfarbe / Überschrift Hintergrundfarbe** – die erste färbt die
+  Uhrzeit-Spalte, die zweite die Zelle darüber; zusammen die ganze Spalte.
+
+**Kalenderwochen Layout**
 
 - **Kalenderwoche anzeigen** – im Monat eine KW-Spalte links, in Wochen- und
   Tagesansicht die KW in der Ecke über der Zeitachse; Schrift und Farbe kommen
   aus derselben Gruppe.
-- **… gehe zu** – die Tageszahl wechselt in die eingestellte Ansicht und nimmt
-  den angeklickten Tag mit.
-- **aktuelle Uhrzeit anzeigen / Farbe** – Linie auf der aktuellen Uhrzeit in
-  Wochen- und Tagesansicht, minütlich nachgeführt.
-- **Zeitachse: Hintergrundfarbe / Kopf-Hintergrundfarbe** – die erste färbt die
-  Uhrzeit-Spalte, die zweite die Zelle darüber; zusammen die ganze Spalte.
+
+**Layout der Kalendertasten**
+
+- **Monatsansicht: gehe zu / Wochenansicht: gehe zu / Tagesansicht: gehe zu** –
+  ein Klick auf die Tageszahl wechselt in die eingestellte Ansicht und nimmt den
+  angeklickten Tag mit.
+
+**Steuerungslayout**
+
+- **Steuerung anzeigen** – die Leiste mit Vor/Zurück, Heute und Ansichtswahl.
+- **Steuerungslayout** – `text`, `raised`, `unelevated` oder `outlined`.
+- **Ausrichtung** – `stretch`, `left`, `right` oder `center`.
+- **Beschriftungen anzeigen** – abgeschaltet bleiben nur die Symbole.
 
 ```json
 [

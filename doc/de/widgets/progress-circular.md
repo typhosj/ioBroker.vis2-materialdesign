@@ -16,24 +16,33 @@ aufgeklappt. Nicht aufgeführte Einstellungen sind selbsterklärend.
 
 **Allgemein**
 
-- **Min / Max** – bildet den State-Wert auf 0–100 Prozent ab.
-- **unbestimmt** – Dauerrotation, die den Wert ignoriert (Busy-Anzeige).
+- **Minimum / Maximum** – bilden den State-Wert auf 0–100 Prozent ab. Ein
+  boolescher State zählt `true` als Maximum und `false` als Minimum.
+- **unbestimmt - kontinuierlich animiert** – Dauerrotation, die den Wert ignoriert
+  (Busy-Anzeige).
 
 **Layout**
 
-- **Größe** – Durchmesser des Rings.
-- **Ringbreite** – Stärke des Fortschritts-Strichs.
-- **Drehung** – Startwinkel des Rings.
+- **Größe** – Durchmesser des Rings. Leer gelassen füllt er das Widget.
+- **Dicke** – Stärke des Rings.
+- **Startpunkt drehen** – Startwinkel in Grad, Standard ist oben.
 
 **Beschriftung**
 
-- **Beschriftungsstil** – Prozent, Rohwert oder eigene Vorlage.
-- **Einheit** – an den Wert angehängter Text.
-- **eigene Beschriftung** – freier Text/Binding, wenn der Stil *eigene* ist.
+- **Wert anzeigen** – blendet die Beschriftung in der Mitte aus.
+- **Wertbeschriftungsstil** – `Prozent`, `Wert` (der State-Wert mit **Einheit**)
+  oder `Benutzerdefiniert`.
+- **benutzerdefiniertes Beschriftung** – freier Text für den Stil
+  `Benutzerdefiniert`. `[#value]` setzt den State-Wert ein, `[#percent]` den
+  Prozentwert.
+- **Kommastellen** – Nachkommastellen beider Zahlen.
 
-Unter **Farben** werden Fortschrittsfarbe, Hintergrundring, Innen-(Mitte-)Farbe
-sowie zwei optionale Schwellenfarben gesetzt, die die Fortschrittsfarbe je nach
-Bedingung ersetzen.
+**Farben**
+
+- **Farbe Fortschritt / Hintergrundfarbe** – Ring und Spur.
+- **Kreis Hintergrundfarbe** – füllt die Fläche innerhalb des Rings.
+- **Bedingung für Farbe 1 Fortschritt [>] / Farbe 1 Fortschritt** und dasselbe
+  Paar für Farbe 2 – die Bedingung ist ein **Prozentwert**, nicht der State-Wert.
 
 ## Gestaltungsstil
 

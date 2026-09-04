@@ -10,32 +10,40 @@ the linear progress widget. Template id:
 
 ## Editor settings
 
-The screenshot shows the **General**, **Layout** and **Label** groups expanded.
-Settings not listed below are self-explanatory. The editor UI follows the
-ioBroker system language, so the screenshots are German.
+The screenshot shows the **General**, **layout** and **labeling** groups
+expanded. Settings not listed below are self-explanatory. The editor UI follows
+the ioBroker system language, so the screenshots are German.
 
 <img src="../../media/vis2_progress_circular_editor_overview.png" width="340" alt="Circular progress general, layout and label options">
 
 **General**
 
-- **min / max** – map the state value onto 0–100 percent.
-- **indeterminate** – continuous spin that ignores the value (busy indicator).
+- **Minimum / Maximum** – map the state value onto 0–100 percent. A boolean state
+  counts `true` as the maximum and `false` as the minimum.
+- **indeterminate - continuously animates** – a permanent rotation that ignores
+  the value (busy indicator).
 
-**Layout**
+**layout**
 
-- **size** – diameter of the ring.
-- **ring width** – thickness of the progress stroke.
-- **rotate** – start angle of the ring.
+- **size** – diameter of the ring. Left empty it fills the widget.
+- **thickness** – width of the ring.
+- **rotate start point** – start angle in degrees, the default starts at the top.
 
-**Label**
+**labeling**
 
-- **label style** – percent, raw value or a custom template.
-- **unit** – text appended to the value.
-- **custom label** – free text/binding used when the style is *custom*.
+- **show value** – hides the label in the centre.
+- **value caption style** – `percent`, `value` (the state value plus **unit**) or
+  `custom`.
+- **custom label** – free text for the `custom` style. `[#value]` inserts the
+  state value, `[#percent]` the percentage.
+- **decimal points** – decimals of both numbers.
 
-In **Colors** you set the progress color, the background ring, the inner (center)
-color and two optional threshold colors that replace the progress color by
-condition.
+**colors**
+
+- **color progress / background color** – the ring and its track.
+- **circle background color** – fills the area inside the ring.
+- **condition for color 1 progress [>] / color 1 progress** and the same pair for
+  color 2 – the condition is a **percentage**, not the state value.
 
 ## Design style
 

@@ -19,39 +19,66 @@ ioBroker system language, so the screenshots are German.
 
 <img src="../../media/vis2_calendar_editor_overview.png" width="340" alt="Calendar general and layout options">
 
-**General**
+**Common**
 
-- **object id** – state with the JSON event array.
-- **calendar view** – month, week or day.
+- **Object ID** – state with the JSON event array.
+- **calendar view** – `month`, `week` or `day`.
 
-**Layout**
+**layout**
 
-- **weekdays / short weekdays** – full or abbreviated weekday names.
-- **border / day background colors** – grid and day-cell colors.
+- **days of the week to be shown** – comma-separated weekday numbers, 0 = Sunday
+  through 6 = Saturday. Their order is the display order too, so the default
+  `1,2,3,4,5,6,0` starts on Monday. `1,2,3,4,5` hides the weekend.
+- **show short names for weekdays** – `Mon` instead of `Monday`.
+- **border color / background color / background color for other months** – grid
+  and day cells; the last one applies to the days the month grid borrows from the
+  previous or next month.
 
 Event display and date formats have their own groups:
 
 <img src="../../media/vis2_calendar_editor_2.png" width="340" alt="Calendar event and date-format options">
 
-- **event overlap mode** – how simultaneous events are arranged in the week and
-  day view: *column* splits the width between them, *stack* offsets them on top
-  of each other. Month view lists events below each other anyway, so the setting
-  has no effect there.
-- **event height / fonts** – size and typography of events.
-- **custom date formats** – per-view header and day format strings using date tokens (e.g. `dddd`, `D. MMMM`).
+**appointment layout**
 
-The header, week-number, controls and time-axis layout groups style the
-remaining calendar chrome. Two settings there are not self-explanatory:
+- **mode overlap** – how simultaneous events are arranged in the week and day
+  view: `column` splits the width between them, `stack` offsets them on top of
+  each other. Month view lists events below each other anyway, so the setting has
+  no effect there.
+- **height** – height of an event, plus font size and font family of the events.
+
+**custom date formats**
+
+- Per view a format for the **header** and the **day**, using date tokens (e.g.
+  `dddd`, `D. MMMM`). Left empty the locale format applies.
+
+**time axis layout** (week and day view only)
+
+- **start hour / end hour** – the shown slice of the day.
+- **interval in minutes** – spacing of the grid lines, e.g. 30 or 60.
+- **show short intervals as text** – switched off, only full hours are labelled.
+- **time format** – `locale`, `24h` or `12h`.
+- **show current time / current time color** – a line on the current time, moved
+  on every minute.
+- **background color / heading background color** – the first colors the time
+  column, the second the cell above it; together the whole column.
+
+**calendar weeks layout**
 
 - **show calendar week** – a week-number column on the left in month view, and
   the week number in the corner above the time axis in the week and day view;
   font and color come from the same group.
-- **… go to** – the day number switches to the configured view and takes the
-  clicked day with it.
-- **show current time / current time color** – a line on the current time in the
-  week and day view, moved on every minute.
-- **time axis background / time axis header background** – the first colors the
-  time column, the second the cell above it; together the whole column.
+
+**calendar buttons layout**
+
+- **month view: go to / week view: go to / day view: go to** – clicking the day
+  number switches to the configured view and takes the clicked day with it.
+
+**control layout**
+
+- **display control** – the bar with previous/next, today and the view picker.
+- **control layout** – `text`, `raised`, `unelevated` or `outlined`.
+- **alignment** – `stretch`, `left`, `right` or `center`.
+- **show labels** – switched off, only the icons remain.
 
 ```json
 [
