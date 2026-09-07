@@ -2,7 +2,7 @@ import React from 'react';
 
 import type { RxWidgetInfo, VisRxWidgetProps } from '@iobroker/types-vis-2';
 
-import { squarePreview, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, sizeCss, stateValue, sanitizeHtml } from './widgetUtils';
+import { squarePreview, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, legacyInk, sizeCss, stateValue, sanitizeHtml } from './widgetUtils';
 import { ProgressData, cleanColor, num, progressState, progressFillMap } from './MaterialDesignProgress';
 import { withAutoFill } from './deviceFill';
 
@@ -122,7 +122,7 @@ export default class MaterialDesignProgressCircular extends VisWidget {
                                 className="v-progress-circular__info"
                                 style={{
                                     alignItems: 'center',
-                                    color: cleanColor(data.textColor, isM3 ? 'var(--md-sys-color-on-surface)' : '#44739e'),
+                                    color: cleanColor(data.textColor, isM3 ? 'var(--md-sys-color-on-surface)' : legacyInk(this.isDarkTheme())),
                                     display: 'flex',
                                     fontFamily: data.textFontFamily || undefined,
                                     fontSize: data.textFontSize ? sizeCss(data.textFontSize, 12) : 12,

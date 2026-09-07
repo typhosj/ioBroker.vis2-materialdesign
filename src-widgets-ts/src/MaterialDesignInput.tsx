@@ -5,7 +5,7 @@ import type { RxWidgetInfo, VisRxWidgetProps } from '@iobroker/types-vis-2';
 import { m3ColorExplicit, renderIcon } from './MaterialDesignButtons';
 import { cleanColor, num } from './MaterialDesignProgress';
 import { fill, withAutoFill } from './deviceFill';
-import { squarePreview, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, iconField, setStateValue, sizeCss, stateValue } from './widgetUtils';
+import { squarePreview, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, iconField, legacyInk, legacyInkMuted, legacyOutline, setStateValue, sizeCss, stateValue } from './widgetUtils';
 
 interface InputData {
     oid?: string;
@@ -428,6 +428,9 @@ export default class MaterialDesignInput extends VisWidget {
         // An explicit saved color wins (m3ColorExplicit); the legacy `#000000` default and `#mdwTheme:`
         // tokens count as unset so the M3 token applies, which dark mode needs.
         const isM3 = designStyle(data as Record<string, unknown>) === 'material3';
+        // The field paints no surface of its own, so its classic defaults follow the page: on a
+        // dark vis-2 the black text and the 54 % black label measured 1:1 against the background.
+        const isDark = this.isDarkTheme();
         const textDefault =
             data.inputTextColor === undefined ||
             data.inputTextColor === '' ||
@@ -438,7 +441,7 @@ export default class MaterialDesignInput extends VisWidget {
                 ? 'var(--md-sys-color-outline)'
                 : plainColor(
                       data.inputLayoutBorderColor,
-                      layout.includes('outlined') ? 'rgba(0, 0, 0, 0.24)' : 'rgba(0, 0, 0, 0.54)',
+                      layout.includes('outlined') ? legacyOutline(isDark, true) : legacyInkMuted(isDark),
                   );
         const activeBorderColor =
             isM3 && !m3ColorExplicit(data.inputLayoutBorderColorSelected)
@@ -462,17 +465,17 @@ export default class MaterialDesignInput extends VisWidget {
                 : themeColor(data.inputLabelColorSelected, '#44739e')
             : isM3 && !m3ColorExplicit(data.inputLabelColor)
               ? 'var(--md-sys-color-on-surface-variant)'
-              : themeColor(data.inputLabelColor, 'rgba(0, 0, 0, 0.54)');
+              : themeColor(data.inputLabelColor, legacyInkMuted(isDark));
         const textColor =
             isM3 && textDefault
                 ? 'var(--md-sys-color-on-surface)'
                 : typeof data.inputTextColor === 'string' && data.inputTextColor.startsWith('#mdwTheme:')
-                  ? '#000000'
-                  : themeColor(data.inputTextColor, '#000000');
+                  ? legacyInk(isDark)
+                  : themeColor(data.inputTextColor, legacyInk(isDark));
         const appendixColor =
             isM3 && !m3ColorExplicit(data.inputAppendixColor)
                 ? 'var(--md-sys-color-on-surface-variant)'
-                : themeColor(data.inputAppendixColor, 'rgba(0, 0, 0, 0.6)');
+                : themeColor(data.inputAppendixColor, legacyInkMuted(isDark));
         const enclosed = layout.includes('outlined') || layout.includes('solo');
         const filled = layout.includes('filled');
         // `showInputMessageAlways` follows Vuetify's persistent-hint: off, the hint only shows while
@@ -518,7 +521,7 @@ export default class MaterialDesignInput extends VisWidget {
                                 '--vue-text-field-after-color': activeBorderColor,
                                 '--vue-text-field-label-before-color': themeColor(
                                     data.inputLabelColor,
-                                    'rgba(0, 0, 0, 0.54)',
+                                    legacyInkMuted(isDark),
                                 ),
                                 '--vue-text-field-label-after-color': labelColor,
                                 '--vue-text-field-label-font-family': data.inputLabelFontFamily || undefined,
@@ -813,7 +816,7 @@ export default class MaterialDesignInput extends VisWidget {
                                                 color:
                                                     isM3 && !m3ColorExplicit(data.inputMessageColor)
                                                         ? 'var(--md-sys-color-on-surface-variant)'
-                                                        : themeColor(data.inputMessageColor, 'rgba(0, 0, 0, 0.54)'),
+                                                        : themeColor(data.inputMessageColor, legacyInkMuted(isDark)),
                                                 flex: 1,
                                                 fontFamily: data.inputMessageFontFamily || undefined,
                                                 fontSize: fontSize(data.inputMessageFontSize, 14),
@@ -829,7 +832,7 @@ export default class MaterialDesignInput extends VisWidget {
                                                 color:
                                                     isM3 && !m3ColorExplicit(data.inputCounterColor)
                                                         ? 'var(--md-sys-color-on-surface-variant)'
-                                                        : plainColor(data.inputCounterColor, 'rgba(0, 0, 0, 0.54)'),
+                                                        : plainColor(data.inputCounterColor, legacyInkMuted(isDark)),
                                                 flex: '0 1 auto',
                                                 fontFamily: data.inputCounterFontFamily || undefined,
                                                 fontSize: fontSize(data.inputCounterFontSize, 14),

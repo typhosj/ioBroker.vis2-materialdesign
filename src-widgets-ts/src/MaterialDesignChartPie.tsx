@@ -1,5 +1,5 @@
 import React from "react";
-import { MAX_DYNAMIC_ITEMS, squarePreview, indexedFields, itemCount, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, stateValue, sanitizeHtml, visLocale, boolValue as b, numberValue as n, textValue as s } from './widgetUtils';
+import { MAX_DYNAMIC_ITEMS, squarePreview, indexedFields, itemCount, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, legacySurface, stateValue, sanitizeHtml, visLocale, boolValue as b, numberValue as n, textValue as s } from './widgetUtils';
 import type { RxWidgetInfo } from "@iobroker/types-vis-2";
 import { colorSchemes, scheme } from "./MaterialDesignColorScheme";
 import { ChartLegend, MaterialDesignChartCanvas, datalabelsConfig, layoutConfig, tooltipConfig } from "./MaterialDesignChartCanvas";
@@ -364,7 +364,7 @@ export default class MaterialDesignChartPie extends VisWidget {
           <div
             className="materialdesign-html-card-container mdc-card"
             style={{
-              background: s(data.colorBackground) || (isM3 ? "var(--md-sys-color-surface-container-low)" : undefined),
+              background: s(data.colorBackground) || (isM3 ? "var(--md-sys-color-surface-container-low)" : legacySurface(this.isDarkTheme())),
               boxSizing: "border-box",
               display: "flex",
               flexDirection: "column",

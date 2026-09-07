@@ -850,6 +850,40 @@ export function resolveDarkTheme(value: ioBroker.StateValue | undefined, themeTy
     return themeType === 'dark';
 }
 
+// The classic style was drawn for a light page: its text defaults are dark, and where the widget
+// paints no surface of its own the text sits straight on the vis-2 page. With vis-2 in dark mode
+// those defaults measured 1:1 against the page — invisible, not just weak. These two give the
+// default a classic text takes when the user set no color of their own — it follows the theme, the
+// same way `legacySurface` below makes a card, a drawer or a dropdown follow it. An explicitly
+// configured color still wins before any of them is consulted.
+// Classic paints its own surfaces (card, drawer, dropdown, table card) and its own hairlines. Both
+// were fixed light, so on a dark page a card stayed a white island and every outlined control lost
+// its border against the background. They follow the theme now; the light values are the ones the
+// style always had.
+// The classic accent blue was picked against a white page; on the dark surfaces it drops to 3.3:1,
+// so the dark theme takes the lighter tint of the same blue.
+export function legacyAccent(isDark: boolean): string {
+    return isDark ? '#8ab4e8' : '#44739e';
+}
+
+export function legacySurface(isDark: boolean): string {
+    return isDark ? '#1e1e1e' : '#fff';
+}
+
+// `field` is the heavier line an outlined input or select draws, `subtle` the hairline of a card
+// edge or a divider.
+export function legacyOutline(isDark: boolean, field = false): string {
+    if (field) return isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.24)';
+    return isDark ? 'rgba(255, 255, 255, 0.24)' : 'rgba(0, 0, 0, 0.12)';
+}
+export function legacyInk(isDark: boolean): string {
+    return isDark ? '#fff' : '#000';
+}
+
+export function legacyInkMuted(isDark: boolean): string {
+    return isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.54)';
+}
+
 export function applyThemeVariables(target: HTMLElement | null | undefined, data: Record<string, unknown>, values: Record<string, ioBroker.StateValue> | undefined): void {
     // The variables go on the WIDGET element, not on document.documentElement. Every widget writes
     // the same variable names, so a page-wide write means the widget that rendered last decides the

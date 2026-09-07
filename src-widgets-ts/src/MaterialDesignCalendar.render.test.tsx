@@ -24,10 +24,11 @@ describe('calendar month grid', () => {
     // A transparent day cell lets the view background through while the day numbers stay on the
     // widget's own theme colour, which is what made the grid unreadable on a dark view.
     it('paints its own surface behind the days instead of leaving them transparent', () => {
-        const cell = (background: string): string => `background:${background};border:1px solid #e0e0e0;min-width:0`;
+        // The grid hairline follows the theme too, so each theme names its own.
+        const cell = (background: string, border = '#e0e0e0'): string => `background:${background};border:1px solid ${border};min-width:0`;
         expect(render({}, {})).not.toContain(cell('transparent'));
         expect(render({}, {})).toContain(cell('#fff'));
-        expect(render({}, {}, 'dark')).toContain(cell('#303030'));
+        expect(render({}, {}, 'dark')).toContain(cell('#303030', 'rgba(255, 255, 255, 0.24)'));
     });
 
     it('still honours an explicit day background', () => {

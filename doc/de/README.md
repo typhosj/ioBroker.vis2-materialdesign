@@ -56,6 +56,12 @@ Neu eingefügte Widgets erscheinen in Material 3. Bestehende Projekte bleiben
 unverändert klassisch, bis du ein Widget umstellst oder den Projektstandard im
 Tab **Design** änderst.
 
+Beide Stile folgen dem Dunkelmodus von VIS 2: Text, die Flächen, die ein Widget
+selbst malt (Karte, Menü, Navigationsleiste), und die Rahmen der `outlined`-Varianten
+wechseln mit dem Thema. Eine Farbe, die du im Editor gesetzt hast, bleibt in beiden
+Modi genau so stehen — prüfe sie also, wenn du sie für den hellen Modus ausgesucht
+hast.
+
 Material 3 ändert nur die Darstellung. Datenpunkte, Optionsnamen, Werte,
 Schreibverhalten, Timer und Navigation sind in beiden Stilen identisch, und die
 Rückstellung auf `Klassisch` stellt das alte Aussehen exakt wieder her. Explizit

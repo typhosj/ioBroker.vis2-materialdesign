@@ -56,6 +56,11 @@ Newly inserted widgets appear in Material 3. Existing projects stay classic and
 unchanged until you switch a widget over or change the project default in the
 **Design** tab.
 
+Both styles follow the dark mode of VIS 2: text, the surfaces a widget paints itself
+(card, menu, navigation drawer) and the borders of the `outlined` variants switch with
+the theme. A color you set in the editor stays exactly as it is in both modes — so check
+it if you picked it for the light one.
+
 Material 3 changes presentation only. Object ids, option names, values, write
 behaviour, timers and navigation are identical in both styles, and setting a
 widget back to `Classic` restores the old look exactly. Colors, fonts and sizes

@@ -3,7 +3,7 @@ import React from 'react';
 import type { RxWidgetInfo, RxWidgetInfoAttributesField, VisRxWidgetProps } from '@iobroker/types-vis-2';
 
 import { fill, withAutoFill } from './deviceFill';
-import { squarePreview, BaseRxData, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, numberValue, sizeCss, stateValue, sanitizeHtml } from './widgetUtils';
+import { squarePreview, BaseRxData, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, legacyInk, numberValue, sizeCss, stateValue, sanitizeHtml } from './widgetUtils';
 
 export interface ProgressData extends BaseRxData {
     min?: number;
@@ -235,7 +235,7 @@ export default class MaterialDesignProgress extends VisWidget {
                                 className="v-progress-linear__content"
                                 style={{
                                     alignItems: 'center',
-                                    color: cleanColor(data.textColor, isM3 ? 'var(--md-sys-color-on-surface)' : '#44739e'),
+                                    color: cleanColor(data.textColor, isM3 ? 'var(--md-sys-color-on-surface)' : legacyInk(this.isDarkTheme())),
                                     display: 'flex',
                                     fontFamily: data.textFontFamily || undefined,
                                     fontSize: data.textFontSize ? sizeCss(data.textFontSize, 12) : 12,
@@ -245,7 +245,7 @@ export default class MaterialDesignProgress extends VisWidget {
                                     width: '100%',
                                 }}
                             >
-                                <div className="materialdesign-vuetify-progress-value-label" dangerouslySetInnerHTML={{ __html: sanitizeHtml(progress.label) }} style={{ marginLeft: 10, marginRight: 10 }} />
+                                <div className="materialdesign-vuetify-progress-value-label" dangerouslySetInnerHTML={{ __html: sanitizeHtml(progress.label) }} style={{ color: 'inherit', marginLeft: 10, marginRight: 10 }} />
                             </div>
                         ) : null}
                     </div>

@@ -1,6 +1,6 @@
 import React from 'react';
 import type { RxWidgetInfo } from '@iobroker/types-vis-2';
-import { squarePreview, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, m3OnColor, sizeCss, stateValue, formatMoment, boolValue as b, numberValue as n, textValue } from './widgetUtils';
+import { squarePreview, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, legacyAccent, legacyInk, m3OnColor, sizeCss, stateValue, formatMoment, boolValue as b, numberValue as n, textValue } from './widgetUtils';
 
 export { formatMoment };
 
@@ -166,7 +166,7 @@ export default class MaterialDesignCalendar extends VisWidget {
         const timeLocale = locale;
         const isM3 = designStyle(d) === 'material3';
         const m3 = (v: unknown, token: string, fb: string): string => s(v) || (isM3 ? token : fb);
-        const borderColor = m3(d.calendarBorderColor, 'var(--md-sys-color-outline-variant)', '#e0e0e0');
+        const borderColor = m3(d.calendarBorderColor, 'var(--md-sys-color-outline-variant)', isDark ? 'rgba(255, 255, 255, 0.24)' : '#e0e0e0');
         const headerBackground = m3(d.calendarHeaderBackground, 'var(--md-sys-color-surface-container-low)', isDark ? '#303030' : '#fff');
         // Left transparent the grid shows the view background through the cells, while the day numbers keep
         // the widget theme's colour - the legacy widget got this fill from the Vuetify stylesheet the port dropped.
@@ -175,7 +175,7 @@ export default class MaterialDesignCalendar extends VisWidget {
         const weekNumbersBackground = m3(d.calendarWeeksNumbersBackground, 'var(--md-sys-color-surface-container)', isDark ? '#202020' : '#f7f7f7');
         const weekNumbersColor = m3(d.calendarWeeksNumbersFontColor, 'var(--md-sys-color-on-surface-variant)', isDark ? '#FFFFFF' : '#000');
         const dayLabelColor = m3(d.calendarDayLabelFontColor, 'var(--md-sys-color-on-surface-variant)', isDark ? '#fff' : 'rgba(0,0,0,.38)');
-        const dayLabelTodayColor = m3(d.calendarDayLabelTodayFontColor, 'var(--md-sys-color-primary)', '#44739e');
+        const dayLabelTodayColor = m3(d.calendarDayLabelTodayFontColor, 'var(--md-sys-color-primary)', legacyAccent(isDark));
         const dayButtonTodayColor = m3(d.calendarDayButtonTodayColor, 'var(--md-sys-color-primary)', '#44739e');
         const dayButtonTodayFontColor = m3(d.calendarDayButtonTodayFontColor, 'var(--md-sys-color-on-primary)', '#fff');
         const dayButtonFontColor = m3(d.calendarDayButtonFontColor, 'var(--md-sys-color-on-surface)', isDark ? '#fff' : '#000');
@@ -186,8 +186,8 @@ export default class MaterialDesignCalendar extends VisWidget {
         const eventText = (event: { color?: unknown; colorText?: unknown }): string =>
             s(event.colorText) || (isM3 && s(event.color) ? m3OnColor(s(event.color)) || eventColor : eventColor);
         const eventRadius = isM3 ? 'var(--md-sys-shape-corner-extra-small)' : undefined;
-        const controlIconColor = m3(d.controlIconColor, 'var(--md-sys-color-primary)', '#44739e');
-        const controlTextColor = m3(d.controlTextColor, 'var(--md-sys-color-on-surface)', '#000');
+        const controlIconColor = m3(d.controlIconColor, 'var(--md-sys-color-primary)', legacyAccent(isDark));
+        const controlTextColor = m3(d.controlTextColor, 'var(--md-sys-color-on-surface)', legacyInk(isDark));
         const timeAxisFontColor = m3(d.calendarTimeAxisFontColor, 'var(--md-sys-color-on-surface-variant)', isDark ? '#fff' : '#000');
         // Stepping months off a late day would skip one (Aug 31 + 1 month = Oct 1), so the reference day
         // goes to the 1st first; the month grid only reads the month anyway.

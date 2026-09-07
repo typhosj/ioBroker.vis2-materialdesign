@@ -51,7 +51,7 @@ describe('list styling attributes', () => {
         expect(outlined).toContain('materialdesign-list-card materialdesign-list-card--outlined');
         // Elevated card keeps the shadow, the outlined one trades it for the hairline border.
         expect(card).toContain('.materialdesign-list-card{background:var(--materialdesign-color-card-background,#fff)');
-        expect(card).toContain('.materialdesign-list-card--outlined{border:1px solid rgba(0,0,0,.12);box-shadow:none}');
+        expect(card).toContain('.materialdesign-list-card--outlined{border:1px solid var(--materialdesign-color-card-outline,rgba(0,0,0,.12));box-shadow:none}');
     });
 
     it('leaves the header its room instead of measuring the list against the whole box', () => {

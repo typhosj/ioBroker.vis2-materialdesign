@@ -1,5 +1,5 @@
 import React from "react";
-import { squarePreview, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, stateValue, sanitizeHtml, visLocale, boolValue as b, numberValue as n, textValue as s } from './widgetUtils';
+import { squarePreview, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, legacySurface, stateValue, sanitizeHtml, visLocale, boolValue as b, numberValue as n, textValue as s } from './widgetUtils';
 import type { RxWidgetInfo } from "@iobroker/types-vis-2";
 import { colorSchemes, scheme } from "./MaterialDesignColorScheme";
 import { ChartLegend, MaterialDesignChartCanvas, datalabelsConfig, layoutConfig, tooltipConfig } from "./MaterialDesignChartCanvas";
@@ -425,7 +425,7 @@ export default class MaterialDesignChartJson extends VisWidget {
           <div
             className="materialdesign-html-card-container mdc-card"
             style={{
-              background: s(data.colorBackground) || (isM3 ? "var(--md-sys-color-surface-container-low)" : undefined),
+              background: s(data.colorBackground) || (isM3 ? "var(--md-sys-color-surface-container-low)" : legacySurface(this.isDarkTheme())),
               // Inset: the card filled the widget box, and VIS2 clips there — the whole card shadow
               // and its rounded edge sat outside the visible area.
               boxSizing: "border-box",

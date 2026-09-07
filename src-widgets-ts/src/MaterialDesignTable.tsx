@@ -1,7 +1,7 @@
 import React from 'react';
 import type { RxWidgetInfo } from '@iobroker/types-vis-2';
 import { fill, withAutoFill } from './deviceFill';
-import { squarePreview, RenderProps, VisWidget, createInfo, indexedFields, itemCount, designStyle, designStyleClasses, stateValue, sanitizeHtml, boolValue as b, numberValue as n, textValue as s } from './widgetUtils';
+import { squarePreview, RenderProps, VisWidget, createInfo, indexedFields, itemCount, designStyle, designStyleClasses, legacyInk, legacyOutline, legacySurface, stateValue, sanitizeHtml, boolValue as b, numberValue as n, textValue as s } from './widgetUtils';
 
 type Data = Record<string, unknown> & { oid?: string; dataJson?: string; countCols?: number };
 type Row = Record<string, unknown>;
@@ -52,8 +52,12 @@ export default class MaterialDesignTable extends VisWidget {
         const isM3 = designStyle(data) === 'material3';
         const m3 = (v: unknown, token: string): string | undefined => s(v) || (isM3 ? token : undefined);
         const m3f = (v: unknown, token: string, fb: string): string => s(v) || (isM3 ? token : fb);
-        const rowText = m3(data.colorRowText, 'var(--md-sys-color-on-surface)');
-        const headerText = m3(data.colorHeaderRowText, 'var(--md-sys-color-on-surface)');
+        // Ambient legacy CSS colors the cells #333 unless the widget sets a color itself, and that
+        // vanishes on a dark page — so both inks are written out and follow the theme, as does the
+        // card surface below.
+        const isDark = this.isDarkTheme();
+        const rowText = m3f(data.colorRowText, 'var(--md-sys-color-on-surface)', legacyInk(isDark));
+        const headerText = m3f(data.colorHeaderRowText, 'var(--md-sys-color-on-surface)', legacyInk(isDark));
         const source = s(data.oid) && s(data.oid) !== 'nothing_selected' ? stateValue(this.state, s(data.oid)) : data.dataJson;
         let content = rows(source);
         const cols = Array.from({ length: itemCount(data.countCols) }, (_, index) => index).filter(index => b(data[`showColumn${index}`], true));
@@ -71,14 +75,14 @@ export default class MaterialDesignTable extends VisWidget {
         const card = outlinedCard || s(data.tableLayout) === 'card';
         const cardStyle: React.CSSProperties = card
             ? {
-                background: s(data.colorBackground) || (isM3 ? undefined : '#fff'),
+                background: s(data.colorBackground) || (isM3 ? undefined : legacySurface(isDark)),
                 boxShadow: outlinedCard ? undefined : isM3 ? 'var(--md-sys-elevation-level1)' : '0 2px 1px -1px rgba(0,0,0,.2),0 1px 1px 0 rgba(0,0,0,.14),0 1px 3px 0 rgba(0,0,0,.12)',
                 boxSizing: 'border-box',
                 margin: 3,
                 width: 'calc(100% - 6px)',
             }
             : {};
-        const cardBorder = outlinedCard ? (isM3 ? 'var(--md-sys-color-outline-variant)' : 'rgba(0,0,0,.12)') : 'transparent';
+        const cardBorder = outlinedCard ? (isM3 ? 'var(--md-sys-color-outline-variant)' : legacyOutline(isDark)) : 'transparent';
         const rowBackground = (index: number): string => (index % 2 === 1 ? s(data.colorRowBackgroundOdd) || s(data.colorRowBackground) : s(data.colorRowBackground));
         const selectSort = (index: number): void => { const key = s(data[`sortKey${index}`], columnKeys[index] || ''); if (!key) return; this.sortAsc = key === this.sortKey ? !this.sortAsc : true; this.sortKey = key; this.forceUpdate(); };
         const cell = (row: Row, index: number): React.JSX.Element => { const key = columnKeys[index]; const raw = key === undefined ? '' : valueFor(row, key) ?? ''; const prefix = bound(s(data[`prefix${index}`]), row), suffix = bound(s(data[`suffix${index}`]), row); const image = s(data[`colType${index}`]) === 'image'; return <td className="mdc-data-table__cell" style={{ color: s(data[`colTextColor${index}`]) || rowText, fontFamily: s(data[`fontFamily${index}`]), fontSize: size(data[`colTextSize${index}`]), paddingLeft: n(data[`padding_left${index}`], 8), paddingRight: n(data[`padding_right${index}`], 8), textAlign: s(data[`textAlign${index}`], 'center') as React.CSSProperties['textAlign'], whiteSpace: b(data[`colNoWrap${index}`]) ? 'nowrap' : undefined }}>{image && s(raw) ? <><span dangerouslySetInnerHTML={{ __html: sanitizeHtml(prefix) }} /><img alt="" src={s(raw)} style={{ maxHeight: n(data.rowHeight) ? n(data.rowHeight) : undefined, maxWidth: n(data[`imageSize${index}`]) || undefined, verticalAlign: 'middle' }} /><span dangerouslySetInnerHTML={{ __html: sanitizeHtml(suffix) }} /></> : <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(`${prefix}${s(raw)}${suffix}`) }} />}</td>; };
