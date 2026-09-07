@@ -1,6 +1,11 @@
 # Older changes
 
 Older changelog entries are archived here by the release script once the changelog in the README grows past the most recent releases. The current changelog lives in the README.
+## 0.3.2 (2026-07-24)
+
+- (typhosj) Fixed the "npm run test:package" CI check to run the standard `@iobroker/testing` package-file validation again (it was shadowed by a project-specific script of the same name)
+- (typhosj) Removed the unused `axios` devDependency
+
 ## 0.3.1 (2026-07-23)
 
 - (typhosj) Added the combined icon/image picker to the remaining widgets (checkbox, input, select, switch)

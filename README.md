@@ -106,7 +106,7 @@ full per-widget option and is not deprecated, so nothing you report is a reason
 to wait with an upgrade.
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 1.0.0 (2026-09-07)
 
 - (typhosj) Added a second design style, **Material 3**, selectable per widget under General → design style, plus **Project default** for switching a whole project at once from the adapter's new **Design** tab. Material 3 is the preset for newly inserted widgets; every widget of an existing project stays classic until you switch it over, and switching back restores the old look exactly — the style changes presentation only, never component ids, option names, object ids, values, write behaviour, timers or navigation
 - (typhosj) Added the Material 3 color system: one seed color in the **Design** tab derives the complete scheme — all 18 roles, light and dark, with every `on-*` and `-container` pair — into `vis2-materialdesign.0.colors.md3Scheme`, which the widgets read. An empty seed gives Google's contrast-verified baseline palette. The color math runs once per save in the admin, never in the widget runtime
@@ -225,11 +225,6 @@ to wait with an upgrade.
 
 - (typhosj) Fixed the Theme Editor's runtime state sync: it never created the intermediate channel objects for nested color/font states, used the "value" role (number-only) for string values, and could leave font-size states with a stale string/number type mismatch
 - (typhosj) Removed the "mocha" devDependency; it is already provided by `@iobroker/testing`
-
-### 0.3.2 (2026-07-24)
-
-- (typhosj) Fixed the "npm run test:package" CI check to run the standard `@iobroker/testing` package-file validation again (it was shadowed by a project-specific script of the same name)
-- (typhosj) Removed the unused `axios` devDependency
 
 [Older changelog entries](CHANGELOG_OLD.md)
 
