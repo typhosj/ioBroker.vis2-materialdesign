@@ -91,4 +91,13 @@ describe('top app bar dynamic items', () => {
         });
         expect(renderToStaticMarkup(widget.renderWidgetBody(fixture<Parameters<MaterialDesignTopAppBar['renderWidgetBody']>[0]>({})))).toContain('Error in JSON string');
     });
+
+    it('shows no error item while the JSON string is still empty', () => {
+        const widget = new MaterialDesignTopAppBar(fixture<ConstructorParameters<typeof MaterialDesignTopAppBar>[0]>({ context: {} }));
+        widget.state = fixture<typeof widget.state>({
+            rxData: { drawerLayout: 'permanent', drawerItemsDataMethod: 'jsonStringObject', drawerItemsJsonString: '' },
+            values: {},
+        });
+        expect(renderToStaticMarkup(widget.renderWidgetBody(fixture<Parameters<MaterialDesignTopAppBar['renderWidgetBody']>[0]>({})))).not.toContain('Error in JSON string');
+    });
 });

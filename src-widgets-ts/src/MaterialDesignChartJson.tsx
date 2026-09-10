@@ -35,6 +35,18 @@ const optN = (v: unknown): number | undefined =>
   v === undefined || v === null || v === "" || !Number.isFinite(Number(v))
     ? undefined
     : Number(v);
+// An empty state is not a broken JSON string: it is the normal situation right after a page load,
+// before the first subscription value arrives (and in the editor before an oid is picked). Parsing
+// "" threw there and the widget rendered its red error text for a few hundred milliseconds on every
+// load. Same rule as MaterialDesignAlerts. null means "really broken", and only that shows the error.
+export function chartJsonInput(raw: unknown): { axisLabels?: string[]; graphs?: Graph[] } | null {
+  if (s(raw) === "") return {};
+  try {
+    return JSON.parse(s(raw)) as { axisLabels?: string[]; graphs?: Graph[] };
+  } catch {
+    return null;
+  }
+}
 export const jsonChartValue = (raw: unknown): number | null => {
   const value = typeof raw === "object" && raw ? (raw as { y?: unknown }).y : raw;
   if (value === null || value === undefined || value === "") return null;
@@ -354,14 +366,7 @@ export default class MaterialDesignChartJson extends VisWidget {
     const data = this.state.rxData as unknown as Data;
     const isM3 = designStyle(data) === "material3";
     const m3 = m3ChartColors(this.isDarkTheme());
-    let input: { axisLabels?: string[]; graphs?: Graph[] } | null = null;
-    try {
-      input = JSON.parse(
-        s(stateValue(this.state, s(data.oid))),
-      );
-    } catch {
-      /* render error below */
-    }
+    const input = chartJsonInput(stateValue(this.state, s(data.oid)));
     const graphs = input?.graphs || [];
     const labels = input?.axisLabels || [];
     const palette = s(data.colorScheme)

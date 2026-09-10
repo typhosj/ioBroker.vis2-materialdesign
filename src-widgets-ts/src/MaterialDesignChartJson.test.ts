@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { distinctAxisGraphs, graphAxisId, graphColor, jsonChartSegments, jsonChartValue, jsonDatalabels, jsonLabelText } from './MaterialDesignChartJson';
+import { chartJsonInput, distinctAxisGraphs, graphAxisId, graphColor, jsonChartSegments, jsonChartValue, jsonDatalabels, jsonLabelText } from './MaterialDesignChartJson';
 
 describe('MaterialDesignChartJson gaps', () => {
     it('keeps missing values distinct from numeric zero', () => {
@@ -11,6 +11,23 @@ describe('MaterialDesignChartJson gaps', () => {
         const points = ['a', null, 'b', 'c', null, 'd'];
         expect(jsonChartSegments(points, false)).toEqual([['a'], ['b', 'c'], ['d']]);
         expect(jsonChartSegments(points, true)).toEqual([['a', 'b', 'c', 'd']]);
+    });
+});
+
+describe('chartJsonInput', () => {
+    it('treats a missing or empty state as empty data, not as an error', () => {
+        expect(chartJsonInput(undefined)).toEqual({});
+        expect(chartJsonInput(null)).toEqual({});
+        expect(chartJsonInput('')).toEqual({});
+    });
+
+    it('returns null only for a string that really is broken', () => {
+        expect(chartJsonInput('{broken')).toBeNull();
+    });
+
+    it('parses a chart payload', () => {
+        expect(chartJsonInput('{"axisLabels":["a"],"graphs":[{"data":[1]}]}'))
+            .toEqual({ axisLabels: ['a'], graphs: [{ data: [1] }] });
     });
 });
 
