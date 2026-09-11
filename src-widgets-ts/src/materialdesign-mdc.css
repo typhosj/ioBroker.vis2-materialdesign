@@ -37,3 +37,55 @@
 .materialdesign-widget .horizontal-container { display: flex; flex-direction: row; height: 100%; min-height: 0; }
 .materialdesign-widget .horizontal-container > .mdc-card__media { flex: 0 0 40%; align-self: stretch; overflow: hidden; }
 .materialdesign-widget .horizontal-container > div:last-child { display: flex; flex-direction: column; flex: 1 1 auto; min-width: 0; overflow: hidden; }
+
+/* Calendar events. In the week/day time grid an event box is as tall as its duration, so a
+   15-minute appointment gets ~14px while the stacked time + name lines need 44px — the name was
+   never visible. One line with an ellipsis fits into that; an event long enough to have room
+   switches back to wrapping through a container query on its own height. Hovering (the first tap
+   on a touch device) opens the full text.
+   These properties live here rather than in the inline styles because a `:hover` rule cannot
+   override an inline style without `!important`, and this file has none. */
+.materialdesign-vuetify-calendar .v-event-column { z-index: var(--mdw-event-lane, 1); }
+.materialdesign-vuetify-calendar .v-event-column:hover { z-index: 60; }
+.materialdesign-vuetify-calendar .v-event-column .v-event {
+    align-items: baseline;
+    container-type: size;
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 2px 4px;
+    line-height: 1.3;
+    left: var(--mdw-event-left, 0);
+    min-height: var(--mdw-event-min-height, 17px);
+    overflow: hidden;
+    padding: 0 4px;
+    width: var(--mdw-event-width, 100%);
+}
+.materialdesign-vuetify-calendar .v-event-column .v-event > .mdw-event-time { flex: 0 0 auto; font-weight: 700; }
+/* Only the name may shrink; without `min-width: 0` a flex item never goes below its content width
+   and the ellipsis never appears. The time must NOT shrink or it runs under the name. */
+.materialdesign-vuetify-calendar .v-event-column .v-event > .mdw-event-name { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+@container (min-height: 36px) {
+    .materialdesign-vuetify-calendar .v-event-column .v-event > .mdw-event-name { overflow: visible; white-space: normal; }
+}
+
+/* `container-type` has to go back to `normal`: size containment would resolve `fit-content` to 0.
+   `min-height` rather than `height`, or a long event shrinks from its duration to its text. */
+.materialdesign-vuetify-calendar .v-event-column .v-event:hover {
+    container-type: normal;
+    left: 0;
+    min-height: fit-content;
+    overflow: visible;
+    width: 100%;
+    z-index: 1;
+}
+/* Lifting the containment also switches the query above off, so the wrapping that an event long
+   enough to have room already had must be restated here - otherwise hovering a long event
+   collapses it back onto one clipped line. */
+.materialdesign-vuetify-calendar .v-event-column .v-event:hover > .mdw-event-name { overflow: visible; white-space: normal; }
+
+/* Month view: the events are single-line already, but the day cell clips the opened one. */
+.materialdesign-vuetify-calendar .materialdesign-calendar-day { overflow: hidden; }
+.materialdesign-vuetify-calendar .materialdesign-calendar-day > .v-event { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.materialdesign-vuetify-calendar .materialdesign-calendar-day > .v-event:hover { overflow: visible; white-space: normal; }
+.materialdesign-vuetify-calendar .materialdesign-calendar-day:has(> .v-event:hover) { overflow: visible; position: relative; z-index: 60; }
