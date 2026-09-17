@@ -105,6 +105,25 @@ describe('widget accessibility', () => {
         expect(props.context.setValue).toHaveBeenCalledWith('test.0.dimmer', 45);
     });
 
+    // A read-only slider looked exactly like an operable one; only the M3 buttons next to it dimmed.
+    it.each([
+        ['read-only', { readOnly: true }, {}, '0.38'],
+        ['working', { 'oid-working': 'test.0.working' }, { 'test.0.working.val': true }, '0.38'],
+        ['operable', { readOnly: false }, {}, '1'],
+        ['read-only as bound empty string', { readOnly: '' }, {}, '1'],
+    ])('dims the linear slider track and thumb when %s', (_name, extra, values, opacity) => {
+        const widget = new MaterialDesignSlider(fixture<ConstructorParameters<typeof MaterialDesignSlider>[0]>(props));
+        setData(widget, { oid: 'test.0.dimmer', min: 0, max: 100, step: 5, prepandText: 'Ladestrom', ...extra }, { 'test.0.dimmer.val': 40, ...values });
+        document.body.innerHTML = renderToStaticMarkup(widget.renderWidgetBody(fixture<Parameters<MaterialDesignSlider['renderWidgetBody']>[0]>(props)));
+        try {
+            expect(getComputedStyle(document.querySelector('.v-slider')!).opacity).toBe(opacity);
+            // The label and the value stay readable.
+            expect(getComputedStyle(document.querySelector('.materialdesign-vuetifySlider-value-label')!).opacity).not.toBe('0.38');
+        } finally {
+            document.body.innerHTML = '';
+        }
+    });
+
     it('gives the round slider slider semantics and keyboard operation', () => {
         const widget = new MaterialDesignRoundSlider(fixture<ConstructorParameters<typeof MaterialDesignRoundSlider>[0]>(props));
         setData(widget, { oid: 'test.0.dimmer', min: 0, max: 100, step: 10 }, { 'test.0.dimmer.val': 30 });

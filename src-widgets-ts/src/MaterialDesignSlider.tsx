@@ -30,6 +30,7 @@ const SLIDER_CSS = `
 .materialdesign-vuetifySlider .v-slider__thumb-label-container{position:absolute;top:0;left:0}
 .materialdesign-vuetifySlider .v-slider__thumb-label{position:absolute;display:flex;align-items:center;justify-content:center;color:#fff;border-radius:50% 50% 0;transform:translate(-50%,-140%) rotate(45deg)}
 .materialdesign-vuetifySlider .v-slider__thumb-label>div{transform:rotate(-45deg)}
+.materialdesign-vuetifySlider .v-slider--disabled{opacity:.38}
 `;
 
 export interface SliderData {
