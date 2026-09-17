@@ -397,7 +397,7 @@ export function parseActionValue(value: string): ioBroker.StateValue {
 // stacking context and every z-index inside it is only sorted against its own siblings. So the
 // wrapper itself has to be lifted while the overlay is open — it is vis-2's element, hence the walk
 // up from our own root node.
-// ponytail: vis-2 re-rendering the wrapper drops the lift again; re-apply on our next render is
+// Known limit: vis-2 re-rendering the wrapper drops the lift again; re-apply on our next render is
 // enough in practice. Move the overlay into a portal if that ever proves too weak.
 export function liftWidgetLayer(root: HTMLElement | null, zIndex: number | null): void {
     const wrapper = root?.parentElement;
