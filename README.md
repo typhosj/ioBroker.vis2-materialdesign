@@ -115,7 +115,7 @@ full per-widget option and is not deprecated, so nothing you report is a reason
 to wait with an upgrade.
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 1.1.0 (2026-10-03)
 
 - (typhosj) Fixed the JSON Chart flashing its red "Error in JSON string" for the first moments of every page load: an empty datapoint — which is what the widget sees until the first value of its subscription arrives — was read as a broken JSON string. Only content that really is malformed reports the error now. The Top App Bar showed the same error on a drawer whose JSON string had not been filled in yet
 - (typhosj) Fixed a short appointment showing no name at all in the Calendar's week and day view: an appointment box is as tall as the appointment is long, so a 15-minute entry got about 14 px while the stacked time and name lines needed 44 px. Time and name share one line with an ellipsis now, an appointment long enough to have the room wraps instead of being cut, and hovering an entry — which is the first tap on a touch device — opens it to its full text. Every entry carries its full text as a tooltip as well, and the month view opens the same way
@@ -240,11 +240,6 @@ to wait with an upgrade.
 - (typhosj) Fixed the per-data-set options of the Bar, Pie and Line History charts being editable only for the first data set: bar color, label, value text, tooltip text — and the per-series line and y-axis settings of the Line History chart — appeared once instead of once per data set, so a chart with several data sets could not be styled per series like in VIS 1. Each data set now has one group holding its object id and all of its options; existing charts keep every saved value (reported in the forum)
 - (typhosj) Fixed the icon picker showing only the first 400 of the 6809 icons with no way to reach the rest — the grid ends there and neither scrolling nor paging went further, so an icon whose name you did not know was unreachable. The grid now keeps loading while you scroll (issue #4)
 - (typhosj) Documented how the Top App Bar switches views — it writes the selected menu index into its object id, and an [Advanced View in Widget 8](doc/en/widgets/html-widgets.md) with the same object id shows the matching view (reported in the forum)
-
-### 0.3.3 (2026-07-24)
-
-- (typhosj) Fixed the Theme Editor's runtime state sync: it never created the intermediate channel objects for nested color/font states, used the "value" role (number-only) for string values, and could leave font-size states with a stale string/number type mismatch
-- (typhosj) Removed the "mocha" devDependency; it is already provided by `@iobroker/testing`
 
 [Older changelog entries](CHANGELOG_OLD.md)
 
