@@ -57,7 +57,7 @@ Chart-Timeout erhöhen.
 - `steppedLine` zeichnet Zustandswechsel als Stufen statt als direkte Verbindung.
 - Füllfarbe schattiert den Bereich unter einer Linie; ohne eigene Füllfarbe wird eine transparente Linienfarbe verwendet.
 - Neu angelegte Datensätze teilen standardmäßig eine Y-Achse. Deren Position, Titel und Grenzen stammen aus der ersten Datensatzgruppe. Leere Min-/Max-Felder behalten automatische Skalierung.
-- X-Achsen-Zeitformat verwendet Moment-Format-Token, beispielsweise `HH:mm` für eine 24-Stunden-Anzeige. Dasselbe Format wird auf Sekunden, Minuten, Stunden und Tage angewendet.
+- X-Achsen-Zeitformat verwendet Moment-Format-Token, beispielsweise `HH:mm` für eine 24-Stunden-Anzeige. Dasselbe Format wird auf Sekunden, Minuten, Stunden und Tage angewendet. Eine Liste mit einem Format je Einheit, wie vis-materialdesign sie gespeichert hat, zum Beispiel `{"minute":"H:mm","day":"ddd DD."}`, wird ebenfalls gelesen: Die Achse nimmt das Format der Einheit, die zum Abstand ihrer Beschriftungen passt.
 - Die Beschriftung der X-Achse hat eine eigene Farbe, Schriftart und Schriftgröße, wie die der Y-Achse. Leer gelassen gelten die Vorgaben des Diagramms.
 - Tooltip-Modus `index` vergleicht Reihen am gleichen X-Wert; `nearest` zeigt den nächstgelegenen Punkt.
 - Die Wertelabels an den Punkten liegen in derselben Datensatzgruppe wie die Linie, samt Hintergrund, Rahmen und Eckenradius, siehe [Werte am Diagramm](charts.md#werte-am-diagramm).

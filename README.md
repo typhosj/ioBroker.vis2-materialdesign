@@ -114,6 +114,7 @@ to wait with an upgrade.
 - (typhosj) Fixed a read-only Slider looking exactly like one you can move: with **readOnly** set, or while its **working** datapoint is active, the track and knob are now dimmed the way a disabled Material 3 button is. The label and the value stay fully readable
 - (typhosj) Fixed **use theme** applying only the dark-mode colors: in light mode the theme colors never reached the widget, and the theme fonts and font sizes never did in either mode, because vis-2 did not subscribe the theme states behind them. The widgets subscribe those states themselves now. Widgets that already use the theme pick up the values without any change
 - (typhosj) Fixed **use theme** turning the Bar, Pie, Line History and JSON charts black: the charts are drawn on a canvas, which cannot read the theme's CSS variables, so every themed color came out black and every themed font fell back to a small default. The charts now take the theme values directly
+- (typhosj) Fixed the time axis of a Line History Chart from a vis-materialdesign project showing a garbled text instead of times: the old adapter stored one time format per unit (second, minute, hour …) in **xAxisTimeFormats**, and the whole list was used as a single format. The format of the unit that fits the spacing of the axis labels is used now; a single format still works as before
 
 ### 1.0.0 (2026-09-07)
 

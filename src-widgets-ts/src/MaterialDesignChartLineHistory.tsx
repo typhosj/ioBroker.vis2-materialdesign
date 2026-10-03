@@ -40,6 +40,21 @@ const intervals: Record<string, number> = {
 };
 // vis-2 stores row 0 of an indexed group under the plain base name, higher rows as `${name}${i}`.
 export const item = (d: Data, key: string, i: number): unknown => { const v = d[`${key}${i}`]; return v !== undefined ? v : (i === 0 ? d[key] : undefined); };
+const TIME_UNITS: Array<[string, number]> = [
+  ["year", 365 * 86400000], ["quarter", 90 * 86400000], ["month", 28 * 86400000], ["week", 7 * 86400000],
+  ["day", 86400000], ["hour", 3600000], ["minute", 60000], ["second", 1000],
+];
+
+// vis-materialdesign saved this field as chart.js v2 `displayFormats` JSON, one format per unit.
+export function timeFormatFor(setting: string, step: number): string {
+  if (!setting.startsWith("{")) return setting || "HH:mm";
+  let formats: unknown;
+  try { formats = JSON.parse(setting); } catch { return "HH:mm"; }
+  const unit = !(step > 0) ? "minute" : TIME_UNITS.find(([, size]) => step >= size)?.[0] ?? "millisecond";
+  const format = formats && typeof formats === "object" && !Array.isArray(formats) ? (formats as Record<string, unknown>)[unit] : undefined;
+  return typeof format === "string" && format ? format : "HH:mm";
+}
+
 export function seriesColor(d: Data, i: number, colors: string[], globalColor: unknown): string {
   return s(item(d, "dataColor", i), colors[i] || s(globalColor, "#44739e"));
 }
@@ -433,7 +448,7 @@ export default class MaterialDesignChartLineHistory extends VisWidget {
       labelFontSize: n(d.xAxisValueFontSize),
       gridDisplay: b(d.xAxisShowGridLines, true),
       gridColor: s(d.xAxisGridLinesColor, isM3 ? m3.grid : ""),
-      tickCallback: (value) => fmtTime(value, timeFmt || "HH:mm"),
+      tickCallback: (value, _index, ticks) => fmtTime(value, timeFormatFor(timeFmt, Math.abs(Number(ticks?.[1]?.value) - Number(ticks?.[0]?.value)))),
     });
     const scales: Record<string, unknown> = { x: xAxis, ...Object.fromEntries(yEntries) };
     // Value labels are per series here, so they ride on the dataset; the plugin default below stays

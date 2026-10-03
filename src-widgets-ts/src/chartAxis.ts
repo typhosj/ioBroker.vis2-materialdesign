@@ -16,7 +16,7 @@ export type AxisSpec = {
     labelFontFamily?: string;
     labelFontSize?: number;
     labelPadding?: number;
-    tickCallback?: (value: unknown, index: number) => string; // v4 ticks.callback (e.g. time labels)
+    tickCallback?: (value: unknown, index: number, ticks?: Array<{ value: unknown }>) => string; // v4 ticks.callback (e.g. time labels)
     min?: number;
     max?: number;
     stepSize?: number;

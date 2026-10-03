@@ -1,7 +1,7 @@
 import { isValidElement } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
-import MaterialDesignChartLineHistory, { distinctAxisRows, item, rowAxisId, seriesColor } from './MaterialDesignChartLineHistory';
+import MaterialDesignChartLineHistory, { distinctAxisRows, item, rowAxisId, seriesColor, timeFormatFor } from './MaterialDesignChartLineHistory';
 
 function fixture<T>(value: unknown): T { return value as T; }
 
@@ -182,5 +182,41 @@ describe('distinctAxisRows', () => {
     });
     it('collapses rows with no explicit commonYAxis onto the shared default axis', () => {
         expect(distinctAxisRows([0, 1, 2], {})).toEqual([0]);
+    });
+});
+
+// vis-materialdesign stored xAxisTimeFormats as chart.js v2 `displayFormats` JSON (one format per
+// unit), and the old editor inserted that JSON as the default. Taken as one moment format, every
+// tick printed the JSON with its letters replaced by date parts.
+describe('timeFormatFor', () => {
+    const OLD_DEFAULT = '{"millisecond":"H:mm:ss.SSS","second":"H:mm:ss","minute":"H:mm","hour":"H","day":"ddd DD.","week":"ll","month":"MMM YYYY","quarter":"[Q]Q - YYYY","year":"YYYY"}';
+    const MINUTE = 60_000;
+    const HOUR = 60 * MINUTE;
+    const DAY = 24 * HOUR;
+
+    it('keeps a plain format as it is, and the default for an empty one', () => {
+        expect(timeFormatFor('DD.MM HH:mm', HOUR)).toBe('DD.MM HH:mm');
+        expect(timeFormatFor('', HOUR)).toBe('HH:mm');
+    });
+
+    it('picks the format of the unit the tick spacing falls into', () => {
+        expect(timeFormatFor(OLD_DEFAULT, 500)).toBe('H:mm:ss.SSS');
+        expect(timeFormatFor(OLD_DEFAULT, 10_000)).toBe('H:mm:ss');
+        expect(timeFormatFor(OLD_DEFAULT, 5 * MINUTE)).toBe('H:mm');
+        expect(timeFormatFor(OLD_DEFAULT, 3 * HOUR)).toBe('H');
+        expect(timeFormatFor(OLD_DEFAULT, DAY)).toBe('ddd DD.');
+        expect(timeFormatFor(OLD_DEFAULT, 7 * DAY)).toBe('ll');
+        expect(timeFormatFor(OLD_DEFAULT, 30 * DAY)).toBe('MMM YYYY');
+        expect(timeFormatFor(OLD_DEFAULT, 365 * DAY)).toBe('YYYY');
+    });
+
+    it('takes the minute format while the spacing is unknown (a single tick)', () => {
+        expect(timeFormatFor(OLD_DEFAULT, Number.NaN)).toBe('H:mm');
+        expect(timeFormatFor(OLD_DEFAULT, 0)).toBe('H:mm');
+    });
+
+    it('falls back to the default for broken JSON or a unit the map leaves out', () => {
+        expect(timeFormatFor('{nope', HOUR)).toBe('HH:mm');
+        expect(timeFormatFor('{"minute":"H:mm"}', DAY)).toBe('HH:mm');
     });
 });
