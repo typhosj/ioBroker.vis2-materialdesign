@@ -6,6 +6,7 @@ export type FileSocket = {
     // Bytes only: the admin socket base64-decodes a string, which turns plain JSON into garbage.
     writeFile64(ns: string, file: string, data: ArrayBuffer): Promise<void>;
     fileExists(ns: string, file: string): Promise<boolean>;
+    deleteFile(ns: string, file: string): Promise<void>;
 };
 export type ProjectScan = { name: string; legacyWidgets: number; hasBackup: boolean };
 
@@ -75,6 +76,10 @@ export async function restoreStoredProject(socket: FileSocket, name: string): Pr
     const backups = await Promise.all(files.map(file => readText(socket, file + BACKUP)));
     for (const [index, backup] of backups.entries()) {
         if (backup !== null) await writeText(socket, files[index], backup);
+    }
+    // Only once every file is back: a failed write must leave all backups for the next attempt.
+    for (const [index, backup] of backups.entries()) {
+        if (backup !== null) await socket.deleteFile(STORAGE, files[index] + BACKUP);
     }
     return backups.some(backup => backup !== null);
 }

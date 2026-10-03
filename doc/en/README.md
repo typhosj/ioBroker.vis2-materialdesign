@@ -94,6 +94,7 @@ Before a project is changed for the first time, its `vis-views.json` and
 `vis-user.css.mdw-backup` in the project folder. These backups are never
 overwritten. **Restore backup** asks for confirmation, then puts back the project
 as it was before its first migration; every change made after that is lost.
+The backups are removed after a restore, and the next migration makes new ones.
 
 ### Check by hand
 

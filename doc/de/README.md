@@ -99,7 +99,8 @@ und `vis-user.css` als `vis-views.json.mdw-backup` und `vis-user.css.mdw-backup`
 im Projektordner gesichert. Diese Sicherungen werden nie überschrieben.
 **Sicherung wiederherstellen** fragt nach einer Bestätigung und setzt das
 Projekt dann so zurück, wie es vor der ersten Migration war; alle späteren
-Änderungen gehen verloren.
+Änderungen gehen verloren. Danach werden die Sicherungen entfernt, die nächste
+Migration legt neue an.
 
 ### Bitte von Hand prüfen
 

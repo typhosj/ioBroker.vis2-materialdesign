@@ -30,6 +30,7 @@ function fakeSocket(files: Record<string, string>, unreadable: string[] = [], sh
             return Promise.resolve();
         },
         fileExists: (_ns, file) => Promise.resolve(file in files),
+        deleteFile: (_ns, file) => { delete files[file]; return Promise.resolve(); },
     };
 }
 
@@ -155,6 +156,25 @@ describe('restoreStoredProject', () => {
         const socket = fakeSocket(files, [], { 'main/vis-views.json.mdw-backup': { unexpected: true } });
         await expect(restoreStoredProject(socket, 'main')).rejects.toThrow();
         expect(socket.files).toEqual(migrated);
+    });
+
+    it('removes the backups once the project is back, so the restore button turns off', async () => {
+        const css = '.mdc-card{color:red} /* {vis-materialdesign.0.colors.light.x} */';
+        const socket = fakeSocket({ 'main/vis-views.json': OLD_VIEWS, 'main/vis-user.css': css });
+        await migrateStoredProject(socket, 'main', NS);
+        await restoreStoredProject(socket, 'main');
+        expect(socket.files).toEqual({ 'main/vis-views.json': OLD_VIEWS, 'main/vis-user.css': css });
+        expect((await scanProjects(socket))[0].hasBackup).toBe(false);
+    });
+
+    it('keeps every backup when writing one file back fails', async () => {
+        const css = '.mdc-card{color:red} /* {vis-materialdesign.0.colors.light.x} */';
+        const socket = fakeSocket({ 'main/vis-views.json': OLD_VIEWS, 'main/vis-user.css': css });
+        await migrateStoredProject(socket, 'main', NS);
+        socket.writeFile64 = (_ns, file) => (file === 'main/vis-user.css' ? Promise.reject(new Error('write failed')) : Promise.resolve());
+        await expect(restoreStoredProject(socket, 'main')).rejects.toThrow('write failed');
+        expect(socket.files['main/vis-views.json.mdw-backup']).toBe(OLD_VIEWS);
+        expect(socket.files['main/vis-user.css.mdw-backup']).toBe(css);
     });
 
     it('reports false when there is no backup', async () => {
