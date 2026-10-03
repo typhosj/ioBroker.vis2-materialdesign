@@ -1,0 +1,26 @@
+{
+    "renamed": {
+        "email-receive": "email-arrow-left",
+        "email-receive-outline": "email-arrow-left-outline",
+        "email-send": "email-arrow-right",
+        "email-send-outline": "email-fast-outline",
+        "format-textdirection-l-to-r": "format-pilcrow-arrow-right",
+        "format-textdirection-r-to-l": "format-pilcrow-arrow-left",
+        "lecturn": "lectern",
+        "text-to-speech": "microphone-message",
+        "text-to-speech-off": "microphone-message-off",
+        "timeline-help": "timeline-question",
+        "timeline-help-outline": "timeline-question-outline"
+    },
+    "removed": [
+        "android-messages",
+        "book-variant-multiple",
+        "desktop-mac",
+        "desktop-mac-dashboard",
+        "discord",
+        "google-controller",
+        "google-controller-off",
+        "google-home",
+        "tablet-android"
+    ]
+}

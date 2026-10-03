@@ -70,6 +70,8 @@ for (const dir of ["src-widgets-ts/src", "src-admin/src"]) {
     const files = fs.readdirSync(path.join(root, dir), { recursive: true });
     for (const file of files) {
         if (!file.endsWith(".ts") && !file.endsWith(".tsx")) continue;
+        // The theme take-over of the Migration tab is the one place that reads the old adapter, on the user's click.
+        if (dir === "src-admin/src" && file === "legacyTheme.ts") continue;
         const content = fs.readFileSync(path.join(root, dir, file), "utf8");
         assert.ok(!content.includes("system.adapter.vis-materialdesign"), `${path.join(dir, file)} must not read the legacy adapter object`);
     }

@@ -86,6 +86,15 @@ Editor**, save them, then use **Theme → use theme** on a selected widget. This
 copies the matching theme references into that widget; explicit widget settings
 can still be changed afterwards.
 
+## Migrating from vis-materialdesign
+
+If your vis-2 projects still use the widgets of Scrounger's vis-materialdesign
+adapter, the **Migration** tab in this adapter's settings converts them to these
+widgets. Each project is backed up first and can be restored, and
+the theme of the old adapter can be taken over. Anything that cannot be converted
+automatically is listed for checking by hand. The steps and the list of warnings
+are in the user guide: [English](https://github.com/typhosj/ioBroker.vis2-materialdesign/blob/master/doc/en/README.md#migrate-from-vis-materialdesign) · [Deutsch](https://github.com/typhosj/ioBroker.vis2-materialdesign/blob/master/doc/de/README.md#von-vis-materialdesign-migrieren).
+
 ## Documentation
 
 - [German user guide](https://github.com/typhosj/ioBroker.vis2-materialdesign/blob/master/doc/de/README.md)
@@ -115,6 +124,7 @@ to wait with an upgrade.
 - (typhosj) Fixed **use theme** applying only the dark-mode colors: in light mode the theme colors never reached the widget, and the theme fonts and font sizes never did in either mode, because vis-2 did not subscribe the theme states behind them. The widgets subscribe those states themselves now. Widgets that already use the theme pick up the values without any change
 - (typhosj) Fixed **use theme** turning the Bar, Pie, Line History and JSON charts black: the charts are drawn on a canvas, which cannot read the theme's CSS variables, so every themed color came out black and every themed font fell back to a small default. The charts now take the theme values directly
 - (typhosj) Fixed the time axis of a Line History Chart from a vis-materialdesign project showing a garbled text instead of times: the old adapter stored one time format per unit (second, minute, hour …) in **xAxisTimeFormats**, and the whole list was used as a single format. The format of the unit that fits the spacing of the axis labels is used now; a single format still works as before
+- (typhosj) New **Migration** tab in the adapter settings: converts vis-2 projects built with the widgets of Scrounger's vis-materialdesign adapter to these widgets, so the old adapter can be uninstalled and the views keep working. Each project is backed up first and can be restored; the theme of the old adapter can be taken over as well. Anything that cannot be converted automatically — own CSS for the old widget structure, the old JavaScript helpers, icons that no longer exist — is listed for checking by hand
 
 ### 1.0.0 (2026-09-07)
 

@@ -39,6 +39,92 @@ Danach gesetzte Widget-Werte bleiben individuelle Überschreibungen. Das globale
 JavaScript-Skript in der Adapterkonfiguration ist nur nötig, wenn Skripte direkt
 auf Theme-Werte zugreifen sollen.
 
+## Von vis-materialdesign migrieren
+
+Wurden vis-2-Projekte mit den Widgets des Adapters vis-materialdesign von
+Scrounger gebaut, wandelt der Tab **Migration** in den Einstellungen dieses
+Adapters sie in diese Widgets um. Danach lässt sich der alte Adapter
+deinstallieren, und die Views funktionieren weiter.
+
+1. Diesen Adapter neben vis-materialdesign installieren.
+2. Alle offenen vis-2-Editoren schließen. Ein Editor, der offen bleibt,
+   überschreibt das umgewandelte Projekt beim nächsten Speichern.
+3. Die Einstellungen dieses Adapters öffnen und zum Tab **Migration** wechseln.
+   Er listet jedes vis-2-Projekt mit der Anzahl der enthaltenen alten Widgets.
+4. Für jedes Projekt **Migrieren** drücken. Das Ergebnis erscheint unter der
+   Projektliste: wie viele Widgets umgewandelt wurden und was von Hand zu
+   prüfen ist.
+5. **Theme übernehmen** drücken, um Farben, Schriften, Schriftgrößen und den
+   Dunkelmodus-Schalter von `vis-materialdesign.0` in diesen Adapter zu
+   kopieren, danach **Speichern** drücken, damit die Theme-States geschrieben
+   werden. Die umgewandelten Widgets nutzen das Theme dieses Adapters; ohne
+   diesen Schritt zeigen sie dessen Standardfarben, -schriften und -größen. Der
+   alte Dunkelmodus-Schalter wird unverändert übernommen, als `true` oder
+   `false`; der Schalter dieses Adapters kennt zusätzlich `auto`.
+6. Die Views öffnen und prüfen, auch die Einträge unter **Bitte von Hand prüfen**.
+7. Wenn die Views stimmen, vis-materialdesign deinstallieren. Vorher das Theme
+   übernehmen und jedes Projekt der Liste migrieren: Die Deinstallation löscht
+   das Theme des alten Adapters, und ein nicht migriertes Projekt verliert seine
+   Widgets. Das alte Widget-Set kann als „materialdesign“ in der Editor-Palette
+   von vis-2 bleiben, auch nach einem Neustart von vis-2, weil vis-2 eine eigene
+   Kopie davon behält. Daraus keine Widgets mehr einfügen. Solange es bleibt,
+   werden seine Styles weiter geladen und können das Aussehen einzelner Widgets
+   verändern, zum Beispiel den Text von Listeneinträgen abschneiden. Das endet
+   mit einer vis-2-Version, die deinstallierte Widget-Sets entfernt.
+
+### Was automatisch umgewandelt wird
+
+- Die Widget-Typen.
+- Die Anzahl-Einstellungen. Die alten Widgets zeigten einen Eintrag mehr als die
+  eingestellte Zahl; die Migration erhöht um eins, damit dieselbe Anzahl
+  Einträge erscheint.
+- Verweise auf `vis-materialdesign.N.`-States, in allen Widgets und in
+  `vis-user.css`.
+- 11 Icon-Namen, die Material Design Icons umbenannt hat.
+- Die Theme-Einstellungen. Jede Farbe, Schrift und Schriftgröße, die das alte
+  Widget aus dem Theme nahm, kommt jetzt aus dem Theme dieses Adapters, so wie
+  es **Thema verwenden** bei einem neu eingefügten Widget einrichtet. **Theme
+  übernehmen** füllt dieses Theme mit den Farben, Schriften und Größen des
+  alten Adapters. Eine Farbe oder Größe, die von Hand eingestellt war, bleibt
+  unverändert. Die wenigen Theme-Einstellungen ohne Gegenstück in diesem
+  Adapter werden geleert, das Widget nutzt dort seine eigene Voreinstellung.
+
+Umgewandelte Widgets behalten den klassischen Stil. Material 3 ist nur für neu
+eingefügte Widgets die Voreinstellung.
+
+### Sicherung wiederherstellen
+
+Bevor ein Projekt zum ersten Mal geändert wird, werden seine `vis-views.json`
+und `vis-user.css` als `vis-views.json.mdw-backup` und `vis-user.css.mdw-backup`
+im Projektordner gesichert. Diese Sicherungen werden nie überschrieben.
+**Sicherung wiederherstellen** fragt nach einer Bestätigung und setzt das
+Projekt dann so zurück, wie es vor der ersten Migration war; alle späteren
+Änderungen gehen verloren.
+
+### Bitte von Hand prüfen
+
+Die Liste **Bitte von Hand prüfen** nennt, was die Migration nicht umwandeln
+kann:
+
+- Eigene CSS-Regeln für den alten Widget-Aufbau: Selektoren, die in
+  `vis-user.css` mit `.v-`, `.mdc-` oder `.materialdesign-` beginnen. Die neuen
+  Widgets sind anders aufgebaut, daher müssen diese Regeln angepasst werden.
+- Nutzung der alten JavaScript-Helfer `vis.binds.materialdesign` und
+  `myMdwHelper` im eigenen Code.
+- Icons, die es in Material Design Icons 7 nicht mehr gibt (9 Namen). Ein
+  Ersatz-Icon wählen.
+- **Nicht umgewandelt, unbekannter Widget-Typ**: ein Widget, dessen Typ die
+  Migration nicht kennt. Es bleibt unverändert.
+
+### Bekannte Grenzen
+
+- Gibt es mehrere Instanzen des alten Adapters, werden alle auf diese eine
+  Instanz abgebildet.
+- Das Theme wird nur von `vis-materialdesign.0` übernommen.
+- Eigene Skripte im javascript-Adapter, die `vis-materialdesign.0.*` nutzen,
+  müssen von Hand angepasst werden. Die Schaltfläche **Skript generieren** im Tab
+  **Allgemein** erzeugt das globale Theme-Skript für diesen Adapter neu.
+
 ## Gestaltungsstil
 
 Jedes Widget wird in einem von zwei Stilen dargestellt, wählbar im Tab **WIDGET**

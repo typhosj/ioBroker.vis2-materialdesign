@@ -1,7 +1,8 @@
-import { GenericApp, I18n, Loader, Logo, type GenericAppProps, type GenericAppState } from '@iobroker/adapter-react-v5';
+import { DialogConfirm, GenericApp, I18n, Loader, Logo, type GenericAppProps, type GenericAppState } from '@iobroker/adapter-react-v5';
 import PaletteIcon from '@mui/icons-material/Palette';
 import SettingsIcon from '@mui/icons-material/Settings';
-import { Box, Button, Card, CardContent, Checkbox, CssBaseline, FormControlLabel, FormGroup, FormHelperText, MenuItem, Paper, Tab, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tabs, TextField, ThemeProvider, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
+import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
+import { Alert, Box, Button, Card, CardContent, Checkbox, CircularProgress, CssBaseline, FormControlLabel, FormGroup, FormHelperText, List, ListItem, ListItemText, MenuItem, Paper, Tab, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tabs, TextField, ThemeProvider, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 import React, { useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 // Preset labels are deliberately NOT translated: they are proper names of a palette/font package,
@@ -10,6 +11,8 @@ import presets from '../../admin/lib/presets.json';
 import '../../fonts.css';
 import { M3_BASELINE_SEED, M3_ROLES, m3SchemeFromSeed, type M3Scheme } from './m3scheme';
 import { THEME_NAMES, ancestorChannels, defaultSlotId, defaultsKey, readDefaults, readEntries, themeDefinitions, themeStateCommon, themeStateId, type NativeConfig, type ThemeEntry, type ThemeName } from './themeConfig';
+import { LEGACY_DARK_STATE, LEGACY_INSTANCE, legacyTakeOver } from './legacyTheme';
+import { scanProjects, migrateStoredProject, restoreStoredProject, type FileSocket, type ProjectScan } from './projectStore';
 import './style.css';
 
 const MD3_FONT_KEY = 'md3Font';
@@ -202,17 +205,93 @@ function ThemeEditor(props: { config: NativeConfig; update: (key: string, value:
     </>;
 }
 
-function Config(props: { common: Record<string, unknown>; config: NativeConfig; instance: number; onError: (error: string) => void; onLoad: (settings: Record<string, unknown>) => void; update: (key: string, value: unknown) => void; onGenerate: () => void }): React.JSX.Element {
+type MigrationResult = { name: string; widgets: number; unknown: string[]; warnings: string[] };
+type ThemeTakeOver = 'migrationThemeDone' | 'migrationThemeMissing' | 'migrationThemeEmpty';
+
+function MigrationTab(props: { socket: FileSocket; namespace: string; onTheme: () => Promise<ThemeTakeOver>; onError: (error: string) => void }): React.JSX.Element {
+    const [projects, setProjects] = useState<ProjectScan[] | null>(null);
+    const [busy, setBusy] = useState(false);
+    const [results, setResults] = useState<MigrationResult[]>([]);
+    const [themeNote, setThemeNote] = useState('');
+    const [confirmRestore, setConfirmRestore] = useState<string | null>(null);
+    const [restoreNote, setRestoreNote] = useState<{ name: string; restored: boolean } | null>(null);
+    const reload = (): void => { scanProjects(props.socket).then(setProjects).catch(error => { setProjects([]); props.onError(String(error)); }); };
+    React.useEffect(reload, []);
+    const run = async (action: () => Promise<void>): Promise<void> => {
+        setBusy(true);
+        try { await action(); } catch (error) { props.onError(String(error)); } finally { setBusy(false); reload(); }
+    };
+    const migrate = (name: string): Promise<void> => run(async () => {
+        setRestoreNote(null);
+        const report = await migrateStoredProject(props.socket, name, props.namespace);
+        setResults(previous => [...previous.filter(result => result.name !== name), { name, widgets: report.widgets, unknown: report.unknown, warnings: [...report.warnings, ...report.cssWarnings.map(selector => `vis-user.css: ${selector}`)] }]);
+    });
+    const restore = (name: string): Promise<void> => run(async () => {
+        setRestoreNote(null);
+        const restored = await restoreStoredProject(props.socket, name);
+        setResults(previous => previous.filter(result => result.name !== name));
+        setRestoreNote({ name, restored });
+    });
+    return <Box sx={{ p: 1, py: 2, display: 'grid', gap: 2 }}>
+        <Card><CardContent>
+            <Typography variant="h6">{t('config_migration')}</Typography>
+            <FormHelperText sx={{ mb: 2 }}>{t('migrationInfo')}</FormHelperText>
+            {projects === null ? <CircularProgress size={24} /> : projects.length === 0 ? <Typography>{t('migrationNoProjects')}</Typography> : <List dense>
+                {projects.map(project => <ListItem key={project.name} sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, justifyContent: 'space-between' }}>
+                    <ListItemText primary={project.name} secondary={t('migrationLegacyWidgets', String(project.legacyWidgets))} sx={{ flex: '1 1 200px', minWidth: 0 }} />
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                    <Button disabled={busy || project.legacyWidgets === 0} onClick={() => void migrate(project.name)} variant="contained">{t('migrationMigrate')}</Button>
+                    <Button disabled={busy || !project.hasBackup} onClick={() => setConfirmRestore(project.name)}>{t('migrationRestore')}</Button>
+                    </Box>
+                </ListItem>)}
+            </List>}
+            {results.map(result => <Alert key={result.name} severity={result.unknown.length || result.warnings.length ? 'warning' : 'success'} sx={{ mt: 1 }}>
+                <strong>{result.name}</strong>: {t('migrationDone', String(result.widgets))}
+                {result.unknown.length > 0 && <><br />{t('migrationUnknown')}: {result.unknown.join(', ')}</>}
+                {result.warnings.length > 0 && <><br />{t('migrationWarnings')}: {result.warnings.join(', ')}</>}
+            </Alert>)}
+            {restoreNote && <Alert severity={restoreNote.restored ? 'success' : 'info'} sx={{ mt: 1 }}>{t(restoreNote.restored ? 'migrationRestored' : 'migrationNothingToRestore', restoreNote.name)}</Alert>}
+            {confirmRestore !== null && <DialogConfirm ok={t('migrationRestore')} onClose={ok => { setConfirmRestore(null); if (ok) void restore(confirmRestore); }} text={t('migrationRestoreConfirm', confirmRestore)} title={t('migrationRestore')} />}
+            <FormHelperText sx={{ mt: 2 }}>{t('migrationUninstallHint')}</FormHelperText>
+        </CardContent></Card>
+        <Card><CardContent>
+            <Typography variant="h6">{t('migrationThemeTitle')}</Typography>
+            <FormHelperText sx={{ mb: 2 }}>{t('migrationThemeInfo')}</FormHelperText>
+            <Button disabled={busy} onClick={() => void run(async () => setThemeNote(t(await props.onTheme())))} variant="outlined">{t('migrationThemeButton')}</Button>
+            {themeNote && <FormHelperText sx={{ mt: 1 }}>{themeNote}</FormHelperText>}
+        </CardContent></Card>
+    </Box>;
+}
+
+function Config(props: { common: Record<string, unknown>; config: NativeConfig; instance: number; namespace: string; socket: FileSocket; onTheme: () => Promise<ThemeTakeOver>; onError: (error: string) => void; onLoad: (settings: Record<string, unknown>) => void; update: (key: string, value: unknown) => void; onGenerate: () => void }): React.JSX.Element {
     const [tab, setTab] = useState(0);
     return <Box component="main" sx={{ height: { xs: 'calc(100% - 56px)', sm: 'calc(100% - 64px)' }, overflowY: 'auto' }}>
         <Box sx={{ minHeight: 72, position: 'relative', px: 1, py: 1 }}><Logo common={props.common} instance={props.instance} native={props.config} onError={props.onError} onLoad={props.onLoad} /><Typography component="h1" variant="h6" sx={{ fontWeight: 700, position: 'absolute', top: 18, left: 84 }}>Material Design Widgets</Typography></Box>
-        <Tabs value={tab} onChange={(_event, next: number) => setTab(next)} sx={{ borderBottom: 1, borderColor: 'divider' }}><Tab icon={<SettingsIcon />} iconPosition="start" label={t('config_general')} /><Tab icon={<PaletteIcon />} iconPosition="start" label={t('Theme Editor for your Widgets')} /></Tabs>
-        {tab === 0 ? <Box sx={{ p: 1, py: 2, display: 'grid', gap: 2 }}><Card><CardContent><Typography variant="h6" gutterBottom>{t('Generate global script')}</Typography><TextField fullWidth label={t('script name')} value={String(props.config.scriptName ?? 'Theme')} variant="standard" onChange={event => props.update('scriptName', event.target.value)} /><TextField fullWidth label={t('name of the variable')} value={String(props.config.variableName ?? 'myMdwTheme')} sx={{ mt: 2 }} variant="standard" onChange={event => props.update('variableName', event.target.value)} /><TextField fullWidth label={t('SelectJavascriptInstance')} value={String(props.config.javascriptInstance ?? '')} sx={{ mt: 2 }} variant="standard" onChange={event => props.update('javascriptInstance', event.target.value)} /><Button variant="contained" sx={{ mt: 2 }} onClick={props.onGenerate}>{t('generate script')}</Button></CardContent></Card><Card><CardContent><Typography variant="h6">{t('Sentry - automatic error reporting')}</Typography><FormGroup sx={{ pt: 1 }}><FormControlLabel control={<Checkbox checked={props.config.sentryReport === true} onChange={event => props.update('sentryReport', event.target.checked)} />} label={t('send Widget error reports')} /><FormHelperText sx={{ ml: 4, mt: -0.5 }}>{t('sentryInfo')}</FormHelperText></FormGroup></CardContent></Card></Box> : <DesignTab config={props.config} update={props.update} />}
+        <Tabs value={tab} onChange={(_event, next: number) => setTab(next)} sx={{ borderBottom: 1, borderColor: 'divider' }}><Tab icon={<SettingsIcon />} iconPosition="start" label={t('config_general')} /><Tab icon={<PaletteIcon />} iconPosition="start" label={t('Theme Editor for your Widgets')} /><Tab icon={<SwapHorizIcon />} iconPosition="start" label={t('config_migration')} /></Tabs>
+        {tab === 0 ? <Box sx={{ p: 1, py: 2, display: 'grid', gap: 2 }}><Card><CardContent><Typography variant="h6" gutterBottom>{t('Generate global script')}</Typography><TextField fullWidth label={t('script name')} value={String(props.config.scriptName ?? 'Theme')} variant="standard" onChange={event => props.update('scriptName', event.target.value)} /><TextField fullWidth label={t('name of the variable')} value={String(props.config.variableName ?? 'myMdwTheme')} sx={{ mt: 2 }} variant="standard" onChange={event => props.update('variableName', event.target.value)} /><TextField fullWidth label={t('SelectJavascriptInstance')} value={String(props.config.javascriptInstance ?? '')} sx={{ mt: 2 }} variant="standard" onChange={event => props.update('javascriptInstance', event.target.value)} /><Button variant="contained" sx={{ mt: 2 }} onClick={props.onGenerate}>{t('generate script')}</Button></CardContent></Card><Card><CardContent><Typography variant="h6">{t('Sentry - automatic error reporting')}</Typography><FormGroup sx={{ pt: 1 }}><FormControlLabel control={<Checkbox checked={props.config.sentryReport === true} onChange={event => props.update('sentryReport', event.target.checked)} />} label={t('send Widget error reports')} /><FormHelperText sx={{ ml: 4, mt: -0.5 }}>{t('sentryInfo')}</FormHelperText></FormGroup></CardContent></Card></Box> : tab === 1 ? <DesignTab config={props.config} update={props.update} /> : null}
+        {tab === 2 && <MigrationTab namespace={props.namespace} onError={props.onError} onTheme={props.onTheme} socket={props.socket} />}
     </Box>;
 }
 
 class MaterialDesignAdmin extends GenericApp<GenericAppProps, GenericAppState> {
     constructor(props: GenericAppProps) { super(props, { adapterName: 'vis2-materialdesign', bottomButtons: true, translations }); }
+    private async takeOverLegacyTheme(): Promise<ThemeTakeOver> {
+        const legacy = await this.socket.getObject(LEGACY_INSTANCE);
+        if (!legacy) return 'migrationThemeMissing';
+        const takeOver = legacyTakeOver(legacy.native, (await this.socket.getState(LEGACY_DARK_STATE))?.val);
+        if (!takeOver) return 'migrationThemeEmpty';
+        if (takeOver.dark !== null) {
+            const namespace = `${this.adapterName}.${this.instance}`;
+            const id = `${namespace}.colors.darkTheme`;
+            await this.ensureAncestorChannels(id, namespace, new Set());
+            if (!(await this.socket.getObject(id))) {
+                await this.socket.setObject(id, { type: 'state', common: { role: 'switch.setting', name: 'Dark colors: auto (follow the VIS theme) | light | dark', type: 'mixed', states: { auto: 'auto', light: 'light', dark: 'dark' }, read: true, write: true, def: 'auto' }, native: {} });
+            }
+            await this.socket.setState(id, takeOver.dark, true);
+        }
+        Object.entries(takeOver.config).forEach(([key, value]) => this.updateNative(key, value));
+        return 'migrationThemeDone';
+    }
     onPrepareLoad(settings: NativeConfig): void {
         super.onPrepareLoad(settings);
         THEME_NAMES.forEach(theme => {
@@ -387,7 +466,7 @@ class MaterialDesignAdmin extends GenericApp<GenericAppProps, GenericAppState> {
             }
         }
     }
-    render(): React.JSX.Element { if (!this.state.loaded) return <Loader />; return <ThemeProvider theme={this.state.theme}><CssBaseline /><Config common={this.common as Record<string, unknown>} config={this.state.native as NativeConfig} instance={this.instance} onError={this.showError} onLoad={settings => this.setState({ native: settings })} update={(key, value) => this.updateNative(key, value)} onGenerate={() => void this.generateGlobalScript().catch(error => this.showAlert(String(error), 'error'))} />{this.renderHelperDialogs()}</ThemeProvider>; }
+    render(): React.JSX.Element { if (!this.state.loaded) return <Loader />; return <ThemeProvider theme={this.state.theme}><CssBaseline /><Config namespace={`${this.adapterName}.${this.instance}`} socket={this.socket} onTheme={() => this.takeOverLegacyTheme()} common={this.common as Record<string, unknown>} config={this.state.native as NativeConfig} instance={this.instance} onError={this.showError} onLoad={settings => this.setState({ native: settings })} update={(key, value) => this.updateNative(key, value)} onGenerate={() => void this.generateGlobalScript().catch(error => this.showAlert(String(error), 'error'))} />{this.renderHelperDialogs()}</ThemeProvider>; }
 }
 
 async function bootstrap(): Promise<void> {
