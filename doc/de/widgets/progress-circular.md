@@ -25,7 +25,7 @@ aufgeklappt. Nicht aufgeführte Einstellungen sind selbsterklärend.
 
 - **Größe** – Durchmesser des Rings. Leer gelassen füllt er das Widget.
 - **Dicke** – Stärke des Rings.
-- **Startpunkt drehen** – Startwinkel in Grad, Standard ist oben.
+- **Startpunkt drehen** – Startwinkel in Grad, im Uhrzeigersinn. `0` beginnt rechts (3 Uhr), `-90` oben.
 
 **Beschriftung**
 
