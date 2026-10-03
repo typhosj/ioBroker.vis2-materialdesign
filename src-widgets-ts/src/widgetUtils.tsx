@@ -7,9 +7,7 @@ import type { RxRenderWidgetProps, RxWidgetInfo, RxWidgetInfoAttributesField, Vi
 import { changedKeys, markTouchedIn } from './autoFillKeys';
 import { IconFilePicker, type PickerSocket, type PickerTexts, type PickerTheme } from './IconFilePicker';
 import type VisRxWidget from '@iobroker/types-vis-2/visRxWidget';
-import colors from '../../admin/lib/colors.json';
-import fonts from '../../admin/lib/fonts.json';
-import fontSizes from '../../admin/lib/fontSizes.json';
+import { DEFAULT_DARK_THEME_OID, cssVariable, decodeThemeId, themeEntries, themeKeyDefaults, type ThemeEntry, type ThemeType } from './themeKeys';
 // Only the `group_*` headers: the full dictionary is fetched per language by vis-2 from
 // `widgets/<name>/i18n/`, but group headers go through the legacy dictionary bridged below.
 import groupLabels from './generated/groupLabels.json';
@@ -714,35 +712,7 @@ export function iconField(name: string, label: string, def?: string): RxWidgetIn
     };
 }
 
-type ThemeEntry = { id: string; desc: string; widget: string };
-export type ThemeType = 'colors' | 'fonts' | 'fontSizes';
-
-const themeLists: Record<ThemeType, ThemeEntry[]> = { colors, fonts, fontSizes };
-// visName -> the name the theme lists file the entry under, where the two drifted apart.
-export const themeNameAliases: Record<string, string> = {
-    Icon: 'Material Design Icon',
-};
-
-function themeEntries(widgetName: string): Array<{ type: ThemeType; entry: ThemeEntry }> {
-    const name = themeNameAliases[widgetName] || widgetName;
-    return (Object.keys(themeLists) as ThemeType[]).flatMap(type => themeLists[type]
-        .filter(entry => entry.widget.split(', ').includes(name))
-        .map(entry => ({ type, entry })));
-}
-
-function cssVariable(type: ThemeType, id: string): string {
-    const normalized = id.replace(/^light\.|^dark\./, '').replace(/\./g, '-').replace(/_/g, '-');
-    if (type === 'colors') return `--materialdesign-widget-theme-color-${normalized}`;
-    if (type === 'fonts') return `--materialdesign-widget-theme-font-${normalized}`;
-    return `--materialdesign-widget-theme-font-size-${normalized}`;
-}
-
-// Instance `.0` is hard-coded because io-package sets `common.singleton: true` — there can only be
-// one. If that flag ever goes, this (and the admin's namespace) has to become the real instance.
-export function themeStateId(type: ThemeType, id: string, dark = false): string {
-    if (type === 'colors') return `vis2-materialdesign.0.colors.${dark ? id.replace(/^light\./, 'dark.') : id}`;
-    return `vis2-materialdesign.0.${type}.${id}`;
-}
+export { DEFAULT_DARK_THEME_OID, themeNameAliases, themeStateId, type ThemeType } from './themeKeys';
 
 export function editorDialogPalette(start: Element | null): { surface: string; text: string; secondaryText: string } {
     let current = start;
@@ -801,14 +771,6 @@ function UseThemeButton(props: { entries: Array<{ type: ThemeType; entry: ThemeE
     </>;
 }
 
-function encodeThemeId(id: string): string {
-    return id.replace(/_/g, '_u_').replace(/\./g, '_d_');
-}
-
-function decodeThemeId(id: string): string {
-    return id.replace(/_d_/g, '.').replace(/_u_/g, '_');
-}
-
 function themeFields(widgetName: string): RxWidgetInfo['visAttrs'][number]['fields'] {
     const entries = themeEntries(widgetName);
     return [
@@ -818,22 +780,9 @@ function themeFields(widgetName: string): RxWidgetInfo['visAttrs'][number]['fiel
             label: 'useTheme',
             component: (_field, data, onDataChange) => <UseThemeButton entries={entries} data={data} onDataChange={onDataChange} />,
         },
-        {
-            name: '__mdwThemeDark',
-            type: 'id',
-            default: 'vis2-materialdesign.0.colors.darkTheme',
-            hidden: () => true,
-        },
-        ...entries.flatMap(({ type, entry }, index) => {
-            const name = `__mdwTheme_${type}_${encodeThemeId(entry.id)}_${index}`;
-            return type === 'colors'
-                ? [{ name, type: 'id' as const, default: themeStateId(type, entry.id), hidden: () => true }, { name: `${name}_dark`, type: 'id' as const, default: themeStateId(type, entry.id, true), hidden: () => true }]
-                : [{ name, type: 'id' as const, default: themeStateId(type, entry.id), hidden: () => true }];
-        }),
+        ...Object.entries(themeKeyDefaults(widgetName)).map(([name, value]) => ({ name, type: 'id' as const, default: value, hidden: () => true })),
     ];
 }
-
-export const DEFAULT_DARK_THEME_OID = 'vis2-materialdesign.0.colors.darkTheme';
 
 // visAttrs defaults are schema-only: VIS2 subscribes from keys present in SAVED data, and the
 // hidden-only `theme` group never gets written, so this default has to be applied by our reader.
@@ -884,6 +833,19 @@ export function legacyInkMuted(isDark: boolean): string {
     return isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.54)';
 }
 
+const THEME_KEY = /^__mdwTheme_(?:colors|fonts|fontSizes)_.+_\d+(?:_dark)?$/;
+
+// vis-2 drops up to two trailing digits before it looks a data key up among the declared fields, so
+// it never matches `__mdwTheme_…_<index>` and never subscribes the light, font and font-size states.
+export function themeStateIds(data: Record<string, unknown> | null | undefined): string[] {
+    if (!data) return [];
+    const ids = Object.keys(data)
+        .filter(key => THEME_KEY.test(key))
+        .map(key => data[key])
+        .filter((id): id is string => typeof id === 'string' && !!id.trim());
+    return [...new Set(ids)];
+}
+
 export function applyThemeVariables(target: HTMLElement | null | undefined, data: Record<string, unknown>, values: Record<string, ioBroker.StateValue> | undefined): void {
     // The variables go on the WIDGET element, not on document.documentElement. Every widget writes
     // the same variable names, so a page-wide write means the widget that rendered last decides the
@@ -893,17 +855,42 @@ export function applyThemeVariables(target: HTMLElement | null | undefined, data
     // `target` is null during the vis-2 server-side prerender and before the first mount; `data`
     // may be null there too (the unguarded Object.keys(null) threw "cannot call visUtils").
     if (!target || !data || !values) return;
+    themeVariableValues(data, values).forEach(({ type, value }, variable) => {
+        // Font sizes carry no unit in the theme state; without 'px' a var() resolves to a unitless number and is ignored.
+        target.style.setProperty(variable, type === 'fontSizes' ? `${value}px` : String(value));
+    });
+}
+
+function themeVariableValues(data: Record<string, unknown>, values: Record<string, ioBroker.StateValue>): Map<string, { type: ThemeType; value: ioBroker.StateValue }> {
     const dark = darkThemeOid(data);
     const isDark = values[`${dark}.val`] === true || values[`${dark}.val`] === 'true';
+    const result = new Map<string, { type: ThemeType; value: ioBroker.StateValue }>();
     Object.keys(data).filter(key => key.startsWith('__mdwTheme_') && !key.endsWith('_dark')).forEach(key => {
         const stateId = data[isDark && data[`${key}_dark`] ? `${key}_dark` : key];
         const value = typeof stateId === 'string' ? values[`${stateId}.val`] : undefined;
         const parts = key.match(/^__mdwTheme_(colors|fonts|fontSizes)_(.+)_\d+$/);
-        if (!parts) return;
-        const variable = cssVariable(parts[1] as ThemeType, decodeThemeId(parts[2]));
-        // Font sizes carry no unit in the theme state; without 'px' a var() resolves to a unitless number and is ignored.
-        if (value !== undefined && value !== null) target.style.setProperty(variable, parts[1] === 'fontSizes' ? `${value}px` : String(value));
+        if (!parts || value === undefined || value === null) return;
+        result.set(cssVariable(parts[1] as ThemeType, decodeThemeId(parts[2])), { type: parts[1] as ThemeType, value });
     });
+    return result;
+}
+
+const THEME_VAR = /^var\((--materialdesign-widget-theme-[^),\s]+)\)$/;
+
+// A canvas reads no CSS variables: chart.js turned a var() fill into black and a var() font into
+// 10px sans-serif. An unresolved one is dropped so the widget's own default applies instead.
+export function resolveThemeVars(data: Record<string, unknown> | null | undefined, values: Record<string, ioBroker.StateValue> | undefined): Record<string, unknown> {
+    if (!data) return {};
+    const theme = themeVariableValues(data, values ?? {});
+    const result = { ...data };
+    Object.entries(data).forEach(([key, value]) => {
+        const variable = typeof value === 'string' ? value.match(THEME_VAR)?.[1] : undefined;
+        if (!variable) return;
+        const resolved = theme.get(variable);
+        if (resolved) result[key] = resolved.value;
+        else delete result[key];
+    });
+    return result;
 }
 
 export const M3_SCHEME_OID = 'vis2-materialdesign.0.colors.md3Scheme';
@@ -986,8 +973,11 @@ const BaseVisWidget: typeof VisRxWidget<BaseRxData, WidgetState> = window.visRxW
 
 export class VisWidget extends BaseVisWidget {
     // VIS2's own subscription discovery only looks at keys present in saved data (see darkThemeOid).
-    private darkThemeSubscribedOid?: string;
+    private darkThemeSubscribed: string[] = [];
     private darkThemeSetting: ioBroker.StateValue | undefined;
+
+    private themeSubscribed: string[] = [];
+    private themeValues: Record<string, ioBroker.StateValue | undefined> = {};
 
     private m3SeedSubscribed = false;
     private m3SeedValues: Record<string, ioBroker.StateValue | undefined> = {};
@@ -1028,17 +1018,32 @@ export class VisWidget extends BaseVisWidget {
         }
     };
 
-    private subscribeDarkTheme(oid: string): void {
-        if (oid === this.darkThemeSubscribedOid) {
-            return;
+    private onThemeStateChanged = (id: string, state: ioBroker.State | null | undefined): void => {
+        const key = `${id}.val`;
+        if (this.themeValues[key] !== state?.val) {
+            this.themeValues = { ...this.themeValues, [key]: state?.val };
+            this.forceUpdate();
         }
-        if (this.darkThemeSubscribedOid) {
-            this.props.context.socket.unsubscribeState(this.darkThemeSubscribedOid, this.onDarkThemeChanged);
+    };
+
+    private resubscribe(current: readonly string[], next: readonly string[], handler: (id: string, state: ioBroker.State | null | undefined) => void): string[] {
+        const removed = current.filter(id => !next.includes(id));
+        const added = next.filter(id => !current.includes(id));
+        // Read the socket only when there is work: a widget unmounted before mounting has no context.
+        // Unsubscribe per id: given an array, socket-client tells the server to drop the WHOLE array
+        // once any id in it lost its last callback, cutting off ids other widgets still listen to.
+        removed.forEach(id => this.props.context.socket.unsubscribeState(id, handler));
+        // Subscribe as one list, never per id: each call is one getStates request and one render.
+        if (added.length) {
+            this.props.context.socket.subscribeState(added, handler).catch((e: unknown) => console.error(`Cannot subscribe on ${added.join(', ')}: ${String(e)}`));
         }
-        this.darkThemeSubscribedOid = oid || undefined;
-        if (oid) {
-            this.props.context.socket.subscribeState(oid, this.onDarkThemeChanged).catch((e: unknown) => console.error(`Cannot subscribe on ${oid}: ${String(e)}`));
-        }
+        return [...next];
+    }
+
+    private subscribeStates(rxData: Record<string, unknown> | undefined): void {
+        const dark = darkThemeOid(rxData);
+        this.darkThemeSubscribed = this.resubscribe(this.darkThemeSubscribed, dark ? [dark] : [], this.onDarkThemeChanged);
+        this.themeSubscribed = this.resubscribe(this.themeSubscribed, themeStateIds(rxData), this.onThemeStateChanged);
     }
 
     // Editing the dark-theme state or switching the widget to Material 3 in the editor used to
@@ -1046,7 +1051,7 @@ export class VisWidget extends BaseVisWidget {
     onRxDataChanged(prevRxData: typeof this.state.rxData): void {
         super.onRxDataChanged?.(prevRxData);
         const rxData = this.state?.rxData as unknown as Record<string, unknown> | undefined;
-        this.subscribeDarkTheme(darkThemeOid(rxData));
+        this.subscribeStates(rxData);
         this.resolvedStyle = designStyle(rxData);
         if (this.resolvedStyle === 'material3' && !this.m3SeedSubscribed) {
             this.subscribeM3Seeds();
@@ -1056,7 +1061,7 @@ export class VisWidget extends BaseVisWidget {
     componentDidMount(): void {
         super.componentDidMount();
         const rxData = this.state?.rxData as unknown as Record<string, unknown> | undefined;
-        this.subscribeDarkTheme(darkThemeOid(rxData));
+        this.subscribeStates(rxData);
         this.projectStyleSubscribed = true;
         this.props.context.socket.subscribeState(DEFAULT_DESIGN_STYLE_OID, this.onProjectDesignStyleChanged).catch((e: unknown) => console.error(`Cannot subscribe on ${DEFAULT_DESIGN_STYLE_OID}: ${String(e)}`));
         this.resolvedStyle = designStyle(rxData);
@@ -1073,10 +1078,20 @@ export class VisWidget extends BaseVisWidget {
         this.applyTheme();
     }
 
+    private themeStateValues(rxData: Record<string, unknown>): Record<string, ioBroker.StateValue> {
+        return { ...this.themeValues, ...this.state.values, [`${darkThemeOid(rxData)}.val`]: this.isDarkTheme() };
+    }
+
+    // For widgets that paint on a canvas, where the CSS variables applyTheme() writes never arrive.
+    protected themedData(): Record<string, unknown> {
+        const rxData = this.state.rxData as unknown as Record<string, unknown>;
+        return resolveThemeVars(rxData, this.themeStateValues(rxData));
+    }
+
     private applyTheme(): void {
         const rxData = this.state?.rxData as unknown as Record<string, unknown> | undefined;
         if (!rxData) return;
-        applyThemeVariables(this.refService?.current, rxData, { ...this.state.values, [`${darkThemeOid(rxData)}.val`]: this.isDarkTheme() });
+        applyThemeVariables(this.refService?.current, rxData, this.themeStateValues(rxData));
         // The M3 seeds stay on document.documentElement on purpose (see applyM3SeedVariables): they
         // must lose to the `--md-sys-*` tokens each widget root declares. They also come from one
         // shared state, so every widget writes the same values and cannot fight over them.
@@ -1088,9 +1103,8 @@ export class VisWidget extends BaseVisWidget {
         if (this.projectStyleSubscribed) {
             this.props.context.socket.unsubscribeState(DEFAULT_DESIGN_STYLE_OID, this.onProjectDesignStyleChanged);
         }
-        if (this.darkThemeSubscribedOid) {
-            this.props.context.socket.unsubscribeState(this.darkThemeSubscribedOid, this.onDarkThemeChanged);
-        }
+        this.darkThemeSubscribed = this.resubscribe(this.darkThemeSubscribed, [], this.onDarkThemeChanged);
+        this.themeSubscribed = this.resubscribe(this.themeSubscribed, [], this.onThemeStateChanged);
         if (this.m3SeedSubscribed) {
             m3SeedOids().forEach(seedOid => this.props.context.socket.unsubscribeState(seedOid, this.onM3SeedChanged));
         }

@@ -1,10 +1,12 @@
 import React from 'react';
 import { describe, expect, it } from 'vitest';
 
+import MaterialDesignChartBar from './MaterialDesignChartBar';
 import MaterialDesignChartJson from './MaterialDesignChartJson';
 import MaterialDesignChartLineHistory from './MaterialDesignChartLineHistory';
 import MaterialDesignChartPie from './MaterialDesignChartPie';
 import { MaterialDesignChartCanvas } from './MaterialDesignChartCanvas';
+import { cssVariable, themeEntries, themeKeyDefaults, themeStateId } from './themeKeys';
 
 function fixture<T>(value: unknown): T { return value as T; }
 
@@ -118,5 +120,45 @@ describe('pie tooltip decimal bounds', () => {
 
     it('still honours a max above the min', () => {
         expect(label({ tooltipValueMinDecimals: 1, tooltipValueMaxDecimals: 3 })).toMatch(/21[.,]5/);
+    });
+});
+
+// "Use theme" writes `var(--materialdesign-widget-theme-…)` into every color, font and font-size
+// field, and the project migration does the same. chart.js paints on a canvas, which reads no CSS
+// variables: a var() fill turned into black and a var() font family into 10px sans-serif.
+describe('themed chart fields reach chart.js as real values', () => {
+    const themed = (widgetName: string, extra: Record<string, unknown>): { rxData: Record<string, unknown>; values: Record<string, unknown> } => {
+        const rxData: Record<string, unknown> = { ...extra, ...themeKeyDefaults(widgetName) };
+        const values: Record<string, unknown> = {};
+        themeEntries(widgetName).forEach(({ type, entry }) => {
+            rxData[entry.desc] = `var(${cssVariable(type, entry.id)})`;
+            values[`${themeStateId(type, entry.id)}.val`] = type === 'colors' ? '#123456' : type === 'fonts' ? 'Jura' : 17;
+        });
+        return { rxData, values };
+    };
+    const rendered = (widget: { state: any; renderWidgetBody: (props: any) => React.JSX.Element }, rxData: Record<string, unknown>, values: Record<string, unknown>): ChartProps => {
+        widget.state = fixture<typeof widget.state>({ rxData, values });
+        const props = findCanvas(widget.renderWidgetBody(fixture({})));
+        if (!props) throw new Error('no chart canvas rendered');
+        return props;
+    };
+    const cases: Array<[string, () => { state: any; renderWidgetBody: (props: any) => React.JSX.Element }, Record<string, unknown>, Record<string, unknown>]> = [
+        ['Bar Chart', () => new MaterialDesignChartBar(fixture({ context: {} })), { dataCount: 1, oid0: 'b.0.v' }, { 'b.0.v.val': 5 }],
+        ['Pie Chart', () => new MaterialDesignChartPie(fixture({ context: {} })), { dataCount: 1, oid0: 'p.0.v' }, { 'p.0.v.val': 5 }],
+        ['JSON Chart', () => new MaterialDesignChartJson(fixture({ context: {} })), { oid: 'j.0.v' }, { 'j.0.v.val': JSON_SOURCE }],
+        ['Line History Chart', () => new MaterialDesignChartLineHistory(fixture({ context: {} })), { dataCount: 1, oid0: 'l.0.v' }, {}],
+    ];
+
+    it.each(cases)('%s hands chart.js no var() at all', (name, create, extra, values) => {
+        const theme = themed(name, extra);
+        const props = rendered(create(), theme.rxData, { ...values, ...theme.values });
+        expect(JSON.stringify(props)).not.toContain('var(--');
+    });
+
+    it('Bar Chart paints the plot area and the bars in the theme color', () => {
+        const theme = themed('Bar Chart', { dataCount: 1, oid0: 'b.0.v' });
+        const props = rendered(new MaterialDesignChartBar(fixture({ context: {} })), theme.rxData, { 'b.0.v.val': 5, ...theme.values }) as ChartProps & { data: { datasets: Array<{ backgroundColor: unknown }> } };
+        expect(props.options.plugins.mdwChartArea.color).toBe('#123456');
+        expect(props.data.datasets[0].backgroundColor).toEqual(['#123456']);
     });
 });

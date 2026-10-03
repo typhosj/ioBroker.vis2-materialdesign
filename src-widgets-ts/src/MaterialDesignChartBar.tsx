@@ -497,7 +497,7 @@ export default class MaterialDesignChartBar extends VisWidget {
   }
   renderWidgetBody(props: RenderProps): React.JSX.Element {
     super.renderWidgetBody(props);
-    const data = this.state.rxData as unknown as Data;
+    const data = this.themedData() as unknown as Data;
     // Canvas cannot read CSS vars, so chart-internal colors resolve to concrete M3 hex.
     const isM3 = designStyle(data) === "material3";
     const m3 = m3ChartColors(this.isDarkTheme());

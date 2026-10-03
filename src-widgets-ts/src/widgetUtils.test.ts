@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { VisRxWidgetProps, VisRxWidgetState, WidgetData } from '@iobroker/types-vis-2';
 import { pickerValueName } from './IconFilePicker';
-import { boolValue, numberValue, textValue, DEFAULT_DARK_THEME_OID, M3_FONT_OID, M3_SCHEME_OID, M3_TOKEN_ROLES, MAX_DYNAMIC_ITEMS, VisWidget, accessibleText, applyM3SeedVariables, applyThemeVariables, boundedCount, createInfo, itemCount, darkThemeOid, designStyle, resolveDarkTheme, designStyleClasses, editorDialogPalette, formatDurationTokens, formatMoment, humanizeDuration, iconFieldDataKey, m3SeedOids, parseActionValue, parseM3Scheme, safeWidgetUrl, sanitizeHtml, setProjectDesignStyle, setStateValue, SliderWriter, sliderKeyValue, stateValue, stringValue } from './widgetUtils';
+import { boolValue, numberValue, textValue, DEFAULT_DARK_THEME_OID, M3_FONT_OID, M3_SCHEME_OID, M3_TOKEN_ROLES, MAX_DYNAMIC_ITEMS, VisWidget, accessibleText, applyM3SeedVariables, applyThemeVariables, resolveThemeVars, boundedCount, createInfo, itemCount, darkThemeOid, designStyle, resolveDarkTheme, designStyleClasses, editorDialogPalette, formatDurationTokens, formatMoment, humanizeDuration, iconFieldDataKey, m3SeedOids, parseActionValue, parseM3Scheme, safeWidgetUrl, sanitizeHtml, setProjectDesignStyle, setStateValue, SliderWriter, sliderKeyValue, stateValue, stringValue } from './widgetUtils';
 
 function fixture<T>(value: unknown): T { return value as T; }
 
@@ -77,7 +77,7 @@ describe('widget utilities', () => {
         // `default`, so a widget whose `theme` group was never touched received no dark-theme state.
         type Handler = (id: string, state: { val: unknown } | null) => void;
         const handlers: Record<string, Handler> = {};
-        const subscribeState = vi.fn((id: string, cb: Handler) => { handlers[id] = cb; return Promise.resolve(); });
+        const subscribeState = vi.fn((ids: string | string[], cb: Handler) => { [ids].flat().forEach(id => { handlers[id] = cb; }); return Promise.resolve(); });
         const unsubscribeState = vi.fn();
         type Inspection = { isDarkTheme: () => boolean };
 
@@ -85,7 +85,7 @@ describe('widget utilities', () => {
         widget.state = fixture<typeof widget.state>({ rxData: {}, values: {} });
 
         widget.componentDidMount();
-        expect(subscribeState).toHaveBeenCalledWith(DEFAULT_DARK_THEME_OID, expect.any(Function));
+        expect(subscribeState).toHaveBeenCalledWith([DEFAULT_DARK_THEME_OID], expect.any(Function));
         expect(widget.isDarkTheme()).toBe(false);
 
         let forceUpdateCalls = 0;
@@ -116,7 +116,7 @@ describe('widget utilities', () => {
     it('a widget on `auto` follows the VIS theme', () => {
         type Handler = (id: string, state: { val: unknown } | null) => void;
         const handlers: Record<string, Handler> = {};
-        const subscribeState = vi.fn((id: string, cb: Handler) => { handlers[id] = cb; return Promise.resolve(); });
+        const subscribeState = vi.fn((ids: string | string[], cb: Handler) => { [ids].flat().forEach(id => { handlers[id] = cb; }); return Promise.resolve(); });
         type Inspection = { isDarkTheme: () => boolean };
 
         const widget = fixture<Inspection & VisWidget>(new VisWidget(fixture<ConstructorParameters<typeof VisWidget>[0]>({ context: { socket: { subscribeState, unsubscribeState: vi.fn() }, themeType: 'dark' } })));
@@ -136,7 +136,7 @@ describe('widget utilities', () => {
         widget.state = fixture<typeof widget.state>({ rxData: { __mdwThemeDark: 'custom.0.dark' }, values: {} });
 
         widget.componentDidMount();
-        expect(subscribeState).toHaveBeenCalledWith('custom.0.dark', expect.any(Function));
+        expect(subscribeState).toHaveBeenCalledWith(['custom.0.dark'], expect.any(Function));
     });
 
     it('every widget receives the same designStyle field via createInfo(), inserting as material3 while saved widgets stay legacy', () => {
@@ -458,6 +458,150 @@ describe('widget utilities', () => {
     });
 });
 
+// vis-2 strips up to two trailing digits before it looks a data key up in the widget's attribute
+// info, so `__mdwTheme_…_<index>` never matched a declared field and was never subscribed: only the
+// `_dark` keys were. The widget subscribes every theme key itself.
+describe('VisWidget theme state subscription', () => {
+    type Handler = (id: string, state: { val: unknown } | null) => void;
+    type Mounted = VisWidget & { refService: { current: HTMLElement }; onRxDataChanged: (prev: unknown) => void };
+    const COLOR = '__mdwTheme_colors_light_d_switch_d_on_0';
+    const FONT = '__mdwTheme_fonts_switch_d_value_8';
+    const SIZE = '__mdwTheme_fontSizes_switch_d_value_9';
+    const themed = {
+        __mdwThemeDark: DEFAULT_DARK_THEME_OID,
+        [COLOR]: 'vis2-materialdesign.0.colors.light.switch.on',
+        [`${COLOR}_dark`]: 'vis2-materialdesign.0.colors.dark.switch.on',
+        [FONT]: 'vis2-materialdesign.0.fonts.switch.value',
+        [SIZE]: 'vis2-materialdesign.0.fontSizes.switch.value',
+    };
+    const THEME_IDS = Object.values(themed).filter(id => id !== DEFAULT_DARK_THEME_OID);
+
+    // socket-client takes one id or an array; every call is one getStates request.
+    type Calls = () => string[][];
+    function mount(rxData: Record<string, unknown> | null): { widget: Mounted; element: HTMLElement; handlers: Record<string, Handler>; subscribed: () => string[]; unsubscribed: () => string[]; subscribeCalls: Calls; unsubscribeCalls: Calls } {
+        const handlers: Record<string, Handler> = {};
+        const subscribeState = vi.fn((ids: string | string[], cb: Handler) => { [ids].flat().forEach(id => { handlers[id] = cb; }); return Promise.resolve(); });
+        const unsubscribeState = vi.fn((_ids: string | string[], _cb: Handler) => undefined);
+        const calls = (mock: typeof unsubscribeState | typeof subscribeState): Calls => () => mock.mock.calls.map(call => [call[0]].flat());
+        const widget = fixture<Mounted>(new VisWidget(fixture<ConstructorParameters<typeof VisWidget>[0]>({ context: { socket: { subscribeState, unsubscribeState } } })));
+        const element = document.createElement('div');
+        widget.state = fixture<typeof widget.state>({ rxData, values: {} });
+        widget.refService = { current: element };
+        widget.forceUpdate = () => widget.componentDidUpdate(widget.props, widget.state);
+        widget.componentDidMount();
+        return {
+            widget,
+            element,
+            handlers,
+            subscribed: () => calls(subscribeState)().flat(),
+            unsubscribed: () => calls(unsubscribeState)().flat(),
+            subscribeCalls: calls(subscribeState),
+            unsubscribeCalls: calls(unsubscribeState),
+        };
+    }
+    const sorted = (ids: string[]): string[] => [...ids].sort();
+    const themeCalls = (all: string[][]): string[][] => all.filter(ids => ids.some(id => THEME_IDS.includes(id)));
+
+    // An inserted widget carries up to 58 theme keys; one subscribe call per id was one request and
+    // one render each. Unsubscribing sends no request and must go per id (see the next test).
+    it('subscribes all theme states in one call on mount and releases them one call per id on unmount', () => {
+        const { widget, subscribeCalls, unsubscribeCalls } = mount({ ...themed });
+        expect(themeCalls(subscribeCalls()).map(sorted)).toEqual([sorted(THEME_IDS)]);
+
+        widget.componentWillUnmount();
+        const released = themeCalls(unsubscribeCalls());
+        expect(released.every(ids => ids.length === 1)).toBe(true);
+        expect(sorted(released.flat())).toEqual(sorted(THEME_IDS));
+    });
+    const variable = (element: HTMLElement, name: string): string => element.style.getPropertyValue(name);
+
+    it('subscribes the light color, font and font-size states and applies them when they arrive', () => {
+        const { element, handlers, subscribed } = mount({ ...themed });
+        expect(subscribed()).toEqual(expect.arrayContaining(THEME_IDS));
+
+        handlers[themed[COLOR]](themed[COLOR], { val: '#112233' });
+        handlers[themed[FONT]](themed[FONT], { val: 'Roboto' });
+        handlers[themed[SIZE]](themed[SIZE], { val: 18 });
+        expect(variable(element, '--materialdesign-widget-theme-color-switch-on')).toBe('#112233');
+        expect(variable(element, '--materialdesign-widget-theme-font-switch-value')).toBe('Roboto');
+        expect(variable(element, '--materialdesign-widget-theme-font-size-switch-value')).toBe('18px');
+    });
+
+    it('takes the dark color once the dark-theme state says dark', () => {
+        const { element, handlers } = mount({ ...themed });
+        handlers[themed[COLOR]](themed[COLOR], { val: '#112233' });
+        handlers[themed[`${COLOR}_dark`]](themed[`${COLOR}_dark`], { val: '#445566' });
+        handlers[DEFAULT_DARK_THEME_OID](DEFAULT_DARK_THEME_OID, { val: true });
+        expect(variable(element, '--materialdesign-widget-theme-color-switch-on')).toBe('#445566');
+    });
+
+    it('follows changed theme keys and releases everything on unmount', () => {
+        const { widget, unsubscribed, subscribeCalls, unsubscribeCalls } = mount({ ...themed });
+        const before = subscribeCalls().length;
+        const moved = 'vis2-materialdesign.0.fonts.other.value';
+        widget.state = fixture<typeof widget.state>({ rxData: { ...themed, [FONT]: moved, [SIZE]: undefined }, values: {} });
+        widget.onRxDataChanged(themed);
+        expect(unsubscribeCalls()).toEqual([[themed[FONT]], [themed[SIZE]]]);
+        // Ids that stayed are not subscribed a second time.
+        expect(subscribeCalls().slice(before)).toEqual([[moved]]);
+
+        widget.componentWillUnmount();
+        expect(unsubscribed()).toEqual(expect.arrayContaining([moved, themed[COLOR], themed[`${COLOR}_dark`]]));
+        expect(unsubscribed().filter(id => id === themed[FONT])).toHaveLength(1);
+    });
+
+    it('keeps the server subscription of an id another widget still uses when one widget unmounts', () => {
+        // Like socket-client: once any id of the call loses its last callback, the server is told
+        // to drop every id of that call.
+        const callbacks: Record<string, Handler[]> = {};
+        const serverDropped: string[] = [];
+        const socket = {
+            subscribeState: (ids: string | string[], cb: Handler): Promise<void> => {
+                [ids].flat().forEach(id => { (callbacks[id] ||= []).push(cb); });
+                return Promise.resolve();
+            },
+            unsubscribeState: (ids: string | string[], cb: Handler): void => {
+                const list = [ids].flat();
+                let lost = false;
+                list.forEach(id => {
+                    callbacks[id] = (callbacks[id] || []).filter(candidate => candidate !== cb);
+                    if (!callbacks[id].length) lost = true;
+                });
+                if (lost) serverDropped.push(...list);
+            },
+        };
+        const create = (rxData: Record<string, unknown>): VisWidget => {
+            const widget = new VisWidget(fixture<ConstructorParameters<typeof VisWidget>[0]>({ context: { socket } }));
+            widget.state = fixture<typeof widget.state>({ rxData, values: {} });
+            widget.forceUpdate = () => {};
+            widget.componentDidMount();
+            return widget;
+        };
+        const a = create({ [COLOR]: themed[COLOR], [FONT]: themed[FONT] });
+        create({ [COLOR]: themed[COLOR] });
+
+        a.componentWillUnmount();
+        expect(serverDropped).toContain(themed[FONT]);
+        expect(serverDropped).not.toContain(themed[COLOR]);
+    });
+
+    it('subscribes nothing for keys that are not theme keys or hold no state id', () => {
+        const { subscribed } = mount({
+            [COLOR]: 42,
+            [FONT]: '',
+            [SIZE]: '   ',
+            __mdwTheme_colors_light_d_switch_d_on: 'no.index.here',
+            __mdwTheme_shadows_x_1: 'unknown.type.here',
+            __mdwThemeX_colors_x_1: 'wrong.prefix.here',
+        });
+        expect(subscribed().filter(id => id !== DEFAULT_DARK_THEME_OID && id !== 'vis2-materialdesign.0.designStyle')).toEqual([]);
+    });
+
+    it('survives a widget without data', () => {
+        expect(() => mount(null).widget.componentWillUnmount()).not.toThrow();
+    });
+});
+
 describe('SliderWriter', () => {
     const harness = (): { props: VisRxWidgetProps; sent: Array<[string, unknown]> } => {
         const sent: Array<[string, unknown]> = [];
@@ -566,5 +710,49 @@ describe('sanitizeHtml without a DOM parser', () => {
         vi.stubGlobal('document', undefined);
         expect(accessibleText('<b>Kitchen</b> light', 'fallback')).toBe('Kitchen light');
         expect(accessibleText('<b></b>', 'fallback')).toBe('fallback');
+    });
+});
+
+describe('resolveThemeVars', () => {
+    const COLOR = '__mdwTheme_colors_light_d_switch_d_on_0';
+    const SIZE = '__mdwTheme_fontSizes_switch_d_value_1';
+    const data = {
+        [COLOR]: 'vis2-materialdesign.0.colors.light.switch.on',
+        [`${COLOR}_dark`]: 'vis2-materialdesign.0.colors.dark.switch.on',
+        [SIZE]: 'vis2-materialdesign.0.fontSizes.switch.value',
+        colorOn: 'var(--materialdesign-widget-theme-color-switch-on)',
+        valueFontSize: 'var(--materialdesign-widget-theme-font-size-switch-value)',
+        own: 'var(--my-own-variable)',
+        label: 'plain',
+        count: 3,
+    };
+    const values = {
+        'vis2-materialdesign.0.colors.light.switch.on.val': '#112233',
+        'vis2-materialdesign.0.colors.dark.switch.on.val': '#445566',
+        'vis2-materialdesign.0.fontSizes.switch.value.val': 17,
+    };
+
+    it('replaces theme variables with the light state values, font sizes as the bare number', () => {
+        expect(resolveThemeVars(data, values)).toMatchObject({ colorOn: '#112233', valueFontSize: 17, own: 'var(--my-own-variable)', label: 'plain', count: 3 });
+    });
+
+    it('takes the dark state once the dark-theme state says dark', () => {
+        expect(resolveThemeVars(data, { ...values, [`${DEFAULT_DARK_THEME_OID}.val`]: true }).colorOn).toBe('#445566');
+    });
+
+    it('drops a theme variable whose state has no value yet, so the widget default applies', () => {
+        const resolved = resolveThemeVars(data, {});
+        expect(resolved).not.toHaveProperty('colorOn');
+        expect(resolved).not.toHaveProperty('valueFontSize');
+        expect(resolved.label).toBe('plain');
+    });
+
+    it('drops a theme variable the widget has no theme key for', () => {
+        expect(resolveThemeVars({ colorOff: 'var(--materialdesign-widget-theme-color-switch-off)' }, values)).toEqual({});
+    });
+
+    it('returns the data unchanged when there is nothing to resolve', () => {
+        expect(resolveThemeVars(null, values)).toEqual({});
+        expect(resolveThemeVars({ a: 'b' }, undefined)).toEqual({ a: 'b' });
     });
 });

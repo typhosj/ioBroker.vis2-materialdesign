@@ -393,7 +393,7 @@ export default class MaterialDesignChartLineHistory extends VisWidget {
   }
   renderWidgetBody(props: RenderProps): React.JSX.Element {
     super.renderWidgetBody(props);
-    const d = this.state.rxData as unknown as Data,
+    const d = this.themedData() as unknown as Data,
       colors = s(d.colorScheme)
         ? scheme(s(d.colorScheme), this.series.length)
         : [];

@@ -363,7 +363,7 @@ export default class MaterialDesignChartJson extends VisWidget {
   }
   renderWidgetBody(props: RenderProps): React.JSX.Element {
     super.renderWidgetBody(props);
-    const data = this.state.rxData as unknown as Data;
+    const data = this.themedData() as unknown as Data;
     const isM3 = designStyle(data) === "material3";
     const m3 = m3ChartColors(this.isDarkTheme());
     const input = chartJsonInput(stateValue(this.state, s(data.oid)));
