@@ -111,6 +111,18 @@ export default {
         // that ship. The hash keeps truncated names distinct.
         chunkFileNames: (chunk: { name: string }): string =>
           `assets/${chunk.name.slice(0, 60)}-[hash].js`,
+        // Without a fixed group, a Windows build splits react's index.js and its cjs build into two
+        // chunks while Linux keeps them in one, so every hash downstream differs and the committed
+        // bundle never matches the CI build.
+        codeSplitting: {
+          // react itself only: its jsx-runtime is a share fallback and must stay in its own lazy chunk
+          groups: [
+            {
+              name: "react",
+              test: /[\\/]node_modules[\\/]react[\\/](index\.js|cjs[\\/]react\.production\.min\.js)$/,
+            },
+          ],
+        },
       },
       onwarn(
         warning: { code: string },

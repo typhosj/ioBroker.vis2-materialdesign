@@ -1,0 +1,1 @@
+import{n as e,t}from"./MaterialDesignDialog-BpH1e7sO.js";var n=class n extends t{constructor(e){super(e,`iframe`)}static getWidgetInfo(){return e(`iframe`)}getWidgetInfo(){return n.getWidgetInfo()}};export{n as default};
