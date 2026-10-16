@@ -24,7 +24,7 @@ jobs:
       
     steps:
       - name: Auto-merge Dependabot PRs
-        uses: iobroker-bot-orga/action-automerge-dependabot@28d69154fe1564030de99105f9a817ddc5ec5e22 # v1.1.3
+        uses: iobroker-bot-orga/action-automerge-dependabot@cdb8d11b3ff0bd8f3b4e9ee41886c187be641fb4 # v1.1.3
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           # Optional: Path to your auto-merge configuration file
