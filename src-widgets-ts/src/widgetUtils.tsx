@@ -156,6 +156,30 @@ export function stateValue(state: VisRxWidgetState, oid: string): ioBroker.State
     return oid ? state.values?.[`${oid}.val`] : undefined;
 }
 
+/**
+ * Keeps Tab inside a modal: wraps from the last item to the first and back. Shift+Tab on the modal
+ * itself (focused after a click on non-focusable content) goes to the last item, not out of it.
+ */
+export function wrapTabFocus(event: React.KeyboardEvent<HTMLElement>, items: HTMLElement[]): void {
+    if (event.key !== 'Tab') {
+        return;
+    }
+    if (!items.length) {
+        event.preventDefault();
+        return;
+    }
+    const first = items[0];
+    const last = items[items.length - 1];
+    const active = document.activeElement;
+    if (event.shiftKey && (active === first || active === event.currentTarget)) {
+        event.preventDefault();
+        last.focus();
+    } else if (!event.shiftKey && active === last) {
+        event.preventDefault();
+        first.focus();
+    }
+}
+
 export function visLocale(): string | undefined {
     if (typeof window === 'undefined') return undefined;
     const win = window as unknown as { vis?: { language?: string }; systemLang?: string };

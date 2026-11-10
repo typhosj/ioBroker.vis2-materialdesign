@@ -7,7 +7,7 @@ import { squarePreview ,
   designStyleClasses, legacySurface,
   setStateValue,
   sizeCss,
-  stateValue, accessibleText, safeWidgetUrl, sanitizeHtml, iconField, liftWidgetLayer, boolValue as b, numberValue as n, textValue as s } from './widgetUtils';
+  stateValue, accessibleText, safeWidgetUrl, sanitizeHtml, iconField, liftWidgetLayer, wrapTabFocus, boolValue as b, numberValue as n, textValue as s } from './widgetUtils';
 import type { RxWidgetInfo } from "@iobroker/types-vis-2";
 import { renderIcon } from "./MaterialDesignButtons";
 
@@ -358,22 +358,7 @@ export class MaterialDesignDialog extends VisWidget {
       close();
       return;
     }
-    if (event.key !== "Tab") return;
-    const items = this.focusable(event.currentTarget);
-    if (!items.length) {
-      event.preventDefault();
-      return;
-    }
-    const first = items[0];
-    const last = items[items.length - 1];
-    const active = document.activeElement;
-    if (event.shiftKey && (active === first || active === event.currentTarget)) {
-      event.preventDefault();
-      last.focus();
-    } else if (!event.shiftKey && active === last) {
-      event.preventDefault();
-      first.focus();
-    }
+    if (event.key === "Tab") wrapTabFocus(event, this.focusable(event.currentTarget));
   }
   private feedback(d: Data): void {
     if (n(d.vibrateOnMobilDevices, 50) > 0)
