@@ -1181,5 +1181,9 @@
     "migrationRestoreConfirm": "Restore the project %s as it was before its first migration? Every change made since then is lost.",
     "migrationRestored": "%s was restored to the state before its first migration.",
     "migrationNothingToRestore": "%s has no backup, so nothing was restored.",
-    "migrationThemeEmpty": "vis-materialdesign.0 holds no theme to take over."
+    "migrationThemeEmpty": "vis-materialdesign.0 holds no theme to take over.",
+    "showFooter": "show footer with close button",
+    "showHeaderCloseIcon": "close icon in the header",
+    "headerCloseIconColor": "color of the header close icon",
+    "ariaCloseDialog": "Close dialog"
 }

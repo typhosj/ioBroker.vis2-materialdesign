@@ -115,6 +115,11 @@ full per-widget option and is not deprecated, so nothing you report is a reason
 to wait with an upgrade.
 
 ## Changelog
+### **WORK IN PROGRESS**
+
+- (typhosj) Fixed the Dialog widgets making their own window see-through: **overlay opacity** was applied to the whole overlay, and the dialog sits inside it, so with the default of 0.6 the page shone through the dialog. Only the darkened background takes the opacity now, the dialog itself is fully opaque
+- (typhosj) Added two options to the Dialog widgets: **show footer with close button** can now be switched off, and **close icon in the header** puts a close cross at the right of the header, in its own color. The cross also works without a heading. A fullscreen dialog keeps its footer while it has no header cross, so it can always be closed
+
 ### 1.1.1 (2026-10-13)
 
 - (typhosj) Fixed the widget set failing to load in the upcoming vis-2 release that runs on React 19: the editor dropped the whole set with "Cannot read properties of undefined (reading 'ReactCurrentOwner')" and every placed widget showed as an unknown widget type. The bundle evaluated its own React 18 copy of the JSX runtime before asking vis-2 for the shared one, and that copy cannot run next to React 19. It is now only loaded when vis-2 does not provide the runtime itself, so the same build keeps working on the current vis-2 releases as well (ioBroker/ioBroker.vis-2#689)

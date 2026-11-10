@@ -1181,5 +1181,9 @@
     "migrationRestoreConfirm": "Het project %s herstellen zoals het was vóór de eerste migratie? Alle wijzigingen sindsdien gaan verloren.",
     "migrationRestored": "%s is teruggezet naar de toestand vóór de eerste migratie.",
     "migrationNothingToRestore": "%s heeft geen back-up, er is niets hersteld.",
-    "migrationThemeEmpty": "vis-materialdesign.0 bevat geen thema om over te nemen."
+    "migrationThemeEmpty": "vis-materialdesign.0 bevat geen thema om over te nemen.",
+    "showFooter": "voettekst met sluitknop tonen",
+    "showHeaderCloseIcon": "sluitpictogram in de kop",
+    "headerCloseIconColor": "kleur van het sluitpictogram in de kop",
+    "ariaCloseDialog": "Dialoogvenster sluiten"
 }

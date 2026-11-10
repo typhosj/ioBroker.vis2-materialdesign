@@ -1181,5 +1181,9 @@
     "migrationRestoreConfirm": "Restaurer le projet %s tel qu'il était avant sa première migration ? Toutes les modifications faites depuis seront perdues.",
     "migrationRestored": "%s a été remis dans l'état d'avant sa première migration.",
     "migrationNothingToRestore": "%s n'a pas de sauvegarde, rien n'a été restauré.",
-    "migrationThemeEmpty": "vis-materialdesign.0 ne contient aucun thème à reprendre."
+    "migrationThemeEmpty": "vis-materialdesign.0 ne contient aucun thème à reprendre.",
+    "showFooter": "afficher le pied avec le bouton de fermeture",
+    "showHeaderCloseIcon": "icône de fermeture dans l'en-tête",
+    "headerCloseIconColor": "couleur de l'icône de fermeture dans l'en-tête",
+    "ariaCloseDialog": "Fermer la boîte de dialogue"
 }

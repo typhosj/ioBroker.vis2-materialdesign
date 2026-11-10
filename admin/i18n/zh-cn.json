@@ -1181,5 +1181,9 @@
     "migrationRestoreConfirm": "要将项目 %s 恢复到首次迁移之前的状态吗？此后所做的所有更改都将丢失。",
     "migrationRestored": "%s 已恢复到首次迁移之前的状态。",
     "migrationNothingToRestore": "%s 没有备份，因此未恢复任何内容。",
-    "migrationThemeEmpty": "vis-materialdesign.0 中没有可导入的主题。"
+    "migrationThemeEmpty": "vis-materialdesign.0 中没有可导入的主题。",
+    "showFooter": "显示带关闭按钮的页脚",
+    "showHeaderCloseIcon": "标题栏中的关闭图标",
+    "headerCloseIconColor": "标题栏关闭图标的颜色",
+    "ariaCloseDialog": "关闭对话框"
 }

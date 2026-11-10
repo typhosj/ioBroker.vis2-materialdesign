@@ -1181,5 +1181,9 @@
     "migrationRestoreConfirm": "Відновити проєкт %s у стані до його першої міграції? Усі зміни, зроблені відтоді, буде втрачено.",
     "migrationRestored": "Проєкт %s повернуто до стану до його першої міграції.",
     "migrationNothingToRestore": "Проєкт %s не має резервної копії, тому нічого не відновлено.",
-    "migrationThemeEmpty": "У vis-materialdesign.0 немає теми для перенесення."
+    "migrationThemeEmpty": "У vis-materialdesign.0 немає теми для перенесення.",
+    "showFooter": "показувати нижню панель з кнопкою закриття",
+    "showHeaderCloseIcon": "значок закриття в заголовку",
+    "headerCloseIconColor": "колір значка закриття в заголовку",
+    "ariaCloseDialog": "Закрити діалог"
 }

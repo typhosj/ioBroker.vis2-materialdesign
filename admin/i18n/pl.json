@@ -1181,5 +1181,9 @@
     "migrationRestoreConfirm": "Przywrócić projekt %s do stanu sprzed pierwszej migracji? Wszystkie zmiany wprowadzone od tego czasu zostaną utracone.",
     "migrationRestored": "Projekt %s przywrócono do stanu sprzed pierwszej migracji.",
     "migrationNothingToRestore": "Projekt %s nie ma kopii zapasowej, więc niczego nie przywrócono.",
-    "migrationThemeEmpty": "vis-materialdesign.0 nie zawiera motywu do przejęcia."
+    "migrationThemeEmpty": "vis-materialdesign.0 nie zawiera motywu do przejęcia.",
+    "showFooter": "pokaż stopkę z przyciskiem zamknięcia",
+    "showHeaderCloseIcon": "ikona zamknięcia w nagłówku",
+    "headerCloseIconColor": "kolor ikony zamknięcia w nagłówku",
+    "ariaCloseDialog": "Zamknij okno dialogowe"
 }

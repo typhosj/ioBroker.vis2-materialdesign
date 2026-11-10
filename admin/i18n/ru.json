@@ -1181,5 +1181,9 @@
     "migrationRestoreConfirm": "Восстановить проект %s в состоянии до его первой миграции? Все изменения, сделанные с тех пор, будут потеряны.",
     "migrationRestored": "Проект %s возвращён в состояние до его первой миграции.",
     "migrationNothingToRestore": "У проекта %s нет резервной копии, поэтому ничего не восстановлено.",
-    "migrationThemeEmpty": "В vis-materialdesign.0 нет темы для переноса."
+    "migrationThemeEmpty": "В vis-materialdesign.0 нет темы для переноса.",
+    "showFooter": "показывать нижнюю панель с кнопкой закрытия",
+    "showHeaderCloseIcon": "значок закрытия в заголовке",
+    "headerCloseIconColor": "цвет значка закрытия в заголовке",
+    "ariaCloseDialog": "Закрыть диалог"
 }

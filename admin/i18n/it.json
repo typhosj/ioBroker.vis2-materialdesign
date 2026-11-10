@@ -1181,5 +1181,9 @@
     "migrationRestoreConfirm": "Ripristinare il progetto %s com'era prima della sua prima migrazione? Tutte le modifiche fatte da allora andranno perse.",
     "migrationRestored": "%s è stato riportato allo stato precedente alla sua prima migrazione.",
     "migrationNothingToRestore": "%s non ha un backup, quindi non è stato ripristinato nulla.",
-    "migrationThemeEmpty": "vis-materialdesign.0 non contiene alcun tema da importare."
+    "migrationThemeEmpty": "vis-materialdesign.0 non contiene alcun tema da importare.",
+    "showFooter": "mostra il piè di pagina con il pulsante di chiusura",
+    "showHeaderCloseIcon": "icona di chiusura nell'intestazione",
+    "headerCloseIconColor": "colore dell'icona di chiusura nell'intestazione",
+    "ariaCloseDialog": "Chiudi la finestra di dialogo"
 }

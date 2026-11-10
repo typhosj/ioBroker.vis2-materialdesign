@@ -119,6 +119,7 @@ const dialogFields = [
   },
 ];
 const closeFields = [
+  { name: "showFooter", label: "showFooter", type: "checkbox" as const, default: true },
   {
     name: "buttonPosition",
     label: "buttonPosition",
@@ -245,6 +246,8 @@ export function dialogInfo(kind: Kind): RxWidgetInfo {
             { name: "titleFontSize", label: "titleFontSize", type: "number" },
             { name: "titleFont", label: "titleFont", type: "fontname" },
             { name: "titleColor", label: "titleColor", type: "color" },
+            { name: "showHeaderCloseIcon", label: "showHeaderCloseIcon", type: "checkbox" },
+            { name: "headerCloseIconColor", label: "headerCloseIconColor", type: "color" },
           ],
         },
         {
@@ -412,6 +415,10 @@ export class MaterialDesignDialog extends VisWidget {
     const fullscreen =
       typeof window !== "undefined" &&
       window.innerWidth <= n(d.fullscreenResolutionLower, 0);
+    const showTitle = b(d.showTitle, true);
+    const headerClose = b(d.showHeaderCloseIcon);
+    // Without a footer a fullscreen dialog needs the header cross, or nothing could close it.
+    const showFooter = b(d.showFooter, true) || (fullscreen && !headerClose);
     const view = s(d.contains_view);
     const title = s(d.title, view);
     const bodyW = fullscreen ? "100%" : s(d.dialogMaxWidth, "96vw");
@@ -513,15 +520,23 @@ export class MaterialDesignDialog extends VisWidget {
             onClick={() => b(d.closingClickOutside, true) && close()}
             style={{
               alignItems: fullscreen ? "stretch" : "center",
-              background: s(d.overlayColor, isM3 ? "var(--md-sys-color-scrim)" : "rgba(0,0,0,.5)"),
               display: "flex",
               inset: 0,
               justifyContent: "center",
-              opacity: n(d.overlayOpacity, 0.6),
               position: "fixed",
               zIndex: n(d.z_index, 202),
             }}
           >
+            {/* Only the scrim is dimmed; an opacity on the overlay itself made the dialog card translucent too. */}
+            <div
+              className="v-overlay__scrim"
+              style={{
+                background: s(d.overlayColor, isM3 ? "var(--md-sys-color-scrim)" : "rgba(0,0,0,.5)"),
+                inset: 0,
+                opacity: n(d.overlayOpacity, 0.6),
+                position: "absolute",
+              }}
+            />
             <div
               aria-label={accessibleText(title, VisWidget.t('ariaDialog'))}
               aria-modal="true"
@@ -542,10 +557,11 @@ export class MaterialDesignDialog extends VisWidget {
                 maxHeight: fullscreen ? "100%" : "90vh",
                 maxWidth: fullscreen ? "100%" : "96vw",
                 overflow: "hidden",
+                position: "relative",
                 width: bodyW,
               }}
             >
-              {b(d.showTitle, true) ? (
+              {showTitle || headerClose ? (
                 <header
                   // Size and weight stay unset so the stylesheet supplies the whole role, but only while the user
                   // set no size of their own (compat rule #5).
@@ -559,14 +575,27 @@ export class MaterialDesignDialog extends VisWidget {
                     fontSize: isM3 && !s(d.titleFontSize) ? undefined : sizeCss(d.titleFontSize, 16),
                     fontWeight: isM3 ? undefined : 500,
                     height: n(d.headerHeight, 50),
-                    padding: "0 24px",
+                    padding: headerClose ? "0 8px 0 24px" : "0 24px",
                   }}
-                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(title) }}
-                />
+                >
+                  <span style={{ flex: 1, minWidth: 0 }} dangerouslySetInnerHTML={{ __html: showTitle ? sanitizeHtml(title) : "" }} />
+                  {headerClose ? (
+                    <button
+                      aria-label={VisWidget.t("ariaCloseDialog")}
+                      className={isM3 ? "mdw-md3-icon-button mdw-state-layer" : undefined}
+                      onClick={close}
+                      style={{ alignItems: "center", background: "transparent", border: 0, cursor: "pointer", display: "flex", height: 40, justifyContent: "center", padding: 0, width: 40 }}
+                      type="button"
+                    >
+                      {renderIcon("close", s(d.headerCloseIconColor, isM3 ? "var(--md-sys-color-on-surface-variant)" : "#44739e"), 24, !!d.headerCloseIconColor || !isM3)}
+                    </button>
+                  ) : null}
+                </header>
               ) : null}
               <main style={{ flex: 1, minHeight: 0, overflow: "auto", padding: n(d.viewDistanceToBorder, 24) }}>
                 {content}
               </main>
+              {showFooter ? (
               <footer
                 style={{
                   alignItems: "center",
@@ -622,6 +651,7 @@ export class MaterialDesignDialog extends VisWidget {
                     : null}
                 </button>
               </footer>
+              ) : null}
             </div>
           </div>
         ) : null}

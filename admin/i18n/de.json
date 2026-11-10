@@ -1181,5 +1181,9 @@
     "migrationRestoreConfirm": "Das Projekt %s so wiederherstellen, wie es vor der ersten Migration war? Alle Änderungen seitdem gehen verloren.",
     "migrationRestored": "%s wurde auf den Stand vor der ersten Migration zurückgesetzt.",
     "migrationNothingToRestore": "%s hat keine Sicherung, es wurde nichts wiederhergestellt.",
-    "migrationThemeEmpty": "vis-materialdesign.0 enthält kein Theme, das übernommen werden kann."
+    "migrationThemeEmpty": "vis-materialdesign.0 enthält kein Theme, das übernommen werden kann.",
+    "showFooter": "Fußleiste mit Schließen-Button anzeigen",
+    "showHeaderCloseIcon": "Schließen-Symbol in der Kopfzeile",
+    "headerCloseIconColor": "Farbe des Schließen-Symbols in der Kopfzeile",
+    "ariaCloseDialog": "Dialog schließen"
 }
