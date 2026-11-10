@@ -26,9 +26,25 @@ aufgeklappt. Nicht aufgeführte Einstellungen sind selbsterklärend.
   Trenner, `##:##` ergibt also eine Uhrzeit-Eingabe.
 - **maximale Länge** – begrenzt die Eingabe und liefert dem Zähler den Wert
   hinter dem Schrägstrich.
+- **Auswahlhilfe** – nur bei `Datum` und `Zeit`. `Browser (nativ)` nutzt Feld und
+  Auswahl des Browsers; Sprache und 12-/24-Stunden-Format bestimmt dann der Browser.
+  `Material-Auswahl` zeigt den Wert im Format der Gerätesprache, das Feld bleibt mit
+  passender Maske tippbar (`##.##.####` auf Deutsch, `##/##/####` auf US-Englisch),
+  und das Symbol am Feldende öffnet einen Material-3-Kalender bzw. ein Zifferblatt.
+  In den State kommt weiterhin `JJJJ-MM-TT` bzw. `HH:MM`.
+- **Zeitformat** – bei `Zeit` mit Material-Auswahl: `Gebietsschema` (12 oder 24
+  Stunden, wie die Gerätesprache es vorsieht), `24 Stunden` oder `12 Stunden`.
 
 `Text`, `Zahl` und `Maske` schreiben beim Verlassen des Felds oder mit Enter,
-`Datum` und `Zeit` sofort nach der Auswahl.
+`Datum` und `Zeit` sofort nach der Auswahl. Mit Material-Auswahl wird getippter Text
+beim Verlassen des Felds oder mit Enter geschrieben und die Auswahl mit OK; Text, der
+kein gültiges Datum bzw. keine gültige Uhrzeit ist, wird nicht geschrieben.
+
+**Auswahlhilfe** (nur Material-Auswahl)
+
+- **Hintergrundfarbe, Akzentfarbe, Textfarbe, Textfarbe auf Akzent** – Farben des
+  Auswahldialogs. Leer gelten die Material-3-Farben des Themes. Das Kalender- bzw.
+  Uhrsymbol im Feld nimmt die Farbe des **Text-Löschen-Symbols**.
 
 **Layout Eingabe**
 

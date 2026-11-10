@@ -117,6 +117,7 @@ to wait with an upgrade.
 ## Changelog
 ### **WORK IN PROGRESS**
 
+- (typhosj) Added an own date and time picker to the Input widget: with **picker** set to **Material picker**, a `date` or `time` field shows its value in the format of the device language, stays typable with a matching mask, and opens a Material 3 calendar or clock dial from an icon at the end of the field. **time format** follows the device language or forces 24 or 12 hours, and four colors style the dialog. The state still receives `YYYY-MM-DD` or `HH:MM`. Browsers draw their native date and time fields in their own UI language, which some kiosk WebViews get wrong; the new picker does not depend on that (Scrounger/ioBroker.vis-materialdesign#71)
 - (typhosj) Fixed the Dialog widgets making their own window see-through: **overlay opacity** was applied to the whole overlay, and the dialog sits inside it, so with the default of 0.6 the page shone through the dialog. Only the darkened background takes the opacity now, the dialog itself is fully opaque
 - (typhosj) Added two options to the Dialog widgets: **show footer with close button** can now be switched off, and **close icon in the header** puts a close cross at the right of the header, in its own color. The cross also works without a heading. A fullscreen dialog keeps its footer while it has no header cross, so it can always be closed
 
