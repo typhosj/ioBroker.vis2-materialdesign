@@ -94,7 +94,8 @@
         "group_yAxisLayoutForData": "y-axis layout for data",
         "group_style": "Style",
         "group_renderViewsOnLoad": "pre-rendering:",
-        "group_views": "views:"
+        "group_views": "views:",
+        "group_picker": "picker"
     },
     "de": {
         "group_alertLayout": "Layout",
@@ -191,7 +192,8 @@
         "group_yAxisLayoutForData": "y-Achsen-Layout für Datensatz",
         "group_style": "Stil",
         "group_renderViewsOnLoad": "Vorab-Rendering:",
-        "group_views": "Ansichten:"
+        "group_views": "Ansichten:",
+        "group_picker": "Auswahlhilfe"
     },
     "es": {
         "group_alertLayout": "diseño",
@@ -288,7 +290,8 @@
         "group_yAxisLayoutForData": "diseño del eje y para datos",
         "group_style": "Estilo",
         "group_renderViewsOnLoad": "pre-renderizado:",
-        "group_views": "vistas:"
+        "group_views": "vistas:",
+        "group_picker": "selector"
     },
     "fr": {
         "group_alertLayout": "disposition",
@@ -385,7 +388,8 @@
         "group_yAxisLayoutForData": "disposition en ordonnée pour les données",
         "group_style": "Style",
         "group_renderViewsOnLoad": "pré-rendu :",
-        "group_views": "vues :"
+        "group_views": "vues :",
+        "group_picker": "sélecteur"
     },
     "it": {
         "group_alertLayout": "disposizione",
@@ -482,7 +486,8 @@
         "group_yAxisLayoutForData": "layout dell'asse y per i dati",
         "group_style": "Stile",
         "group_renderViewsOnLoad": "pre-rendering:",
-        "group_views": "viste:"
+        "group_views": "viste:",
+        "group_picker": "selettore"
     },
     "nl": {
         "group_alertLayout": "lay-out",
@@ -579,7 +584,8 @@
         "group_yAxisLayoutForData": "y-aslay-out voor gegevens",
         "group_style": "Stijl",
         "group_renderViewsOnLoad": "pre-rendering:",
-        "group_views": "weergaven:"
+        "group_views": "weergaven:",
+        "group_picker": "kiezer"
     },
     "pl": {
         "group_alertLayout": "układ",
@@ -676,7 +682,8 @@
         "group_yAxisLayoutForData": "Układ osi y dla danych",
         "group_style": "Styl",
         "group_renderViewsOnLoad": "wstępne renderowanie:",
-        "group_views": "widoki:"
+        "group_views": "widoki:",
+        "group_picker": "selektor"
     },
     "pt": {
         "group_alertLayout": "disposição",
@@ -773,7 +780,8 @@
         "group_yAxisLayoutForData": "layout do eixo y para dados",
         "group_style": "Estilo",
         "group_renderViewsOnLoad": "pré-renderização:",
-        "group_views": "vistas:"
+        "group_views": "vistas:",
+        "group_picker": "seletor"
     },
     "ru": {
         "group_alertLayout": "расположение",
@@ -870,7 +878,8 @@
         "group_yAxisLayoutForData": "макет оси Y для данных",
         "group_style": "Стиль",
         "group_renderViewsOnLoad": "предварительная отрисовка:",
-        "group_views": "виды:"
+        "group_views": "виды:",
+        "group_picker": "выбор значения"
     },
     "uk": {
         "group_alertLayout": "Макет",
@@ -967,7 +976,8 @@
         "group_yAxisLayoutForData": "Y вісь макет FOR дані",
         "group_style": "Стиль",
         "group_renderViewsOnLoad": "попереднє відмальовування:",
-        "group_views": "вигляди:"
+        "group_views": "вигляди:",
+        "group_picker": "вибір значення"
     },
     "zh-cn": {
         "group_alertLayout": "布局",
@@ -1064,6 +1074,7 @@
         "group_yAxisLayoutForData": "数据的Y轴布局",
         "group_style": "样式",
         "group_renderViewsOnLoad": "预渲染：",
-        "group_views": "视图："
+        "group_views": "视图：",
+        "group_picker": "选择器"
     }
 }
