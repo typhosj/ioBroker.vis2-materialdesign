@@ -5,6 +5,19 @@ import type { RxWidgetInfo, VisRxWidgetProps } from '@iobroker/types-vis-2';
 import { m3ColorExplicit, renderIcon } from './MaterialDesignButtons';
 import { cleanColor, num } from './MaterialDesignProgress';
 import { fill, withAutoFill } from './deviceFill';
+import PickerDialog, { type PickerColors } from './MaterialDesignPickerDialog';
+import {
+    type PickerKind,
+    type PickerSpec,
+    type TimeFormat,
+    deviceLocale,
+    pickerCommitValue,
+    pickerDisplay,
+    pickerInitialValue,
+    pickerMask,
+    resolveHour12,
+    todayParts,
+} from './pickerFormat';
 import { squarePreview, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, iconField, legacyInk, legacyInkMuted, legacyOutline, setStateValue, sizeCss, stateValue } from './widgetUtils';
 
 interface InputData {
@@ -12,6 +25,12 @@ interface InputData {
     inputType?: 'text' | 'number' | 'date' | 'time' | 'mask';
     inputMask?: string;
     inputMaxLength?: number;
+    pickerStyle?: 'native' | 'material';
+    timeFormat?: TimeFormat;
+    pickerBackgroundColor?: string;
+    pickerAccentColor?: string;
+    pickerTextColor?: string;
+    pickerOnAccentColor?: string;
     inputLayout?: string;
     inputAlignment?: 'left' | 'center' | 'right';
     inputLayoutBackgroundColor?: string;
@@ -80,6 +99,25 @@ const attrs: RxWidgetInfo['visAttrs'] = [
                 type: 'select',
                 options: ['text', 'number', 'date', 'time', 'mask'],
                 default: 'text',
+            },
+            {
+                name: 'pickerStyle',
+                label: 'pickerStyle',
+                type: 'select',
+                options: [
+                    { value: 'native', label: 'pickerStyle_native' },
+                    { value: 'material', label: 'pickerStyle_material' },
+                ],
+                default: 'native',
+                hidden: (data: Record<string, unknown>) => data.inputType !== 'date' && data.inputType !== 'time',
+            },
+            {
+                name: 'timeFormat',
+                label: 'calendarTimeFormat',
+                type: 'select',
+                options: ['locale', '24h', '12h'],
+                default: 'locale',
+                hidden: (data: Record<string, unknown>) => data.inputType !== 'time' || data.pickerStyle !== 'material',
             },
             { name: 'inputMask', label: 'inputMask', type: 'text' },
             { name: 'inputMaxLength', label: 'inputMaxLength', type: 'number' },
@@ -241,6 +279,17 @@ const attrs: RxWidgetInfo['visAttrs'] = [
             { name: 'appendOuterIconColor', label: 'appendOuterIconColor', type: 'color' },
         ],
     },
+    {
+        name: 'picker',
+        label: 'group_picker',
+        hidden: (data: Record<string, unknown>) => !materialPickerKind(data),
+        fields: [
+            { name: 'pickerBackgroundColor', label: 'pickerBackgroundColor', type: 'color' },
+            { name: 'pickerAccentColor', label: 'pickerAccentColor', type: 'color' },
+            { name: 'pickerTextColor', label: 'pickerTextColor', type: 'color' },
+            { name: 'pickerOnAccentColor', label: 'pickerOnAccentColor', type: 'color' },
+        ],
+    },
 ];
 
 function layoutClass(layoutValue: string | undefined): string {
@@ -316,6 +365,29 @@ function placeholder(data: InputData): string {
     return maskPattern(data);
 }
 
+export function materialPickerKind(data: { inputType?: unknown; pickerStyle?: unknown }): PickerKind | null {
+    return data.pickerStyle === 'material' && (data.inputType === 'date' || data.inputType === 'time') ? data.inputType : null;
+}
+
+function pickerSpec(data: InputData): PickerSpec | null {
+    const kind = materialPickerKind(data);
+    if (!kind) {
+        return null;
+    }
+    const locale = deviceLocale();
+    return { kind, locale, hour12: kind === 'time' && resolveHour12(data.timeFormat, locale) };
+}
+
+export function pickerColors(data: InputData): PickerColors {
+    const pick = (value: unknown, token: string): string => (m3ColorExplicit(value) ? String(value) : token);
+    return {
+        background: pick(data.pickerBackgroundColor, 'var(--md-sys-color-surface-container-high)'),
+        accent: pick(data.pickerAccentColor, 'var(--md-sys-color-primary)'),
+        text: pick(data.pickerTextColor, 'var(--md-sys-color-on-surface)'),
+        onAccent: pick(data.pickerOnAccentColor, 'var(--md-sys-color-on-primary)'),
+    };
+}
+
 function icon(name: string | undefined, color: string | undefined, size: number): React.JSX.Element | null {
     return name ? renderIcon(name, themeColor(color, '#44739e'), size, !!color) : null;
 }
@@ -381,6 +453,8 @@ export default class MaterialDesignInput extends VisWidget {
     private localValue: string | undefined;
     private seenStateValue: ioBroker.StateValue | undefined;
     private readonly rootRef = React.createRef<HTMLDivElement>();
+    private pickerOpen = false;
+    private readonly pickerButtonRef = React.createRef<HTMLButtonElement>();
 
     constructor(props: VisRxWidgetProps) {
         super(props);
@@ -414,6 +488,28 @@ export default class MaterialDesignInput extends VisWidget {
         setStateValue(this.props, data.oid || '', data.inputType === 'number' ? Number(value) : value);
     }
 
+    private writePicker(data: InputData, spec: PickerSpec, value: string): void {
+        this.localValue = pickerDisplay(spec, value);
+        setStateValue(this.props, data.oid || '', value);
+    }
+
+    private commitPicker(data: InputData, spec: PickerSpec, text: string): void {
+        const next = pickerCommitValue(spec, text);
+        if (next === null) {
+            // Text that is no valid date/time is not written; the field falls back to the state value.
+            this.localValue = undefined;
+        } else {
+            this.writePicker(data, spec, next);
+        }
+        this.forceUpdate();
+    }
+
+    private closePicker(): void {
+        this.pickerOpen = false;
+        this.forceUpdate();
+        this.pickerButtonRef.current?.focus();
+    }
+
     renderWidgetBody(props: RenderProps): React.JSX.Element {
         super.renderWidgetBody(props);
         const data = this.state.rxData as InputData;
@@ -422,7 +518,9 @@ export default class MaterialDesignInput extends VisWidget {
             this.seenStateValue = state;
             this.localValue = undefined;
         }
-        const value = this.localValue ?? String(state ?? '');
+        const spec = pickerSpec(data);
+        const mask = spec ? pickerMask(spec) : '';
+        const value = this.localValue ?? (spec ? pickerDisplay(spec, String(state ?? '')) : String(state ?? ''));
         const active = this.focused || value !== '';
         const layout = layoutClass(data.inputLayout);
         // An explicit saved color wins (m3ColorExplicit); the legacy `#000000` default and `#mdwTheme:`
@@ -686,20 +784,26 @@ export default class MaterialDesignInput extends VisWidget {
                                     ) : null}
                                     <input
                                         autoFocus={!!data.autoFocus}
-                                        maxLength={data.inputMaxLength ? num(data.inputMaxLength, 0) : undefined}
+                                        // The picker mask has a fixed length; a shorter max length would make every entry invalid.
+                                        maxLength={!spec && data.inputMaxLength ? num(data.inputMaxLength, 0) : undefined}
                                         onBlur={event => {
                                             this.focused = false;
+                                            if (spec) {
+                                                this.commitPicker(data, spec, event.target.value);
+                                                return;
+                                            }
                                             this.commit(data, event.target.value);
                                             this.forceUpdate();
                                         }}
                                         onChange={event => {
-                                            this.localValue =
-                                                data.inputType === 'mask'
-                                                    ? applyMask(event.target.value, maskPattern(data))
-                                                    : event.target.value;
+                                            this.localValue = spec
+                                                ? applyMask(event.target.value, mask)
+                                                : data.inputType === 'mask'
+                                                  ? applyMask(event.target.value, maskPattern(data))
+                                                  : event.target.value;
                                             // Native date/time pickers (esp. Android) fire only `change`, often without a blur — commit
-                                            // immediately. Text/number/mask commit on blur/Enter to avoid per-keystroke writes.
-                                            if (data.inputType === 'date' || data.inputType === 'time') {
+                                            // immediately. Text/number/mask and the own picker's field commit on blur/Enter.
+                                            if (!spec && (data.inputType === 'date' || data.inputType === 'time')) {
                                                 this.commit(data, event.target.value);
                                             }
                                             this.forceUpdate();
@@ -709,11 +813,17 @@ export default class MaterialDesignInput extends VisWidget {
                                             this.forceUpdate();
                                         }}
                                         onKeyDown={event => {
-                                            if (event.key === 'Enter') {
+                                            if (event.key !== 'Enter') {
+                                                return;
+                                            }
+                                            if (spec) {
+                                                this.commitPicker(data, spec, event.currentTarget.value);
+                                            } else {
                                                 this.commit(data, event.currentTarget.value);
                                             }
                                         }}
-                                        placeholder={placeholder(data)}
+                                        inputMode={spec && !spec.hour12 ? 'numeric' : undefined}
+                                        placeholder={spec ? mask : placeholder(data)}
                                         style={{
                                             // Reset the native input chrome; the old widget relied on ambient legacy Vuetify CSS.
                                             appearance: 'none',
@@ -738,7 +848,7 @@ export default class MaterialDesignInput extends VisWidget {
                                             width: '100%',
                                             zIndex: 1,
                                         }}
-                                        type={inputType(data)}
+                                        type={spec ? 'text' : inputType(data)}
                                         value={value}
                                     />
                                     {data.inputSuffix ? (
@@ -785,6 +895,42 @@ export default class MaterialDesignInput extends VisWidget {
                                                     ? 'var(--md-sys-color-on-surface-variant)'
                                                     : plainColor(data.clearIconColor, '#44739e'),
                                                 num(data.clearIconSize, 16),
+                                                !!data.clearIconColor,
+                                            )}
+                                        </button>
+                                    ) : null}
+                                    {spec ? (
+                                        <button
+                                            aria-haspopup="dialog"
+                                            aria-label={spec.kind === 'date' ? VisWidget.t('ariaOpenDatePicker') : VisWidget.t('ariaOpenTimePicker')}
+                                            onClick={() => {
+                                                this.pickerOpen = true;
+                                                this.forceUpdate();
+                                            }}
+                                            ref={this.pickerButtonRef}
+                                            style={{
+                                                alignItems: 'center',
+                                                background: 'transparent',
+                                                border: 0,
+                                                cursor: 'pointer',
+                                                display: 'flex',
+                                                flex: '0 0 auto',
+                                                height: 32,
+                                                justifyContent: 'center',
+                                                marginLeft: 4,
+                                                padding: 0,
+                                                position: 'relative',
+                                                width: 32,
+                                                zIndex: 10,
+                                            }}
+                                            type="button"
+                                        >
+                                            {renderIcon(
+                                                spec.kind === 'date' ? 'calendar' : 'clock-outline',
+                                                isM3 && !m3ColorExplicit(data.clearIconColor)
+                                                    ? 'var(--md-sys-color-on-surface-variant)'
+                                                    : plainColor(data.clearIconColor, '#44739e'),
+                                                20,
                                                 !!data.clearIconColor,
                                             )}
                                         </button>
@@ -863,6 +1009,21 @@ export default class MaterialDesignInput extends VisWidget {
                         ) : null}
                     </div>
                 </div>
+                {spec && this.pickerOpen ? (
+                    <PickerDialog
+                        colors={pickerColors(data)}
+                        dark={this.isDarkTheme()}
+                        fontFamily={data.inputTextFontFamily || undefined}
+                        initialValue={pickerInitialValue(spec.kind, state, new Date())}
+                        onCancel={() => this.closePicker()}
+                        onConfirm={next => {
+                            this.writePicker(data, spec, next);
+                            this.closePicker();
+                        }}
+                        spec={spec}
+                        today={todayParts(new Date())}
+                    />
+                ) : null}
             </div>
         );
     }
