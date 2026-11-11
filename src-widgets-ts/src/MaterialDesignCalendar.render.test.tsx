@@ -84,6 +84,35 @@ describe('calendar events in the week time grid', () => {
     });
 });
 
+// `scrollbar-gutter: stable` reserved the scrollbar's width even when nothing scrolled, so the day
+// columns ended about 10px short of the widget's right edge while the control buttons above went
+// all the way. Header and body now share one scroll container, which keeps their columns aligned
+// without reserving anything.
+describe('calendar time grid width', () => {
+    const head = (html: string): string => html.slice(html.indexOf('class="v-calendar-daily__head"'), html.indexOf('class="materialdesign-calendar-intervals-head"'));
+
+    for (const calendarView of ['week', 'day']) {
+        it(`reserves no scrollbar gutter in the ${calendarView} view`, () => {
+            expect(render({ calendarView })).not.toContain('scrollbar-gutter');
+        });
+
+        it(`keeps the ${calendarView} view header above the scrolling events`, () => {
+            const html = render({ calendarView });
+            expect(head(html)).toContain('position:sticky');
+            expect(head(html)).toContain('top:0');
+            // Above an opened event (z-index 60 in the stylesheet), else it slides over the header.
+            expect(head(html)).toContain('z-index:61');
+            expect(html.slice(html.indexOf('class="v-calendar v-calendar-daily'), html.indexOf('class="v-calendar-daily__head"'))).toContain('overflow:auto');
+        });
+    }
+
+    // The body must still grow past the container when the slots need more room than it has.
+    it('lets the body grow beyond the visible height so it can scroll', () => {
+        const html = render({ calendarView: 'week' });
+        expect(html.slice(html.indexOf('class="v-calendar-daily__scroll-area"'))).toContain('flex:1 0 auto');
+    });
+});
+
 describe('calendar events in the month grid', () => {
     it('carries the full text as a title as well', () => {
         expect(render({ calendarTimeFormat: '24h', oid: 'ical.0.data.table' }, { 'ical.0.data.table.val': icalTable })).toContain('title="10:00 Zahnarzt"');

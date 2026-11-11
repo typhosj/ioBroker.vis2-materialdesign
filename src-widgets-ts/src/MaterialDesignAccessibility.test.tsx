@@ -176,15 +176,6 @@ describe('widget accessibility', () => {
         expect(render()).toContain('color:#fff');
     });
 
-    // Header and body are separate scroll-independent grids; without a reserved gutter in both, their
-    // day columns drift apart.
-    it('reserves the same scrollbar gutter for the calendar header and body', () => {
-        const widget = new MaterialDesignCalendar(fixture<ConstructorParameters<typeof MaterialDesignCalendar>[0]>(props));
-        setData(widget, { calendarView: 'week' }, {});
-        const html = renderToStaticMarkup(widget.renderWidgetBody(fixture<Parameters<MaterialDesignCalendar['renderWidgetBody']>[0]>(props)));
-        expect(html.match(/scrollbar-gutter:stable/g)).toHaveLength(2);
-    });
-
     // WCAG 2.5.8: both targets fall under 24 px on their own and are grown in the M3 path only.
     it('keeps M3 day-number and list-switch targets at 24 px', () => {
         const calendar = new MaterialDesignCalendar(fixture<ConstructorParameters<typeof MaterialDesignCalendar>[0]>(props));
