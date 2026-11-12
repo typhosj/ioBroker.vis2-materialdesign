@@ -1,16 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { chartJsonInput, distinctAxisGraphs, graphAxisId, graphColor, jsonChartSegments, jsonChartValue, jsonDatalabels, jsonLabelText } from './MaterialDesignChartJson';
+import MaterialDesignChartJson, { chartJsonInput, distinctAxisGraphs, graphAxisId, jsonChartValue } from './MaterialDesignChartJson';
+import { chartConfig } from './MaterialDesignChartCanvas';
 
 describe('MaterialDesignChartJson gaps', () => {
     it('keeps missing values distinct from numeric zero', () => {
         expect([null, undefined, '', 0, '0', 2.5, { y: null }, { y: 3 }].map(jsonChartValue))
             .toEqual([null, null, null, 0, 0, 2.5, null, 3]);
-    });
-
-    it('splits at null only when spanGaps is disabled', () => {
-        const points = ['a', null, 'b', 'c', null, 'd'];
-        expect(jsonChartSegments(points, false)).toEqual([['a'], ['b', 'c'], ['d']]);
-        expect(jsonChartSegments(points, true)).toEqual([['a', 'b', 'c', 'd']]);
     });
 });
 
@@ -28,19 +23,6 @@ describe('chartJsonInput', () => {
     it('parses a chart payload', () => {
         expect(chartJsonInput('{"axisLabels":["a"],"graphs":[{"data":[1]}]}'))
             .toEqual({ axisLabels: ['a'], graphs: [{ data: [1] }] });
-    });
-});
-
-describe('graphColor', () => {
-    it('prefers the graph explicit color', () => {
-        expect(graphColor({ color: '#ff0000' }, 0, ['#123456'], undefined)).toBe('#ff0000');
-    });
-    it('falls back to the palette entry for the graph index', () => {
-        expect(graphColor({}, 1, ['#111111', '#222222'], undefined)).toBe('#222222');
-    });
-    it('falls back to globalColor, then the default blue, when no palette entry exists', () => {
-        expect(graphColor({}, 0, [], '#abcdef')).toBe('#abcdef');
-        expect(graphColor({}, 0, [], undefined)).toBe('#44739e');
     });
 });
 
@@ -64,40 +46,59 @@ describe('distinctAxisGraphs', () => {
     });
 });
 
-describe('jsonLabelText', () => {
-    it('leaves a missing value unlabelled instead of printing a zero', () => {
-        expect(jsonLabelText({}, null)).toBe('');
+const fixture = <T>(value: unknown): T => value as T;
+const spec = (data: Record<string, unknown>, payload: unknown) =>
+    new MaterialDesignChartJson(fixture<ConstructorParameters<typeof MaterialDesignChartJson>[0]>({ context: {} })).chartSpec({ oid: 'j', ...data }, oid => (oid === 'j' ? (typeof payload === 'string' ? payload : JSON.stringify(payload)) : undefined));
+const config = (data: Record<string, unknown>, payload: unknown, isM3 = false) => chartConfig(spec(data, payload), { oid: 'j', ...data }, { isM3, isDark: false });
+const dot = (text: string): string => text.replace(',', '.');
+type Labels = { display: unknown; formatter: (value: unknown, context: { datasetIndex: number; dataIndex: number }) => string };
+
+describe('json chartSpec', () => {
+    const payload = { axisLabels: ['a', 'b'], graphs: [{ legendText: 'first', data: [1, 2], color: '#ff0000' }, { legendText: 'second', data: [10, { y: 20 }], type: 'line', yAxis_id: 1 }] };
+
+    it('turns each graph into one dataset with its explicit colour', () => {
+        const result = spec({}, payload);
+        expect(result.colorBy).toBe('dataset');
+        expect(result.labels).toEqual(['a', 'b']);
+        expect(result.datasets.map(d => [d.label, d.values, d.colors])).toEqual([['first', [1, 2], ['#ff0000']], ['second', [10, 20], [undefined]]]);
     });
 
-    // The decimal separator comes from the runtime locale; the test must not pin it.
-    const dot = (text: string): string => text.replace(',', '.');
-
-    it('appends the unit and honours the decimal options', () => {
-        expect(dot(jsonLabelText({ valuesMaxDecimals: 1, valuesAppendText: ' kWh' }, 13.5))).toBe('13.5 kWh');
-        expect(dot(jsonLabelText({ valuesMaxDecimals: 2 }, 0.09))).toBe('0.09');
-        expect(jsonLabelText({}, 13.5)).toBe('14'); // without options Intl rounds to whole numbers
+    it('reports a broken payload as an error and treats an empty one as no data', () => {
+        expect(spec({}, '{broken').error).toBe('Error in JSON string');
+        expect(spec({}, '').error).toBeUndefined();
+        expect(spec({}, '').datasets).toEqual([]);
     });
 
-    // Intl throws when min > max, and the editor stores a min without a max readily enough.
-    it('survives a minimum without a maximum', () => {
-        expect(() => jsonLabelText({ valuesMinDecimals: 2 }, 1)).not.toThrow();
-        expect(dot(jsonLabelText({ valuesMinDecimals: 2 }, 1))).toBe('1.00');
-    });
-});
-
-describe('jsonDatalabels', () => {
-    const graphs = [{ data: [1, 2] }, { data: [10, 20] }];
-
-    it('draws no label until the option is set', () => {
-        expect(jsonDatalabels({}, graphs)).toMatchObject({ display: false });
-        expect(jsonDatalabels({ showValues: 'showValuesOn' }, graphs)).not.toMatchObject({ display: false });
+    it('builds one y axis per distinct axis id and puts each dataset on it', () => {
+        const result = config({}, payload);
+        expect(Object.keys(result.options.scales)).toEqual(['x', 'yAxis_id_0', 'yAxis_id_1']);
+        expect(result.data.datasets.map(d => d.yAxisID)).toEqual(['yAxis_id_0', 'yAxis_id_1']);
+        expect(result.data.datasets[1].type).toBe('line');
     });
 
-    it('reads the value off the dataset the label belongs to', () => {
-        const config = jsonDatalabels({ showValues: 'showValuesOn' }, graphs) as {
-            formatter: (value: unknown, context: { datasetIndex: number; dataIndex: number }) => string;
-        };
-        expect(config.formatter(0, { datasetIndex: 1, dataIndex: 1 })).toBe('20');
-        expect(config.formatter(0, { datasetIndex: 0, dataIndex: 1 })).toBe('2');
+    // Regression: the legend took the graph colour without the M3 default its dataset used.
+    it('draws the legend in the dataset colour in M3', () => {
+        const result = config({}, { graphs: [{ legendText: 'only', data: [1] }] }, true);
+        expect(result.data.datasets[0].borderColor).toBe('#6750a4');
+        expect(result.legend).toEqual([{ label: 'only', color: '#6750a4' }]);
+    });
+
+    it('fills a line graph with its fill colour or a tint of its line colour', () => {
+        const tinted = config({}, { graphs: [{ data: [1], color: '#00aa00', line_UseFillColor: true }] });
+        expect(tinted.data.datasets[0]).toMatchObject({ borderColor: '#00aa00', backgroundColor: '#00aa0033', fill: true });
+        const own = config({}, { graphs: [{ data: [1], line_UseFillColor: true, line_FillColor: '#111111' }] });
+        expect(own.data.datasets[0].backgroundColor).toBe('#111111');
+    });
+
+    it('keeps value labels off until the option is set, and labels nothing for a gap', () => {
+        expect((config({}, payload).options.plugins.datalabels as Labels).display).toBe(false);
+        const labels = config({ showValues: 'showValuesOn', valuesMinDecimals: 2, valuesAppendText: ' kWh' }, { graphs: [{ data: [null, 1] }] }).options.plugins.datalabels as Labels;
+        expect(labels.formatter(0, { datasetIndex: 0, dataIndex: 0 })).toBe('');
+        expect(dot(labels.formatter(0, { datasetIndex: 0, dataIndex: 1 }))).toBe('1.00 kWh');
+    });
+
+    it('prints "<graph>: <value>" in the tooltip with at most two decimals', () => {
+        const callbacks = config({}, { graphs: [{ legendText: 'first', data: [1.23456] }] }).options.plugins.tooltip.callbacks as { label: (item: object) => unknown };
+        expect(dot(String(callbacks.label({ datasetIndex: 0, dataIndex: 0 })))).toBe('first: 1.23');
     });
 });
