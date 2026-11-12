@@ -1,8 +1,7 @@
-import React from "react";
-import { squarePreview, indexedFields, itemCount, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, legacySurface, formatMoment, visLocale, stateValue, sanitizeHtml, boolValue as b, numberValue as n, textValue as s } from './widgetUtils';
+import { squarePreview, indexedFields, itemCount, createInfo, designStyle, formatMoment, visLocale, stateValue, boolValue as b, numberValue as n, textValue as s } from "./widgetUtils";
 import type { RxWidgetInfo, VisRxWidgetState } from "@iobroker/types-vis-2";
-import { colorSchemes, scheme } from "./MaterialDesignColorScheme";
-import { ChartLegend, MaterialDesignChartCanvas, datalabelsConfig, layoutConfig, tooltipConfig } from "./MaterialDesignChartCanvas";
+import { colorSchemes } from "./MaterialDesignColorScheme";
+import { ChartWidget, type ChartSpec } from "./MaterialDesignChartCanvas";
 import { chartAxis, m3ChartColors } from "./chartAxis";
 
 type Data = Record<string, unknown>;
@@ -55,9 +54,6 @@ export function timeFormatFor(setting: string, step: number): string {
   return typeof format === "string" && format ? format : "HH:mm";
 }
 
-export function seriesColor(d: Data, i: number, colors: string[], globalColor: unknown): string {
-  return s(item(d, "dataColor", i), colors[i] || s(globalColor, "#44739e"));
-}
 export function rowAxisId(d: Data, i: number): string {
   return `yAxis_id_${n(item(d, "commonYAxis", i), 0)}`;
 }
@@ -260,7 +256,7 @@ const attrs: RxWidgetInfo["visAttrs"] = [
   },
 ];
 
-export default class MaterialDesignChartLineHistory extends VisWidget {
+export default class MaterialDesignChartLineHistory extends ChartWidget {
   private series: Series[] = [];
   private timer?: number;
   private key = "";
@@ -406,12 +402,7 @@ export default class MaterialDesignChartLineHistory extends VisWidget {
     this.series = all.filter((v): v is Series => v !== null);
     this.forceUpdate();
   }
-  renderWidgetBody(props: RenderProps): React.JSX.Element {
-    super.renderWidgetBody(props);
-    const d = this.themedData() as unknown as Data,
-      colors = s(d.colorScheme)
-        ? scheme(s(d.colorScheme), this.series.length)
-        : [];
+  chartSpec(d: Data, _value?: unknown): ChartSpec {
     const isM3 = designStyle(d) === "material3";
     const m3 = m3ChartColors(this.isDarkTheme());
     // Axes come from the configured data rows, not the loaded series — an empty history range would
@@ -451,62 +442,39 @@ export default class MaterialDesignChartLineHistory extends VisWidget {
       tickCallback: (value, _index, ticks) => fmtTime(value, timeFormatFor(timeFmt, Math.abs(Number(ticks?.[1]?.value) - Number(ticks?.[0]?.value)))),
     });
     const scales: Record<string, unknown> = { x: xAxis, ...Object.fromEntries(yEntries) };
-    // Value labels are per series here, so they ride on the dataset; the plugin default below stays
-    // `display: false` because a dataset without its own config labels the raw {x,y} object.
-    const seriesLabels = (i: number, points: Point[], dsColor: string): object => {
-      const min = Math.max(0, n(item(d, "valuesMinDecimals", i)));
-      const max = Math.max(min, n(item(d, "valuesMaxDecimals", i)));
-      const append = s(item(d, "valuesAppendText", i));
-      const labelColor = s(item(d, "valuesFontColor", i), dsColor);
-      const perSeries: Data = { designStyle: d.designStyle };
-      for (const key of ["showValues", "valuesSteps", "valuesFontFamily", "valuesFontSize", "valuesBackgroundColor", "valuesBorderColor", "valuesBorderWidth", "valuesBorderRadius"]) perSeries[key] = item(d, key, i);
-      return datalabelsConfig(perSeries, context => ({ color: labelColor, text: `${n(points[n(context.dataIndex)]?.val).toLocaleString(visLocale(), { maximumFractionDigits: max, minimumFractionDigits: min })}${append}` }), { align: "top", anchor: "end" });
-    };
-    // Without a label callback the tooltip prints chart.js' raw default, so the decimals and the
-    // appended unit configured right next to it stayed dead.
-    const tipMin = Math.max(0, n(d.tooltipValueMinDecimals));
-    const tipMax = Math.max(tipMin, n(d.tooltipValueMaxDecimals, 2));
-    const tooltipLabel = (item: { dataset?: { label?: string }; parsed?: { y?: number } }): string => {
-      const value = n(item.parsed?.y).toLocaleString(locale, { maximumFractionDigits: tipMax, minimumFractionDigits: tipMin });
-      return `${s(item.dataset?.label)}: ${value}${s(d.tooltipBodyAppend)}`;
-    };
     // chart.js v4 hard-crashes (vScale undefined) if a dataset references a y-axis id with no scale;
     // series indices can diverge from configured rows (sparse oids).
     this.series.forEach((_series, i) => { const id = yAxisIdOf(i); if (!(id in scales)) scales[id] = { axis: "y", type: "linear", position: "left" }; });
-    const chartjs = <MaterialDesignChartCanvas type="line" data={{ datasets: this.series.map((series, i) => { const seriesColorValue = seriesColor(d, i, colors, d.globalColor); const dsColor = isM3 && seriesColorValue === "#44739e" ? m3.primary : seriesColorValue; const points = series.points.filter(point => point.val !== null); return { label: s(item(d, "legendText", i), series.oid), data: points.map(point => ({ x: point.ts, y: point.val })), datalabels: seriesLabels(i, points, dsColor), borderColor: dsColor, backgroundColor: b(item(d, "useFillColor", i)) ? s(item(d, "fillColor", i), `${dsColor}33`) : "transparent", fill: b(item(d, "useFillColor", i)), borderWidth: n(item(d, "lineThikness", i), 2), stepped: b(item(d, "steppedLine", i)), tension: 0, pointBackgroundColor: s(item(d, "pointColor", i), dsColor), pointRadius: n(d.pointSize, 3), yAxisID: yAxisIdOf(i), spanGaps: b(item(d, "lineSpanGaps", i), true) }; }) }} options={{ responsive: true, maintainAspectRatio: false, layout: layoutConfig(d), animation: { duration: n(d.animationDuration, 1000) }, scales, plugins: { legend: { display: false }, datalabels: { display: false }, mdwChartArea: { color: s(d.chartAreaBackgroundColor) }, tooltip: tooltipConfig(d, { title: (items: { parsed?: { x?: number } }[]) => fmtTime(items[0]?.parsed?.x, timeFmt || "lll"), label: tooltipLabel }) } }} />;
-    const legend = <ChartLegend data={d} entries={this.series.map((series, i) => ({ label: s(item(d, "legendText", i), series.oid), color: s(item(d, "dataColor", i), colors[i] || s(d.globalColor, "#44739e")) }))} />;
-    const chartMain = b(d.cardUse) ? (
-      <div className="materialdesign-html-card-container mdc-card" style={{ background: s(d.colorBackground) || (isM3 ? "var(--md-sys-color-surface-container-low)" : legacySurface(this.isDarkTheme())), boxSizing: "border-box", display: "flex", flexDirection: "column", height: "calc(100% - 6px)", margin: 3, padding: n(d.borderDistance, 8), width: "calc(100% - 6px)" }}>
-        <div style={{ background: s(d.colorTitleSectionBackground), color: s(d.colorTitle) || (isM3 ? "var(--md-sys-color-on-surface)" : undefined), fontFamily: s(d.titleFontFamily), fontSize: n(d.titleLayout) ? `${n(d.titleLayout)}px` : undefined }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(s(d.title)) }} />
-        {/* The canvas is height:100%, so without a flex row of its own it keeps the full card height
-            and the title pushes its bottom axis out of the widget. */}
-        <div style={{ background: s(d.colorTextSectionBackground), flex: "1 1 0", minHeight: 0 }}>{chartjs}</div>
-      </div>
-    ) : chartjs;
-    const chartBox = (
-      <div style={{ flex: 1, minWidth: 0, minHeight: 0, position: "relative" }}>{chartMain}</div>
-    );
-    const legendFirst = ["top", "left"].includes(s(d.legendPosition, "right"));
-    const body = legendFirst ? (
-      <>{legend}{chartBox}</>
-    ) : (
-      <>{chartBox}{legend}</>
-    );
-    return (
-      <div
-        className={`materialdesign-widget materialdesign-chart${isM3 ? ` ${designStyleClasses(d, this.isDarkTheme())}` : ""}`}
-        style={{
-          background: s(d.backgroundColor) || (isM3 ? "var(--md-sys-color-surface)" : undefined),
-          display: "flex",
-          flexDirection: ["top", "bottom"].includes(s(d.legendPosition))
-            ? "column"
-            : "row",
-          height: "100%",
-          width: "100%",
-        }}
-      >
-        {body}
-      </div>
-    );
+    const series = this.series.map(entry => ({ ...entry, points: entry.points.filter(point => point.val !== null) }));
+    return {
+      type: "line",
+      colorBy: "dataset",
+      datasets: series.map((entry, i) => {
+        // Value labels are per series here, so they ride on the dataset.
+        const fields: Data = { designStyle: d.designStyle };
+        for (const key of ["showValues", "valuesSteps", "valuesMinDecimals", "valuesMaxDecimals", "valuesAppendText", "valuesFontColor", "valuesFontFamily", "valuesFontSize", "valuesBackgroundColor", "valuesBorderColor", "valuesBorderWidth", "valuesBorderRadius"]) fields[key] = item(d, key, i);
+        return {
+          label: s(item(d, "legendText", i), entry.oid),
+          values: entry.points.map(point => point.val),
+          x: entry.points.map(point => point.ts),
+          colors: [s(item(d, "dataColor", i)) || undefined],
+          valueLabels: { fields, align: "top" as const, anchor: "end" as const },
+          extra: ([color]: string[]) => ({
+            backgroundColor: b(item(d, "useFillColor", i)) ? s(item(d, "fillColor", i), `${color}33`) : "transparent",
+            fill: b(item(d, "useFillColor", i)),
+            borderWidth: n(item(d, "lineThikness", i), 2),
+            stepped: b(item(d, "steppedLine", i)),
+            tension: 0,
+            pointBackgroundColor: s(item(d, "pointColor", i), color),
+            pointRadius: n(d.pointSize, 3),
+            yAxisID: yAxisIdOf(i),
+            spanGaps: b(item(d, "lineSpanGaps", i), true),
+          }),
+        };
+      }),
+      scales,
+      valueLabel: (point, _number, fallback) => ({ ...fallback, color: fallback.color || point.color }),
+      tooltip: { title: point => fmtTime(point.x, timeFmt || "lll") },
+    };
   }
 }

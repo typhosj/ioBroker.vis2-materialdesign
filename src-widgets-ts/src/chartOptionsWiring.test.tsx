@@ -5,7 +5,6 @@ import MaterialDesignChartBar from './MaterialDesignChartBar';
 import MaterialDesignChartJson from './MaterialDesignChartJson';
 import MaterialDesignChartLineHistory from './MaterialDesignChartLineHistory';
 import MaterialDesignChartPie from './MaterialDesignChartPie';
-import { MaterialDesignChartCanvas } from './MaterialDesignChartCanvas';
 import { cssVariable, themeEntries, themeKeyDefaults, themeStateId } from './themeKeys';
 
 function fixture<T>(value: unknown): T { return value as T; }
@@ -17,20 +16,8 @@ function configOf(widget: { state: any; renderWidgetBody: (props: any) => React.
     widget.state = fixture({ rxData, values });
     const element = widget.renderWidgetBody(fixture({}));
     const config = (element.props as { config?: ChartProps }).config;
-    if (config) return config;
-    // Widgets not yet on ChartWidget still render the canvas somewhere in their tree.
-    const walk = (node: React.ReactNode): ChartProps | undefined => {
-        if (!React.isValidElement(node)) return undefined;
-        if (node.type === MaterialDesignChartCanvas) return node.props as ChartProps;
-        for (const child of React.Children.toArray((node.props as { children?: React.ReactNode }).children)) {
-            const found = walk(child);
-            if (found) return found;
-        }
-        return undefined;
-    };
-    const found = walk(element);
-    if (!found) throw new Error('no chart config rendered');
-    return found;
+    if (!config) throw new Error('no chart config rendered');
+    return config;
 }
 
 function optionsOf(widget: { state: any; renderWidgetBody: (props: any) => React.JSX.Element }, rxData: Record<string, unknown>, values: Record<string, unknown> = {}): Record<string, any> {

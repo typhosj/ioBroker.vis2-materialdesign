@@ -1,7 +1,7 @@
-import { isValidElement } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
-import MaterialDesignChartLineHistory, { distinctAxisRows, item, rowAxisId, seriesColor, timeFormatFor } from './MaterialDesignChartLineHistory';
+import { chartConfig } from './MaterialDesignChartCanvas';
+import MaterialDesignChartLineHistory, { distinctAxisRows, item, rowAxisId, timeFormatFor } from './MaterialDesignChartLineHistory';
 
 function fixture<T>(value: unknown): T { return value as T; }
 
@@ -108,35 +108,64 @@ describe('line history loading', () => {
     });
 });
 
-describe('per-series value labels (upstream #68)', () => {
-    type Dataset = { datalabels: Record<string, unknown> };
-    type Points = Array<{ ts: number; val: number | null }>;
-    const findDatasets = (node: unknown): Dataset[] | undefined => {
-        if (Array.isArray(node)) return node.map(findDatasets).find(Boolean);
-        if (!isValidElement(node)) return undefined;
-        const props = node.props as { data?: { datasets?: Dataset[] }; children?: unknown };
-        return props.data?.datasets || findDatasets(props.children);
-    };
-    function datasets(rxData: Record<string, unknown>, series: Points[]): Dataset[] {
-        const widget = new MaterialDesignChartLineHistory(fixture<ConstructorParameters<typeof MaterialDesignChartLineHistory>[0]>({ context: {} }));
-        fixture<HistoryInspection>(widget).series = series.map((points, index) => ({ oid: `test.0.value${index}`, points }));
-        widget.state = fixture<typeof widget.state>({ rxData, values: {} });
-        return findDatasets(widget.renderWidgetBody(fixture<Parameters<MaterialDesignChartLineHistory['renderWidgetBody']>[0]>({}))) || [];
-    }
+// The series come from the history adapter, so the tests load them through a fake socket.
+async function loaded(rxData: Record<string, unknown>, history: Array<Array<{ ts: number; val: number | null }>>): Promise<MaterialDesignChartLineHistory> {
+    let call = 0;
+    const getHistory = vi.fn(() => Promise.resolve(history[call++] ?? []));
+    const widget = new MaterialDesignChartLineHistory(fixture<ConstructorParameters<typeof MaterialDesignChartLineHistory>[0]>({ context: { socket: { getHistory, subscribeState: vi.fn().mockResolvedValue(undefined), unsubscribeState: vi.fn() } } }));
+    widget.state = fixture<typeof widget.state>({ rxData: { historyAdapterInstance: 'history.0', refreshMethod: 'byObject', ...rxData }, values: {} });
+    widget.componentDidMount();
+    await vi.waitFor(() => expect(getHistory).toHaveBeenCalledTimes(history.length));
+    await vi.waitFor(() => expect(widget.chartSpec(widget.state.rxData as unknown as Record<string, unknown>, () => undefined).datasets).toHaveLength(history.length));
+    return widget;
+}
+const configOf = (widget: MaterialDesignChartLineHistory, isM3 = false) => {
+    const data = { ...(widget.state.rxData as unknown as Record<string, unknown>), ...(isM3 ? { designStyle: 'material3' } : {}) };
+    return chartConfig(widget.chartSpec(data, () => undefined), data, { isM3, isDark: false });
+};
+const dot = (text: string): string => text.replace(',', '.');
+type Labels = { display: unknown; backgroundColor: unknown; formatter: (value: unknown, context: { datasetIndex: number; dataIndex: number }) => string };
 
-    it('labels the y value of the point, not the raw {x,y} object', () => {
-        const [dataset] = datasets({ dataCount: 0, valuesMaxDecimals: 1, valuesAppendText: ' W' }, [[{ ts: 100, val: 2.25 }, { ts: 200, val: null }, { ts: 300, val: 4 }]]);
-        expect((dataset.datalabels.formatter as (value: unknown, context: { dataIndex: number }) => string)(0, { dataIndex: 1 })).toBe('4 W');
-        expect((dataset.datalabels.display as (context: { dataIndex: number }) => unknown)({ dataIndex: 0 })).toBe(true);
+describe('line history chart', () => {
+    it('labels the y value of each point, dropping gaps, with the row decimals and unit', async () => {
+        const widget = await loaded({ dataCount: 1, oid: 'a', valuesMaxDecimals: 1, valuesAppendText: ' W' }, [[{ ts: 100, val: 2.25 }, { ts: 200, val: null }, { ts: 300, val: 4 }]]);
+        const labels = configOf(widget).data.datasets[0].datalabels as Labels;
+        expect(dot(labels.formatter(0, { datasetIndex: 0, dataIndex: 0 }))).toBe('2.3 W');
+        expect(labels.formatter(0, { datasetIndex: 0, dataIndex: 1 })).toBe('4 W');
+        widget.componentWillUnmount();
     });
 
-    it('takes the label box and the on/off switch from the series row', () => {
-        const rxData = { dataCount: 1, valuesBackgroundColor1: '#eeeeee', showValues1: 'showValuesOff' };
-        const [first, second] = datasets(rxData, [[{ ts: 1, val: 1 }], [{ ts: 1, val: 1 }]]);
-        expect(first.datalabels.backgroundColor).toBeNull();
-        expect(first.datalabels.display).toEqual(expect.any(Function));
-        expect(second.datalabels.backgroundColor).toBe('#eeeeee');
-        expect(second.datalabels.display).toBe(false);
+    it('takes the label box and the on/off switch from each series row', async () => {
+        const widget = await loaded({ dataCount: 2, oid: 'a', oid1: 'b', valuesBackgroundColor1: '#eeeeee', showValues1: 'showValuesOff' }, [[{ ts: 1, val: 1 }], [{ ts: 1, val: 1 }]]);
+        const [first, second] = configOf(widget).data.datasets.map(d => d.datalabels as Labels);
+        expect(first.backgroundColor).toBeNull();
+        expect(second.backgroundColor).toBe('#eeeeee');
+        expect(second.display).toBe(false);
+        expect(configOf(widget).options.plugins.datalabels).toEqual({ display: false });
+        widget.componentWillUnmount();
+    });
+
+    it('fills under the line from the line colour and keeps the points on it', async () => {
+        const widget = await loaded({ dataCount: 1, oid: 'a', useFillColor: true, pointColor: '#ff0000' }, [[{ ts: 1, val: 20 }]]);
+        expect(configOf(widget).data.datasets[0]).toMatchObject({ borderColor: '#44739e', backgroundColor: '#44739e33', pointBackgroundColor: '#ff0000', fill: true });
+        widget.componentWillUnmount();
+    });
+
+    // Regression: the legend rebuilt the colour without the M3 default its dataset used.
+    it('draws the legend in the dataset colour in M3', async () => {
+        const widget = await loaded({ dataCount: 1, oid: 'a', legendText: 'Temperatur' }, [[{ ts: 1, val: 20 }]]);
+        const result = configOf(widget, true);
+        expect(result.data.datasets[0].borderColor).toBe('#6750a4');
+        expect(result.legend).toEqual([{ label: 'Temperatur', color: '#6750a4' }]);
+        widget.componentWillUnmount();
+    });
+
+    it('prints "<series>: <value><unit>" in the tooltip and the time as its title', async () => {
+        const widget = await loaded({ dataCount: 1, oid: 'a', legendText: 'Temperatur', tooltipBodyAppend: ' °C', tooltipValueMinDecimals: 1, tooltipValueMaxDecimals: 1, xAxisTimeFormats: 'HH:mm' }, [[{ ts: Date.UTC(2026, 0, 1, 12, 0), val: 20.25 }]]);
+        const callbacks = configOf(widget).options.plugins.tooltip.callbacks as { title: (items: object[]) => unknown; label: (item: object) => unknown };
+        expect(dot(String(callbacks.label({ datasetIndex: 0, dataIndex: 0 })))).toMatch(/^Temperatur: 20\.3 °C$/);
+        expect(String(callbacks.title([{ datasetIndex: 0, dataIndex: 0 }]))).toMatch(/^\d\d:\d\d$/);
+        widget.componentWillUnmount();
     });
 });
 
@@ -150,19 +179,6 @@ describe('item (indexed-row fallback)', () => {
     });
     it('prefers the suffixed key over the plain key at index 0', () => {
         expect(item({ oid: 'a', oid0: 'b' }, 'oid', 0)).toBe('b');
-    });
-});
-
-describe('seriesColor', () => {
-    it('prefers the row explicit dataColor', () => {
-        expect(seriesColor({ dataColor0: '#ff0000' }, 0, ['#123456'], undefined)).toBe('#ff0000');
-    });
-    it('falls back to the palette entry for the row index', () => {
-        expect(seriesColor({}, 1, ['#111111', '#222222'], undefined)).toBe('#222222');
-    });
-    it('falls back to globalColor, then the default blue', () => {
-        expect(seriesColor({}, 0, [], '#abcdef')).toBe('#abcdef');
-        expect(seriesColor({}, 0, [], undefined)).toBe('#44739e');
     });
 });
 
