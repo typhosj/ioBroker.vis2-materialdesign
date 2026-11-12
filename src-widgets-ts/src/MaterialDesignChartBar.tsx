@@ -1,7 +1,7 @@
 import { MAX_DYNAMIC_ITEMS, squarePreview, indexedFields, itemCount, createInfo, designStyle, visLocale, boolValue as b, numberValue as n, optionalNumber, textValue as s } from './widgetUtils';
 import type { RxWidgetInfo } from "@iobroker/types-vis-2";
 import { colorSchemes } from "./MaterialDesignColorScheme";
-import { ChartWidget, type ChartSpec } from "./MaterialDesignChartCanvas";
+import { ChartWidget, cardGroup, legendGroup, tooltipGroup, valuesGroup, type ChartSpec } from "./MaterialDesignChartCanvas";
 import { chartAxis, m3ChartColors } from "./chartAxis";
 
 type Data = Record<string, unknown> & {
@@ -132,23 +132,7 @@ const attrs: RxWidgetInfo["visAttrs"] = [
     ],
   },
   { name: "chartLayout", label: "group_chartLayout", fields: chartFields },
-  {
-    name: "card",
-    label: "group_listItemCardBackground",
-    fields: [
-      { name: "cardUse", label: "cardUse", type: "checkbox" },
-      { name: "title", label: "title", type: "html" },
-      { name: "titleLayout", label: "titleLayout", type: "text" },
-      { name: "borderDistance", label: "borderDistance", type: "number" },
-      { name: "titleFontFamily", label: "titleFontFamily", type: "fontname" },
-      ...[
-        "colorBackground",
-        "colorTitleSectionBackground",
-        "colorTextSectionBackground",
-        "colorTitle",
-      ].map((name) => ({ name, label: name, type: "color" as const })),
-    ],
-  },
+  cardGroup(),
   // One group per data set, holding its object id AND its layout. VIS 1 had those as two separate
   // indexed groups, but vis-2 expands only the FIRST indexed group of a widget: its rescan for the
   // next one tests `group.indexFrom` for truthiness (visWidgetsCatalog.tsx), and ours start at index
@@ -202,64 +186,7 @@ const attrs: RxWidgetInfo["visAttrs"] = [
       },
     ],
   },
-  {
-    name: "barValuesLayout",
-    label: "group_barValuesLayout",
-    fields: [
-      {
-        name: "showValues",
-        label: "showValues",
-        type: "select",
-        options: ["showValuesOn", "showValuesOff", "showValuesAuto"],
-        default: "showValuesOn",
-      },
-      { name: "valuesSteps", label: "valuesSteps", type: "number" },
-      { name: "valuesMinDecimals", label: "valuesMinDecimals", type: "number" },
-      { name: "valuesMaxDecimals", label: "valuesMaxDecimals", type: "number" },
-      { name: "valuesAppendText", label: "valuesAppendText", type: "text" },
-      { name: "valuesFontColor", label: "valuesFontColor", type: "color" },
-      { name: "valuesFontFamily", label: "valuesFontFamily", type: "fontname" },
-      { name: "valuesFontSize", label: "valuesFontSize", type: "number" },
-      {
-        name: "valuesPositionAnchor",
-        label: "valuesPositionAnchor",
-        type: "select",
-        options: ["center", "start", "end"],
-        default: "end",
-      },
-      {
-        name: "valuesPositionAlign",
-        label: "valuesPositionAlign",
-        type: "select",
-        options: ["center", "start", "end", "right", "bottom", "left", "top"],
-        default: "top",
-      },
-      {
-        name: "valuesPositionOffset",
-        label: "valuesPositionOffset",
-        type: "number",
-      },
-      {
-        name: "valuesTextAlign",
-        label: "valuesTextAlign",
-        type: "select",
-        options: ["start", "center", "end", "left", "right"],
-        default: "center",
-      },
-      {
-        name: "valuesRotation",
-        label: "valuesRotation",
-        type: "slider",
-        min: 0,
-        max: 360,
-        step: 1,
-      },
-      { name: "valuesBackgroundColor", label: "valuesBackgroundColor", type: "color" },
-      { name: "valuesBorderColor", label: "valuesBorderColor", type: "color" },
-      { name: "valuesBorderWidth", label: "valuesBorderWidth", type: "number" },
-      { name: "valuesBorderRadius", label: "valuesBorderRadius", type: "number" },
-    ],
-  },
+  valuesGroup("barValuesLayout", { show: "showValuesOn", anchor: "end", align: "top" }),
   ...["yAxis", "xAxis"].map((axis) => ({
     name: `${axis}Layout`,
     label: `group_${axis}Layout`,
@@ -383,89 +310,8 @@ const attrs: RxWidgetInfo["visAttrs"] = [
         : []),
     ],
   })),
-  {
-    name: "legendLayout",
-    label: "group_legendLayout",
-    fields: [
-      { name: "showLegend", label: "showLegend", type: "checkbox" },
-      {
-        name: "legendPosition",
-        label: "legendPosition",
-        type: "select",
-        options: ["top", "left", "bottom", "right"],
-        default: "right",
-      },
-      { name: "legendFontColor", label: "legendFontColor", type: "color" },
-      { name: "legendFontFamily", label: "legendFontFamily", type: "fontname" },
-      { name: "legendFontSize", label: "legendFontSize", type: "number" },
-      {
-        name: "legendBoxWidth",
-        label: "legendBoxWidth",
-        type: "slider",
-        min: 0,
-        max: 100,
-        step: 1,
-      },
-      {
-        name: "legendPointStyle",
-        label: "legendPointStyle",
-        type: "checkbox",
-        default: true,
-      },
-      {
-        name: "legendDistanceToChart",
-        label: "legendDistanceToChart",
-        type: "number",
-      },
-      { name: "legendPadding", label: "legendPadding", type: "number" },
-    ],
-  },
-  {
-    name: "tooltipLayout",
-    label: "group_tooltipLayout",
-    fields: [
-      {
-        name: "showTooltip",
-        label: "showTooltip",
-        type: "checkbox",
-        default: true,
-      },
-      ...[
-        "tooltipBackgroundColor",
-        "tooltipTitleFontColor",
-        "tooltipBodyFontColor",
-      ].map((name) => ({ name, label: name, type: "color" as const })),
-      ...[
-        "tooltipArrowSize",
-        "tooltipDistanceToBar",
-        "tooltipBoxRadius",
-        "tooltipXpadding",
-        "tooltipYpadding",
-        "tooltipTitleFontSize",
-        "tooltipTitleMarginBottom",
-        "tooltipBodyFontSize",
-        "tooltipValueMinDecimals",
-        "tooltipValueMaxDecimals",
-      ].map((name) => ({ name, label: name, type: "number" as const })),
-      {
-        name: "tooltipShowColorBox",
-        label: "tooltipShowColorBox",
-        type: "checkbox",
-        default: true,
-      },
-      {
-        name: "tooltipTitleFontFamily",
-        label: "tooltipTitleFontFamily",
-        type: "fontname",
-      },
-      {
-        name: "tooltipBodyFontFamily",
-        label: "tooltipBodyFontFamily",
-        type: "fontname",
-      },
-      { name: "tooltipBodyAppend", label: "tooltipBodyAppend", type: "text" },
-    ],
-  },
+  legendGroup({}),
+  tooltipGroup(),
 ];
 export default class MaterialDesignChartBar extends ChartWidget {
   static getWidgetInfo(): RxWidgetInfo {

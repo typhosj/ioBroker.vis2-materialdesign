@@ -1,7 +1,7 @@
 import { squarePreview, createInfo, designStyle, boolValue as b, numberValue as n, textValue as s } from './widgetUtils';
 import type { RxWidgetInfo } from "@iobroker/types-vis-2";
 import { colorSchemes } from "./MaterialDesignColorScheme";
-import { ChartWidget, type ChartSpec } from "./MaterialDesignChartCanvas";
+import { ChartWidget, cardGroup, legendGroup, tooltipGroup, valuesGroup, type ChartSpec } from "./MaterialDesignChartCanvas";
 import { chartAxis, m3ChartColors } from "./chartAxis";
 
 type Graph = {
@@ -59,7 +59,6 @@ export function distinctAxisGraphs(graphs: Graph[]): Graph[] {
   return graphs.filter((graph, i) => graphs.findIndex(g => graphAxisId(g) === graphAxisId(graph)) === i);
 }
 const color = (name: string) => ({ name, label: name, type: "color" as const });
-const num = (name: string) => ({ name, label: name, type: "number" as const });
 const number = (name: string) => ({
   name,
   label: name,
@@ -106,21 +105,7 @@ const attrs: RxWidgetInfo["visAttrs"] = [
       ].map(number),
     ],
   },
-  {
-    name: "card",
-    label: "group_listItemCardBackground",
-    fields: [
-      { name: "cardUse", label: "cardUse", type: "checkbox" },
-      { name: "title", label: "title", type: "html" },
-      { name: "titleLayout", label: "titleLayout", type: "text" },
-      number("borderDistance"),
-      { name: "titleFontFamily", label: "titleFontFamily", type: "fontname" },
-      color("colorBackground"),
-      color("colorTitleSectionBackground"),
-      color("colorTextSectionBackground"),
-      color("colorTitle"),
-    ],
-  },
+  cardGroup(),
   {
     name: "barLayout",
     label: "group_barLayout",
@@ -136,93 +121,8 @@ const attrs: RxWidgetInfo["visAttrs"] = [
       },
     ],
   },
-  {
-    name: "legendLayout",
-    label: "group_legendLayout",
-    fields: [
-      {
-        name: "showLegend",
-        label: "showLegend",
-        type: "checkbox",
-        default: true,
-      },
-      {
-        name: "legendPosition",
-        label: "legendPosition",
-        type: "select",
-        options: ["top", "left", "bottom", "right"],
-        default: "right",
-      },
-      color("legendFontColor"),
-      { name: "legendFontFamily", label: "legendFontFamily", type: "fontname" },
-      number("legendFontSize"),
-      {
-        name: "legendBoxWidth",
-        label: "legendBoxWidth",
-        type: "slider",
-        min: 0,
-        max: 100,
-        step: 1,
-      },
-      {
-        name: "legendPointStyle",
-        label: "legendPointStyle",
-        type: "checkbox",
-        default: true,
-      },
-      number("legendDistanceToChart"),
-      number("legendPadding"),
-    ],
-  },
-  {
-    name: "tooltipLayout",
-    label: "group_tooltipLayout",
-    fields: [
-      {
-        name: "showTooltip",
-        label: "showTooltip",
-        type: "checkbox",
-        default: true,
-      },
-      {
-        name: "tooltipMode",
-        label: "tooltipMode",
-        type: "select",
-        options: ["nearest", "point", "index", "dataset", "x", "y"],
-        default: "nearest",
-      },
-      {
-        name: "tooltipPosition",
-        label: "tooltipPosition",
-        type: "select",
-        options: ["average", "nearest"],
-        default: "nearest",
-      },
-      color("tooltipBackgroundColor"),
-      color("tooltipTitleFontColor"),
-      color("tooltipBodyFontColor"),
-      // tooltipConfig() has always read these - the JSON chart just never offered them, so its
-      // tooltip stayed on the chart.js defaults and the theme button wrote into nothing.
-      { name: "tooltipTitleFontFamily", label: "tooltipTitleFontFamily", type: "fontname" as const },
-      { name: "tooltipTitleFontSize", label: "tooltipTitleFontSize", type: "number" as const },
-      { name: "tooltipBodyFontFamily", label: "tooltipBodyFontFamily", type: "fontname" as const },
-      { name: "tooltipBodyFontSize", label: "tooltipBodyFontSize", type: "number" as const },
-      { name: "tooltipShowColorBox", label: "tooltipShowColorBox", type: "checkbox" as const, default: true },
-      num("tooltipArrowSize"),
-      num("tooltipDistanceToBar"),
-      num("tooltipBoxRadius"),
-      num("tooltipXpadding"),
-      num("tooltipYpadding"),
-      num("tooltipTitleMarginBottom"),
-      {
-        name: "tooltipBodyAlignment",
-        label: "tooltipBodyAlignment",
-        type: "select",
-        options: ["left", "center", "right"],
-        default: "left",
-      },
-    ],
-  },
+  legendGroup({ shown: true }),
+  tooltipGroup(),
   {
     name: "xAxisLayout",
     label: "group_xAxisLayout",
@@ -257,26 +157,7 @@ const attrs: RxWidgetInfo["visAttrs"] = [
       },
     ],
   },
-  {
-    name: "barValuesLayout",
-    label: "group_barValuesLayout",
-    fields: [
-      {
-        name: "showValues",
-        label: "showValues",
-        type: "select",
-        options: ["showValuesOn", "showValuesOff", "showValuesAuto"],
-        default: "showValuesOff",
-      },
-      { name: "valuesSteps", label: "valuesSteps", type: "number" },
-      { name: "valuesMinDecimals", label: "valuesMinDecimals", type: "number" },
-      { name: "valuesMaxDecimals", label: "valuesMaxDecimals", type: "number" },
-      { name: "valuesAppendText", label: "valuesAppendText", type: "text" },
-      { name: "valuesFontColor", label: "valuesFontColor", type: "color" },
-      { name: "valuesFontFamily", label: "valuesFontFamily", type: "fontname" },
-      { name: "valuesFontSize", label: "valuesFontSize", type: "number" },
-    ],
-  },
+  valuesGroup("barValuesLayout", { show: "showValuesOff", anchor: "end", align: "top" }),
   {
     name: "yAxisLayout",
     label: "group_yAxisLayout",

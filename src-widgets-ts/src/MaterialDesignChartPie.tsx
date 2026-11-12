@@ -1,7 +1,7 @@
 import { MAX_DYNAMIC_ITEMS, squarePreview, indexedFields, itemCount, createInfo, numberValue as n, optionalNumber, textValue as s } from './widgetUtils';
 import type { RxWidgetInfo } from "@iobroker/types-vis-2";
 import { colorSchemes } from "./MaterialDesignColorScheme";
-import { ChartWidget, type ChartSpec } from "./MaterialDesignChartCanvas";
+import { ChartWidget, cardGroup, legendGroup, tooltipGroup, valuesGroup, type ChartSpec } from "./MaterialDesignChartCanvas";
 
 type Data = Record<string, unknown> & {
   oid?: string;
@@ -91,21 +91,7 @@ const attrs: RxWidgetInfo["visAttrs"] = [
       number("animationDuration"),
     ],
   },
-  {
-    name: "card",
-    label: "group_listItemCardBackground",
-    fields: [
-      { name: "cardUse", label: "cardUse", type: "checkbox" },
-      { name: "title", label: "title", type: "html" },
-      { name: "titleLayout", label: "titleLayout", type: "text" },
-      number("borderDistance"),
-      { name: "titleFontFamily", label: "titleFontFamily", type: "fontname" },
-      color("colorBackground"),
-      color("colorTitleSectionBackground"),
-      color("colorTextSectionBackground"),
-      color("colorTitle"),
-    ],
-  },
+  cardGroup(),
   // One group per data set, holding its object id AND its layout. VIS 1 had those as two separate
   // indexed groups, but vis-2 expands only the FIRST indexed group of a widget: its rescan for the
   // next one tests `group.indexFrom` for truthiness (visWidgetsCatalog.tsx), and ours start at index
@@ -151,135 +137,9 @@ const attrs: RxWidgetInfo["visAttrs"] = [
       number("hoverBorderWidth"),
     ],
   },
-  {
-    name: "pieValuesLayout",
-    label: "group_pieValuesLayout",
-    fields: [
-      {
-        name: "showValues",
-        label: "showValues",
-        type: "select",
-        options: ["showValuesOn", "showValuesOff", "showValuesAuto"],
-        default: "showValuesOn",
-      },
-      number("valuesSteps"),
-      number("valuesMinDecimals"),
-      number("valuesMaxDecimals"),
-      { name: "valuesAppendText", label: "valuesAppendText", type: "text" },
-      color("valuesFontColor"),
-      { name: "valuesFontFamily", label: "valuesFontFamily", type: "fontname" },
-      number("valuesFontSize"),
-      {
-        name: "valuesPositionAnchor",
-        label: "valuesPositionAnchor",
-        type: "select",
-        options: ["center", "start", "end"],
-        default: "center",
-      },
-      {
-        name: "valuesPositionAlign",
-        label: "valuesPositionAlign",
-        type: "select",
-        options: ["center", "start", "end", "right", "bottom", "left", "top"],
-        default: "end",
-      },
-      number("valuesPositionOffset"),
-      {
-        name: "valuesTextAlign",
-        label: "valuesTextAlign",
-        type: "select",
-        options: ["start", "center", "end", "left", "right"],
-        default: "center",
-      },
-      {
-        name: "valuesRotation",
-        label: "valuesRotation",
-        type: "slider",
-        min: 0,
-        max: 360,
-        step: 1,
-      },
-      color("valuesBackgroundColor"),
-      color("valuesBorderColor"),
-      number("valuesBorderWidth"),
-      number("valuesBorderRadius"),
-    ],
-  },
-  {
-    name: "legendLayout",
-    label: "group_legendLayout",
-    fields: [
-      { name: "showLegend", label: "showLegend", type: "checkbox" },
-      {
-        name: "legendPosition",
-        label: "legendPosition",
-        type: "select",
-        options: ["top", "left", "bottom", "right"],
-        default: "right",
-      },
-      color("legendFontColor"),
-      { name: "legendFontFamily", label: "legendFontFamily", type: "fontname" },
-      number("legendFontSize"),
-      {
-        name: "legendBoxWidth",
-        label: "legendBoxWidth",
-        type: "slider",
-        min: 0,
-        max: 100,
-        step: 1,
-      },
-      {
-        name: "legendPointStyle",
-        label: "legendPointStyle",
-        type: "checkbox",
-        default: true,
-      },
-      number("legendDistanceToChart"),
-      number("legendPadding"),
-    ],
-  },
-  {
-    name: "tooltipLayout",
-    label: "group_tooltipLayout",
-    fields: [
-      {
-        name: "showTooltip",
-        label: "showTooltip",
-        type: "checkbox",
-        default: true,
-      },
-      color("tooltipBackgroundColor"),
-      number("tooltipArrowSize"),
-      number("tooltipDistanceToBar"),
-      number("tooltipBoxRadius"),
-      {
-        name: "tooltipShowColorBox",
-        label: "tooltipShowColorBox",
-        type: "checkbox",
-        default: true,
-      },
-      number("tooltipXpadding"),
-      number("tooltipYpadding"),
-      color("tooltipTitleFontColor"),
-      {
-        name: "tooltipTitleFontFamily",
-        label: "tooltipTitleFontFamily",
-        type: "fontname",
-      },
-      number("tooltipTitleFontSize"),
-      number("tooltipTitleMarginBottom"),
-      color("tooltipBodyFontColor"),
-      {
-        name: "tooltipBodyFontFamily",
-        label: "tooltipBodyFontFamily",
-        type: "fontname",
-      },
-      number("tooltipBodyFontSize"),
-      { name: "tooltipBodyAppend", label: "tooltipBodyAppend", type: "text" },
-      number("tooltipValueMinDecimals"),
-      number("tooltipValueMaxDecimals"),
-    ],
-  },
+  valuesGroup("pieValuesLayout", { show: "showValuesOn", anchor: "center", align: "end" }),
+  legendGroup({}),
+  tooltipGroup(),
 ];
 export default class MaterialDesignChartPie extends ChartWidget {
   static getWidgetInfo(): RxWidgetInfo {

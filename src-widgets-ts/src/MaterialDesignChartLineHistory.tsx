@@ -1,7 +1,7 @@
 import { squarePreview, indexedFields, itemCount, createInfo, designStyle, formatMoment, visLocale, stateValue, boolValue as b, numberValue as n, textValue as s } from "./widgetUtils";
 import type { RxWidgetInfo, VisRxWidgetState } from "@iobroker/types-vis-2";
 import { colorSchemes } from "./MaterialDesignColorScheme";
-import { ChartWidget, type ChartSpec } from "./MaterialDesignChartCanvas";
+import { ChartWidget, cardGroup, legendGroup, tooltipGroup, type ChartSpec } from "./MaterialDesignChartCanvas";
 import { chartAxis, m3ChartColors } from "./chartAxis";
 
 type Data = Record<string, unknown>;
@@ -124,18 +124,7 @@ const attrs: RxWidgetInfo["visAttrs"] = [
       num("animationDuration"),
     ],
   },
-  {
-    name: "card",
-    label: "group_listItemCardBackground",
-    fields: [
-      { name: "cardUse", label: "cardUse", type: "checkbox" },
-      { name: "title", label: "title", type: "html" },
-      { name: "titleLayout", label: "titleLayout", type: "text" },
-      num("borderDistance"),
-      { name: "titleFontFamily", label: "titleFontFamily", type: "fontname" },
-      color("colorBackground"), color("colorTitleSectionBackground"), color("colorTextSectionBackground"), color("colorTitle"),
-    ],
-  },
+  cardGroup(),
   // One group per data set: object id, line layout and its own y-axis together. vis-2 expands only
   // the FIRST indexed group of a widget — the rescan for the next one tests `group.indexFrom` for
   // truthiness (visWidgetsCatalog.tsx) and ours start at index 0 — so every further indexed group
@@ -197,30 +186,7 @@ const attrs: RxWidgetInfo["visAttrs"] = [
       num("pointSize"),
     ],
   },
-  {
-    name: "legendLayout",
-    label: "group_legendLayout",
-    fields: [
-      {
-        name: "showLegend",
-        label: "showLegend",
-        type: "checkbox",
-        default: true,
-      },
-      {
-        name: "legendPosition",
-        label: "legendPosition",
-        type: "select",
-        options: ["top", "left", "bottom", "right"],
-        default: "right",
-      },
-      color("legendFontColor"),
-      { name: "legendFontFamily", label: "legendFontFamily", type: "fontname" },
-      num("legendFontSize"),
-      num("legendBoxWidth"),
-      num("legendPadding"),
-    ],
-  },
+  legendGroup({ shown: true }),
   {
     name: "xAxisLayout",
     label: "group_xAxisLayout",
@@ -238,17 +204,7 @@ const attrs: RxWidgetInfo["visAttrs"] = [
       color("xAxisGridLinesColor"),
     ],
   },
-  {
-    name: "tooltipLayout",
-    label: "group_tooltipLayout",
-    fields: [
-      { name: "showTooltip", label: "showTooltip", type: "checkbox", default: true },
-      { name: "tooltipMode", label: "tooltipMode", type: "select", options: ["nearest", "point", "index", "dataset", "x", "y"], default: "nearest" },
-      color("tooltipBackgroundColor"), color("tooltipTitleFontColor"), color("tooltipBodyFontColor"),
-      { name: "tooltipTitleFontFamily", label: "tooltipTitleFontFamily", type: "fontname" },
-      { name: "tooltipBodyFontFamily", label: "tooltipBodyFontFamily", type: "fontname" }, num("tooltipTitleFontSize"), num("tooltipBodyFontSize"), num("tooltipValueMinDecimals"), num("tooltipValueMaxDecimals"), { name: "tooltipBodyAppend", label: "tooltipBodyAppend", type: "text" },
-    ],
-  },
+  tooltipGroup(),
   {
     name: "yAxisLayout",
     label: "group_yAxisLayout",

@@ -7,6 +7,7 @@ import {
   Filler, Legend, Title, Tooltip,
 } from "chart.js";
 import ChartDataLabels from "chartjs-plugin-datalabels";
+import type { RxWidgetInfo } from "@iobroker/types-vis-2";
 
 import { boolValue, designStyle, designStyleClasses, legacySurface, m3OnColor, numberValue, optionalNumber, sanitizeHtml, stateValue, textValue, visLocale, VisWidget, type RenderProps } from "./widgetUtils";
 import { CHART_TEXT_COLOR, m3ChartColors } from "./chartAxis";
@@ -194,6 +195,104 @@ export type ChartConfig = {
   options: Record<string, any>;
   legend: Array<{ label: string; color: string }>;
 };
+
+type Group = RxWidgetInfo["visAttrs"][number];
+type Field = Group["fields"][number];
+const colorField = (name: string): Field => ({ name, label: name, type: "color" });
+const numberField = (name: string): Field => ({ name, label: name, type: "number" });
+const fontField = (name: string): Field => ({ name, label: name, type: "fontname" });
+
+export function cardGroup(): Group {
+  return {
+    name: "card",
+    label: "group_listItemCardBackground",
+    fields: [
+      { name: "cardUse", label: "cardUse", type: "checkbox" },
+      { name: "title", label: "title", type: "html" },
+      { name: "titleLayout", label: "titleLayout", type: "text" },
+      numberField("borderDistance"),
+      fontField("titleFontFamily"),
+      colorField("colorBackground"),
+      colorField("colorTitleSectionBackground"),
+      colorField("colorTextSectionBackground"),
+      colorField("colorTitle"),
+    ],
+  };
+}
+
+export function legendGroup({ shown }: { shown?: boolean }): Group {
+  return {
+    name: "legendLayout",
+    label: "group_legendLayout",
+    fields: [
+      { name: "showLegend", label: "showLegend", type: "checkbox", ...(shown === undefined ? {} : { default: shown }) },
+      { name: "legendPosition", label: "legendPosition", type: "select", options: ["top", "left", "bottom", "right"], default: "right" },
+      colorField("legendFontColor"),
+      fontField("legendFontFamily"),
+      numberField("legendFontSize"),
+      { name: "legendBoxWidth", label: "legendBoxWidth", type: "slider", min: 0, max: 100, step: 1 },
+      { name: "legendPointStyle", label: "legendPointStyle", type: "checkbox", default: true },
+      numberField("legendDistanceToChart"),
+      numberField("legendPadding"),
+    ],
+  };
+}
+
+export function tooltipGroup(): Group {
+  return {
+    name: "tooltipLayout",
+    label: "group_tooltipLayout",
+    fields: [
+      { name: "showTooltip", label: "showTooltip", type: "checkbox", default: true },
+      { name: "tooltipMode", label: "tooltipMode", type: "select", options: ["nearest", "point", "index", "dataset", "x", "y"], default: "nearest" },
+      { name: "tooltipPosition", label: "tooltipPosition", type: "select", options: ["average", "nearest"], default: "nearest" },
+      colorField("tooltipBackgroundColor"),
+      numberField("tooltipArrowSize"),
+      numberField("tooltipDistanceToBar"),
+      numberField("tooltipBoxRadius"),
+      { name: "tooltipShowColorBox", label: "tooltipShowColorBox", type: "checkbox", default: true },
+      numberField("tooltipXpadding"),
+      numberField("tooltipYpadding"),
+      colorField("tooltipTitleFontColor"),
+      fontField("tooltipTitleFontFamily"),
+      numberField("tooltipTitleFontSize"),
+      numberField("tooltipTitleMarginBottom"),
+      colorField("tooltipBodyFontColor"),
+      fontField("tooltipBodyFontFamily"),
+      numberField("tooltipBodyFontSize"),
+      { name: "tooltipBodyAlignment", label: "tooltipBodyAlignment", type: "select", options: ["left", "center", "right"], default: "left" },
+      { name: "tooltipBodyAppend", label: "tooltipBodyAppend", type: "text" },
+      numberField("tooltipValueMinDecimals"),
+      numberField("tooltipValueMaxDecimals"),
+    ],
+  };
+}
+
+export function valuesGroup(name: "barValuesLayout" | "pieValuesLayout", { show, anchor, align }: { show: string; anchor: string; align: string }): Group {
+  return {
+    name,
+    label: `group_${name}`,
+    fields: [
+      { name: "showValues", label: "showValues", type: "select", options: ["showValuesOn", "showValuesOff", "showValuesAuto"], default: show },
+      numberField("valuesSteps"),
+      numberField("valuesMinDecimals"),
+      numberField("valuesMaxDecimals"),
+      { name: "valuesAppendText", label: "valuesAppendText", type: "text" },
+      colorField("valuesFontColor"),
+      fontField("valuesFontFamily"),
+      numberField("valuesFontSize"),
+      { name: "valuesPositionAnchor", label: "valuesPositionAnchor", type: "select", options: ["center", "start", "end"], default: anchor },
+      { name: "valuesPositionAlign", label: "valuesPositionAlign", type: "select", options: ["center", "start", "end", "right", "bottom", "left", "top"], default: align },
+      numberField("valuesPositionOffset"),
+      { name: "valuesTextAlign", label: "valuesTextAlign", type: "select", options: ["start", "center", "end", "left", "right"], default: "center" },
+      { name: "valuesRotation", label: "valuesRotation", type: "slider", min: 0, max: 360, step: 1 },
+      colorField("valuesBackgroundColor"),
+      colorField("valuesBorderColor"),
+      numberField("valuesBorderWidth"),
+      numberField("valuesBorderRadius"),
+    ],
+  };
+}
 
 const LEGACY_CHART_COLOR = "#44739e";
 
