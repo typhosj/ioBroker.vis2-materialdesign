@@ -1,5 +1,6 @@
 import React from 'react';
 import { describe, expect, it } from 'vitest';
+import { renderToStaticMarkup } from 'react-dom/server';
 
 import MaterialDesignChartBar from './MaterialDesignChartBar';
 import MaterialDesignChartJson from './MaterialDesignChartJson';
@@ -129,5 +130,36 @@ describe('themed chart fields reach chart.js as real values', () => {
         const props = rendered(new MaterialDesignChartBar(fixture({ context: {} })), theme.rxData, { 'b.0.v.val': 5, ...theme.values }) as ChartProps & { data: { datasets: Array<{ backgroundColor: unknown }> } };
         expect(props.options.plugins.mdwChartArea.color).toBe('#123456');
         expect(props.data.datasets[0].backgroundColor).toEqual(['#123456']);
+    });
+});
+
+// The whole path, widget state to markup, for each of the four charts.
+describe('rendered chart markup', () => {
+    type Created = { state: any; renderWidgetBody: (props: any) => React.JSX.Element };
+    const cases: Array<[string, (context: object) => Created, Record<string, unknown>, Record<string, unknown>, boolean]> = [
+        ['Bar Chart', context => new MaterialDesignChartBar(fixture({ context })), { dataCount: 1, oid0: 'b.0.v', label0: 'Room A' }, { 'b.0.v.val': 5 }, true],
+        ['Pie Chart', context => new MaterialDesignChartPie(fixture({ context })), { dataCount: 1, oid0: 'p.0.v', label0: 'Room A' }, { 'p.0.v.val': 5 }, true],
+        ['JSON Chart', context => new MaterialDesignChartJson(fixture({ context })), { oid: 'j.0.v' }, { 'j.0.v.val': JSON_SOURCE }, false],
+        ['Line History Chart', context => new MaterialDesignChartLineHistory(fixture({ context })), { dataCount: 1, oid0: 'l.0.v' }, {}, false],
+    ];
+    const html = (create: (context: object) => Created, rxData: Record<string, unknown>, values: Record<string, unknown>, context: object = {}): string => {
+        const widget = create(context);
+        widget.state = fixture({ rxData, values });
+        return renderToStaticMarkup(widget.renderWidgetBody({}));
+    };
+
+    it.each(cases)('%s renders a canvas in a card', (_name, create, extra, values, labelled) => {
+        const markup = html(create, { ...extra, cardUse: true, showLegend: true }, values);
+        expect(markup).toContain('<canvas');
+        expect(markup).toContain('mdc-card');
+        if (labelled) expect(markup).toContain('Room A');
+    });
+
+    it.each(cases)('%s renders on the Material 3 surface in the dark theme', (_name, create, extra, values) => {
+        // The dark flag is the base class's own reading of the host theme, not a stubbed method.
+        const markup = html(create, { ...extra, designStyle: 'material3', cardUse: true }, values, { themeType: 'dark' });
+        expect(markup).toContain('<canvas');
+        expect(markup).toContain('mdw-dark');
+        expect(markup).toContain('var(--md-sys-color-surface)');
     });
 });

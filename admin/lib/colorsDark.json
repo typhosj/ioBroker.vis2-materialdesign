@@ -189,7 +189,7 @@
         "id": "dark.charts.value",
         "desc": "valuesFontColor",
         "defaultValue": 2,
-        "widget": "Bar Chart, Pie Chart, Line History Chart"
+        "widget": "Bar Chart, Pie Chart, Line History Chart, JSON Chart"
     },
     {
         "id": "dark.charts.y_axis_title",

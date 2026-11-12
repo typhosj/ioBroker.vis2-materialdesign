@@ -151,6 +151,20 @@ describe('line history chart', () => {
         widget.componentWillUnmount();
     });
 
+    it('colours the value labels like the series unless the row sets a label colour', async () => {
+        const widget = await loaded({ dataCount: 2, oid: 'a', oid1: 'b', dataColor: '#00aa00', valuesFontColor1: '#123456' }, [[{ ts: 1, val: 1 }], [{ ts: 1, val: 1 }]]);
+        const [first, second] = configOf(widget).data.datasets.map(d => d.datalabels as { color: (context: object) => string });
+        expect(first.color({ datasetIndex: 0, dataIndex: 0 })).toBe('#00aa00');
+        expect(second.color({ datasetIndex: 1, dataIndex: 0 })).toBe('#123456');
+        widget.componentWillUnmount();
+    });
+
+    it('takes an explicit series colour for line, fill and points', async () => {
+        const widget = await loaded({ dataCount: 1, oid: 'a', dataColor: '#00aa00', useFillColor: true }, [[{ ts: 1, val: 20 }]]);
+        expect(configOf(widget).data.datasets[0]).toMatchObject({ borderColor: '#00aa00', backgroundColor: '#00aa0033', pointBackgroundColor: '#00aa00' });
+        widget.componentWillUnmount();
+    });
+
     // Regression: the legend rebuilt the colour without the M3 default its dataset used.
     it('draws the legend in the dataset colour in M3', async () => {
         const widget = await loaded({ dataCount: 1, oid: 'a', legendText: 'Temperatur' }, [[{ ts: 1, val: 20 }]]);

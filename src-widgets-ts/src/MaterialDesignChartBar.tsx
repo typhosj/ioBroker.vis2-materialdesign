@@ -30,7 +30,6 @@ export function json(value: unknown): Record<string, unknown>[] | null {
   }
 }
 
-
 function bars(data: Data, source: Record<string, unknown>[] | null, valueForIndex: (index: number) => number): Bar[] {
   const count = source ? Math.min(source.length, MAX_DYNAMIC_ITEMS) : itemCount(data.dataCount);
   return Array.from({ length: count }, (_, i) => {
@@ -57,7 +56,6 @@ function bars(data: Data, source: Record<string, unknown>[] | null, valueForInde
     };
   });
 }
-
 
 export function barAxisRange(data: Data, values: number[]): { min: number; max: number } {
   // Unset means "auto-scale from the data", whether vis-2 stored "", undefined or null. A stray null

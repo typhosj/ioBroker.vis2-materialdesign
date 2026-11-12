@@ -190,5 +190,4 @@ export default class MaterialDesignChartPie extends ChartWidget {
       legendShown: false,
     };
   }
-  
 }

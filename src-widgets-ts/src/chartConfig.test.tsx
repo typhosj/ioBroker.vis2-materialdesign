@@ -92,6 +92,20 @@ describe('chartConfig colours', () => {
     });
 });
 
+describe('chartConfig tooltip label', () => {
+    const label = (datasetLabel: string, data: Record<string, unknown> = {}): string => {
+        const spec: ChartSpec = { type: 'line', colorBy: 'dataset', datasets: [{ label: datasetLabel, values: [1.23456], colors: [undefined] }] };
+        const callbacks = chartConfig(spec, data, { isM3: false, isDark: false }).options.plugins.tooltip.callbacks as { label: (item: object) => string };
+        return dot(callbacks.label({ datasetIndex: 0, dataIndex: 0 }));
+    };
+
+    it('drops the colon when the dataset has no label', () => {
+        expect(label('')).toBe('1.23');
+        expect(label('', { tooltipBodyAppend: ' W' })).toBe('1.23 W');
+        expect(label('Power')).toBe('Power: 1.23');
+    });
+});
+
 describe('chartConfig value labels', () => {
     type Labels = { display: unknown; formatter: (value: unknown, context: { datasetIndex: number; dataIndex: number }) => string; color: (context: object) => string };
     const labels = (config: ReturnType<typeof chartConfig>): Labels => config.options.plugins.datalabels as Labels;

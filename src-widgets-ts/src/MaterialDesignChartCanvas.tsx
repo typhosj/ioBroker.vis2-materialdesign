@@ -115,7 +115,7 @@ export function tooltipConfig(data: Record<string, unknown>, callbacks?: object)
   const enabled = boolValue(data.showTooltip, true);
   const config: Record<string, unknown> = { enabled, mode: optionalText(data.tooltipMode) || "nearest" };
   const put = (key: string, value: unknown): void => { if (value !== undefined) config[key] = value; };
-  put("position", optionalText(data.tooltipPosition));
+  put("position", optionalText(data.tooltipPosition) || "nearest");
   put("bodyAlign", optionalText(data.tooltipBodyAlignment));
   put("backgroundColor", optionalText(data.tooltipBackgroundColor));
   put("titleColor", optionalText(data.tooltipTitleFontColor));
@@ -333,7 +333,7 @@ export function chartConfig(spec: ChartSpec, data: Record<string, unknown>, cont
     label: (item: TooltipItem) => {
       const at = point(numberValue(item.datasetIndex), numberValue(item.dataIndex));
       const number = chartNumber(at.value, data.tooltipValueMinDecimals, data.tooltipValueMaxDecimals, "tooltip");
-      return spec.tooltip?.label ? spec.tooltip.label(at, number) : `${at.datasetLabel}: ${number}${textValue(data.tooltipBodyAppend)}`;
+      return spec.tooltip?.label ? spec.tooltip.label(at, number) : `${at.datasetLabel ? `${at.datasetLabel}: ` : ""}${number}${textValue(data.tooltipBodyAppend)}`;
     },
   };
   const title = spec.tooltip?.title;

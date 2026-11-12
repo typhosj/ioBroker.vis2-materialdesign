@@ -101,4 +101,9 @@ describe('json chartSpec', () => {
         const callbacks = config({}, { graphs: [{ legendText: 'first', data: [1.23456] }] }).options.plugins.tooltip.callbacks as { label: (item: object) => unknown };
         expect(dot(String(callbacks.label({ datasetIndex: 0, dataIndex: 0 })))).toBe('first: 1.23');
     });
+
+    it('prints just the value for a graph without legendText', () => {
+        const callbacks = config({}, { graphs: [{ data: [1.23456] }] }).options.plugins.tooltip.callbacks as { label: (item: object) => unknown };
+        expect(dot(String(callbacks.label({ datasetIndex: 0, dataIndex: 0 })))).toBe('1.23');
+    });
 });

@@ -95,6 +95,15 @@ describe('tooltipConfig geometry', () => {
     });
 });
 
+describe('tooltipConfig position', () => {
+    it('anchors at the nearest point unless a position is saved', () => {
+        for (const unset of [undefined, '', null]) {
+            expect((tooltipConfig({ tooltipPosition: unset }) as Record<string, unknown>).position).toBe('nearest');
+        }
+        expect((tooltipConfig({ tooltipPosition: 'average' }) as Record<string, unknown>).position).toBe('average');
+    });
+});
+
 describe('ChartLegend', () => {
     const entries = [{ label: 'Kitchen', color: '#f00' }, { label: 'Hall', color: '#0f0' }];
     const html = (data: Record<string, unknown>, defaultShown?: boolean): string =>
