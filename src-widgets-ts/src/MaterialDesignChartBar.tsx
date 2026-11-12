@@ -1,8 +1,7 @@
-import React from "react";
-import { MAX_DYNAMIC_ITEMS, squarePreview, indexedFields, itemCount, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, legacySurface, stateValue, sanitizeHtml, visLocale, boolValue as b, numberValue as n, textValue as s } from './widgetUtils';
+import { MAX_DYNAMIC_ITEMS, squarePreview, indexedFields, itemCount, createInfo, designStyle, visLocale, boolValue as b, numberValue as n, optionalNumber, textValue as s } from './widgetUtils';
 import type { RxWidgetInfo } from "@iobroker/types-vis-2";
-import { colorSchemes, scheme } from "./MaterialDesignColorScheme";
-import { ChartLegend, MaterialDesignChartCanvas, datalabelsConfig, layoutConfig, tooltipConfig, tooltipNumber } from "./MaterialDesignChartCanvas";
+import { colorSchemes } from "./MaterialDesignColorScheme";
+import { ChartWidget, type ChartSpec } from "./MaterialDesignChartCanvas";
 import { chartAxis, m3ChartColors } from "./chartAxis";
 
 type Data = Record<string, unknown> & {
@@ -31,33 +30,16 @@ export function json(value: unknown): Record<string, unknown>[] | null {
   }
 }
 
-export function barCount(data: Data, source: Record<string, unknown>[] | null): number {
-  return source ? Math.min(source.length, MAX_DYNAMIC_ITEMS) : itemCount(data.dataCount);
-}
 
-export function buildBars(data: Data, source: Record<string, unknown>[] | null, count: number, colors: string[], valueForIndex: (index: number) => number): Bar[] {
+function bars(data: Data, source: Record<string, unknown>[] | null, valueForIndex: (index: number) => number): Bar[] {
+  const count = source ? Math.min(source.length, MAX_DYNAMIC_ITEMS) : itemCount(data.dataCount);
   return Array.from({ length: count }, (_, i) => {
     const row = source?.[i];
-    const value = n(row?.value, valueForIndex(i));
-    const minDecimals = Math.max(0, n(data.valuesMinDecimals));
-    // Intl throws when min > max, and a min without a max is what the editor stores when only one of
-    // the two fields is filled in. VIS2 renders a view's widgets in one tree without an error
-    // boundary, so the throw took more than this bar down with it.
-    const decimals = Math.max(minDecimals, n(data.valuesMaxDecimals, 0));
     return {
       label: s(row?.label, s(indexed(data, "label", i))),
-      value,
-      color: s(
-        row?.dataColor,
-        s(
-          indexed(data, "dataColor", i),
-          colors[i] || s(data.globalColor, "#44739e"),
-        ),
-      ),
-      valueText: s(
-        row?.valueText,
-        s(indexed(data, "valueText", i), value.toLocaleString(visLocale(), { minimumFractionDigits: minDecimals, maximumFractionDigits: decimals })),
-      ),
+      value: n(row?.value, valueForIndex(i)),
+      color: s(row?.dataColor, s(indexed(data, "dataColor", i))),
+      valueText: s(row?.valueText, s(indexed(data, "valueText", i))),
       // Empty means "not configured": the label color is then derived from the bar it is drawn on.
       valueColor: s(
         row?.valueColor,
@@ -76,15 +58,16 @@ export function buildBars(data: Data, source: Record<string, unknown>[] | null, 
   });
 }
 
-export function barAxisRange(data: Data, bars: Bar[]): { min: number; max: number } {
+
+export function barAxisRange(data: Data, values: number[]): { min: number; max: number } {
   // Unset means "auto-scale from the data", whether vis-2 stored "", undefined or null. A stray null
   // fell through to 1, which on v4 collapsed the value axis to 0..1 and clipped every bar.
   const unset = (v: unknown): boolean => v === "" || v === undefined || v === null;
   const min = unset(data.axisValueMin)
-    ? Math.min(0, ...bars.map((bar) => bar.value))
+    ? Math.min(0, ...values)
     : n(data.axisValueMin);
   const max = unset(data.axisValueMax)
-    ? Math.max(1, ...bars.map((bar) => bar.value))
+    ? Math.max(1, ...values)
     : n(data.axisValueMax, 1);
   return { min, max };
 }
@@ -484,7 +467,7 @@ const attrs: RxWidgetInfo["visAttrs"] = [
     ],
   },
 ];
-export default class MaterialDesignChartBar extends VisWidget {
+export default class MaterialDesignChartBar extends ChartWidget {
   static getWidgetInfo(): RxWidgetInfo {
     return {
       ...createInfo("tplVis2-materialdesign-Chart-Bar", "Bar Chart", attrs, ["card", "barValuesLayout", "legendLayout", "tooltipLayout"]),
@@ -495,24 +478,13 @@ export default class MaterialDesignChartBar extends VisWidget {
   getWidgetInfo(): RxWidgetInfo {
     return MaterialDesignChartBar.getWidgetInfo();
   }
-  renderWidgetBody(props: RenderProps): React.JSX.Element {
-    super.renderWidgetBody(props);
-    const data = this.themedData() as unknown as Data;
-    // Canvas cannot read CSS vars, so chart-internal colors resolve to concrete M3 hex.
+  chartSpec(data: Data, value: (oid: unknown) => ioBroker.StateValue | undefined): ChartSpec {
     const isM3 = designStyle(data) === "material3";
     const m3 = m3ChartColors(this.isDarkTheme());
-    const fromJson = s(data.chartDataMethod) === "jsonStringObject";
-    const source = fromJson
-      ? json(stateValue(this.state, s(data.oid)))
-      : null;
-    const count = barCount(data, source);
-    const colors = s(data.colorScheme)
-      ? scheme(s(data.colorScheme), count)
-      : [];
-    const bars: Bar[] = buildBars(data, source, count, colors, i => n(stateValue(this.state, s(indexed(data, "oid", i)))));
-    const { min, max } = barAxisRange(data, bars);
+    const source = s(data.chartDataMethod) === "jsonStringObject" ? json(value(data.oid)) : null;
+    const items = bars(data, source, i => n(value(indexed(data, "oid", i))));
+    const { min, max } = barAxisRange(data, items.map(bar => bar.value));
     const horizontal = s(data.chartType, "vertical") === "horizontal";
-    const title = s(data.title);
     const on = (v: unknown): number | undefined => (v === undefined || v === null || v === "" || !Number.isFinite(Number(v)) ? undefined : Number(v));
     const axisOf = (ax: "x" | "y"): Record<string, unknown> => chartAxis({
       position: s(data[`${ax}AxisPosition`]),
@@ -554,65 +526,37 @@ export default class MaterialDesignChartBar extends VisWidget {
       catAxis.ticks = { ...(catAxis.ticks || {}), autoSkip: b(data.axisLabelAutoSkip) };
     }
     const scales = { [horizontal ? "x" : "y"]: valueAxis, [horizontal ? "y" : "x"]: catAxis };
-    const chartjs = <MaterialDesignChartCanvas type="bar" data={{ labels: bars.map(bar => bar.label), datasets: [{ data: bars.map(bar => bar.value), backgroundColor: bars.map(bar => isM3 && bar.color === "#44739e" ? m3.primary : bar.color), hoverBackgroundColor: s(data.hoverColor) || undefined, borderColor: s(data.hoverBorderColor), borderWidth: n(data.hoverBorderWidth), barPercentage: on(data.barWidth) === undefined ? undefined : Math.max(0, Math.min(1, n(data.barWidth, 80) / 100)) }] }} options={{ indexAxis: horizontal ? "y" : "x", responsive: true, maintainAspectRatio: false, layout: layoutConfig(data), hover: b(data.disableHoverEffects) ? { mode: null } : undefined, animation: { duration: n(data.animationDuration, 1000) }, scales, plugins: { datalabels: datalabelsConfig(data, context => { const bar = bars[n(context.dataIndex)]; return { color: bar?.valueColor, text: `${s(bar?.valueText)}${s(bar?.appendix)}` }; }, { align: "top", anchor: "end" }), legend: { display: false }, mdwChartArea: { color: s(data.chartAreaBackgroundColor) }, tooltip: tooltipConfig(data, {
-      title: (items: { dataIndex?: number }[]) => { const bar = bars[n(items[0]?.dataIndex)]; return bar?.tooltipTitle ? bar.tooltipTitle.split("\\n") : s(bar?.label); },
-      label: (item: { dataIndex?: number }) => { const bar = bars[n(item.dataIndex)]; if (bar?.tooltipText) return bar.tooltipText.split("\\n"); return `${tooltipNumber(data, bar?.value) ?? s(bar?.valueText)}${s(bar?.appendix)}${s(data.tooltipBodyAppend)}`; },
-    }) } }} />;
-    // Bar never drew a legend although the editor offered the whole group. One entry per bar, in
-    // its own color — the same shape Pie and JSON use.
-    const legend = <ChartLegend data={data} entries={bars.map(bar => ({ label: bar.label, color: isM3 && bar.color === "#44739e" ? m3.primary : bar.color }))} defaultShown={false} />;
-    const legendHorizontal = ["top", "bottom"].includes(s(data.legendPosition));
-    const legendFirst = ["top", "left"].includes(s(data.legendPosition, "right"));
-    const body = (
-      <div style={{ display: "flex", flexDirection: legendHorizontal ? "column" : "row", height: "100%", minHeight: 0, width: "100%" }}>
-        {legendFirst ? legend : null}
-        <div style={{ flex: 1, minHeight: 0, minWidth: 0, position: "relative" }}>{chartjs}</div>
-        {legendFirst ? null : legend}
-      </div>
-    );
-    return (
-      <div
-        className={`materialdesign-widget materialdesign-chart${isM3 ? ` ${designStyleClasses(data, this.isDarkTheme())}` : ""}`}
-        style={{
-          background: s(data.backgroundColor) || (isM3 ? "var(--md-sys-color-surface)" : undefined),
-          height: "100%",
-          width: "100%",
-        }}
-      >
-        {b(data.cardUse) ? (
-          <div
-            className="materialdesign-html-card-container mdc-card"
-            style={{
-              background: s(data.colorBackground) || (isM3 ? "var(--md-sys-color-surface-container-low)" : legacySurface(this.isDarkTheme())),
-              boxSizing: "border-box",
-              display: "flex",
-              flexDirection: "column",
-              // Inset: the card filled the widget box, and VIS2 clips there — the whole card shadow
-              // and its rounded edge sat outside the visible area.
-              height: "calc(100% - 6px)",
-              margin: 3,
-              padding: n(data.borderDistance, 8),
-              width: "calc(100% - 6px)",
-            }}
-          >
-            <div
-              className="card-title-section"
-              style={{
-                background: s(data.colorTitleSectionBackground),
-                color: s(data.colorTitle) || (isM3 ? "var(--md-sys-color-on-surface)" : undefined),
-                fontFamily: s(data.titleFontFamily),
-                fontSize: n(data.titleLayout) ? `${n(data.titleLayout)}px` : undefined,
-              }}
-              dangerouslySetInnerHTML={{ __html: sanitizeHtml(title) }}
-            />
-            {/* The canvas is height:100%, so in a plain block card it kept the FULL card height and
-                the title pushed its bottom axis out of the widget. Flex row that takes the rest. */}
-            <div style={{ background: s(data.colorTextSectionBackground), flex: "1 1 0", minHeight: 0 }}>{body}</div>
-          </div>
-        ) : (
-          body
-        )}
-      </div>
-    );
+    return {
+      type: "bar",
+      colorBy: "item",
+      labels: items.map(bar => bar.label),
+      datasets: [{
+        label: "",
+        values: items.map(bar => bar.value),
+        colors: items.map(bar => bar.color || undefined),
+        extra: () => ({
+          hoverBackgroundColor: s(data.hoverColor) || undefined,
+          borderColor: s(data.hoverBorderColor),
+          borderWidth: n(data.hoverBorderWidth),
+          barPercentage: optionalNumber(data.barWidth) === undefined ? undefined : Math.max(0, Math.min(1, n(data.barWidth, 80) / 100)),
+        }),
+      }],
+      scales,
+      // v4: horizontalBar is gone -> type "bar" + indexAxis "y".
+      options: { indexAxis: horizontal ? "y" : "x" },
+      valueLabels: { align: "top", anchor: "end" },
+      valueLabel: (point, number) => {
+        const bar = items[point.dataIndex];
+        return { color: bar?.valueColor || undefined, text: `${bar?.valueText || number}${s(bar?.appendix)}` };
+      },
+      tooltip: {
+        title: point => { const bar = items[point.dataIndex]; return bar?.tooltipTitle ? bar.tooltipTitle.split("\n") : s(bar?.label); },
+        label: (point, number) => {
+          const bar = items[point.dataIndex];
+          return bar?.tooltipText ? bar.tooltipText.split("\n") : `${bar?.valueText || number}${s(bar?.appendix)}${s(data.tooltipBodyAppend)}`;
+        },
+      },
+      legendShown: false,
+    };
   }
 }

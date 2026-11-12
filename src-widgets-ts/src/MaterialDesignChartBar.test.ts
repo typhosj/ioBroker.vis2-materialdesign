@@ -1,111 +1,91 @@
-import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import MaterialDesignChartBar, { barAxisRange, barCount, buildBars, json } from './MaterialDesignChartBar';
+import MaterialDesignChartBar, { barAxisRange, json } from './MaterialDesignChartBar';
+import { chartConfig } from './MaterialDesignChartCanvas';
+
+const fixture = <T>(value: unknown): T => value as T;
+const spec = (data: Record<string, unknown>, values: Record<string, unknown> = {}) =>
+    new MaterialDesignChartBar(fixture<ConstructorParameters<typeof MaterialDesignChartBar>[0]>({ context: {} })).chartSpec(data, oid => values[String(oid)] as ioBroker.StateValue);
+const config = (data: Record<string, unknown>, values: Record<string, unknown> = {}, isM3 = false) => chartConfig(spec(data, values), data, { isM3, isDark: false });
+const dot = (text: string): string => text.replace(',', '.');
+type Labels = { formatter: (value: unknown, context: { datasetIndex: number; dataIndex: number }) => string };
+type Callbacks = { title: (items: object[]) => unknown; label: (item: object) => unknown };
 
 describe('json', () => {
-    it('parses a JSON array', () => {
+    it('parses a JSON array and rejects everything else', () => {
         expect(json('[{"a":1}]')).toEqual([{ a: 1 }]);
-    });
-    it('returns null for a JSON object (not an array)', () => {
         expect(json('{"a":1}')).toBeNull();
-    });
-    it('returns null for invalid JSON', () => {
         expect(json('not json')).toBeNull();
         expect(json(undefined)).toBeNull();
     });
 });
 
-describe('barCount', () => {
-    it('uses the source array length when using jsonStringObject data', () => {
-        expect(barCount({}, [{}, {}, {}])).toBe(3);
-    });
-    it('caps the source length at MAX_DYNAMIC_ITEMS', () => {
-        const source = Array.from({ length: 999 }, () => ({}));
-        expect(barCount({}, source)).toBeLessThan(999);
-    });
-    it('takes dataCount as the number of data sets without a source', () => {
-        expect(barCount({ dataCount: 2 }, null)).toBe(2);
-        expect(barCount({}, null)).toBe(1); // nothing configured -> one row to edit
-    });
-});
-
-describe('buildBars', () => {
-    it('reads value/label/color from indexed editor fields when there is no JSON source', () => {
-        const data = { label0: 'Room A', dataColor0: '#ff0000', valueText0: '', valuesFontColor: '#000' };
-        const bars = buildBars(data, null, 1, [], () => 42);
-        expect(bars).toEqual([
-            expect.objectContaining({ label: 'Room A', value: 42, color: '#ff0000' }),
-        ]);
+describe('bar chartSpec', () => {
+    it('reads value, label and explicit colour from the editor rows', () => {
+        const result = spec({ dataCount: 2, oid0: 'a', label0: 'Room A', dataColor0: '#ff0000', oid1: 'b' }, { a: 42, b: 7 });
+        expect(result.labels).toEqual(['Room A', '']);
+        expect(result.datasets[0].values).toEqual([42, 7]);
+        expect(result.datasets[0].colors).toEqual(['#ff0000', undefined]);
     });
 
-    it('prefers JSON source row fields over indexed editor fields', () => {
-        const data = { label0: 'ignored', dataColor0: '#ff0000' };
-        const source = [{ label: 'From JSON', value: 7, dataColor: '#00ff00' }];
-        const bars = buildBars(data, source, 1, [], () => 0);
-        expect(bars[0]).toEqual(expect.objectContaining({ label: 'From JSON', value: 7, color: '#00ff00' }));
+    it('prefers JSON source rows and caps their number', () => {
+        const source = JSON.stringify(Array.from({ length: 999 }, (_v, i) => ({ label: `r${i}`, value: i })));
+        const result = spec({ chartDataMethod: 'jsonStringObject', oid: 'j', label0: 'ignored' }, { j: source });
+        expect(result.labels?.[0]).toBe('r0');
+        expect(result.labels!.length).toBeLessThan(999);
     });
 
-    it('falls back to the color scheme, then globalColor, when no explicit color is set', () => {
-        const withScheme = buildBars({}, null, 1, ['#123456'], () => 0);
-        expect(withScheme[0].color).toBe('#123456');
-        const withGlobal = buildBars({ globalColor: '#abcdef' }, null, 1, [], () => 0);
-        expect(withGlobal[0].color).toBe('#abcdef');
+    it('lays the bars horizontally on request', () => {
+        expect(spec({ chartType: 'horizontal' }).options).toMatchObject({ indexAxis: 'y' });
+        expect(spec({}).options).toMatchObject({ indexAxis: 'x' });
     });
 
-    it('formats valueText with configured min/max decimals when not explicitly provided', () => {
-        const bars = buildBars({ valuesMinDecimals: 2, valuesMaxDecimals: 2 }, null, 1, [], () => 3);
-        // The decimal separator comes from the runtime locale; the test must not pin it.
-        expect(bars[0].valueText.replace(',', '.')).toBe('3.00');
+    it('scales the value axis from the data unless min/max are set', () => {
+        const scales = spec({ dataCount: 2, oid0: 'a', oid1: 'b' }, { a: -5, b: 10 }).scales as Record<string, { min: number; max: number }>;
+        expect(scales.y).toMatchObject({ min: -5, max: 10 });
     });
 });
 
 describe('barAxisRange', () => {
-    it('derives min/max from bar values when axisValueMin/Max are unset', () => {
-        const bars = buildBars({}, [{ value: -5 }, { value: 10 }], 2, [], () => 0);
-        expect(barAxisRange({}, bars)).toEqual({ min: -5, max: 10 });
+    it('derives min/max from the values when axisValueMin/Max are unset', () => {
+        expect(barAxisRange({}, [-5, 10])).toEqual({ min: -5, max: 10 });
     });
     it('never lets the auto max drop below 1', () => {
-        const bars = buildBars({}, [{ value: 0 }], 1, [], () => 0);
-        expect(barAxisRange({}, bars).max).toBe(1);
+        expect(barAxisRange({}, [0]).max).toBe(1);
     });
     it('prefers explicit axisValueMin/Max over the computed range', () => {
-        const bars = buildBars({}, [{ value: 50 }], 1, [], () => 0);
-        expect(barAxisRange({ axisValueMin: -100, axisValueMax: 100 }, bars)).toEqual({ min: -100, max: 100 });
+        expect(barAxisRange({ axisValueMin: -100, axisValueMax: 100 }, [50])).toEqual({ min: -100, max: 100 });
     });
-    it('treats a null axisValueMax as unset (auto-scale), not as 1', () => {
-        const bars = buildBars({}, [{ value: 5 }, { value: 30 }], 2, [], () => 0);
-        expect(barAxisRange({ axisValueMin: null, axisValueMax: null }, bars)).toEqual({ min: 0, max: 30 });
-    });
-});
-
-// The canvas cannot read CSS variables, so the axis colors come from a fixed light/dark palette.
-// Without a surface of its own the dark palette ended up on the light page behind it.
-describe('M3 surface', () => {
-    const fixture = <T>(value: unknown): T => value as T;
-    const render = (rxData: Record<string, unknown>, dark = false): string => {
-        const widget = new MaterialDesignChartBar(fixture<ConstructorParameters<typeof MaterialDesignChartBar>[0]>({ context: {} }));
-        widget.state = fixture<typeof widget.state>({ rxData, values: {} });
-        (widget as unknown as { isDarkTheme: () => boolean }).isDarkTheme = () => dark;
-        return renderToStaticMarkup(widget.renderWidgetBody(fixture<Parameters<MaterialDesignChartBar['renderWidgetBody']>[0]>({})));
-    };
-
-    it('paints the M3 surface when no background is configured', () => {
-        expect(render({ designStyle: 'material3' })).toContain('var(--md-sys-color-surface)');
-        expect(render({ designStyle: 'material3' }, true)).toContain('var(--md-sys-color-surface)');
-    });
-
-    it('leaves a configured background and the legacy style alone', () => {
-        expect(render({ designStyle: 'material3', backgroundColor: '#ff0000' })).not.toContain('var(--md-sys-color-surface)');
-        expect(render({ designStyle: 'legacy' })).not.toContain('var(--md-sys-color-surface)');
+    it('treats a null or empty axisValueMax as unset (auto-scale), not as 1', () => {
+        expect(barAxisRange({ axisValueMin: null, axisValueMax: null }, [5, 30])).toEqual({ min: 0, max: 30 });
+        expect(barAxisRange({ axisValueMin: '', axisValueMax: '' }, [5, 30])).toEqual({ min: 0, max: 30 });
     });
 });
 
-describe('buildBars decimal bounds', () => {
-    // A min without a max is what the editor stores when only one of the two fields is filled in.
-    // Intl throws a RangeError when min > max, and buildBars runs during render, so the throw took
-    // the widget - and the view it sits in - down with it.
-    it('formats a min-decimals bar that has no max', () => {
-        const bars = buildBars({ valuesMinDecimals: 2 }, null, 1, [], () => 21.5);
-        expect(bars[0].valueText).toMatch(/^21[.,]50$/);
+describe('bar labels and tooltip', () => {
+    it.each([
+        [{}, '3'],
+        [{ valuesMinDecimals: 2, valuesMaxDecimals: 2 }, '3.00'],
+        [{ valuesMinDecimals: 2 }, '3.00'],
+    ])('formats value labels with %o as %s', (decimals, expected) => {
+        const labels = config({ dataCount: 1, oid0: 'a', ...decimals }, { a: 3 }).options.plugins.datalabels as Labels;
+        expect(dot(labels.formatter(0, { datasetIndex: 0, dataIndex: 0 }))).toBe(expected);
+    });
+
+    it('lets an explicit value text win in label and tooltip', () => {
+        const result = config({ dataCount: 1, oid0: 'a', valueText0: 'high', labelValueAppend0: '!' }, { a: 3 });
+        expect((result.options.plugins.datalabels as Labels).formatter(0, { datasetIndex: 0, dataIndex: 0 })).toBe('high!');
+        expect((result.options.plugins.tooltip.callbacks as Callbacks).label({ datasetIndex: 0, dataIndex: 0 })).toBe('high!');
+    });
+
+    it('titles the tooltip with the bar label and prints the number with at most two decimals', () => {
+        const callbacks = config({ dataCount: 1, oid0: 'a', label0: 'Room A', tooltipBodyAppend: ' W' }, { a: 3.14159 }).options.plugins.tooltip.callbacks as Callbacks;
+        expect(callbacks.title([{ datasetIndex: 0, dataIndex: 0 }])).toBe('Room A');
+        expect(dot(String(callbacks.label({ datasetIndex: 0, dataIndex: 0 })))).toBe('3.14 W');
+    });
+
+    it('fills the bars and the legend from the same colours in M3', () => {
+        const result = config({ dataCount: 1, oid0: 'a', showLegend: true }, { a: 3 }, true);
+        expect(result.data.datasets[0].backgroundColor).toEqual(['#6750a4']);
+        expect(result.legend[0].color).toBe('#6750a4');
     });
 });
