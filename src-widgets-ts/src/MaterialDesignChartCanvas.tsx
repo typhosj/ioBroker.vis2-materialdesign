@@ -9,7 +9,8 @@ import {
 import ChartDataLabels from "chartjs-plugin-datalabels";
 
 import { boolValue, designStyle, m3OnColor, numberValue, optionalNumber, textValue, visLocale } from "./widgetUtils";
-import { CHART_TEXT_COLOR } from "./chartAxis";
+import { CHART_TEXT_COLOR, m3ChartColors } from "./chartAxis";
+import { scheme } from "./MaterialDesignColorScheme";
 
 // The shared coercions all take a fallback. `optionalNumber` (in widgetUtils, next to them) and this
 // one are the other half: a field the user left empty has to stay `undefined` so the key is omitted
@@ -161,6 +162,133 @@ export function layoutConfig(data: Record<string, unknown>): object | undefined 
     if (value !== undefined) padding[side] = value;
   }
   return Object.keys(padding).length ? { padding } : undefined;
+}
+
+export type ChartPoint = { datasetIndex: number; dataIndex: number; value: number | null; x?: number; label: string; datasetLabel: string; color: string };
+export type ValueLabelSetup = { fields?: Record<string, unknown>; align: string; anchor: string; show?: string };
+export type ValueLabelText = { text: string; color?: string };
+export type ChartDataset = {
+  label: string;
+  values: Array<number | null>;
+  x?: number[];
+  colors: Array<string | undefined>;
+  valueLabels?: ValueLabelSetup;
+  extra?: (resolved: string[]) => Record<string, unknown>;
+};
+export type ChartSpec = {
+  type: string;
+  colorBy: "item" | "dataset";
+  labels?: string[];
+  datasets: ChartDataset[];
+  scales?: Record<string, unknown>;
+  options?: Record<string, unknown>;
+  valueLabels?: ValueLabelSetup;
+  valueLabel?: (point: ChartPoint, number: string, fallback: ValueLabelText) => ValueLabelText;
+  tooltip?: { title?: (point: ChartPoint) => string | string[]; label?: (point: ChartPoint, number: string) => string | string[] };
+  legendShown?: boolean;
+  error?: string;
+};
+export type ChartConfig = {
+  type: string;
+  data: { labels?: string[]; datasets: Record<string, unknown>[] };
+  options: Record<string, any>;
+  legend: Array<{ label: string; color: string }>;
+};
+
+const LEGACY_CHART_COLOR = "#44739e";
+
+// Intl throws a RangeError when min > max, and the editor stores the two decimals fields one at a
+// time — the throw took the whole vis view down.
+export function chartNumber(value: unknown, min: unknown, max: unknown, kind: "value" | "tooltip"): string {
+  const raw = optionalNumber(value);
+  if (raw === undefined) return "";
+  const bound = (v: number): number => Math.min(20, Math.max(0, Math.floor(v)));
+  const lower = bound(optionalNumber(min) ?? 0);
+  const upper = Math.max(lower, bound(optionalNumber(max) ?? (kind === "value" ? lower : Math.max(lower, 2))));
+  return raw.toLocaleString(visLocale(), { minimumFractionDigits: lower, maximumFractionDigits: upper });
+}
+
+function resolveColors(spec: ChartSpec, data: Record<string, unknown>, context: { isM3: boolean; isDark: boolean }): string[][] {
+  const count = spec.colorBy === "item" ? spec.datasets[0]?.values.length ?? 0 : spec.datasets.length;
+  const palette = textValue(data.colorScheme) ? scheme(textValue(data.colorScheme), count) : [];
+  const fallback = textValue(data.globalColor) || (context.isM3 ? m3ChartColors(context.isDark).primary : LEGACY_CHART_COLOR);
+  const pick = (explicit: string | undefined, index: number): string => explicit || palette[index] || fallback;
+  return spec.datasets.map((dataset, d) => (spec.colorBy === "item" ? dataset.values.map((_v, i) => pick(dataset.colors[i], i)) : [pick(dataset.colors[0], d)]));
+}
+
+export function chartConfig(spec: ChartSpec, data: Record<string, unknown>, context: { isM3: boolean; isDark: boolean }): ChartConfig {
+  const resolved = resolveColors(spec, data, context);
+  const point = (datasetIndex: number, dataIndex: number): ChartPoint => {
+    const dataset = spec.datasets[datasetIndex];
+    const colors = resolved[datasetIndex] || [];
+    return {
+      datasetIndex,
+      dataIndex,
+      value: dataset?.values[dataIndex] ?? null,
+      x: dataset?.x?.[dataIndex],
+      label: spec.labels?.[dataIndex] ?? "",
+      datasetLabel: dataset?.label ?? "",
+      color: (spec.colorBy === "item" ? colors[dataIndex] : colors[0]) ?? "",
+    };
+  };
+  const valueLabels = (setup: ValueLabelSetup): object => {
+    const fields = setup.fields ?? data;
+    return datalabelsConfig(
+      setup.show ? { ...fields, showValues: textValue(fields.showValues, setup.show) } : fields,
+      context => {
+        const at = point(numberValue(context.datasetIndex), numberValue(context.dataIndex));
+        const number = chartNumber(at.value, fields.valuesMinDecimals, fields.valuesMaxDecimals, "value");
+        const fallback = { text: number ? `${number}${textValue(fields.valuesAppendText)}` : "", color: textValue(fields.valuesFontColor) || undefined };
+        return spec.valueLabel ? spec.valueLabel(at, number, fallback) : fallback;
+      },
+      { align: setup.align, anchor: setup.anchor },
+    );
+  };
+  type TooltipItem = { datasetIndex?: number; dataIndex?: number };
+  const callbacks: Record<string, unknown> = {
+    label: (item: TooltipItem) => {
+      const at = point(numberValue(item.datasetIndex), numberValue(item.dataIndex));
+      const number = chartNumber(at.value, data.tooltipValueMinDecimals, data.tooltipValueMaxDecimals, "tooltip");
+      return spec.tooltip?.label ? spec.tooltip.label(at, number) : `${at.datasetLabel}: ${number}${textValue(data.tooltipBodyAppend)}`;
+    },
+  };
+  const title = spec.tooltip?.title;
+  if (title) callbacks.title = (items: TooltipItem[]) => (items[0] ? title(point(numberValue(items[0].datasetIndex), numberValue(items[0].dataIndex))) : "");
+  return {
+    type: spec.type,
+    data: {
+      ...(spec.labels ? { labels: spec.labels } : {}),
+      datasets: spec.datasets.map((dataset, d) => {
+        const color = spec.colorBy === "item" ? resolved[d] : resolved[d][0];
+        return {
+          label: dataset.label,
+          data: dataset.x ? dataset.values.map((y, i) => ({ x: dataset.x?.[i], y })) : dataset.values,
+          backgroundColor: color,
+          ...(spec.colorBy === "dataset" ? { borderColor: color } : {}),
+          ...(dataset.valueLabels ? { datalabels: valueLabels(dataset.valueLabels) } : {}),
+          ...dataset.extra?.(resolved[d]),
+        };
+      }),
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      layout: layoutConfig(data),
+      hover: boolValue(data.disableHoverEffects) ? { mode: null } : undefined,
+      animation: { duration: numberValue(data.animationDuration, 1000) },
+      ...(spec.scales ? { scales: spec.scales } : {}),
+      ...spec.options,
+      plugins: {
+        legend: { display: false },
+        mdwChartArea: { color: textValue(data.chartAreaBackgroundColor) },
+        tooltip: tooltipConfig(data, callbacks),
+        datalabels: spec.valueLabels ? valueLabels(spec.valueLabels) : { display: false },
+      },
+    },
+    legend: spec.colorBy === "item"
+      ? (spec.labels ?? []).map((label, i) => ({ label, color: resolved[0]?.[i] ?? "" }))
+      : spec.datasets.map((dataset, d) => ({ label: dataset.label, color: resolved[d][0] })),
+  };
 }
 
 // chart.js' own legend is off in all our charts (it cannot be styled per widget field), so the
