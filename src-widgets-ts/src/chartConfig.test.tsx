@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import { chartConfig, chartNumber, type ChartSpec } from './MaterialDesignChartCanvas';
+import { renderToStaticMarkup } from 'react-dom/server';
+
+import { chartConfig, chartNumber, ChartFrame, type ChartSpec } from './MaterialDesignChartCanvas';
 
 // The decimal separator comes from the runtime locale; the tests must not pin it.
 const dot = (text: string): string => text.replace(',', '.');
@@ -180,5 +182,45 @@ describe('chartConfig options', () => {
         const spec = seriesSpec([undefined]);
         spec.datasets[0].x = [100, 200];
         expect(chartConfig(spec, {}, { isM3: false, isDark: false }).data.datasets[0].data).toEqual([{ x: 100, y: 1 }, { x: 200, y: 2 }]);
+    });
+});
+
+describe('ChartFrame', () => {
+    const config = chartConfig(itemSpec(['#ff0000']), {}, { isM3: false, isDark: false });
+    const html = (data: Record<string, unknown>, extra: { error?: string; legendShown?: boolean } = {}): string =>
+        renderToStaticMarkup(<ChartFrame data={data} isDark={false} config={config} legendShown={extra.legendShown ?? true} error={extra.error} />);
+
+    it('draws the card with title around legend and canvas', () => {
+        const markup = html({ cardUse: true, title: '<b>Energy</b>', showLegend: true });
+        expect(markup).toContain('mdc-card');
+        expect(markup).toContain('<b>Energy</b>');
+        expect(markup.indexOf('mdc-card')).toBeLessThan(markup.indexOf('item0'));
+        expect(markup).toContain('<canvas');
+    });
+
+    it('puts the legend after the chart for an unset or right position, before it for top/left', () => {
+        expect(html({ showLegend: true }).indexOf('item0')).toBeGreaterThan(html({ showLegend: true }).indexOf('<canvas'));
+        expect(html({ showLegend: true, legendPosition: 'left' }).indexOf('item0')).toBeLessThan(html({ showLegend: true, legendPosition: 'left' }).indexOf('<canvas'));
+        expect(html({ showLegend: true, legendPosition: 'bottom' })).toContain('flex-direction:column');
+        expect(html({ showLegend: true, cardUse: true, legendPosition: 'right' })).toContain('flex-direction:row');
+    });
+
+    it('hides the legend when the widget default says so and nothing is saved', () => {
+        expect(html({}, { legendShown: false })).not.toContain('item0');
+        expect(html({}, { legendShown: true })).toContain('item0');
+    });
+
+    it('shows the error instead of the chart', () => {
+        const markup = html({ cardUse: true }, { error: 'Error in JSON string' });
+        expect(markup).toContain('Error in JSON string');
+        expect(markup).not.toContain('<canvas');
+    });
+
+    // The canvas cannot read CSS variables; without a surface of its own the dark M3 palette ended up
+    // on the light page behind it.
+    it('paints the M3 surface unless a background is configured', () => {
+        expect(html({ designStyle: 'material3' })).toContain('var(--md-sys-color-surface)');
+        expect(html({ designStyle: 'material3', backgroundColor: '#ff0000' })).not.toContain('var(--md-sys-color-surface)');
+        expect(html({ designStyle: 'legacy' })).not.toContain('var(--md-sys-color-surface)');
     });
 });

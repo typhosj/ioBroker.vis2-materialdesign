@@ -1,9 +1,7 @@
-import React from "react";
-import { MAX_DYNAMIC_ITEMS, squarePreview, indexedFields, itemCount, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, legacySurface, stateValue, sanitizeHtml, visLocale, boolValue as b, numberValue as n, textValue as s } from './widgetUtils';
+import { MAX_DYNAMIC_ITEMS, squarePreview, indexedFields, itemCount, createInfo, numberValue as n, optionalNumber, textValue as s } from './widgetUtils';
 import type { RxWidgetInfo } from "@iobroker/types-vis-2";
-import { colorSchemes, scheme } from "./MaterialDesignColorScheme";
-import { ChartLegend, MaterialDesignChartCanvas, datalabelsConfig, layoutConfig, tooltipConfig } from "./MaterialDesignChartCanvas";
-import { m3ChartColors } from "./chartAxis";
+import { colorSchemes } from "./MaterialDesignColorScheme";
+import { ChartWidget, type ChartSpec } from "./MaterialDesignChartCanvas";
 
 type Data = Record<string, unknown> & {
   oid?: string;
@@ -19,40 +17,19 @@ export function readJson(value: unknown): Record<string, unknown>[] | null {
   }
 }
 
-export interface PieValue {
-  label: string;
-  value: number;
-  color: string;
-  textColor: string;
-  appendix: string;
-  tooltipTitle: string;
-  tooltipText: string;
-}
+type PieItem = { label: string; value: number; color: string; textColor: string; appendix: string; tooltipTitle: string; tooltipText: string };
 
-export function pieCount(data: Data, source: Record<string, unknown>[] | null): number {
-  return source ? Math.min(source.length, MAX_DYNAMIC_ITEMS) : itemCount(data.dataCount);
-}
-
-export function buildPieValues(data: Data, source: Record<string, unknown>[] | null, count: number, colors: string[], valueForIndex: (index: number) => number): PieValue[] {
+function pieItems(data: Data, source: Record<string, unknown>[] | null, valueForIndex: (index: number) => number): PieItem[] {
+  const count = source ? Math.min(source.length, MAX_DYNAMIC_ITEMS) : itemCount(data.dataCount);
   return Array.from({ length: count }, (_, i) => {
     const item = source?.[i];
-    const value = n(item?.value, valueForIndex(i));
     return {
       label: s(item?.label, s(data[`label${i}`])),
-      value: Math.max(0, value),
-      color: s(
-        item?.dataColor,
-        s(data[`dataColor${i}`], colors[i] || s(data.globalColor, "#44739e")),
-      ),
+      value: Math.max(0, n(item?.value, valueForIndex(i))),
+      color: s(item?.dataColor, s(data[`dataColor${i}`])),
       // Empty means "not configured": the label color is then derived from the slice it is drawn on.
-      textColor: s(
-        item?.valueColor,
-        s(data[`valueTextColor${i}`], s(data.valuesFontColor)),
-      ),
-      appendix: s(
-        item?.valueAppendix,
-        s(data[`labelValueAppend${i}`], s(data.valuesAppendText)),
-      ),
+      textColor: s(item?.valueColor, s(data[`valueTextColor${i}`], s(data.valuesFontColor))),
+      appendix: s(item?.valueAppendix, s(data[`labelValueAppend${i}`], s(data.valuesAppendText))),
       tooltipTitle: s(item?.tooltipTitle, s(data[`tooltipTitle${i}`])),
       tooltipText: s(item?.tooltipText, s(data[`tooltipText${i}`])),
     };
@@ -304,7 +281,7 @@ const attrs: RxWidgetInfo["visAttrs"] = [
     ],
   },
 ];
-export default class MaterialDesignChartPie extends VisWidget {
+export default class MaterialDesignChartPie extends ChartWidget {
   static getWidgetInfo(): RxWidgetInfo {
     return {
       ...createInfo("tplVis2-materialdesign-Chart-Pie", "Pie Chart", attrs, ["card", "pieValuesLayout", "legendLayout", "tooltipLayout"]),
@@ -315,83 +292,43 @@ export default class MaterialDesignChartPie extends VisWidget {
   getWidgetInfo(): RxWidgetInfo {
     return MaterialDesignChartPie.getWidgetInfo();
   }
-  renderWidgetBody(props: RenderProps): React.JSX.Element {
-    super.renderWidgetBody(props);
-    const data = this.themedData() as unknown as Data;
-    const isM3 = designStyle(data) === "material3";
-    const m3 = m3ChartColors(this.isDarkTheme());
-    const json =
-      s(data.chartDataMethod) === "jsonStringObject"
-        ? readJson(stateValue(this.state, s(data.oid)))
-        : null;
-    const count = pieCount(data, json);
-    const colors = s(data.colorScheme)
-      ? scheme(s(data.colorScheme), count)
-      : [];
-    const values = buildPieValues(data, json, count, colors, i => n(stateValue(this.state, s(data[`oid${i}`]))));
-    const legend = <ChartLegend data={data} entries={values.map(item => ({ label: item.label, color: item.color }))} defaultShown={false} />;
-    const chartjs = <MaterialDesignChartCanvas type={s(data.chartType, "pie")} data={{ labels: values.map(item => item.label), datasets: [{ data: values.map(item => item.value), backgroundColor: values.map(item => isM3 && item.color === "#44739e" ? m3.primary : item.color), hoverBackgroundColor: s(data.hoverColor) || undefined, hoverBorderColor: s(data.hoverBorderColor) || undefined, hoverBorderWidth: data.hoverBorderWidth === "" || data.hoverBorderWidth === undefined || data.hoverBorderWidth === null ? undefined : n(data.hoverBorderWidth), borderColor: s(data.borderColor, "#fff"), borderWidth: n(data.borderWidth, 1) }] }} options={{ responsive: true, maintainAspectRatio: false, layout: layoutConfig(data), hover: b(data.disableHoverEffects) ? { mode: null } : undefined, animation: { duration: n(data.animationDuration, 1000) }, cutout: s(data.chartType) === "doughnut" ? `${n(data.doughnutCutOut, 50)}%` : 0, plugins: { datalabels: datalabelsConfig(data, context => { const item = values[n(context.dataIndex)]; return { color: item?.textColor, text: `${n(item?.value).toLocaleString(visLocale(), { minimumFractionDigits: Math.max(0, n(data.valuesMinDecimals)), maximumFractionDigits: Math.max(0, n(data.valuesMaxDecimals)) })}${s(item?.appendix)}` }; // `align: "end"` pushes the label outward from the middle of the arc band. On a pie that lands
-    // inside the slice, but on a doughnut the band is narrow and its middle already sits near the
-    // outer edge — the labels ended up outside the colored ring, the wider the cut-out the further
-    // out. Doughnuts centre the label in the band instead; `valuesPositionAlign` still overrides.
-    }, { align: s(data.chartType) === "doughnut" ? "center" : "end", anchor: "center" }), legend: { display: false }, mdwChartArea: { color: s(data.chartAreaBackgroundColor) }, tooltip: tooltipConfig(data, {
-      title: (items: { dataIndex?: number }[]) => { const item = values[n(items[0]?.dataIndex)]; return item?.tooltipTitle ? item.tooltipTitle.split("\\n") : ""; },
-      label: (item: { dataIndex?: number }) => { const v = values[n(item.dataIndex)]; if (v?.tooltipText) return v.tooltipText.split("\\n"); const num = n(v?.value).toLocaleString(visLocale(), { minimumFractionDigits: Math.max(0, n(data.tooltipValueMinDecimals)), maximumFractionDigits: Math.max(Math.max(0, n(data.tooltipValueMinDecimals)), n(data.tooltipValueMaxDecimals)) }); return `${s(v?.label)}: ${num}${s(v?.appendix)}${s(data.tooltipBodyAppend)}`; },
-    }) } }} />;
-    const chartBox = (
-      <div style={{ flex: 1, minWidth: 0, minHeight: 0, position: "relative" }}>{chartjs}</div>
-    );
-    const legendFirst = ["top", "left"].includes(s(data.legendPosition, "top"));
-    const body = legendFirst ? (
-      <>{legend}{chartBox}</>
-    ) : (
-      <>{chartBox}{legend}</>
-    );
-    return (
-      <div
-        className={`materialdesign-widget materialdesign-chart${isM3 ? ` ${designStyleClasses(data, this.isDarkTheme())}` : ""}`}
-        style={{
-          background: s(data.backgroundColor) || (isM3 ? "var(--md-sys-color-surface)" : undefined),
-          display: "flex",
-          flexDirection: ["top", "bottom"].includes(s(data.legendPosition))
-            ? "column"
-            : "row",
-          height: "100%",
-          width: "100%",
-        }}
-      >
-        {b(data.cardUse) ? (
-          <div
-            className="materialdesign-html-card-container mdc-card"
-            style={{
-              background: s(data.colorBackground) || (isM3 ? "var(--md-sys-color-surface-container-low)" : legacySurface(this.isDarkTheme())),
-              boxSizing: "border-box",
-              display: "flex",
-              flexDirection: "column",
-              // Inset: the card filled the widget box, and VIS2 clips there — the whole card shadow
-              // and its rounded edge sat outside the visible area.
-              height: "calc(100% - 6px)",
-              margin: 3,
-              padding: n(data.borderDistance, 8),
-              width: "calc(100% - 6px)",
-            }}
-          >
-            <div
-              className="card-title-section"
-              style={{
-                background: s(data.colorTitleSectionBackground),
-                color: s(data.colorTitle) || (isM3 ? "var(--md-sys-color-on-surface)" : undefined),
-                fontFamily: s(data.titleFontFamily), fontSize: n(data.titleLayout) ? `${n(data.titleLayout)}px` : undefined,
-              }}
-              dangerouslySetInnerHTML={{ __html: sanitizeHtml(s(data.title)) }}
-            />
-            {/* Own box so the card text section can carry its background color. */}
-            <div style={{ background: s(data.colorTextSectionBackground), display: "flex", flex: "1 1 0", flexDirection: "column", minHeight: 0 }}>{body}</div>
-          </div>
-        ) : (
-          body
-        )}
-      </div>
-    );
+  chartSpec(data: Data, value: (oid: unknown) => ioBroker.StateValue | undefined): ChartSpec {
+    const source = s(data.chartDataMethod) === "jsonStringObject" ? readJson(value(data.oid)) : null;
+    const items = pieItems(data, source, i => n(value(data[`oid${i}`])));
+    const doughnut = s(data.chartType) === "doughnut";
+    return {
+      type: s(data.chartType, "pie"),
+      colorBy: "item",
+      labels: items.map(item => item.label),
+      datasets: [{
+        label: "",
+        values: items.map(item => item.value),
+        colors: items.map(item => item.color || undefined),
+        extra: () => ({
+          hoverBackgroundColor: s(data.hoverColor) || undefined,
+          hoverBorderColor: s(data.hoverBorderColor) || undefined,
+          hoverBorderWidth: optionalNumber(data.hoverBorderWidth),
+          borderColor: s(data.borderColor, "#fff"),
+          borderWidth: n(data.borderWidth, 1),
+        }),
+      }],
+      options: { cutout: doughnut ? `${n(data.doughnutCutOut, 50)}%` : 0 },
+      // `align: "end"` pushes the label outward from the middle of the arc band: inside the slice on a
+      // pie, but outside the narrow ring on a doughnut — doughnuts centre it in the band instead.
+      valueLabels: { align: doughnut ? "center" : "end", anchor: "center" },
+      valueLabel: (point, number) => {
+        const item = items[point.dataIndex];
+        return { color: item?.textColor || undefined, text: `${number}${s(item?.appendix)}` };
+      },
+      tooltip: {
+        title: point => (items[point.dataIndex]?.tooltipTitle ? items[point.dataIndex].tooltipTitle.split("\\n") : ""),
+        label: (point, number) => {
+          const item = items[point.dataIndex];
+          return item?.tooltipText ? item.tooltipText.split("\\n") : `${s(item?.label)}: ${number}${s(item?.appendix)}${s(data.tooltipBodyAppend)}`;
+        },
+      },
+      legendShown: false,
+    };
   }
+  
 }

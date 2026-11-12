@@ -10,27 +10,31 @@ import { cssVariable, themeEntries, themeKeyDefaults, themeStateId } from './the
 
 function fixture<T>(value: unknown): T { return value as T; }
 
-type ChartProps = { data: unknown; options: Record<string, any>; type: string };
+type ChartProps = { data: any; options: Record<string, any>; type: string };
 
-// Both widgets hand chart.js a plain options object and jsdom never draws the canvas, so the wiring
-// is readable straight off the returned element tree — no canvas mock needed. The option names are
-// the chart.js v4 ones: plugins.tooltip rather than tooltips, scales.x rather than scales.xAxes[0],
-// and the fonts folded into titleFont/bodyFont/ticks.font objects.
-function findCanvas(node: React.ReactNode): ChartProps | undefined {
-    if (!React.isValidElement(node)) return undefined;
-    if (node.type === MaterialDesignChartCanvas) return node.props as ChartProps;
-    for (const child of React.Children.toArray((node.props as { children?: React.ReactNode }).children)) {
-        const found = findCanvas(child);
-        if (found) return found;
-    }
-    return undefined;
+// Chart widgets render one <ChartFrame config={…}/>; its config is exactly what reaches chart.js.
+function configOf(widget: { state: any; renderWidgetBody: (props: any) => React.JSX.Element }, rxData: Record<string, unknown>, values: Record<string, unknown> = {}): ChartProps {
+    widget.state = fixture({ rxData, values });
+    const element = widget.renderWidgetBody(fixture({}));
+    const config = (element.props as { config?: ChartProps }).config;
+    if (config) return config;
+    // Widgets not yet on ChartWidget still render the canvas somewhere in their tree.
+    const walk = (node: React.ReactNode): ChartProps | undefined => {
+        if (!React.isValidElement(node)) return undefined;
+        if (node.type === MaterialDesignChartCanvas) return node.props as ChartProps;
+        for (const child of React.Children.toArray((node.props as { children?: React.ReactNode }).children)) {
+            const found = walk(child);
+            if (found) return found;
+        }
+        return undefined;
+    };
+    const found = walk(element);
+    if (!found) throw new Error('no chart config rendered');
+    return found;
 }
 
-function optionsOf<T extends { state: any; renderWidgetBody: (props: any) => React.JSX.Element }>(widget: T, rxData: Record<string, unknown>, values: Record<string, unknown> = {}): Record<string, any> {
-    widget.state = fixture<T['state']>({ rxData, values });
-    const props = findCanvas(widget.renderWidgetBody(fixture<Parameters<T['renderWidgetBody']>[0]>({})));
-    if (!props) throw new Error('no chart canvas rendered');
-    return props.options;
+function optionsOf(widget: { state: any; renderWidgetBody: (props: any) => React.JSX.Element }, rxData: Record<string, unknown>, values: Record<string, unknown> = {}): Record<string, any> {
+    return configOf(widget, rxData, values).options;
 }
 
 const JSON_SOURCE = JSON.stringify({ axisLabels: ['a', 'b'], graphs: [{ legendText: 'series', data: [1, 2] }] });
@@ -106,23 +110,6 @@ describe('line history x-axis label font', () => {
     });
 });
 
-// Intl throws a RangeError when minimumFractionDigits is above maximumFractionDigits, and the two
-// are free-standing editor number fields: filling in the min and leaving the max empty is enough.
-// The pie builds its label text inside the tooltip callback, so the throw came out of chart.js.
-describe('pie tooltip decimal bounds', () => {
-    const label = (rxData: Record<string, unknown>): string =>
-        optionsOf(new MaterialDesignChartPie(fixture<ConstructorParameters<typeof MaterialDesignChartPie>[0]>({ context: {} })), { dataCount: 1, oid0: 'p.0.v', ...rxData }, { 'p.0.v.val': 21.5 })
-            .plugins.tooltip.callbacks.label({ dataIndex: 0 });
-
-    it('formats a min without a max instead of throwing', () => {
-        expect(label({ tooltipValueMinDecimals: 2 })).toMatch(/21[.,]50/);
-    });
-
-    it('still honours a max above the min', () => {
-        expect(label({ tooltipValueMinDecimals: 1, tooltipValueMaxDecimals: 3 })).toMatch(/21[.,]5/);
-    });
-});
-
 // "Use theme" writes `var(--materialdesign-widget-theme-…)` into every color, font and font-size
 // field, and the project migration does the same. chart.js paints on a canvas, which reads no CSS
 // variables: a var() fill turned into black and a var() font family into 10px sans-serif.
@@ -136,12 +123,7 @@ describe('themed chart fields reach chart.js as real values', () => {
         });
         return { rxData, values };
     };
-    const rendered = (widget: { state: any; renderWidgetBody: (props: any) => React.JSX.Element }, rxData: Record<string, unknown>, values: Record<string, unknown>): ChartProps => {
-        widget.state = fixture<typeof widget.state>({ rxData, values });
-        const props = findCanvas(widget.renderWidgetBody(fixture({})));
-        if (!props) throw new Error('no chart canvas rendered');
-        return props;
-    };
+    const rendered = (widget: { state: any; renderWidgetBody: (props: any) => React.JSX.Element }, rxData: Record<string, unknown>, values: Record<string, unknown>): ChartProps => configOf(widget, rxData, values);
     const cases: Array<[string, () => { state: any; renderWidgetBody: (props: any) => React.JSX.Element }, Record<string, unknown>, Record<string, unknown>]> = [
         ['Bar Chart', () => new MaterialDesignChartBar(fixture({ context: {} })), { dataCount: 1, oid0: 'b.0.v' }, { 'b.0.v.val': 5 }],
         ['Pie Chart', () => new MaterialDesignChartPie(fixture({ context: {} })), { dataCount: 1, oid0: 'p.0.v' }, { 'p.0.v.val': 5 }],

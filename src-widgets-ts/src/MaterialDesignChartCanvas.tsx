@@ -8,7 +8,7 @@ import {
 } from "chart.js";
 import ChartDataLabels from "chartjs-plugin-datalabels";
 
-import { boolValue, designStyle, m3OnColor, numberValue, optionalNumber, textValue, visLocale } from "./widgetUtils";
+import { boolValue, designStyle, designStyleClasses, legacySurface, m3OnColor, numberValue, optionalNumber, sanitizeHtml, stateValue, textValue, visLocale, VisWidget, type RenderProps } from "./widgetUtils";
 import { CHART_TEXT_COLOR, m3ChartColors } from "./chartAxis";
 import { scheme } from "./MaterialDesignColorScheme";
 
@@ -397,4 +397,83 @@ export function MaterialDesignChartCanvas({ type, data, options }: Props): React
     }
   }, [data, options]);
   return <canvas className="materialdesign-chart-container" style={{ height: "100%", width: "100%" }} ref={canvas} />;
+}
+
+export function ChartFrame({ data, isDark, config, legendShown, error }: {
+  data: Record<string, unknown>;
+  isDark: boolean;
+  config: ChartConfig;
+  legendShown: boolean;
+  error?: string;
+}): React.JSX.Element {
+  const isM3 = designStyle(data) === "material3";
+  const position = textValue(data.legendPosition, "right");
+  const legendFirst = position === "top" || position === "left";
+  const legend = <ChartLegend data={data} entries={config.legend} defaultShown={legendShown} />;
+  const body = (
+    <div style={{ display: "flex", flexDirection: position === "top" || position === "bottom" ? "column" : "row", height: "100%", minHeight: 0, width: "100%" }}>
+      {legendFirst ? legend : null}
+      <div style={{ flex: 1, minHeight: 0, minWidth: 0, position: "relative" }}>
+        <MaterialDesignChartCanvas type={config.type} data={config.data} options={config.options} />
+      </div>
+      {legendFirst ? null : legend}
+    </div>
+  );
+  const content = error ? (
+    <span style={{ color: isM3 ? "var(--md-sys-color-error)" : "red" }}>{error}</span>
+  ) : boolValue(data.cardUse) ? (
+    <div
+      className="materialdesign-html-card-container mdc-card"
+      style={{
+        background: textValue(data.colorBackground) || (isM3 ? "var(--md-sys-color-surface-container-low)" : legacySurface(isDark)),
+        boxSizing: "border-box",
+        display: "flex",
+        flexDirection: "column",
+        // Inset: the card filled the widget box, and VIS2 clips there — the whole card shadow and
+        // its rounded edge sat outside the visible area.
+        height: "calc(100% - 6px)",
+        margin: 3,
+        padding: numberValue(data.borderDistance, 8),
+        width: "calc(100% - 6px)",
+      }}
+    >
+      <div
+        className="card-title-section"
+        style={{
+          background: textValue(data.colorTitleSectionBackground),
+          color: textValue(data.colorTitle) || (isM3 ? "var(--md-sys-color-on-surface)" : undefined),
+          fontFamily: textValue(data.titleFontFamily),
+          fontSize: numberValue(data.titleLayout) ? `${numberValue(data.titleLayout)}px` : undefined,
+        }}
+        dangerouslySetInnerHTML={{ __html: sanitizeHtml(textValue(data.title)) }}
+      />
+      {/* The canvas is height:100%; without a flex row of its own it keeps the full card height and
+          the title pushes its bottom axis out of the widget. */}
+      <div style={{ background: textValue(data.colorTextSectionBackground), flex: "1 1 0", minHeight: 0 }}>{body}</div>
+    </div>
+  ) : (
+    body
+  );
+  return (
+    <div
+      className={`materialdesign-widget materialdesign-chart${isM3 ? ` ${designStyleClasses(data, isDark)}` : ""}`}
+      style={{ background: textValue(data.backgroundColor) || (isM3 ? "var(--md-sys-color-surface)" : undefined), height: "100%", width: "100%" }}
+    >
+      {content}
+    </div>
+  );
+}
+
+export abstract class ChartWidget extends VisWidget {
+  abstract chartSpec(data: Record<string, unknown>, value: (oid: unknown) => ioBroker.StateValue | undefined): ChartSpec;
+
+  renderWidgetBody(props: RenderProps): React.JSX.Element {
+    super.renderWidgetBody(props);
+    // The canvas reads no CSS variables, so the theme tokens have to arrive resolved.
+    const data = this.themedData();
+    const isDark = this.isDarkTheme();
+    const spec = this.chartSpec(data, oid => stateValue(this.state, textValue(oid)));
+    const config = chartConfig(spec, data, { isM3: designStyle(data) === "material3", isDark });
+    return <ChartFrame data={data} isDark={isDark} config={config} legendShown={spec.legendShown ?? true} error={spec.error} />;
+  }
 }

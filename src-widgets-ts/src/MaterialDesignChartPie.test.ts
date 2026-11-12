@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { buildPieValues, pieCount, readJson } from './MaterialDesignChartPie';
-import { datalabelsConfig, labelColorFor } from './MaterialDesignChartCanvas';
+import MaterialDesignChartPie, { readJson } from './MaterialDesignChartPie';
+import { chartConfig, datalabelsConfig, labelColorFor } from './MaterialDesignChartCanvas';
+
+const fixture = <T>(value: unknown): T => value as T;
+const pie = (): MaterialDesignChartPie => new MaterialDesignChartPie(fixture<ConstructorParameters<typeof MaterialDesignChartPie>[0]>({ context: {} }));
+const spec = (data: Record<string, unknown>, values: Record<string, unknown> = {}) => pie().chartSpec(data, oid => values[String(oid)] as ioBroker.StateValue);
+const config = (data: Record<string, unknown>, values: Record<string, unknown> = {}) => chartConfig(spec(data, values), data, { isM3: false, isDark: false });
 
 describe('readJson', () => {
     it('parses a JSON array', () => {
@@ -15,40 +20,64 @@ describe('readJson', () => {
     });
 });
 
-describe('pieCount', () => {
-    it('uses the source array length when using jsonStringObject data', () => {
-        expect(pieCount({}, [{}, {}])).toBe(2);
+describe('pie chartSpec', () => {
+    it('reads value, label and explicit colour from the editor rows', () => {
+        const result = spec({ dataCount: 2, oid0: 'a', label0: 'Living Room', dataColor0: '#ff0000', oid1: 'b', label1: 'Kitchen' }, { a: 5, b: 3 });
+        expect(result.labels).toEqual(['Living Room', 'Kitchen']);
+        expect(result.datasets[0].values).toEqual([5, 3]);
+        expect(result.datasets[0].colors).toEqual(['#ff0000', undefined]);
+        expect(result.colorBy).toBe('item');
     });
-    it('takes dataCount as the number of data sets without a source', () => {
-        expect(pieCount({ dataCount: 3 }, null)).toBe(3);
-        expect(pieCount({}, null)).toBe(1);
+
+    it('prefers the JSON source and caps negative slices at zero', () => {
+        const source = JSON.stringify([{ label: 'From JSON', value: -10, dataColor: '#00ff00' }]);
+        const result = spec({ chartDataMethod: 'jsonStringObject', oid: 'j', label0: 'ignored' }, { j: source });
+        expect(result.labels).toEqual(['From JSON']);
+        expect(result.datasets[0].values).toEqual([0]);
+        expect(result.datasets[0].colors).toEqual(['#00ff00']);
+    });
+
+    it('takes one row when nothing is configured', () => {
+        expect(spec({}).labels).toHaveLength(1);
+    });
+
+    it('centres doughnut labels in the ring and cuts the hole', () => {
+        const doughnut = spec({ chartType: 'doughnut', doughnutCutOut: 60 });
+        expect(doughnut.type).toBe('doughnut');
+        expect(doughnut.options).toEqual({ cutout: '60%' });
+        expect(doughnut.valueLabels).toMatchObject({ align: 'center', anchor: 'center' });
+        expect(spec({}).valueLabels).toMatchObject({ align: 'end', anchor: 'center' });
+    });
+
+    it('keeps its legend off unless the user turned it on', () => {
+        expect(spec({}).legendShown).toBe(false);
     });
 });
 
-describe('buildPieValues', () => {
-    it('reads value/label/color from indexed editor fields when there is no JSON source', () => {
-        const data = { label0: 'Living Room', dataColor0: '#ff0000' };
-        const values = buildPieValues(data, null, 1, [], () => 5);
-        expect(values[0]).toEqual(expect.objectContaining({ label: 'Living Room', value: 5, color: '#ff0000' }));
+describe('pie labels and tooltip', () => {
+    type Labels = { formatter: (value: unknown, context: { datasetIndex: number; dataIndex: number }) => string; color: (context: object) => string };
+    const dot = (text: string): string => text.replace(',', '.');
+
+    // Regression: the pie formatted its value labels inline, without the guard Bar and JSON had, so
+    // a min without a max threw a RangeError out of chart.js and took the view down.
+    it.each([
+        [{ valuesMinDecimals: 2 }, '21.50'],
+        [{ valuesMinDecimals: 3, valuesMaxDecimals: 1 }, '21.500'],
+        [{ valuesMinDecimals: -1, valuesMaxDecimals: '' }, '22'],
+    ])('formats value labels with %o as %s', (decimals, expected) => {
+        const labels = config({ dataCount: 1, oid0: 'a', ...decimals }, { a: 21.5 }).options.plugins.datalabels as Labels;
+        expect(dot(labels.formatter(0, { datasetIndex: 0, dataIndex: 0 }))).toBe(expected);
     });
 
-    it('prefers JSON source item fields over indexed editor fields', () => {
-        const data = { label0: 'ignored' };
-        const source = [{ label: 'From JSON', value: 9, dataColor: '#00ff00' }];
-        const values = buildPieValues(data, source, 1, [], () => 0);
-        expect(values[0]).toEqual(expect.objectContaining({ label: 'From JSON', value: 9, color: '#00ff00' }));
+    it('appends the per-slice unit to the value label', () => {
+        const labels = config({ dataCount: 1, oid0: 'a', labelValueAppend0: ' kWh' }, { a: 3 }).options.plugins.datalabels as Labels;
+        expect(labels.formatter(0, { datasetIndex: 0, dataIndex: 0 })).toBe('3 kWh');
     });
 
-    it('clamps negative values to zero (a pie slice cannot be negative)', () => {
-        const values = buildPieValues({}, [{ value: -10 }], 1, [], () => 0);
-        expect(values[0].value).toBe(0);
-    });
-
-    it('falls back to the color scheme, then globalColor, when no explicit color is set', () => {
-        const withScheme = buildPieValues({}, null, 1, ['#123456'], () => 0);
-        expect(withScheme[0].color).toBe('#123456');
-        const withGlobal = buildPieValues({ globalColor: '#abcdef' }, null, 1, [], () => 0);
-        expect(withGlobal[0].color).toBe('#abcdef');
+    it('prints "label: value" with at most two decimals in the tooltip, or the slice text', () => {
+        const callbacks = config({ dataCount: 2, oid0: 'a', label0: 'Living Room', tooltipBodyAppend: ' W', oid1: 'b', tooltipText1: 'line1\\nline2' }, { a: 21.567, b: 1 }).options.plugins.tooltip.callbacks as { label: (item: object) => unknown };
+        expect(dot(String(callbacks.label({ datasetIndex: 0, dataIndex: 0 })))).toBe('Living Room: 21.57 W');
+        expect(callbacks.label({ datasetIndex: 0, dataIndex: 1 })).toEqual(['line1', 'line2']);
     });
 });
 
