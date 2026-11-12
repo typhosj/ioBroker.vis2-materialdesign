@@ -550,10 +550,10 @@ export default class MaterialDesignChartBar extends ChartWidget {
         return { color: bar?.valueColor || undefined, text: `${bar?.valueText || number}${s(bar?.appendix)}` };
       },
       tooltip: {
-        title: point => { const bar = items[point.dataIndex]; return bar?.tooltipTitle ? bar.tooltipTitle.split("\n") : s(bar?.label); },
+        title: point => { const bar = items[point.dataIndex]; return bar?.tooltipTitle ? bar.tooltipTitle.split("\\n") : s(bar?.label); },
         label: (point, number) => {
           const bar = items[point.dataIndex];
-          return bar?.tooltipText ? bar.tooltipText.split("\n") : `${bar?.valueText || number}${s(bar?.appendix)}${s(data.tooltipBodyAppend)}`;
+          return bar?.tooltipText ? bar.tooltipText.split("\\n") : `${bar?.valueText || number}${s(bar?.appendix)}${s(data.tooltipBodyAppend)}`;
         },
       },
       legendShown: false,

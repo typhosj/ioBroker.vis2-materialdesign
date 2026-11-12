@@ -89,3 +89,11 @@ describe('bar labels and tooltip', () => {
         expect(result.legend[0].color).toBe('#6750a4');
     });
 });
+
+describe('bar tooltip line breaks', () => {
+    it('splits on the typed backslash-n sequence, not on a real newline', () => {
+        const callbacks = config({ dataCount: 1, oid0: 'a', tooltipTitle0: 'a\\nb', tooltipText0: 'x\\ny' }, { a: 3 }).options.plugins.tooltip.callbacks as Callbacks;
+        expect(callbacks.title([{ datasetIndex: 0, dataIndex: 0 }])).toEqual(['a', 'b']);
+        expect(callbacks.label({ datasetIndex: 0, dataIndex: 0 })).toEqual(['x', 'y']);
+    });
+});
