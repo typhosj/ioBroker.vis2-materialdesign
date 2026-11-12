@@ -121,6 +121,14 @@ to wait with an upgrade.
 - (typhosj) Fixed the Dialog widgets making their own window see-through: **overlay opacity** was applied to the whole overlay, and the dialog sits inside it, so with the default of 0.6 the page shone through the dialog. Only the darkened background takes the opacity now, the dialog itself is fully opaque
 - (typhosj) Added two options to the Dialog widgets: **show footer with close button** can now be switched off, and **close icon in the header** puts a close cross at the right of the header, in its own color. The cross also works without a heading. A fullscreen dialog keeps its footer while it has no header cross, so it can always be closed
 - (typhosj) Fixed the week and day views of the Calendar widget leaving an empty strip right of the days: the width of a scrollbar was kept free even when nothing scrolled, so the grid ended short of the control buttons above it. Day header and time grid now scroll together, the header stays on top, and the columns reach the widget's right edge
+- (typhosj) Fixed the Pie chart crashing its view when value labels were shown with **minimal decimals** set above **maximal decimals**: the number formatting rejects that combination and took the whole chart down. The labels now show at least the minimal decimals, so a half-edited pair of fields no longer breaks the page
+- (typhosj) Fixed the legend of the JSON and Line History charts using other colors than the chart itself, also in Material 3: the legend boxes and texts now take the series colors that the bars and lines are drawn in
+- (typhosj) Fixed the legend of the Line History chart sitting outside the card: it is drawn inside the card now, like in the other charts
+- (typhosj) Fixed a legend placed to the left or right of a chart with a card: it now stays beside the chart instead of ending up above or below it
+- (typhosj) Changed the tooltip values of the charts: they show at most two decimals unless **text minimum decimals** or **text maximal decimals** are set. The Bar, Pie and JSON charts showed the raw value, a rounded whole number or the Chart.js default before, so the same number could look different from chart to chart
+- (typhosj) Fixed an explicitly chosen color of #44739e being replaced by the Material 3 theme color in the charts: that value is also the old default, so it was taken for "not set". A color you pick yourself is kept now
+- (typhosj) Changed newly inserted Bar, Pie and Line History charts to start with the tooltip **position** set to "nearest", like the JSON chart, so the tooltip follows the point under the pointer. Charts you have already saved keep their setting
+- (typhosj) Added the same card, legend, tooltip and value label options to every chart: Bar, Pie, Line History and JSON chart now offer the full set, so a setting you know from one chart is available in the others
 
 ### 1.1.1 (2026-10-13)
 
