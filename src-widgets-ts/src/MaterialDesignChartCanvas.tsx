@@ -139,21 +139,6 @@ export function tooltipConfig(data: Record<string, unknown>, callbacks?: object)
   return config;
 }
 
-// `tooltipValueMin/MaxDecimals`. Undefined when the user set neither, so the caller keeps its own
-// text — the value label carries valuesMin/MaxDecimals, which is a different setting.
-export function tooltipNumber(data: Record<string, unknown>, value: unknown): string | undefined {
-  const min = optionalNumber(data.tooltipValueMinDecimals);
-  const max = optionalNumber(data.tooltipValueMaxDecimals);
-  const raw = optionalNumber(value);
-  if (raw === undefined || (min === undefined && max === undefined)) return undefined;
-  // Intl throws when min > max, which the editor lets you configure one field at a time.
-  const lower = Math.max(0, Math.min(20, min ?? 0));
-  return raw.toLocaleString(visLocale(), {
-    minimumFractionDigits: lower,
-    maximumFractionDigits: Math.max(lower, Math.min(20, max ?? Math.max(min ?? 0, 2))),
-  });
-}
-
 // `chartPadding*` in px around the plot. Only sides that are set are emitted, so chart.js keeps its
 // own spacing for the rest.
 export function layoutConfig(data: Record<string, unknown>): object | undefined {

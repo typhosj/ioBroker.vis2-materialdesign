@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { Chart } from 'chart.js';
 import { describe, expect, it } from 'vitest';
 
-import { ChartLegend, datalabelsConfig, labelColorFor, layoutConfig, tooltipConfig, tooltipNumber } from './MaterialDesignChartCanvas';
+import { ChartLegend, datalabelsConfig, labelColorFor, layoutConfig, tooltipConfig } from './MaterialDesignChartCanvas';
 
 // Handing the plugin to a chart through `config.plugins` alone never merges its defaults, so the
 // color default below spread over undefined and wiped the plugin's whole default set.
@@ -95,16 +95,6 @@ describe('tooltipConfig geometry', () => {
     });
 });
 
-describe('tooltipNumber', () => {
-    it('formats with the configured decimals, and stays out of the way without them', () => {
-        // The decimal separator comes from the runtime locale; the test must not pin it.
-        expect(tooltipNumber({ tooltipValueMinDecimals: 2, tooltipValueMaxDecimals: 2 }, 3.14159)?.replace(',', '.'))
-            .toBe('3.14');
-        expect(tooltipNumber({}, 3.14159)).toBeUndefined();
-        expect(tooltipNumber({ tooltipValueMaxDecimals: 1 }, 'not a number')).toBeUndefined();
-    });
-});
-
 describe('ChartLegend', () => {
     const entries = [{ label: 'Kitchen', color: '#f00' }, { label: 'Hall', color: '#0f0' }];
     const html = (data: Record<string, unknown>, defaultShown?: boolean): string =>
@@ -127,11 +117,5 @@ describe('ChartLegend', () => {
     it('reads the label color from the M3 token when nothing is set', () => {
         expect(html({ designStyle: 'material3' })).toContain('var(--md-sys-color-on-surface)');
         expect(html({ designStyle: 'material3', legendFontColor: '#123456' })).toContain('#123456');
-    });
-});
-
-describe('tooltipNumber decimal bounds', () => {
-    it('does not throw when the min is above the max', () => {
-        expect(tooltipNumber({ tooltipValueMinDecimals: 3, tooltipValueMaxDecimals: 1 }, 1.23456)).toMatch(/^1[.,]235$/);
     });
 });
