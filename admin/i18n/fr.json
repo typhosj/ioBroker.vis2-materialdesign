@@ -135,6 +135,7 @@
     "calendarTimeAxisStartTime": "heure de début",
     "calendarTimeAxisWidth": "largeur",
     "calendarView": "vue calendrier",
+    "eventClickOid": "object ID on event click",
     "calendarWeekdays": "jours de la semaine à afficher",
     "calendarWeeksNumbersBackground": "Couleur de l'arrière plan",
     "calendarWeeksNumbersFont": "Police de caractère",

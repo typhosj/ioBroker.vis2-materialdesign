@@ -135,6 +135,7 @@
     "calendarTimeAxisStartTime": "开始时间",
     "calendarTimeAxisWidth": "宽度",
     "calendarView": "日历视图",
+    "eventClickOid": "object ID on event click",
     "calendarWeekdays": "要显示一周中的几天",
     "calendarWeeksNumbersBackground": "背景颜色",
     "calendarWeeksNumbersFont": "字形",

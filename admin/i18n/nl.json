@@ -135,6 +135,7 @@
     "calendarTimeAxisStartTime": "start uur",
     "calendarTimeAxisWidth": "breedte",
     "calendarView": "kalenderweergave",
+    "eventClickOid": "object ID on event click",
     "calendarWeekdays": "dagen van de week worden getoond",
     "calendarWeeksNumbersBackground": "Achtergrond kleur",
     "calendarWeeksNumbersFont": "doopvont",

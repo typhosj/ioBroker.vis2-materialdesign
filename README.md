@@ -115,6 +115,10 @@ full per-widget option and is not deprecated, so nothing you report is a reason
 to wait with an upgrade.
 
 ## Changelog
+### **WORK IN PROGRESS**
+
+- (typhosj) Added **object ID on event click** to the Calendar widget: a tap on an event writes the browser's vis instance and the event's row as JSON into the chosen state, so a script or adapter can open its own dialog for that event. Without the option events stay as before
+
 ### 1.2.0 (2026-11-13)
 
 - (typhosj) Added an own date and time picker to the Input widget: with **picker** set to **Material picker**, a `date` or `time` field shows its value in the format of the device language, stays typable with a matching mask, and opens a Material 3 calendar or clock dial from an icon at the end of the field. **time format** follows the device language or forces 24 or 12 hours, and four colors style the dialog. The state still receives `YYYY-MM-DD` or `HH:MM`. Browsers draw their native date and time fields in their own UI language, which some kiosk WebViews get wrong; the new picker does not depend on that (Scrounger/ioBroker.vis-materialdesign#71)

@@ -135,6 +135,7 @@
     "calendarTimeAxisStartTime": "hora de início",
     "calendarTimeAxisWidth": "largura",
     "calendarView": "vista de calendário",
+    "eventClickOid": "object ID on event click",
     "calendarWeekdays": "dias da semana a serem mostrados",
     "calendarWeeksNumbersBackground": "cor de fundo",
     "calendarWeeksNumbersFont": "Fonte",

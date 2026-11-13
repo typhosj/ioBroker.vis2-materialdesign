@@ -135,6 +135,7 @@
     "calendarTimeAxisStartTime": "Початок HOUR",
     "calendarTimeAxisWidth": "Ширина",
     "calendarView": "CALENDAR вигляд",
+    "eventClickOid": "object ID on event click",
     "calendarWeekdays": "дні тижня для показу",
     "calendarWeeksNumbersBackground": "Фон колір",
     "calendarWeeksNumbersFont": "Шрифт",
