@@ -42,7 +42,9 @@ ioBroker system language, so the screenshots are German.
   stays empty.
 - **show title of selected navigation bar item** (on by default) replaces it
   with the active menu entry, **show icon of selected navigation bar item** puts
-  that entry's icon in front of it.
+  that entry's icon in front of it. **distance between text and image** (px)
+  and **image position** (`left` or `right`) set the gap to that icon and its
+  side.
 - The fields below set the bar's colors and font, plus a **z-index** (998 by
   default) for stacking against other widgets.
 

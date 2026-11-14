@@ -123,6 +123,7 @@ to wait with an upgrade.
 - (typhosj) Fixed the Top App Bar showing "Material Design Widgets" when its **title** was cleared: the default text came back for an empty field. A cleared title stays empty now; only a widget that never had a title shows the default (issue #27)
 - (typhosj) Added **show only the menu button** to the Top App Bar: the bar, its shadow and the title disappear and only the menu button stays, so the views below get the full height and the rest of the width lets clicks through to the widgets underneath (issue #27)
 - (typhosj) Added **header text color** to the drawer colors of the Top App Bar: the text of the drawer header was always white (Material 3: the on-primary color) and could only be colored with HTML in **header text** (issue #27)
+- (typhosj) Added **distance between text and image** and **image position** to the title of the Top App Bar: the icon of the selected entry sat directly against the title text and always on its left. The gap is set in pixels, the icon can go left or right of the text, as in the Buttons widget (issue #27)
 
 ### 1.2.0 (2026-11-13)
 

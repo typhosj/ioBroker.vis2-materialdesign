@@ -152,6 +152,25 @@ describe('top app bar title and header (issue #27)', () => {
         expect(collectByClass(permanent, 'mdc-drawer')).toHaveLength(1);
     });
 
+    it('spaces and orders the title icon and the title text', () => {
+        const title = (rxData: Record<string, unknown>): React.CSSProperties => style(render({ iconDrawer0: 'home', ...rxData }), 'mdc-top-app-bar__title');
+        expect(title({}).gap).toBeUndefined();
+        expect(title({}).flexDirection).toBe('row');
+        expect(title({ titleDistanceBetweenTextAndImage: 12 }).gap).toBe(12);
+        expect(title({ titleDistanceBetweenTextAndImage: '8' }).gap).toBe(8);
+        // Emptied, broken or negative input leaves the parts touching as before.
+        for (const value of ['', null, undefined, 'abc', -5, 0]) {
+            expect(title({ titleDistanceBetweenTextAndImage: value }).gap, String(value)).toBeUndefined();
+        }
+        expect(title({ titleIconPosition: 'right' }).flexDirection).toBe('row-reverse');
+        for (const value of ['left', '', null, undefined, 'top']) {
+            expect(title({ titleIconPosition: value }).flexDirection, String(value)).toBe('row');
+        }
+        const fields = MaterialDesignTopAppBar.getWidgetInfo().visAttrs.flatMap(group => group.fields as Array<{ name: string; label?: string }>);
+        expect(fields.find(field => field.name === 'titleDistanceBetweenTextAndImage')?.label).toBe('distanceBetweenTextAndImage');
+        expect(fields.find(field => field.name === 'titleIconPosition')?.label).toBe('iconPosition');
+    });
+
     it('colors the drawer header text from its own field', () => {
         expect(style(render({ colorDrawerHeaderText: 'black' }, true), 'mdc-drawer__header').color).toBe('black');
         expect(style(render({ colorDrawerHeaderText: 'black', designStyle: 'material3' }, true), 'mdc-drawer__header').color).toBe('black');

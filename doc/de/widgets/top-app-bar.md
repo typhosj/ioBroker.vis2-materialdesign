@@ -41,6 +41,8 @@ Eintrag. Nicht aufgeführte Einstellungen sind selbsterklärend.
 - **Titel des ausgewählten Navigationsleistenelements anzeigen** (Vorgabe an)
   ersetzt ihn durch den aktiven Menüeintrag, **Symbol des ausgewählten
   Navigationsleistenelements anzeigen** stellt dessen Icon davor.
+  **Abstand zwischen Text und Bild** (px) und **Bildposition** (`left` oder
+  `right`) setzen Abstand und Seite dieses Icons.
 - Farben und Schrift des Balkens setzen die Felder darunter, dazu **z-Index**
   (Vorgabe 998) für die Stapelreihenfolge gegenüber anderen Widgets.
 
