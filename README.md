@@ -4,8 +4,8 @@
 # ioBroker.vis2-materialdesign
 
 [![Current version in stable repository](https://iobroker.live/badges/vis2-materialdesign-stable.svg)](https://github.com/ioBroker/ioBroker.repositories)
-[![Number of Installations](https://iobroker.live/badges/vis2-materialdesign-installed.svg)](https://www.iobroker.net/#en/adapters)
 [![NPM version](http://img.shields.io/npm/v/iobroker.vis2-materialdesign.svg)](https://www.npmjs.com/package/iobroker.vis2-materialdesign)
+[![Number of Installations](https://iobroker.live/badges/vis2-materialdesign-installed.svg)](https://www.iobroker.net/#en/adapters)
 [![Downloads](https://img.shields.io/npm/dm/iobroker.vis2-materialdesign.svg)](https://www.npmjs.com/package/ioBroker.vis2-materialdesign)
 [![Tests](https://github.com/typhosj/ioBroker.vis2-materialdesign/actions/workflows/test-and-release.yml/badge.svg)](https://github.com/typhosj/ioBroker.vis2-materialdesign/actions/workflows/test-and-release.yml)
 
