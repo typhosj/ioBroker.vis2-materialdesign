@@ -88,4 +88,35 @@ describe('shared checkbox/switch behavior', () => {
         expect(legacy).toContain('aria-disabled="true"');
         expect(legacy).not.toContain('opacity:0.38');
     });
+
+    // The hidden native input showed the browser's arrow over the M3 switch while the empty widget
+    // edges showed the hand, and the cursor set under "CSS common" never got through (issue #28).
+    it('shows the hand over the control itself and lets the widget cursor style win', () => {
+        const render = (kind: 'switch' | 'checkbox', rxData: Record<string, unknown>, rxStyle?: Record<string, unknown>): React.ReactElement<{ style: React.CSSProperties }> => {
+            const Control = createToggleControlClass({ id: 'test', name: 'Test', kind });
+            const control = new Control(fixture<ConstructorParameters<typeof Control>[0]>({ context: { setValue: vi.fn() } }));
+            control.state = fixture<typeof control.state>({ rxData: { oid: 'test.0.flag', ...rxData }, rxStyle, values: {} });
+            return fixture<React.ReactElement<{ style: React.CSSProperties }>>(control.renderWidgetBody(fixture<Parameters<typeof control.renderWidgetBody>[0]>({})));
+        };
+        for (const kind of ['switch', 'checkbox'] as const) {
+            for (const designStyle of ['material3', 'legacy']) {
+                const html = renderToStaticMarkup(render(kind, { designStyle }));
+                const inputs = html.match(/<input[^>]*>/g) ?? [];
+                expect(inputs, `${kind}/${designStyle}`).toHaveLength(1);
+                expect(inputs[0], `${kind}/${designStyle}`).toContain('cursor:inherit');
+            }
+        }
+        expect(render('switch', { designStyle: 'material3' }).props.style.cursor).toBe('pointer');
+        expect(render('switch', { designStyle: 'material3' }, { cursor: 'copy' }).props.style.cursor).toBe('copy');
+        expect(render('checkbox', {}, { cursor: 'copy' }).props.style.cursor).toBe('copy');
+        // The label used to set its own hand and kept it over a custom cursor.
+        expect(renderToStaticMarkup(render('switch', { designStyle: 'material3', labelFalse: 'Licht' }, { cursor: 'copy' }))).not.toContain('cursor:pointer');
+        expect(render('switch', { readOnly: true }).props.style.cursor).toBe('default');
+        expect(render('switch', { readOnly: true }, { cursor: 'copy' }).props.style.cursor).toBe('copy');
+        // An emptied or missing field, or a binding that produced no text, keeps the widget's own cursor.
+        for (const cursor of ['', '  ', null, undefined, 5]) {
+            expect(render('switch', {}, { cursor }).props.style.cursor, String(cursor)).toBe('pointer');
+        }
+        expect(render('switch', {}, {}).props.style.cursor).toBe('pointer');
+    });
 });

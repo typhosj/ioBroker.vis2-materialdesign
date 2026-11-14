@@ -238,7 +238,7 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
                         style={{
                             alignItems: 'center',
                             color: isM3 ? m3(on ? data.labelColorTrue : data.labelColorFalse, 'var(--md-sys-color-on-surface)') : color(on ? data.labelColorTrue : data.labelColorFalse, '#44739e'),
-                            cursor: data.labelClickActive === false ? 'default' : 'pointer',
+                            cursor: data.labelClickActive === false ? 'default' : 'inherit',
                             display: 'inline-flex',
                             // VIS1 spreads label and control apart in a wide widget; `1 1 auto` replicates that.
                             flex: '1 1 auto',
@@ -268,6 +268,7 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
                 writeValue(this.props, data, !on);
             };
 
+            const userCursor = typeof this.state.rxStyle?.cursor === 'string' ? this.state.rxStyle.cursor.trim() : '';
             const controlFilter = locked ? `grayscale(${asNumber(data.lockFilterGrayscale, 0)}%)` : undefined;
             const control =
                 def.kind === 'switch' ? (
@@ -283,7 +284,7 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
                                     disabled={!!data.readOnly}
                                     onChange={() => undefined}
                                     role="switch"
-                                    style={{ inset: 0, margin: 0, opacity: 0, position: 'absolute', width: '100%', height: '100%' }}
+                                    style={{ cursor: 'inherit', inset: 0, margin: 0, opacity: 0, position: 'absolute', width: '100%', height: '100%' }}
                                     type="checkbox"
                                 />
                             ),
@@ -363,7 +364,7 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
                                         disabled={!!data.readOnly}
                                         onChange={() => undefined}
                                         role="switch"
-                                        style={{ opacity: 0 }}
+                                        style={{ cursor: 'inherit', opacity: 0 }}
                                         type="checkbox"
                                     />
                                 </div>
@@ -396,7 +397,7 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
                             className="mdc-checkbox__native-control"
                             disabled={!!data.readOnly}
                             onChange={() => undefined}
-                            style={{ opacity: 0, position: 'absolute' }}
+                            style={{ cursor: 'inherit', opacity: 0, position: 'absolute' }}
                             type="checkbox"
                         />
                         <div
@@ -465,7 +466,8 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
                     style={{
                         alignItems: 'center',
                         boxSizing: 'border-box',
-                        cursor: data.readOnly && !locked ? 'default' : 'pointer',
+                        // vis-2 puts the cursor from "CSS common" on its wrapper; an inline value here hides it.
+                        cursor: userCursor || (data.readOnly && !locked ? 'default' : 'pointer'),
                         display: 'flex',
                         flexDirection: labelPosition === 'left' ? 'row-reverse' : 'row',
                         height: '100%',
