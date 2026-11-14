@@ -4,7 +4,7 @@ import type { RxWidgetInfo, VisRxWidgetProps } from '@iobroker/types-vis-2';
 
 import { renderIcon, m3ColorExplicit } from './MaterialDesignButtons';
 import { fill, withAutoFill } from './deviceFill';
-import { squarePreview, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, iconField, m3Switch, parseActionValue, setStateValue, sizeCss, stateValue, stringValue } from './widgetUtils';
+import { boolValue, squarePreview, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, iconField, m3Switch, parseActionValue, setStateValue, sizeCss, stateValue, stringValue } from './widgetUtils';
 
 export interface ToggleControlData {
     oid?: string;
@@ -232,13 +232,16 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
             const label = on ? data.labelTrue || data.labelFalse || '' : data.labelFalse || '';
             const labelPosition = data.labelPosition || 'right';
             const switchMargin = labelPosition === 'off' ? 0 : 10;
+            const labelClick = boolValue(data.labelClickActive, true);
             const labelElement =
                 labelPosition === 'off' ? null : (
                     <span
+                        // The click handler sits on the whole widget, so an inert label has to stop its own click.
+                        onClick={labelClick ? undefined : event => event.stopPropagation()}
                         style={{
                             alignItems: 'center',
                             color: isM3 ? m3(on ? data.labelColorTrue : data.labelColorFalse, 'var(--md-sys-color-on-surface)') : color(on ? data.labelColorTrue : data.labelColorFalse, '#44739e'),
-                            cursor: data.labelClickActive === false ? 'default' : 'inherit',
+                            cursor: labelClick ? 'inherit' : 'default',
                             display: 'inline-flex',
                             // VIS1 spreads label and control apart in a wide widget; `1 1 auto` replicates that.
                             flex: '1 1 auto',

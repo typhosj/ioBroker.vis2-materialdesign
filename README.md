@@ -119,6 +119,7 @@ to wait with an upgrade.
 
 - (typhosj) Added **object ID on event click** to the Calendar widget: a tap on an event writes the browser's vis instance and the event's row as JSON into the chosen state, so a script or adapter can open its own dialog for that event. Without the option events stay as before
 - (typhosj) Fixed the mouse pointer of the Switch and Checkbox widgets: over the Material 3 switch itself it showed the normal arrow, while the empty edges of the widget showed the hand. The whole control shows the hand now. A **cursor** set under "CSS common" was also ignored by both widgets and their labels; it applies now (issue #28)
+- (typhosj) Fixed **activate label click** of the Switch and Checkbox widgets: switched off, it only changed the mouse pointer, and a click on the label still toggled or unlocked the control. The label ignores clicks now, as in the old vis version; the control itself stays clickable
 
 ### 1.2.0 (2026-11-13)
 

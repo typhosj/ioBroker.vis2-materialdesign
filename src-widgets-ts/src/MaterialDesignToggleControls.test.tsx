@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { act } from 'react';
+import { createRoot } from 'react-dom/client';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -118,5 +119,47 @@ describe('shared checkbox/switch behavior', () => {
             expect(render('switch', {}, { cursor }).props.style.cursor, String(cursor)).toBe('pointer');
         }
         expect(render('switch', {}, {}).props.style.cursor).toBe('pointer');
+    });
+
+    // "activate label click" only changed the cursor: the click handler sits on the whole widget, so
+    // a click on the label still switched (and unlocked) the control. VIS 1 made the label inert.
+    it('ignores clicks on the label while label click is off', () => {
+        (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+        const container = document.createElement('div');
+        document.body.appendChild(container);
+        const root = createRoot(container);
+        const clicks = (kind: 'switch' | 'checkbox', rxData: Record<string, unknown>): { label: number; control: number } => {
+            const setValue = vi.fn();
+            const Control = createToggleControlClass({ id: 'test', name: 'Test', kind });
+            const control = new Control(fixture<ConstructorParameters<typeof Control>[0]>({ context: { setValue } }));
+            control.state = fixture<typeof control.state>({ rxData: { oid: 'test.0.flag', labelFalse: 'Licht', ...rxData }, values: {} });
+            act(() => root.render(control.renderWidgetBody(fixture<Parameters<typeof control.renderWidgetBody>[0]>({}))));
+            const label = Array.from(container.querySelectorAll('span')).find(span => span.textContent === 'Licht');
+            if (!label) throw new Error('missing label');
+            act(() => { label.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+            const viaLabel = setValue.mock.calls.length;
+            act(() => { container.querySelector('input')!.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+            return { label: viaLabel, control: setValue.mock.calls.length - viaLabel };
+        };
+        try {
+            for (const kind of ['switch', 'checkbox'] as const) {
+                for (const designStyle of ['material3', 'legacy']) {
+                    const tag = `${kind}/${designStyle}`;
+                    expect(clicks(kind, { designStyle, labelClickActive: false }), tag).toEqual({ label: 0, control: 1 });
+                    // VIS 1 projects carry the option as a string.
+                    expect(clicks(kind, { designStyle, labelClickActive: 'false' }), tag).toEqual({ label: 0, control: 1 });
+                    expect(clicks(kind, { designStyle, labelClickActive: true }), tag).toEqual({ label: 1, control: 1 });
+                    // Unset, emptied or a binding that produced nothing keeps the default: label clicks work.
+                    for (const value of [undefined, null, '']) {
+                        expect(clicks(kind, { designStyle, labelClickActive: value }), `${tag}/${String(value)}`).toEqual({ label: 1, control: 1 });
+                    }
+                }
+            }
+            // A locked control is not unlocked from an inert label either.
+            expect(clicks('switch', { labelClickActive: false, lockEnabled: true }), 'locked').toEqual({ label: 0, control: 0 });
+        } finally {
+            act(() => root.unmount());
+            container.remove();
+        }
     });
 });
