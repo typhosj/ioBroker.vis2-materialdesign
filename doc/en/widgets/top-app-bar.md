@@ -33,7 +33,8 @@ ioBroker system language, so the screenshots are German.
 
 - **layout** – `standard`, `dense` or `short`; the values are untranslated in
   the editor.
-- **title** – fixed title, "Material Design Widgets" by default.
+- **title** – fixed title, "Material Design Widgets" by default. A cleared field
+  stays empty.
 - **show title of selected navigation bar item** (on by default) replaces it
   with the active menu entry, **show icon of selected navigation bar item** puts
   that entry's icon in front of it.

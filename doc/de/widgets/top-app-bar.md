@@ -31,7 +31,8 @@ Eintrag. Nicht aufgeführte Einstellungen sind selbsterklärend.
 **Top App Bar Layout**
 
 - **Layout** – `standard`, `dense` oder `short`; die Werte stehen im Editor roh da.
-- **Titel** – fester Titel, Vorgabe „Material Design Widgets“.
+- **Titel** – fester Titel, Vorgabe „Material Design Widgets“. Ein geleertes
+  Feld bleibt leer.
 - **Titel des ausgewählten Navigationsleistenelements anzeigen** (Vorgabe an)
   ersetzt ihn durch den aktiven Menüeintrag, **Symbol des ausgewählten
   Navigationsleistenelements anzeigen** stellt dessen Icon davor.

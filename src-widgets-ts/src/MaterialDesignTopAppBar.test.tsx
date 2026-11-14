@@ -101,3 +101,23 @@ describe('top app bar dynamic items', () => {
         expect(renderToStaticMarkup(widget.renderWidgetBody(fixture<Parameters<MaterialDesignTopAppBar['renderWidgetBody']>[0]>({})))).not.toContain('Error in JSON string');
     });
 });
+
+describe('top app bar title and header (issue #27)', () => {
+    const render = (rxData: Record<string, unknown>, open = false): React.ReactElement<Record<string, unknown>> => {
+        const widget = new MaterialDesignTopAppBar(fixture<ConstructorParameters<typeof MaterialDesignTopAppBar>[0]>({ context: {} }));
+        widget.state = fixture<typeof widget.state>({ rxData: { navItemCount: 1, labels0: 'Alpha', ...rxData }, values: {} });
+        (widget as unknown as { open: boolean }).open = open;
+        return widget.renderWidgetBody(fixture<Parameters<MaterialDesignTopAppBar['renderWidgetBody']>[0]>({})) as React.ReactElement<Record<string, unknown>>;
+    };
+
+    // A cleared title came back as "Material Design Widgets".
+    it('keeps a cleared title empty and uses the default only for a title that was never set', () => {
+        const title = (value: unknown): string => renderToStaticMarkup(render({ showSelectedItemAsTitle: false, titleTopAppBar: value }));
+        expect(title('')).not.toContain('Material Design Widgets');
+        expect(title('null')).not.toContain('Material Design Widgets');
+        expect(title(undefined)).toContain('Material Design Widgets');
+        expect(title(null)).toContain('Material Design Widgets');
+        expect(title('Haus')).toContain('Haus');
+        expect(renderToStaticMarkup(render({ titleTopAppBar: '' }))).toContain('>Alpha</span></span>');
+    });
+});
