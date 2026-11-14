@@ -31,6 +31,11 @@ Eintrag. Nicht aufgeführte Einstellungen sind selbsterklärend.
 **Top App Bar Layout**
 
 - **Layout** – `standard`, `dense` oder `short`; die Werte stehen im Editor roh da.
+- **nur Menü-Button anzeigen** – blendet Balken, Schatten und Titel aus, es
+  bleibt nur der Menü-Button; der Rest der Breite lässt Klicks zu den Widgets
+  darunter durch. Ohne eigene Symbolfarbe nimmt der Button die Textfarbe der
+  Seite statt der Titelfarbe. Ein permanenter Drawer hat keinen Menü-Button,
+  dann entfällt der Balken ganz.
 - **Titel** – fester Titel, Vorgabe „Material Design Widgets“. Ein geleertes
   Feld bleibt leer.
 - **Titel des ausgewählten Navigationsleistenelements anzeigen** (Vorgabe an)

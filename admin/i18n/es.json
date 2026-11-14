@@ -802,6 +802,7 @@
     "showScrollbar": "mostrar barra de desplazamiento",
     "showSelectedIcon": "Mostrar icono del elemento seleccionado",
     "showSelectedItemAsTitle": "muestra el título del elemento de barra de navegación seleccionado",
+    "showOnlyMenuButton": "mostrar solo el botón de menú",
     "showSelectedItemIconInTitle": "mostrar el icono del elemento de la barra de navegación seleccionado",
     "showSubItemsLabels": "mostrar texto de submenú",
     "showSubTitle": "mostrar subtítulo",

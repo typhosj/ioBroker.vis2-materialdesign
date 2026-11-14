@@ -802,6 +802,7 @@
     "showScrollbar": "Bildlaufleiste anzeigen",
     "showSelectedIcon": "Symbol des ausgewählten Elements anzeigen",
     "showSelectedItemAsTitle": "Titel des ausgewählten Navigationsleistenelements anzeigen",
+    "showOnlyMenuButton": "nur Menü-Button anzeigen",
     "showSelectedItemIconInTitle": "Symbol des ausgewählten Navigationsleistenelements anzeigen",
     "showSubItemsLabels": "Untermenütext anzeigen",
     "showSubTitle": "Untertitel anzeigen",

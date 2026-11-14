@@ -802,6 +802,7 @@
     "showScrollbar": "mostrar barra de rolagem",
     "showSelectedIcon": "mostrar ícone do item selecionado",
     "showSelectedItemAsTitle": "mostra o título do item da barra de navegação selecionada",
+    "showOnlyMenuButton": "mostrar apenas o botão de menu",
     "showSelectedItemIconInTitle": "mostrar o ícone do item da barra de navegação selecionado",
     "showSubItemsLabels": "mostrar texto do submenu",
     "showSubTitle": "mostrar legenda",

@@ -802,6 +802,7 @@
     "showScrollbar": "显示滚动条",
     "showSelectedIcon": "显示所选项目的图标",
     "showSelectedItemAsTitle": "显示所选导航栏项目的标题",
+    "showOnlyMenuButton": "仅显示菜单按钮",
     "showSelectedItemIconInTitle": "显示所选导航栏项目的图标",
     "showSubItemsLabels": "显示子菜单文字",
     "showSubTitle": "显示字幕",

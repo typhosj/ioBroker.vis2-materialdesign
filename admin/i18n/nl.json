@@ -802,6 +802,7 @@
     "showScrollbar": "toon schuifbalk",
     "showSelectedIcon": "pictogram van geselecteerd item weergeven",
     "showSelectedItemAsTitle": "toon de titel van het geselecteerde navigatiebalkitem",
+    "showOnlyMenuButton": "alleen de menuknop tonen",
     "showSelectedItemIconInTitle": "toon het pictogram van het geselecteerde navigatiebalkitem",
     "showSubItemsLabels": "toon submenu tekst",
     "showSubTitle": "ondertitel weergeven",

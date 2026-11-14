@@ -802,6 +802,7 @@
     "showScrollbar": "показать полосу прокрутки",
     "showSelectedIcon": "показать значок выбранного элемента",
     "showSelectedItemAsTitle": "показать заголовок выбранного элемента панели навигации",
+    "showOnlyMenuButton": "показывать только кнопку меню",
     "showSelectedItemIconInTitle": "показать значок выбранного элемента панели навигации",
     "showSubItemsLabels": "показать текст подменю",
     "showSubTitle": "показать субтитры",

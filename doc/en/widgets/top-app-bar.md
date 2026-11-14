@@ -33,6 +33,11 @@ ioBroker system language, so the screenshots are German.
 
 - **layout** – `standard`, `dense` or `short`; the values are untranslated in
   the editor.
+- **show only the menu button** – hides the bar, its shadow and the title and
+  leaves only the menu button; the rest of the width lets clicks through to the
+  widgets below. Without an icon color of its own the button takes the text
+  color of the page, not the title color. A permanent drawer has no menu
+  button, so the bar is gone entirely then.
 - **title** – fixed title, "Material Design Widgets" by default. A cleared field
   stays empty.
 - **show title of selected navigation bar item** (on by default) replaces it

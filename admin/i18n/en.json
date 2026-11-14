@@ -802,6 +802,7 @@
     "showScrollbar": "show scrollbar",
     "showSelectedIcon": "show icon of selected item",
     "showSelectedItemAsTitle": "show title of selected navigation bar item",
+    "showOnlyMenuButton": "show only the menu button",
     "showSelectedItemIconInTitle": "show icon of selected navigation bar item",
     "showSubItemsLabels": "show submenu text",
     "showSubTitle": "show subtitle",

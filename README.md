@@ -121,6 +121,7 @@ to wait with an upgrade.
 - (typhosj) Fixed the mouse pointer of the Switch and Checkbox widgets: over the Material 3 switch itself it showed the normal arrow, while the empty edges of the widget showed the hand. The whole control shows the hand now. A **cursor** set under "CSS common" was also ignored by both widgets and their labels; it applies now (issue #28)
 - (typhosj) Fixed **activate label click** of the Switch and Checkbox widgets: switched off, it only changed the mouse pointer, and a click on the label still toggled or unlocked the control. The label ignores clicks now, as in the old vis version; the control itself stays clickable
 - (typhosj) Fixed the Top App Bar showing "Material Design Widgets" when its **title** was cleared: the default text came back for an empty field. A cleared title stays empty now; only a widget that never had a title shows the default (issue #27)
+- (typhosj) Added **show only the menu button** to the Top App Bar: the bar, its shadow and the title disappear and only the menu button stays, so the views below get the full height and the rest of the width lets clicks through to the widgets underneath (issue #27)
 
 ### 1.2.0 (2026-11-13)
 

@@ -109,6 +109,7 @@ describe('top app bar title and header (issue #27)', () => {
         (widget as unknown as { open: boolean }).open = open;
         return widget.renderWidgetBody(fixture<Parameters<MaterialDesignTopAppBar['renderWidgetBody']>[0]>({})) as React.ReactElement<Record<string, unknown>>;
     };
+    const style = (tree: React.ReactElement, className: string): React.CSSProperties => collectByClass(tree, className)[0].props.style as React.CSSProperties;
 
     // A cleared title came back as "Material Design Widgets".
     it('keeps a cleared title empty and uses the default only for a title that was never set', () => {
@@ -119,5 +120,35 @@ describe('top app bar title and header (issue #27)', () => {
         expect(title(null)).toContain('Material Design Widgets');
         expect(title('Haus')).toContain('Haus');
         expect(renderToStaticMarkup(render({ titleTopAppBar: '' }))).toContain('>Alpha</span></span>');
+    });
+
+    it('draws only the menu button when the bar is switched to menu button only', () => {
+        const normal = render({});
+        expect(style(normal, 'mdc-top-app-bar').width).toBe('100%');
+        expect(collectByClass(normal, 'mdc-top-app-bar__title')).toHaveLength(1);
+
+        for (const value of [true, 'true']) {
+            const onlyButton = render({ showOnlyMenuButton: value });
+            const bar = style(onlyButton, 'mdc-top-app-bar');
+            expect(bar.background, String(value)).toBe('transparent');
+            expect(bar.boxShadow, String(value)).toBe('none');
+            expect(bar.width, String(value)).toBe('auto');
+            expect(collectByClass(onlyButton, 'mdc-top-app-bar__title'), String(value)).toHaveLength(0);
+            expect(collectByClass(onlyButton, 'mdc-top-app-bar__navigation-icon'), String(value)).toHaveLength(1);
+        }
+        // Without a bar the icon cannot take the title color: white on a light page was invisible.
+        const icon = (rxData: Record<string, unknown>): unknown => style(render(rxData), 'mdc-top-app-bar__navigation-icon').color;
+        expect(icon({})).toBe('currentColor');
+        expect(icon({ showOnlyMenuButton: true })).toBe('#000');
+        expect(icon({ showOnlyMenuButton: true, designStyle: 'material3' })).toBe('var(--md-sys-color-on-surface)');
+        expect(icon({ showOnlyMenuButton: true, topAppBarIconColor: 'red' })).toBe('red');
+        expect(icon({ showOnlyMenuButton: true, topAppBarIconColor: '' })).toBe('#000');
+        for (const value of [false, 'false', '', null, undefined]) {
+            expect(style(render({ showOnlyMenuButton: value }), 'mdc-top-app-bar').width, String(value)).toBe('100%');
+        }
+        // A permanent drawer has no menu button, so nothing of the bar is left to draw.
+        const permanent = render({ showOnlyMenuButton: true, drawerLayout: 'permanent' });
+        expect(collectByClass(permanent, 'mdc-top-app-bar')).toHaveLength(0);
+        expect(collectByClass(permanent, 'mdc-drawer')).toHaveLength(1);
     });
 });
