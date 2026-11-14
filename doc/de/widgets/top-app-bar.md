@@ -53,7 +53,8 @@ und den **Trennlinien Stil** (`standard`, `padded`, `inset`, ebenfalls roh).
 
 Die drei Gruppen **Navigationsleiste: Farben**, **Untermenü-Layout** und
 **Untermenüfarben** erscheinen erst mit dem Schalter **Erweiterte Optionen
-anzeigen** in **Allgemein**.
+anzeigen** in **Allgemein**. Dort setzt **Kopfzeile Textfarbe** die Schriftfarbe
+der Drawer-Kopfzeile.
 
 Die Menüeinträge stammen aus den Daten- und Eintragsgruppen:
 

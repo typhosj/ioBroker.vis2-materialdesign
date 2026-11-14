@@ -188,6 +188,7 @@
     "colorCheckBoxHover": "Farbe selektiert / hover",
     "colorDrawerBackground": "Hintergrund",
     "colorDrawerHeaderBackground": "Kopfzeile Hintergrund",
+    "colorDrawerHeaderText": "Kopfzeile Textfarbe",
     "colorDrawerItemBackground": "Hintergrundfarbe des Listenelements",
     "colorDrawerSubBackground": "Hintergrund",
     "colorDrawerSubItemBackground": "Untermenüpunkt Hintergrund",

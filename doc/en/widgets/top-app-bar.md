@@ -55,6 +55,8 @@ untranslated as well).
 
 The three groups **navigation bar colors**, **sub menu layout** and **sub menu
 colors** only appear once **show advanced options** is ticked in **Common**.
+**header text color** in **navigation bar colors** sets the color of the
+drawer header text.
 
 Menu entries come from the data and item groups:
 

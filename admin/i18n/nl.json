@@ -188,6 +188,7 @@
     "colorCheckBoxHover": "zweefkleur van selectievakje",
     "colorDrawerBackground": "achtergrond",
     "colorDrawerHeaderBackground": "koptekst achtergrondkleur",
+    "colorDrawerHeaderText": "tekstkleur koptekst",
     "colorDrawerItemBackground": "achtergrondkleur lijstitem",
     "colorDrawerSubBackground": "achtergrond",
     "colorDrawerSubItemBackground": "submenu-item achtergrond",

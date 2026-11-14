@@ -151,4 +151,16 @@ describe('top app bar title and header (issue #27)', () => {
         expect(collectByClass(permanent, 'mdc-top-app-bar')).toHaveLength(0);
         expect(collectByClass(permanent, 'mdc-drawer')).toHaveLength(1);
     });
+
+    it('colors the drawer header text from its own field', () => {
+        expect(style(render({ colorDrawerHeaderText: 'black' }, true), 'mdc-drawer__header').color).toBe('black');
+        expect(style(render({ colorDrawerHeaderText: 'black', designStyle: 'material3' }, true), 'mdc-drawer__header').color).toBe('black');
+        for (const value of ['', null, undefined]) {
+            expect(style(render({ colorDrawerHeaderText: value }, true), 'mdc-drawer__header').color, String(value)).toBe('#fff');
+            expect(style(render({ colorDrawerHeaderText: value, designStyle: 'material3' }, true), 'mdc-drawer__header').color, String(value)).toBe('var(--md-sys-color-on-primary)');
+        }
+        const fields = MaterialDesignTopAppBar.getWidgetInfo().visAttrs.flatMap(group => group.fields.map(field => field.name));
+        expect(fields).toContain('colorDrawerHeaderText');
+        expect(fields).toContain('showOnlyMenuButton');
+    });
 });

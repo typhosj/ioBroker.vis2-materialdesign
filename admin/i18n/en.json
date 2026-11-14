@@ -188,6 +188,7 @@
     "colorCheckBoxHover": "hover color of checkbox",
     "colorDrawerBackground": "background",
     "colorDrawerHeaderBackground": "header background color",
+    "colorDrawerHeaderText": "header text color",
     "colorDrawerItemBackground": "list item background color",
     "colorDrawerSubBackground": "background",
     "colorDrawerSubItemBackground": "submenu item background",

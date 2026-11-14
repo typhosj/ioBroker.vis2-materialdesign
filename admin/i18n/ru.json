@@ -188,6 +188,7 @@
     "colorCheckBoxHover": "цвет наведения флажка",
     "colorDrawerBackground": "фон",
     "colorDrawerHeaderBackground": "цвет фона заголовка",
+    "colorDrawerHeaderText": "цвет текста заголовка",
     "colorDrawerItemBackground": "цвет фона элемента списка",
     "colorDrawerSubBackground": "фон",
     "colorDrawerSubItemBackground": "фон подменю",

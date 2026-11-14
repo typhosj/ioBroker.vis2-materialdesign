@@ -188,6 +188,7 @@
     "colorCheckBoxHover": "pairar cor da caixa de seleção",
     "colorDrawerBackground": "fundo",
     "colorDrawerHeaderBackground": "cor de fundo do cabeçalho",
+    "colorDrawerHeaderText": "cor do texto do cabeçalho",
     "colorDrawerItemBackground": "cor do plano de fundo do item da lista",
     "colorDrawerSubBackground": "fundo",
     "colorDrawerSubItemBackground": "fundo do item do submenu",

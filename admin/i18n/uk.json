@@ -188,6 +188,7 @@
     "colorCheckBoxHover": "HOVER колір OF прапорець",
     "colorDrawerBackground": "Фон",
     "colorDrawerHeaderBackground": "Заголовок фон колір",
+    "colorDrawerHeaderText": "колір тексту заголовка",
     "colorDrawerItemBackground": "список item фон колір",
     "colorDrawerSubBackground": "Фон",
     "colorDrawerSubItemBackground": "Підменю ITEM фон",

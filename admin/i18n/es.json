@@ -188,6 +188,7 @@
     "colorCheckBoxHover": "coloque el cursor sobre el color de la casilla de verificación",
     "colorDrawerBackground": "antecedentes",
     "colorDrawerHeaderBackground": "color de fondo del encabezado",
+    "colorDrawerHeaderText": "color del texto del encabezado",
     "colorDrawerItemBackground": "color de fondo del elemento de lista",
     "colorDrawerSubBackground": "antecedentes",
     "colorDrawerSubItemBackground": "fondo del elemento del submenú",

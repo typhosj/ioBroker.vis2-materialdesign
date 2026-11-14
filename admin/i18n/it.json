@@ -188,6 +188,7 @@
     "colorCheckBoxHover": "passa il colore della casella di controllo",
     "colorDrawerBackground": "sfondo",
     "colorDrawerHeaderBackground": "colore di sfondo dell'intestazione",
+    "colorDrawerHeaderText": "colore del testo dell'intestazione",
     "colorDrawerItemBackground": "colore dello sfondo della voce di elenco",
     "colorDrawerSubBackground": "sfondo",
     "colorDrawerSubItemBackground": "sottomenu voce di sfondo",

@@ -188,6 +188,7 @@
     "colorCheckBoxHover": "悬停复选框的颜色",
     "colorDrawerBackground": "背景",
     "colorDrawerHeaderBackground": "标头背景色",
+    "colorDrawerHeaderText": "标题文字颜色",
     "colorDrawerItemBackground": "列表项背景色",
     "colorDrawerSubBackground": "背景",
     "colorDrawerSubItemBackground": "子菜单项背景",

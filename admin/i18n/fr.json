@@ -188,6 +188,7 @@
     "colorCheckBoxHover": "survolez la couleur de la case à cocher",
     "colorDrawerBackground": "Contexte",
     "colorDrawerHeaderBackground": "couleur de fond de l'en-tête",
+    "colorDrawerHeaderText": "couleur du texte de l'en-tête",
     "colorDrawerItemBackground": "liste la couleur d'arrière-plan de l'élément",
     "colorDrawerSubBackground": "Contexte",
     "colorDrawerSubItemBackground": "arrière-plan de l'élément de sous-menu",
