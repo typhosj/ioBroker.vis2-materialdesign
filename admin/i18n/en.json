@@ -34,6 +34,7 @@
     "appendTextFontSize": "font size of appended text",
     "arcLength": "arc length",
     "attention": "attention",
+    "autocompleteMinChars": "open the menu from n typed characters",
     "autoFillAgain": "refill fields from the object",
     "autoFillAgainConfirm": "These fields will be overwritten:",
     "autoFillNothingChanged": "The fields already carry what this object says.",

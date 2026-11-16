@@ -34,6 +34,7 @@
     "appendTextFontSize": "dimensione del carattere del testo aggiunto",
     "arcLength": "lunghezza dell'arco",
     "attention": "Attenzione",
+    "autocompleteMinChars": "apri il menu da n caratteri digitati",
     "autoFillAgain": "riempire di nuovo i campi dall’oggetto",
     "autoFillAgainConfirm": "Questi campi verranno sovrascritti:",
     "autoFillNothingChanged": "I campi contengono già quello che dice questo oggetto.",

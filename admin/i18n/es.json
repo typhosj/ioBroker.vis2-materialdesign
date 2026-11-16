@@ -34,6 +34,7 @@
     "appendTextFontSize": "tamaño de fuente del texto adjunto",
     "arcLength": "longitud de arco",
     "attention": "atención",
+    "autocompleteMinChars": "abrir el menú a partir de n caracteres escritos",
     "autoFillAgain": "rellenar los campos desde el objeto",
     "autoFillAgainConfirm": "Estos campos se sobrescribirán:",
     "autoFillNothingChanged": "Los campos ya contienen lo que dice este objeto.",

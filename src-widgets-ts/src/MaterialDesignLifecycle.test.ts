@@ -5,7 +5,6 @@ import { createButtonClass } from './MaterialDesignButtons';
 import MaterialDesignCard from './MaterialDesignCard';
 import { MaterialDesignDialog } from './MaterialDesignDialog';
 import MaterialDesignIconList from './MaterialDesignIconList';
-import MaterialDesignSelect from './MaterialDesignSelect';
 import { MaterialDesignViews } from './MaterialDesignViews';
 import MaterialDesignCalendar from './MaterialDesignCalendar';
 import MaterialDesignChartLineHistory from './MaterialDesignChartLineHistory';
@@ -45,18 +44,14 @@ describe('widget lifecycle cleanup', () => {
         expect(vi.getTimerCount()).toBe(0);
     });
 
-    it('stops dialog measurement and select filter timers on unmount', () => {
+    it('stops dialog measurement on unmount', () => {
         vi.useFakeTimers();
         const dialog = fixture<{ viewRef: { current: { scrollHeight: number } | null }; startMeasure: () => void; componentWillUnmount: () => void }>(new MaterialDesignDialog({}, 'view'));
         dialog.viewRef.current = { scrollHeight: 100 };
         dialog.startMeasure();
-
-        const select = fixture<{ scheduleFilterReset: () => void; componentWillUnmount: () => void }>(new MaterialDesignSelect(fixture<ConstructorParameters<typeof MaterialDesignSelect>[0]>({})));
-        select.scheduleFilterReset();
-        expect(vi.getTimerCount()).toBe(2);
+        expect(vi.getTimerCount()).toBe(1);
 
         dialog.componentWillUnmount();
-        select.componentWillUnmount();
         vi.runAllTimers();
         expect(vi.getTimerCount()).toBe(0);
     });

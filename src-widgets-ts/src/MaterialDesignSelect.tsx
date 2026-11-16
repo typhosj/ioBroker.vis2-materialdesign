@@ -2,6 +2,7 @@ import React from 'react';
 
 import type { RxWidgetInfo } from '@iobroker/types-vis-2';
 
+import { isComposing, moveHighlight, writeValue } from './autocomplete';
 import { m3ColorExplicit, renderIcon } from './MaterialDesignButtons';
 import { cleanColor, num } from './MaterialDesignProgress';
 import { fill, withAutoFill } from './deviceFill';
@@ -9,6 +10,8 @@ import { squarePreview, RenderProps, VisWidget, createInfo, indexedFields, itemC
 
 interface SelectData {
     oid?: string;
+    inputMode?: 'write' | 'select';
+    autocompleteMinChars?: number;
     inputType?: string;
     inputLayout?: string;
     inputAlignment?: 'left' | 'center' | 'right';
@@ -404,19 +407,16 @@ export default class MaterialDesignSelect extends VisWidget {
     private open = false;
     private fieldHovered = false;
     private fieldRef: HTMLElement | null = null;
-    private filterTimer?: number;
+    private inputRef: HTMLInputElement | null = null;
     private localValue: ioBroker.StateValue | undefined;
     private seenStateValue: ioBroker.StateValue | undefined;
     private hoveredValue: string | undefined;
-
-    componentWillUnmount(): void {
-        if (this.filterTimer !== undefined) window.clearTimeout(this.filterTimer);
-        this.filterTimer = undefined;
-        super.componentWillUnmount?.();
-    }
     private readonly rootRef = React.createRef<HTMLDivElement>();
     protected isAutocomplete = false;
     private filterText: string | undefined;
+    // Only a change by the user may trigger the blur write; focus alone also sets `filterText`.
+    private dirty = false;
+    private forcedOpen = false;
     private statesOid: string | undefined;
     private objectStates: unknown;
 
@@ -435,52 +435,77 @@ export default class MaterialDesignSelect extends VisWidget {
             .catch((e: unknown) => console.error(`Cannot read ${oid}: ${String(e)}`));
     }
 
-    private commitValue(value: ioBroker.StateValue, oid: string): void {
-        this.localValue = value;
-        setStateValue(this.props, oid, value);
-        this.filterText = undefined;
+    private closeMenu(): void {
         this.open = false;
+        this.filterText = undefined;
+        this.dirty = false;
+        this.hoveredValue = undefined;
+        this.forcedOpen = false;
         this.forceUpdate();
     }
 
-    private scheduleFilterReset(): void {
-        if (this.filterTimer !== undefined) window.clearTimeout(this.filterTimer);
-        this.filterTimer = window.setTimeout(() => {
-            this.filterTimer = undefined;
-            if (this.filterText !== undefined) {
-                this.filterText = undefined;
-                this.forceUpdate();
-            }
-        }, 150);
+    private commit(value: ioBroker.StateValue, oid: string): void {
+        this.localValue = value;
+        setStateValue(this.props, oid, value);
+        this.dirty = false;
     }
 
-    private onAutocompleteKey(event: React.KeyboardEvent, list: SelectItem[], data: SelectData): void {
-        if (event.key === 'Escape') {
-            this.filterText = undefined;
-            this.open = false;
-            this.forceUpdate();
+    private commitItem(item: SelectItem, oid: string): void {
+        this.commit(item.value, oid);
+        this.closeMenu();
+        this.inputRef?.blur();
+    }
+
+    private startInput(displayed: string, write: boolean): void {
+        if (this.filterText === undefined) {
+            this.filterText = write ? displayed : '';
+            this.dirty = false;
+        }
+        this.open = true;
+        this.forceUpdate();
+    }
+
+    private onAutocompleteKey(
+        event: React.KeyboardEvent,
+        list: SelectItem[],
+        visibleList: SelectItem[],
+        highlighted: SelectItem | undefined,
+        data: SelectData,
+    ): void {
+        if (isComposing(event)) return;
+        const oid = data.oid || '';
+        if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+            event.preventDefault();
+            this.open = true;
+            this.forcedOpen = true;
+            this.hoveredValue = moveHighlight(visibleList, this.hoveredValue, event.key === 'ArrowDown' ? 1 : -1);
+            const index = visibleList.findIndex(item => String(item.value) === this.hoveredValue);
+            this.forceUpdate(() => this.rootRef.current?.querySelectorAll('[role="option"]')[index]?.scrollIntoView({ block: 'nearest' }));
             return;
         }
-        if (event.key !== 'Enter') {
+        if (event.key === 'Escape') {
+            this.closeMenu();
+            return;
+        }
+        // No preventDefault: the focus moves on, and the blur that follows only closes.
+        if (event.key === 'Tab') {
+            if (highlighted) this.commit(highlighted.value, oid);
+            return;
+        }
+        if (event.key !== 'Enter') return;
+        if (highlighted) {
+            this.commitItem(highlighted, oid);
+            return;
+        }
+        if (data.inputMode === 'write') {
+            if (this.dirty) this.commit(writeValue(list, this.filterText ?? ''), oid);
+            this.closeMenu();
             return;
         }
         const ft = this.filterText;
-        if (ft === undefined || ft === '') {
-            this.filterText = undefined;
-            this.open = false;
-            this.forceUpdate();
-            return;
-        }
-        const match = list.find(item => item.text.toLowerCase().includes(ft.toLowerCase()));
-        if (match) {
-            this.commitValue(match.value, data.oid || '');
-        } else if (data.inputMode === 'write' && ft !== '') {
-            this.commitValue(ft, data.oid || '');
-        } else {
-            this.filterText = undefined;
-            this.open = false;
-            this.forceUpdate();
-        }
+        const match = ft ? list.find(item => item.text.toLowerCase().includes(ft.toLowerCase())) : undefined;
+        if (match) this.commit(match.value, oid);
+        this.closeMenu();
     }
 
     componentDidMount(): void {
@@ -518,8 +543,19 @@ export default class MaterialDesignSelect extends VisWidget {
         }
         const current = this.localValue ?? state;
         const selected = list.find(item => String(item.value) === String(current));
-        const filter = this.isAutocomplete ? this.filterText : undefined;
+        const write = this.isAutocomplete && data.inputMode === 'write';
+        const minChars = this.isAutocomplete ? Math.max(0, num(data.autocompleteMinChars, 0)) : 0;
+        const displayed = selected?.text ?? (write && current !== undefined && current !== null ? String(current) : '');
+        const filter = this.isAutocomplete && this.dirty ? this.filterText : undefined;
         const visibleList = filter ? list.filter(item => item.text.toLowerCase().includes(filter.toLowerCase())) : list;
+        const highlighted = visibleList.find(item => String(item.value) === this.hoveredValue);
+        const menuShown =
+            this.open &&
+            (!this.isAutocomplete ||
+                (visibleList.length > 0 &&
+                    (minChars === 0 || this.forcedOpen || (this.dirty && (this.filterText ?? '').length >= minChars))));
+        const idBase = String(this.props.id ?? '').replace(/[^\w-]/g, '');
+        const listId = `${idBase}-list`;
         const active = this.open || (current !== undefined && current !== null && current !== '');
         // m3c() emits the token only when the saved value is unset; the legacy `#000000` text default
         // counts as unset so the M3 token applies, which dark mode needs.
@@ -609,9 +645,14 @@ export default class MaterialDesignSelect extends VisWidget {
                     style={{ boxSizing: 'border-box', display: hasDetails ? 'flex' : undefined, flexDirection: 'column', height: '100%', position: 'relative', width: '100%' }}
                 >
                     <FieldTag
-                        aria-expanded={this.open}
+                        aria-expanded={this.isAutocomplete ? undefined : this.open}
                         className="v-input v-input--dense v-select theme--light"
                         onClick={() => {
+                            // Opening without focus would leave a menu that no blur ever closes.
+                            if (this.isAutocomplete) {
+                                this.inputRef?.focus();
+                                return;
+                            }
                             this.open = !this.open;
                             this.forceUpdate();
                         }}
@@ -750,29 +791,31 @@ export default class MaterialDesignSelect extends VisWidget {
                             ) : null}
                             {this.isAutocomplete ? (
                                 <input
-                                    onBlur={() => this.scheduleFilterReset()}
+                                    aria-activedescendant={menuShown && highlighted ? `${idBase}-option-${visibleList.indexOf(highlighted)}` : undefined}
+                                    aria-autocomplete="list"
+                                    aria-controls={listId}
+                                    aria-expanded={menuShown}
+                                    onBlur={() => {
+                                        if (write && this.dirty) this.commit(writeValue(list, this.filterText ?? ''), data.oid || '');
+                                        this.closeMenu();
+                                    }}
                                     onChange={event => {
                                         this.filterText = event.target.value;
+                                        this.dirty = true;
+                                        this.hoveredValue = undefined;
+                                        this.forcedOpen = false;
                                         this.open = true;
                                         this.forceUpdate();
                                     }}
                                     onClick={event => {
                                         event.stopPropagation();
-                                        if (this.filterText === undefined) {
-                                            this.filterText = '';
-                                        }
-                                        this.open = true;
-                                        this.forceUpdate();
+                                        this.startInput(displayed, write);
                                     }}
-                                    onFocus={() => {
-                                        if (this.filterText === undefined) {
-                                            this.filterText = '';
-                                        }
-                                        this.open = true;
-                                        this.forceUpdate();
-                                    }}
-                                    onKeyDown={event => this.onAutocompleteKey(event, list, data)}
+                                    onFocus={() => this.startInput(displayed, write)}
+                                    onKeyDown={event => this.onAutocompleteKey(event, list, visibleList, highlighted, data)}
                                     placeholder={selected?.text || ''}
+                                    ref={element => { this.inputRef = element; }}
+                                    role="combobox"
                                     style={{
                                         background: 'transparent',
                                         border: 0,
@@ -788,7 +831,7 @@ export default class MaterialDesignSelect extends VisWidget {
                                         width: '100%',
                                     }}
                                     type={data.inputType === 'date' || data.inputType === 'time' ? data.inputType : 'text'}
-                                    value={this.filterText ?? (selected?.text || '')}
+                                    value={this.filterText ?? displayed}
                                 />
                             ) : (
                                 <span
@@ -829,6 +872,7 @@ export default class MaterialDesignSelect extends VisWidget {
                                     this.filterText = undefined;
                                     this.open = !!data.openOnClear;
                                     this.forceUpdate();
+                                    if (this.isAutocomplete && data.openOnClear) this.inputRef?.focus();
                                 }}
                                 style={{
                                     background: 'transparent',
@@ -897,8 +941,17 @@ export default class MaterialDesignSelect extends VisWidget {
                             ) : null}
                         </div>
                     ) : null}
-                    {this.open ? (
+                    {menuShown ? (
                         <div
+                            {...(this.isAutocomplete
+                                ? {
+                                      id: listId,
+                                      // Pressing an item or the scrollbar must not blur the input: the blur
+                                      // would write the half-typed text and close the menu before the click.
+                                      onMouseDown: (event: React.MouseEvent) => event.preventDefault(),
+                                      role: 'listbox',
+                                  }
+                                : {})}
                             className="v-menu__content v-select-list"
                             style={{
                                 background: m3c(data.listItemBackgroundColor, 'var(--md-sys-color-surface-container)', legacySurface(isDark)),
@@ -914,7 +967,7 @@ export default class MaterialDesignSelect extends VisWidget {
                                 zIndex: 1000,
                             }}
                         >
-                            {visibleList.map(item => {
+                            {visibleList.map((item, index) => {
                                 const isSelected = String(item.value) === String(current);
                                 const isHovered = this.hoveredValue === String(item.value);
                                 const itemColor = isSelected
@@ -932,8 +985,15 @@ export default class MaterialDesignSelect extends VisWidget {
                                 return (
                                     <button
                                         key={String(item.value)}
+                                        {...(this.isAutocomplete
+                                            ? { 'aria-selected': isSelected, id: `${idBase}-option-${index}`, role: 'option', tabIndex: -1 }
+                                            : {})}
                                         className={`v-list-item${isSelected ? ' v-list-item--active' : ''}`}
                                         onClick={() => {
+                                            if (this.isAutocomplete) {
+                                                this.commitItem(item, data.oid || '');
+                                                return;
+                                            }
                                             this.localValue = item.value;
                                             setStateValue(this.props, data.oid || '', item.value);
                                             this.filterText = undefined;

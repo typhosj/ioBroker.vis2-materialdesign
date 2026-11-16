@@ -34,6 +34,7 @@
     "appendTextFontSize": "размер шрифта добавляемого текста",
     "arcLength": "длина дуги",
     "attention": "Внимание",
+    "autocompleteMinChars": "открывать меню от n введённых символов",
     "autoFillAgain": "заполнить поля из объекта заново",
     "autoFillAgainConfirm": "Эти поля будут перезаписаны:",
     "autoFillNothingChanged": "Поля уже содержат то, что сообщает этот объект.",

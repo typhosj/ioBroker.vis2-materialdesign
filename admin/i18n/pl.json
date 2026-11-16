@@ -34,6 +34,7 @@
     "appendTextFontSize": "rozmiar czcionki dołączanego tekstu",
     "arcLength": "długość łuku",
     "attention": "Uwaga",
+    "autocompleteMinChars": "otwórz menu od n wpisanych znaków",
     "autoFillAgain": "ponownie wypełnij pola z obiektu",
     "autoFillAgainConfirm": "Te pola zostaną nadpisane:",
     "autoFillNothingChanged": "Pola zawierają już to, co mówi ten obiekt.",

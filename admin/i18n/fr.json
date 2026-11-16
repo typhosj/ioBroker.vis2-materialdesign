@@ -34,6 +34,7 @@
     "appendTextFontSize": "taille de la police du texte ajouté",
     "arcLength": "longueur de l'arc",
     "attention": "attention",
+    "autocompleteMinChars": "ouvrir le menu à partir de n caractères saisis",
     "autoFillAgain": "remplir à nouveau les champs depuis l’objet",
     "autoFillAgainConfirm": "Ces champs seront écrasés :",
     "autoFillNothingChanged": "Les champs contiennent déjà ce que dit cet objet.",

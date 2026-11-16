@@ -34,6 +34,7 @@
     "appendTextFontSize": "Schriftgröße des angehängten Textes",
     "arcLength": "Bogenlänge",
     "attention": "Achtung",
+    "autocompleteMinChars": "Menü ab n eingegebenen Zeichen öffnen",
     "autoFillAgain": "Felder neu aus dem Objekt befüllen",
     "autoFillAgainConfirm": "Diese Felder werden überschrieben:",
     "autoFillNothingChanged": "Die Felder tragen bereits das, was dieses Objekt sagt.",

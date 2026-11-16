@@ -34,6 +34,7 @@
     "appendTextFontSize": "lettergrootte van toegevoegde tekst",
     "arcLength": "boog lengte",
     "attention": "aandacht",
+    "autocompleteMinChars": "menu openen vanaf n getypte tekens",
     "autoFillAgain": "velden opnieuw vullen vanuit het object",
     "autoFillAgainConfirm": "Deze velden worden overschreven:",
     "autoFillNothingChanged": "De velden bevatten al wat dit object zegt.",
