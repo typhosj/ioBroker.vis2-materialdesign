@@ -128,6 +128,10 @@ to wait with an upgrade.
 - (typhosj) Added **close other submenus when one opens** to the Top App Bar: opening a submenu closes all others, also when a selection from outside opens it. Without the option every submenu stays open until it is closed by hand, as before (issue #30)
 - (typhosj) Fixed **list item alignment** and **submenu text alignment** of the Top App Bar: the entry text always stayed on the left. It follows the option now (issue #31)
 - (typhosj) Fixed the submenu icon colors of the Top App Bar: **sub menu icon color** of an entry and `subMenuIconColor` in the JSON string were ignored, and **active icon color** and **active submenu icon color** never colored the selected entry. All four apply now, as in the old vis version. The arrow of a submenu also showed it as open after its selected entry had been closed by hand (issue #31)
+- (typhosj) Fixed the **write** input mode of the Autocomplete widget, which now works as a free text field with suggestions, as in the old vis version: a value that is in no entry showed as an empty field, focus emptied the field, leaving the field lost the typed text, and Enter took the first entry that merely contained the typed text (`Arzt` wrote `Zahnarzt`). The field now shows any value, keeps the text on focus, and writes exactly the typed text on leaving and on Enter; an entry is only taken when it is tapped, highlighted or its text equals the typed text. Escape still cancels
+- (typhosj) Added keyboard navigation to the Autocomplete widget: the arrow keys move a highlight through the list, Enter and Tab take it, Escape closes the menu. Tab no longer walks into the menu entries
+- (typhosj) Added **open the menu from n typed characters** to the Autocomplete widget: the menu only opens once that many characters are typed. The default `0` opens it on focus, as before
+- (typhosj) Fixed the menu of the Autocomplete widget staying open after leaving the field, and an empty menu box when the typed text matched no entry
 
 ### 1.2.0 (2026-11-13)
 

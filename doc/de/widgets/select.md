@@ -25,10 +25,19 @@ Einstellungen sind selbsterklärend.
 
 - **Objekt-ID** – der State, in den die Auswahl geschrieben wird und aus dem der
   angezeigte Wert kommt.
-- Nur Autocomplete: **Eingabemodus** – `schreiben` schreibt getippten Text, der
-  zu keinem Eintrag passt, unverändert in den State; `auswählen` verwirft ihn.
+- Nur Autocomplete: **Eingabemodus** – `schreiben` macht das Feld zu einem
+  freien Textfeld mit Vorschlägen: Es zeigt auch einen Wert, der in keinem
+  Eintrag steht, behält beim Antippen den Text zum Weiterbearbeiten und schreibt
+  beim Verlassen des Felds und bei Enter genau den getippten Text in den State.
+  Ein Eintrag wird nur übernommen, wenn er angetippt oder mit den Pfeiltasten
+  markiert ist oder sein Text dem getippten Text entspricht (Groß-/Kleinschreibung
+  egal). Wer das Feld nur antippt und wieder verlässt, schreibt nichts.
+  `auswählen` übernimmt nur Einträge der Liste und verwirft freien Text.
 - Nur Autocomplete: **Eingabetyp** – `Text`, `Datum` oder `Zeit` für das
   Eingabefeld.
+- Nur Autocomplete: **Menü ab n eingegebenen Zeichen öffnen** – das Menü öffnet
+  sich erst, wenn so viele Zeichen getippt sind. `0` (Standard) öffnet es schon
+  beim Antippen. Die Pfeiltasten öffnen es immer.
 
 **Daten des Menüs**
 
@@ -83,6 +92,20 @@ Für das **Text-Löschen-Symbol**, das **Menüsymbol** (Aufklapp-Pfeil), das
 Symbol** lässt sich je ein Icon oder ein Bild samt Größe und Farbe wählen.
 
 <img src="../../media/vis2_select_editor_icons.png" width="340" alt="Select-Symbolfelder">
+
+## Tastatur (Autocomplete)
+
+Der Fokus bleibt im Eingabefeld; die Liste wird mit einer Markierung bedient.
+
+- **↓ / ↑** – öffnet das Menü und bewegt die Markierung; am Ende geht es oben
+  wieder los.
+- **Enter** – übernimmt den markierten Eintrag. Ohne Markierung schreibt
+  `schreiben` den getippten Text, `auswählen` den ersten passenden Eintrag.
+- **Tab** – übernimmt den markierten Eintrag und springt weiter.
+- **Escape** – schließt das Menü und verwirft den getippten Text; der Wert bleibt.
+
+Während eine Bildschirmtastatur ein Wort noch zusammensetzt, lösen Enter und Tab
+nichts aus. Findet der getippte Text keinen Eintrag, bleibt das Menü zu.
 
 ## Gestaltungsstil
 

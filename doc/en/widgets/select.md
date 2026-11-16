@@ -26,9 +26,17 @@ screenshots are German.
 
 - **Object ID** – the state the selection is written to and the displayed value
   is read from.
-- Autocomplete only: **input mode** – `write` writes typed text that matches no
-  entry straight into the state, `select` discards it.
+- Autocomplete only: **input mode** – `write` turns the field into a free text
+  field with suggestions: it also shows a value that is in no entry, keeps the
+  text on focus so you can edit it, and writes exactly the typed text into the
+  state when you leave the field or press Enter. An entry is only taken when you
+  tap it, highlight it with the arrow keys, or its text equals the typed text
+  (ignoring case). Focusing the field and leaving it again writes nothing.
+  `select` only takes entries of the list and discards free text.
 - Autocomplete only: **input type** – `text`, `date` or `time` for the input field.
+- Autocomplete only: **open the menu from n typed characters** – the menu only
+  opens once that many characters are typed. `0` (default) opens it on focus.
+  The arrow keys always open it.
 
 **data of menu**
 
@@ -78,6 +86,19 @@ The **text delete icon**, the **menu open symbol** (the collapse arrow), the
 each take an icon or an image plus size and color.
 
 <img src="../../media/vis2_select_editor_icons.png" width="340" alt="Select icon fields">
+
+## Keyboard (Autocomplete)
+
+The focus stays in the input field; the list is operated with one highlight.
+
+- **↓ / ↑** – opens the menu and moves the highlight; it wraps at the ends.
+- **Enter** – takes the highlighted entry. Without a highlight, `write` writes the
+  typed text and `select` the first matching entry.
+- **Tab** – takes the highlighted entry and moves on.
+- **Escape** – closes the menu and discards the typed text; the value stays.
+
+While an on-screen keyboard is still composing a word, Enter and Tab do nothing.
+When the typed text matches no entry, the menu stays closed.
 
 ## Design style
 
