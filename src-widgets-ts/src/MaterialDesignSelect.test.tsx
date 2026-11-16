@@ -152,7 +152,7 @@ describe('autocomplete write mode and keyboard', () => {
     const type = (widget: MaterialDesignAutocomplete, text: string): void => call(widget, 'onChange', { target: { value: text } });
     const keys = (widget: MaterialDesignAutocomplete, key: string, extra: Record<string, unknown> = {}): ReturnType<typeof vi.fn> => {
         const preventDefault = vi.fn();
-        call(widget, 'onKeyDown', { key, preventDefault, ...extra });
+        call(widget, 'onKeyDown', { key, preventDefault, stopPropagation: vi.fn(), ...extra });
         return preventDefault;
     };
     const active = (widget: MaterialDesignAutocomplete): unknown => input(widget).props['aria-activedescendant'];
@@ -283,6 +283,31 @@ describe('autocomplete write mode and keyboard', () => {
         expect(input(widget).props.value).toBe('Alt');
         call(widget, 'onBlur');
         expect(setValue).not.toHaveBeenCalled();
+    });
+
+    it('keeps Escape from a surrounding dialog only while there is a menu or typed text to cancel', () => {
+        const escape = (widget: MaterialDesignAutocomplete): ReturnType<typeof vi.fn> => {
+            const stopPropagation = vi.fn();
+            call(widget, 'onKeyDown', { key: 'Escape', preventDefault: vi.fn(), stopPropagation });
+            return stopPropagation;
+        };
+        const menu = make().widget;
+        call(menu, 'onFocus');
+        expect(listbox(menu)).toBeDefined();
+        expect(escape(menu)).toHaveBeenCalled();
+        // Menu closed, nothing typed: the second Escape belongs to the dialog.
+        expect(escape(menu)).not.toHaveBeenCalled();
+
+        const typed = make({ autocompleteMinChars: 2 }, 'Alt').widget;
+        call(typed, 'onFocus');
+        type(typed, 'xyz');
+        expect(listbox(typed)).toBeUndefined();
+        expect(escape(typed)).toHaveBeenCalled();
+        expect(input(typed).props.value).toBe('Alt');
+
+        const untouched = make({ autocompleteMinChars: 2 }, 'Alt').widget;
+        call(untouched, 'onFocus');
+        expect(escape(untouched)).not.toHaveBeenCalled();
     });
 
     it('ignores Enter while an input method composes', () => {

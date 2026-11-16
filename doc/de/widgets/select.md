@@ -102,7 +102,7 @@ Der Fokus bleibt im Eingabefeld; die Liste wird mit einer Markierung bedient.
 - **Enter** – übernimmt den markierten Eintrag. Ohne Markierung schreibt
   `schreiben` den getippten Text, `auswählen` den ersten passenden Eintrag.
 - **Tab** – übernimmt den markierten Eintrag und springt weiter.
-- **Escape** – schließt das Menü und verwirft den getippten Text; der Wert bleibt.
+- **Escape** – schließt das Menü und verwirft den getippten Text; der Wert bleibt. Ein Dialog um das Widget bleibt dabei offen; erst ein weiteres Escape erreicht ihn.
 
 Während eine Bildschirmtastatur ein Wort noch zusammensetzt, lösen Enter und Tab
 nichts aus. Findet der getippte Text keinen Eintrag, bleibt das Menü zu.

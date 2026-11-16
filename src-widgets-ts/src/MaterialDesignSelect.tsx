@@ -471,6 +471,7 @@ export default class MaterialDesignSelect extends VisWidget {
         visibleList: SelectItem[],
         highlighted: SelectItem | undefined,
         data: SelectData,
+        menuShown: boolean,
     ): void {
         if (isComposing(event)) return;
         const oid = data.oid || '';
@@ -484,6 +485,9 @@ export default class MaterialDesignSelect extends VisWidget {
             return;
         }
         if (event.key === 'Escape') {
+            // A dialog around the widget closes on Escape too; the first Escape only cancels the menu
+            // or the typed text, the next one reaches the dialog.
+            if (menuShown || this.dirty) event.stopPropagation();
             this.closeMenu();
             return;
         }
@@ -812,7 +816,7 @@ export default class MaterialDesignSelect extends VisWidget {
                                         this.startInput(displayed, write);
                                     }}
                                     onFocus={() => this.startInput(displayed, write)}
-                                    onKeyDown={event => this.onAutocompleteKey(event, list, visibleList, highlighted, data)}
+                                    onKeyDown={event => this.onAutocompleteKey(event, list, visibleList, highlighted, data, menuShown)}
                                     placeholder={selected?.text || ''}
                                     ref={element => { this.inputRef = element; }}
                                     role="combobox"

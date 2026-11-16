@@ -95,7 +95,7 @@ The focus stays in the input field; the list is operated with one highlight.
 - **Enter** – takes the highlighted entry. Without a highlight, `write` writes the
   typed text and `select` the first matching entry.
 - **Tab** – takes the highlighted entry and moves on.
-- **Escape** – closes the menu and discards the typed text; the value stays.
+- **Escape** – closes the menu and discards the typed text; the value stays. A dialog around the widget stays open; only a second Escape reaches it.
 
 While an on-screen keyboard is still composing a word, Enter and Tab do nothing.
 When the typed text matches no entry, the menu stays closed.
