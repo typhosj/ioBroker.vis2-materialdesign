@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 
 import type { RxWidgetInfo } from '@iobroker/types-vis-2';
 
@@ -419,6 +420,36 @@ export default class MaterialDesignSelect extends VisWidget {
     private forcedOpen = false;
     private statesOid: string | undefined;
     private objectStates: unknown;
+    private menuRef: HTMLDivElement | null = null;
+    // Whether the window and document listeners of the open menu are registered.
+    private listening = false;
+
+    // The menu sits at fixed coordinates in the page body, so it has to follow the field.
+    private readonly onViewportChange = (): void => {
+        if (this.open) this.forceUpdate();
+    };
+
+    // A select has no input whose blur would close it; the autocomplete closes on blur.
+    private readonly onOutsidePointer = (event: Event): void => {
+        const target = event.target as Node | null;
+        if (!this.open || this.isAutocomplete || !target) return;
+        if (this.rootRef.current?.contains(target) || this.menuRef?.contains(target)) return;
+        this.closeMenu();
+    };
+
+    private syncMenuListeners(): void {
+        if (typeof window === 'undefined' || this.listening === this.open) return;
+        this.listening = this.open;
+        if (this.open) {
+            window.addEventListener('scroll', this.onViewportChange, true);
+            window.addEventListener('resize', this.onViewportChange);
+            document.addEventListener('pointerdown', this.onOutsidePointer, true);
+        } else {
+            window.removeEventListener('scroll', this.onViewportChange, true);
+            window.removeEventListener('resize', this.onViewportChange);
+            document.removeEventListener('pointerdown', this.onOutsidePointer, true);
+        }
+    }
 
     // `context` carries no object cache, so the states of the bound object have to be read once.
     private loadObjectStates(oid: string): void {
@@ -481,7 +512,7 @@ export default class MaterialDesignSelect extends VisWidget {
             this.forcedOpen = true;
             this.hoveredValue = moveHighlight(visibleList, this.hoveredValue, event.key === 'ArrowDown' ? 1 : -1);
             const index = visibleList.findIndex(item => String(item.value) === this.hoveredValue);
-            this.forceUpdate(() => this.rootRef.current?.querySelectorAll('[role="option"]')[index]?.scrollIntoView({ block: 'nearest' }));
+            this.forceUpdate(() => this.menuRef?.querySelectorAll('[role="option"]')[index]?.scrollIntoView({ block: 'nearest' }));
             return;
         }
         if (event.key === 'Escape') {
@@ -521,6 +552,39 @@ export default class MaterialDesignSelect extends VisWidget {
         if ((this.state.rxData as unknown as SelectData).autoFocus && !this.props.editMode) {
             this.fieldRef?.focus();
         }
+    }
+
+    componentDidUpdate(prevProps: typeof this.props, prevState: typeof this.state): void {
+        super.componentDidUpdate(prevProps, prevState);
+        this.syncMenuListeners();
+    }
+
+    componentWillUnmount(): void {
+        this.open = false;
+        this.syncMenuListeners();
+        super.componentWillUnmount();
+    }
+
+    /**
+     * Puts the open menu into the page body once the field is mounted, so no dialog, view or widget
+     * with `overflow: hidden` clips it. Unmounted (server prerender, tests) it stays inline.
+     * Known limit: in a view scaled with a CSS transform the menu sits at the right place but is
+     * not scaled with the view.
+     */
+    private placeMenu(menu: React.JSX.Element, floating: boolean): React.ReactNode {
+        return floating ? createPortal(menu, document.body) : menu;
+    }
+
+    /** Custom properties the theme writes on the widget element; the portal does not inherit them. */
+    private themeVariables(): Record<string, string> {
+        const host = this.refService?.current;
+        const result: Record<string, string> = {};
+        if (!host) return result;
+        for (let index = 0; index < host.style.length; index++) {
+            const name = host.style[index];
+            if (name.startsWith('--')) result[name] = host.style.getPropertyValue(name);
+        }
+        return result;
     }
 
     static getWidgetInfo(): RxWidgetInfo {
@@ -623,12 +687,36 @@ export default class MaterialDesignSelect extends VisWidget {
                       !!(configuredColor || selected?.selectedImageColor || selected?.imageColor),
                   );
         let openUp = isTop;
-        if (this.open && data.listPosition === 'auto' && typeof window !== 'undefined' && this.rootRef.current) {
-            const rect = this.rootRef.current.getBoundingClientRect();
+        const gap = data.listPositionOffset ? 0 : 4;
+        // Measured only while open: the closed field needs no coordinates, and an unmounted one has none.
+        const rect = this.open && typeof window !== 'undefined' ? this.rootRef.current?.getBoundingClientRect() : undefined;
+        if (rect && data.listPosition === 'auto') {
             const menuH = Math.min(300, list.length * itemHeight + 8);
             const spaceBelow = window.innerHeight - rect.bottom;
             openUp = spaceBelow < menuH && rect.top > spaceBelow;
         }
+        const floating = menuShown && !!rect;
+        // The menu keeps an 8 px margin to the window edge, but never gets lower than one item.
+        const menuPlace: React.CSSProperties = rect
+            ? {
+                  ...this.themeVariables(),
+                  bottom: openUp ? window.innerHeight - rect.top + gap : undefined,
+                  left: rect.left,
+                  maxHeight: Math.max(itemHeight, Math.min(300, (openUp ? rect.top : window.innerHeight - rect.bottom) - gap - 8)),
+                  minWidth: rect.width,
+                  position: 'fixed',
+                  top: openUp ? undefined : rect.bottom + gap,
+                  zIndex: 10000,
+              }
+            : {
+                  bottom: openUp ? (data.listPositionOffset ? '100%' : 'calc(100% + 4px)') : undefined,
+                  left: 0,
+                  maxHeight: 300,
+                  minWidth: '100%',
+                  position: 'absolute',
+                  top: openUp ? undefined : data.listPositionOffset ? '100%' : 'calc(100% + 4px)',
+                  zIndex: 1000,
+              };
         // A plain div, because an <input> nested in a <button> is not typeable.
         const FieldTag = this.isAutocomplete ? 'div' : 'button';
         // The hint and counter options existed in the editor since the port but were never rendered.
@@ -945,8 +1033,11 @@ export default class MaterialDesignSelect extends VisWidget {
                             ) : null}
                         </div>
                     ) : null}
-                    {menuShown ? (
+                    {menuShown ? this.placeMenu(
                         <div
+                            ref={element => {
+                                this.menuRef = element;
+                            }}
                             {...(this.isAutocomplete
                                 ? {
                                       id: listId,
@@ -956,19 +1047,13 @@ export default class MaterialDesignSelect extends VisWidget {
                                       role: 'listbox',
                                   }
                                 : {})}
-                            className="v-menu__content v-select-list"
+                            className={`v-menu__content v-select-list${floating ? ` materialdesign-widget${isM3 ? ` ${designStyleClasses(data, isDark)}` : ''}` : ''}`}
                             style={{
+                                ...menuPlace,
                                 background: m3c(data.listItemBackgroundColor, 'var(--md-sys-color-surface-container)', legacySurface(isDark)),
                                 borderRadius: isM3 ? 'var(--md-sys-shape-corner-extra-small)' : undefined,
-                                bottom: openUp ? (data.listPositionOffset ? '100%' : 'calc(100% + 4px)') : undefined,
                                 boxShadow: isM3 ? 'var(--md-sys-elevation-level2)' : '0 4px 6px rgba(32, 33, 36, 0.28)',
-                                left: 0,
-                                maxHeight: 300,
-                                minWidth: '100%',
                                 overflowY: 'auto',
-                                position: 'absolute',
-                                top: openUp ? undefined : data.listPositionOffset ? '100%' : 'calc(100% + 4px)',
-                                zIndex: 1000,
                             }}
                         >
                             {visibleList.map((item, index) => {
@@ -1100,7 +1185,7 @@ export default class MaterialDesignSelect extends VisWidget {
                                 );
                             })}
                         </div>
-                    ) : null}
+                    , floating) : null}
                 </div>
             </div>
         );

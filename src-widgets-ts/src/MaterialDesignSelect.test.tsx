@@ -410,3 +410,139 @@ describe('hint and counter', () => {
         expect(render({ ...list, inputMessage: 'Raum wählen', showInputMessageAlways: false })).not.toContain('Raum wählen');
     });
 });
+
+describe('menu above every container', () => {
+    type Element = React.ReactElement<Record<string, unknown>>;
+    interface Portal { children: React.ReactNode; containerInfo: unknown }
+    const PORTAL = Symbol.for('react.portal');
+    const renderProps = fixture<Parameters<MaterialDesignSelect['renderWidgetBody']>[0]>({});
+
+    function findPortal(node: React.ReactNode): Portal | undefined {
+        if (Array.isArray(node)) return node.map(findPortal).find(Boolean);
+        if (node && typeof node === 'object' && (node as { $$typeof?: symbol }).$$typeof === PORTAL) return node as unknown as Portal;
+        if (!React.isValidElement(node)) return undefined;
+        return findPortal((node as Element).props.children as React.ReactNode);
+    }
+
+    /** A select whose root is "mounted" at the given place in a 768 px high window. */
+    function mounted(rect: { left: number; top: number; width: number; height: number }, rxData: Record<string, unknown> = {}, Widget = MaterialDesignSelect) {
+        const widget = new Widget(fixture<ConstructorParameters<typeof MaterialDesignSelect>[0]>({ context: { setValue: vi.fn() }, id: 'w0002' }));
+        widget.state = fixture<typeof widget.state>({
+            rxData: { oid: 'test.0.choice', listDataMethod: 'valueList', valueList: '1;2;3', valueListLabels: 'One;Two;Three', ...rxData },
+            values: {},
+        });
+        const root = document.createElement('div');
+        root.getBoundingClientRect = () => fixture<DOMRect>({ ...rect, right: rect.left + rect.width, bottom: rect.top + rect.height, x: rect.left, y: rect.top });
+        document.body.appendChild(root);
+        (widget as unknown as { rootRef: { current: HTMLDivElement } }).rootRef.current = root;
+        return { widget, root };
+    }
+    const openSelect = (widget: MaterialDesignSelect): void => {
+        const field = findElement(widget.renderWidgetBody(renderProps), element => element.type === 'button');
+        (field?.props.onClick as () => void)();
+    };
+    const menuOf = (widget: MaterialDesignSelect): { portal: Portal | undefined; menu: Element | undefined } => {
+        const portal = findPortal(widget.renderWidgetBody(renderProps));
+        const menu = findElement(portal?.children, element => (typeof element.props.className === 'string' && element.props.className.includes('v-select-list')));
+        return { portal, menu };
+    };
+    const style = (menu: Element | undefined): React.CSSProperties => (menu?.props.style ?? {});
+
+    it('renders the open menu into the page body at fixed coordinates under the field', () => {
+        const { widget } = mounted({ left: 20, top: 100, width: 400, height: 56 }, { designStyle: 'material3' });
+        openSelect(widget);
+        const { portal, menu } = menuOf(widget);
+        expect(portal?.containerInfo).toBe(document.body);
+        expect(style(menu)).toMatchObject({ position: 'fixed', left: 20, top: 160, minWidth: 400, maxHeight: 300 });
+        expect(style(menu).bottom).toBeUndefined();
+        // The M3 tokens are declared on `.materialdesign-widget.mdw-style-material3`, which the body lacks.
+        expect(String(menu?.props.className)).toContain('materialdesign-widget mdw-style-material3');
+    });
+
+    it('takes the offset option, limits the height to the window and opens upwards in auto mode', () => {
+        const flush = mounted({ left: 0, top: 100, width: 200, height: 40 }, { listPositionOffset: true });
+        openSelect(flush.widget);
+        expect(style(menuOf(flush.widget).menu).top).toBe(140);
+
+        const low = mounted({ left: 0, top: 660, width: 200, height: 40 }, { listPosition: 'bottom' });
+        openSelect(low.widget);
+        // 768 - 700 - 4 gap - 8 margin = 56 px left below.
+        expect(style(menuOf(low.widget).menu)).toMatchObject({ top: 704, maxHeight: 56 });
+
+        const tiny = mounted({ left: 0, top: 740, width: 200, height: 20 }, { listPosition: 'bottom' });
+        openSelect(tiny.widget);
+        // Never smaller than one item.
+        expect(style(menuOf(tiny.widget).menu).maxHeight).toBe(40);
+
+        const auto = mounted({ left: 0, top: 660, width: 200, height: 40 }, { listPosition: 'auto' });
+        openSelect(auto.widget);
+        expect(style(menuOf(auto.widget).menu)).toMatchObject({ bottom: 768 - 660 + 4, maxHeight: 300 });
+        expect(style(menuOf(auto.widget).menu).top).toBeUndefined();
+    });
+
+    it('carries the theme variables of the widget element into the portal', () => {
+        const { widget } = mounted({ left: 0, top: 0, width: 200, height: 40 });
+        const host = document.createElement('div');
+        host.style.setProperty('--mdw-theme-colors-menu', '#123456');
+        host.style.setProperty('color', 'red');
+        (widget as unknown as { refService: { current: HTMLElement } }).refService = { current: host };
+        openSelect(widget);
+        const menuStyle = style(menuOf(widget).menu) as Record<string, unknown>;
+        expect(menuStyle['--mdw-theme-colors-menu']).toBe('#123456');
+        expect(menuStyle.color).toBeUndefined();
+    });
+
+    it('follows the field while open and stops listening once closed', () => {
+        const { widget } = mounted({ left: 0, top: 0, width: 200, height: 40 });
+        const update = vi.spyOn(widget, 'forceUpdate');
+        openSelect(widget);
+        widget.componentDidUpdate(widget.props, widget.state);
+        update.mockClear();
+        window.dispatchEvent(new Event('scroll'));
+        window.dispatchEvent(new Event('resize'));
+        expect(update).toHaveBeenCalledTimes(2);
+
+        openSelect(widget);
+        widget.componentDidUpdate(widget.props, widget.state);
+        update.mockClear();
+        window.dispatchEvent(new Event('scroll'));
+        expect(update).not.toHaveBeenCalled();
+    });
+
+    it('closes the select on a press outside field and menu, not on one inside', () => {
+        const { widget, root } = mounted({ left: 0, top: 0, width: 200, height: 40 });
+        openSelect(widget);
+        widget.componentDidUpdate(widget.props, widget.state);
+        const menuElement = document.createElement('div');
+        const item = document.createElement('button');
+        menuElement.appendChild(item);
+        (widget as unknown as { menuRef: HTMLDivElement }).menuRef = menuElement;
+        document.body.appendChild(menuElement);
+
+        item.dispatchEvent(new Event('pointerdown', { bubbles: true }));
+        root.dispatchEvent(new Event('pointerdown', { bubbles: true }));
+        expect(menuOf(widget).menu).toBeDefined();
+        document.body.dispatchEvent(new Event('pointerdown', { bubbles: true }));
+        expect(menuOf(widget).menu).toBeUndefined();
+        widget.componentWillUnmount();
+    });
+
+    it('leaves the autocomplete to its blur on a press outside', () => {
+        const { widget } = mounted({ left: 0, top: 0, width: 200, height: 40 }, { inputMode: 'write' }, MaterialDesignAutocomplete);
+        const input = findElement(widget.renderWidgetBody(renderProps), element => element.type === 'input');
+        (input?.props.onFocus as () => void)();
+        widget.componentDidUpdate(widget.props, widget.state);
+        document.body.dispatchEvent(new Event('pointerdown', { bubbles: true }));
+        expect(menuOf(widget).menu).toBeDefined();
+        widget.componentWillUnmount();
+    });
+
+    it('keeps the menu inline while the widget is not mounted', () => {
+        const widget = new MaterialDesignSelect(fixture<ConstructorParameters<typeof MaterialDesignSelect>[0]>({ context: {} }));
+        widget.state = fixture<typeof widget.state>({ rxData: { listDataMethod: 'valueList', valueList: '1', valueListLabels: 'One' }, values: {} });
+        openSelect(widget);
+        const tree = widget.renderWidgetBody(renderProps);
+        expect(findPortal(tree)).toBeUndefined();
+        expect(style(findElement(tree, element => (typeof element.props.className === 'string' && element.props.className.includes('v-select-list'))))).toMatchObject({ position: 'absolute' });
+    });
+});

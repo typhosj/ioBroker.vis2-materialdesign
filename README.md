@@ -118,6 +118,7 @@ to wait with an upgrade.
 ## Changelog
 ### **WORK IN PROGRESS**
 
+- (typhosj) Fixed the menu of the Select and Autocomplete widgets being cut off inside a dialog, a view or any widget that clips its content: in a short dialog only the first entries could be reached. The menu now lies above the whole page, stays at the field while scrolling and is never higher than the room up to the window edge. It also gets its Material 3 colors and shadow where the view itself has none. The Select now closes its menu on a tap outside, where it used to stay open
 - (typhosj) Added **object ID on event click** to the Calendar widget: a tap on an event writes the browser's vis instance and the event's row as JSON into the chosen state, so a script or adapter can open its own dialog for that event. Without the option events stay as before
 - (typhosj) Fixed the mouse pointer of the Switch and Checkbox widgets: over the Material 3 switch itself it showed the normal arrow, while the empty edges of the widget showed the hand. The whole control shows the hand now. A **cursor** set under "CSS common" was also ignored by both widgets and their labels; it applies now (issue #28)
 - (typhosj) Fixed **activate label click** of the Switch and Checkbox widgets: switched off, it only changed the mouse pointer, and a click on the label still toggled or unlocked the control. The label ignores clicks now, as in the old vis version; the control itself stays clickable
