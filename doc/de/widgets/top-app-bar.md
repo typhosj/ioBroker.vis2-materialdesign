@@ -52,7 +52,8 @@ automatische Änderung des Layouts bei Auflösung größer** gesetzten Breite mo
 Vorgabe 800 px), **Breite**, **Zeilenüberschrift anzeigen** samt **Kopfzeile
 Text**, **Beschriftungen für Listenelemente anzeigen** (aus heißt: nur Symbole)
 und den **Trennlinien Stil** (`standard`, `padded`, `inset`, ebenfalls roh).
-**Listenelementausrichtung** richtet
+**Andere Untermenüs beim Öffnen zuklappen** macht die Untermenüs zum Akkordeon:
+Öffnet sich eines, klappen alle anderen zu. **Listenelementausrichtung** richtet
 den Eintragstext aus, im Modus nur Symbole das Symbol.
 
 Die drei Gruppen **Navigationsleiste: Farben**, **Untermenü-Layout** und

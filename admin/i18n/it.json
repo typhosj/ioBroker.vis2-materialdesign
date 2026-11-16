@@ -1207,5 +1207,6 @@
     "ariaOpenTimePicker": "Apri selettore ora",
     "ariaPreviousMonth": "Mese precedente",
     "ariaNextMonth": "Mese successivo",
-    "ariaChooseYear": "Scegli anno"
+    "ariaChooseYear": "Scegli anno",
+    "collapseOtherSubMenus": "chiudi gli altri sottomenu all'apertura di uno"
 }

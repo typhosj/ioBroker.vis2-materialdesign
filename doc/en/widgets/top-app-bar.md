@@ -53,7 +53,9 @@ The **navigation bar layout** group sets the drawer **layout** (`modal`,
 layout auto change on resoltuion higher than**, 800 px by default), its
 **width**, **show row heading** with **header text**, **show list items labels**
 (off means icons only) and the **divider style** (`standard`, `padded`, `inset`,
-untranslated as well). **list item alignment** aligns the entry text, or the icon when only icons are shown.
+untranslated as well). **close other submenus when one opens** turns the
+submenus into an accordion: when one opens, all others close. **list item
+alignment** aligns the entry text, or the icon when only icons are shown.
 
 The three groups **navigation bar colors**, **sub menu layout** and **sub menu
 colors** only appear once **show advanced options** is ticked in **Common**.

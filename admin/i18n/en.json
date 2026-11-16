@@ -1207,5 +1207,6 @@
     "ariaOpenTimePicker": "Open time picker",
     "ariaPreviousMonth": "Previous month",
     "ariaNextMonth": "Next month",
-    "ariaChooseYear": "Choose year"
+    "ariaChooseYear": "Choose year",
+    "collapseOtherSubMenus": "close other submenus when one opens"
 }

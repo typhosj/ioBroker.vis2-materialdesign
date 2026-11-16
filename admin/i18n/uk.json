@@ -1207,5 +1207,6 @@
     "ariaOpenTimePicker": "Відкрити вибір часу",
     "ariaPreviousMonth": "Попередній місяць",
     "ariaNextMonth": "Наступний місяць",
-    "ariaChooseYear": "Вибрати рік"
+    "ariaChooseYear": "Вибрати рік",
+    "collapseOtherSubMenus": "згортати інші підменю під час відкриття одного"
 }

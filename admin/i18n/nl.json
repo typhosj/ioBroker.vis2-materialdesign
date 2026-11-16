@@ -1207,5 +1207,6 @@
     "ariaOpenTimePicker": "Tijdkiezer openen",
     "ariaPreviousMonth": "Vorige maand",
     "ariaNextMonth": "Volgende maand",
-    "ariaChooseYear": "Jaar kiezen"
+    "ariaChooseYear": "Jaar kiezen",
+    "collapseOtherSubMenus": "andere submenu's sluiten wanneer er één opent"
 }

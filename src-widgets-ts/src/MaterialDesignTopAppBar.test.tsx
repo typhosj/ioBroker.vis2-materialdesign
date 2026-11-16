@@ -184,7 +184,7 @@ describe('top app bar title and header (issue #27)', () => {
     });
 });
 
-describe('top app bar submenus (issue #31)', () => {
+describe('top app bar submenus (issues #30 and #31)', () => {
     const base = {
         drawerLayout: 'permanent',
         navItemCount: 2,
@@ -209,6 +209,43 @@ describe('top app bar submenus (issue #31)', () => {
     const drawer = (tree: React.ReactElement): React.ReactElement<Record<string, unknown>> => collectByClass(tree, 'mdc-drawer')[0];
     const drawerHtml = (tree: React.ReactElement): string => renderToStaticMarkup(drawer(tree));
     const iconColor = (tree: React.ReactElement, icon: string): unknown => (collectByClass(drawer(tree), `mdi-${icon}`)[0].props.style as React.CSSProperties).color;
+
+    it('closes the other submenus when one opens, if switched on', () => {
+        for (const value of [true, 'true']) {
+            const { tree } = make({ collapseOtherSubMenus: value });
+            click(tree(), 'EG');
+            expect(drawerHtml(tree()), String(value)).toContain('Wohnzimmer');
+            click(tree(), 'OG');
+            const html = drawerHtml(tree());
+            expect(html, String(value)).toContain('Bad');
+            expect(html, String(value)).not.toContain('Wohnzimmer');
+            click(tree(), 'OG');
+            expect(drawerHtml(tree()), String(value)).not.toContain('Bad');
+        }
+        for (const value of [false, 'false', '', null, undefined]) {
+            const { tree } = make({ collapseOtherSubMenus: value });
+            click(tree(), 'EG');
+            click(tree(), 'OG');
+            const html = drawerHtml(tree());
+            expect(html, String(value)).toContain('Wohnzimmer');
+            expect(html, String(value)).toContain('Bad');
+        }
+        const fields = MaterialDesignTopAppBar.getWidgetInfo().visAttrs.flatMap(group => group.fields as Array<{ name: string; type?: string }>);
+        expect(fields.find(field => field.name === 'collapseOtherSubMenus')?.type).toBe('checkbox');
+    });
+
+    it('closes the other submenus when a selection from outside opens one, if switched on', () => {
+        const run = (collapseOtherSubMenus: boolean): string => {
+            const { widget, tree } = make({ collapseOtherSubMenus, navDefaultValue: 1 });
+            tree();
+            widget.state = fixture<typeof widget.state>({ rxData: { ...base, collapseOtherSubMenus, navDefaultValue: 4 }, values: {} });
+            return drawerHtml(tree());
+        };
+        expect(run(true)).toContain('Bad');
+        expect(run(true)).not.toContain('Wohnzimmer');
+        expect(run(false)).toContain('Bad');
+        expect(run(false)).toContain('Wohnzimmer');
+    });
 
     // The arrow stayed "open" on the parent of the selected entry after that parent was collapsed.
     it('points the toggle arrow at the real open state of the submenu', () => {

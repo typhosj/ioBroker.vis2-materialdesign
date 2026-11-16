@@ -1207,5 +1207,6 @@
     "ariaOpenTimePicker": "打开时间选择器",
     "ariaPreviousMonth": "上个月",
     "ariaNextMonth": "下个月",
-    "ariaChooseYear": "选择年份"
+    "ariaChooseYear": "选择年份",
+    "collapseOtherSubMenus": "打开一个子菜单时收起其他子菜单"
 }

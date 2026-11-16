@@ -1207,5 +1207,6 @@
     "ariaOpenTimePicker": "Uhrzeitauswahl öffnen",
     "ariaPreviousMonth": "Vorheriger Monat",
     "ariaNextMonth": "Nächster Monat",
-    "ariaChooseYear": "Jahr auswählen"
+    "ariaChooseYear": "Jahr auswählen",
+    "collapseOtherSubMenus": "Andere Untermenüs beim Öffnen zuklappen"
 }
