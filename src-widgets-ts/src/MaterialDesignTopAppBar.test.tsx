@@ -183,3 +183,89 @@ describe('top app bar title and header (issue #27)', () => {
         expect(fields).toContain('showOnlyMenuButton');
     });
 });
+
+describe('top app bar submenus (issue #31)', () => {
+    const base = {
+        drawerLayout: 'permanent',
+        navItemCount: 2,
+        labels0: 'EG',
+        submenus0: '[{"text":"Wohnzimmer","icon":"sofa"},{"text":"Küche"}]',
+        labels1: 'OG',
+        submenus1: '[{"text":"Bad","icon":"shower"}]',
+    };
+    // Flat indexes: EG 0, Wohnzimmer 1, Küche 2, OG 3, Bad 4.
+    const make = (rxData: Record<string, unknown>): { widget: MaterialDesignTopAppBar; tree: () => React.ReactElement<Record<string, unknown>> } => {
+        const widget = new MaterialDesignTopAppBar(fixture<ConstructorParameters<typeof MaterialDesignTopAppBar>[0]>({ context: { setValue: vi.fn() } }));
+        widget.state = fixture<typeof widget.state>({ rxData: { ...base, ...rxData }, values: {} });
+        widget.forceUpdate = vi.fn();
+        return { widget, tree: () => widget.renderWidgetBody(fixture<Parameters<MaterialDesignTopAppBar['renderWidgetBody']>[0]>({})) as React.ReactElement<Record<string, unknown>> };
+    };
+    const click = (tree: React.ReactElement, text: string): void => {
+        const row = collectByClass(tree, 'mdc-list-item').find(element => renderToStaticMarkup(element).includes(`>${text}<`));
+        if (!row) throw new Error(`no row ${text}`);
+        (row.props.onClick as () => void)();
+    };
+    // The bar title repeats the selected entry and its icon, so look only inside the drawer.
+    const drawer = (tree: React.ReactElement): React.ReactElement<Record<string, unknown>> => collectByClass(tree, 'mdc-drawer')[0];
+    const drawerHtml = (tree: React.ReactElement): string => renderToStaticMarkup(drawer(tree));
+    const iconColor = (tree: React.ReactElement, icon: string): unknown => (collectByClass(drawer(tree), `mdi-${icon}`)[0].props.style as React.CSSProperties).color;
+
+    // The arrow stayed "open" on the parent of the selected entry after that parent was collapsed.
+    it('points the toggle arrow at the real open state of the submenu', () => {
+        const { tree } = make({ navDefaultValue: 1 });
+        expect(collectByClass(tree(), 'mdi-menu-up')).toHaveLength(1);
+        click(tree(), 'EG');
+        const collapsed = tree();
+        expect(drawerHtml(collapsed)).not.toContain('Wohnzimmer');
+        expect(collectByClass(collapsed, 'mdi-menu-up')).toHaveLength(0);
+        expect(collectByClass(collapsed, 'mdi-menu-down')).toHaveLength(2);
+    });
+
+    it('aligns the entry text with the alignment option of its level', () => {
+        const textAlign = (rxData: Record<string, unknown>, text: string): unknown => {
+            const span = collectByClass(make({ navDefaultValue: 2, ...rxData }).tree(), 'mdc-list-item__text').find(element => renderToStaticMarkup(element).includes(text));
+            return (span!.props.style as React.CSSProperties).textAlign;
+        };
+        expect(textAlign({ listItemAlignment: 'center' }, 'OG')).toBe('center');
+        expect(textAlign({ listItemAlignment: 'right' }, 'OG')).toBe('right');
+        expect(textAlign({ listItemAlignment: 'center', listSubItemAlignment: 'right' }, 'Küche')).toBe('right');
+        expect(textAlign({ listItemAlignment: 'right' }, 'Küche')).toBe('left');
+        for (const value of ['', null, undefined]) {
+            expect(textAlign({ listItemAlignment: value }, 'OG'), String(value)).toBe('left');
+            expect(textAlign({ listSubItemAlignment: value }, 'Küche'), String(value)).toBe('left');
+        }
+    });
+
+    it('colors submenu icons from the parent entry, the JSON key and the global field', () => {
+        // Küche (2) is selected so that the sofa icon of Wohnzimmer shows its normal color.
+        const editor = (rxData: Record<string, unknown>): unknown => iconColor(make({ navDefaultValue: 2, ...rxData }).tree(), 'sofa');
+        expect(editor({ subIconDrawerColor0: 'green' })).toBe('green');
+        expect(editor({ subIconDrawerColor0: 'green', subIconDrawerColor: 'blue' })).toBe('green');
+        expect(editor({ subIconDrawerColor: 'blue' })).toBe('blue');
+        expect(editor({ subIconDrawerColor0: 'green', submenus0: '[{"text":"Wohnzimmer","icon":"sofa","iconColor":"red"},{"text":"Küche"}]' })).toBe('red');
+        for (const value of ['', null, undefined]) {
+            expect(editor({ subIconDrawerColor0: value }), String(value)).toBe('#44739e');
+        }
+
+        const json = (items: unknown, rxData: Record<string, unknown> = {}): unknown => iconColor(make({ navDefaultValue: 2, drawerItemsDataMethod: 'jsonStringObject', drawerItemsJsonString: JSON.stringify(items), ...rxData }).tree(), 'sofa');
+        const subMenus = [{ text: 'Wohnzimmer', icon: 'sofa' }, { text: 'Küche' }];
+        expect(json([{ text: 'EG', subMenuIconColor: 'green', subMenus }])).toBe('green');
+        expect(json([{ text: 'EG', subMenus }], { subIconDrawerColor: 'blue' })).toBe('blue');
+        expect(json([{ text: 'EG', subMenuIconColor: '', subMenus }], { subIconDrawerColor: 'blue' })).toBe('blue');
+    });
+
+    it('uses the active icon colors for the selected entry only', () => {
+        const color = (rxData: Record<string, unknown>, icon: string): unknown => iconColor(make({ iconDrawer1: 'home', ...rxData }).tree(), icon);
+        expect(color({ navDefaultValue: 3, iconDrawerColorSelected: 'orange' }, 'home')).toBe('orange');
+        expect(color({ navDefaultValue: 0, iconDrawerColorSelected: 'orange' }, 'home')).toBe('#44739e');
+        expect(color({ navDefaultValue: 1, subIconDrawerColorSelected: 'purple', iconDrawerColorSelected: 'orange' }, 'sofa')).toBe('purple');
+        expect(color({ navDefaultValue: 1, iconDrawerColorSelected: 'orange' }, 'sofa')).toBe('orange');
+        expect(color({ navDefaultValue: 2, subIconDrawerColorSelected: 'purple' }, 'sofa')).toBe('#44739e');
+        for (const value of ['', null, undefined]) {
+            expect(color({ navDefaultValue: 3, iconDrawerColorSelected: value }, 'home'), String(value)).toBe('#44739e');
+            expect(color({ navDefaultValue: 1, subIconDrawerColorSelected: value, subIconDrawerColor0: 'green' }, 'sofa'), String(value)).toBe('green');
+        }
+        expect(color({ navDefaultValue: 3, iconDrawerColorSelected: 'orange', designStyle: 'material3' }, 'home')).toBe('orange');
+        expect(color({ navDefaultValue: 0, designStyle: 'material3' }, 'home')).toBe('var(--md-sys-color-primary)');
+    });
+});

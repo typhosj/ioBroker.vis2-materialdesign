@@ -52,11 +52,17 @@ automatische Änderung des Layouts bei Auflösung größer** gesetzten Breite mo
 Vorgabe 800 px), **Breite**, **Zeilenüberschrift anzeigen** samt **Kopfzeile
 Text**, **Beschriftungen für Listenelemente anzeigen** (aus heißt: nur Symbole)
 und den **Trennlinien Stil** (`standard`, `padded`, `inset`, ebenfalls roh).
+**Listenelementausrichtung** richtet
+den Eintragstext aus, im Modus nur Symbole das Symbol.
 
 Die drei Gruppen **Navigationsleiste: Farben**, **Untermenü-Layout** und
 **Untermenüfarben** erscheinen erst mit dem Schalter **Erweiterte Optionen
 anzeigen** in **Allgemein**. Dort setzt **Kopfzeile Textfarbe** die Schriftfarbe
-der Drawer-Kopfzeile.
+der Drawer-Kopfzeile. **Symbolfarbe aktiv** und **Farbe des aktiven
+Untermenüsymbols** färben das Symbol des gewählten Eintrags; für ein Untermenü
+gilt ohne eigene Angabe **Symbolfarbe aktiv**. **Untermenü-Layout** und
+**Untermenüfarben** gelten für die Untereinträge, darunter **Untermenü
+Textausrichtung** und die Farbe der Untermenü-Trennlinie.
 
 Die Menüeinträge stammen aus den Daten- und Eintragsgruppen:
 
@@ -66,13 +72,18 @@ Die Menüeinträge stammen aus den Daten- und Eintragsgruppen:
   indizierte Gruppe **Navigationsleiste: Element**) oder **JSON-String**. Bei
   JSON verschwindet die indizierte Gruppe, und **JSON-Sting für
   Navigationselemente** hält ein Array aus `{ "text", "menuId", "icon",
-  "iconColor", "header", "divider", "subMenus" }`.
+  "iconColor", "subMenuIconColor", "header", "divider", "subMenus" }`.
+  `subMenuIconColor` färbt die Symbole der Untereinträge dieses Eintrags.
 - **Menüpunkt-ID** – der Wert, den die zweite Objekt-ID für diesen Eintrag
   bekommt. Der Index in der ersten Objekt-ID hängt nicht daran.
 - **Beschriftung / Überschrift / Trennlinie** – Eintragstext, ein Abschnittskopf
   über dem Eintrag und eine Trennlinie darunter.
 - **Bild** samt Farben und **Untermenüs** – letzteres ein JSON-Array im selben
-  Format wie oben. Ein Eintrag mit Untermenü klappt beim Klick nur auf; **Wert
+  Format wie oben, eine Ebene tief. Ein Untereintrag bekommt sein Symbol mit
+  `"icon"` (Farbe `"iconColor"`, sonst **Farbe des Untermenüsymbols** des
+  Eintrags) und mit `"divider": true` eine Trennlinie darunter, zum Beispiel
+  `[{ "text": "Wohnzimmer", "icon": "sofa", "divider": true }, { "text": "Küche", "icon": "fridge" }]`.
+  Ein Eintrag mit Untermenü klappt beim Klick nur auf; **Wert
   auch schreiben, wenn Eintrag zum Untermenü umschalten gedrückt wird** schreibt
   zusätzlich seinen Index.
 

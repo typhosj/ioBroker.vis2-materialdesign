@@ -53,12 +53,16 @@ The **navigation bar layout** group sets the drawer **layout** (`modal`,
 layout auto change on resoltuion higher than**, 800 px by default), its
 **width**, **show row heading** with **header text**, **show list items labels**
 (off means icons only) and the **divider style** (`standard`, `padded`, `inset`,
-untranslated as well).
+untranslated as well). **list item alignment** aligns the entry text, or the icon when only icons are shown.
 
 The three groups **navigation bar colors**, **sub menu layout** and **sub menu
 colors** only appear once **show advanced options** is ticked in **Common**.
 **header text color** in **navigation bar colors** sets the color of the
-drawer header text.
+drawer header text. **active icon color** and **active submenu icon color**
+color the icon of the selected entry; a submenu entry without its own value
+uses **active icon color**. **sub menu layout** and **sub menu colors** apply to
+the submenu entries, including **submenu text alignment** and the color of the
+submenu divider.
 
 Menu entries come from the data and item groups:
 
@@ -67,13 +71,19 @@ Menu entries come from the data and item groups:
 - **input method for the navigation items** – **via editor** (the indexed **item
   of navigation bar** group) or **JSON string**. With JSON the indexed group
   disappears and **JSON Sting for navigation items** holds an array of
-  `{ "text", "menuId", "icon", "iconColor", "header", "divider", "subMenus" }`.
+  `{ "text", "menuId", "icon", "iconColor", "subMenuIconColor", "header",
+  "divider", "subMenus" }`. `subMenuIconColor` colors the icons of this entry's
+  submenu entries.
 - **menu item id** – the value the second object id receives for this entry. The
   index in the first object id does not depend on it.
 - **label / header / divider** – entry text, a section heading above the entry
   and a separator below it.
 - **icon** with its colors and **submenus** – the latter a JSON array in the
-  same format as above. An entry with a submenu only expands on click; **set
+  same format as above, one level deep. A submenu entry gets its icon from
+  `"icon"` (color `"iconColor"`, otherwise the entry's **sub menu icon color**)
+  and a separator below it from `"divider": true`, for example
+  `[{ "text": "Living room", "icon": "sofa", "divider": true }, { "text": "Kitchen", "icon": "fridge" }]`.
+  An entry with a submenu only expands on click; **set
   value on click at item that toggle submenu** also writes its index.
 
 ## Design style
