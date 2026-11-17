@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import MaterialDesignAutocomplete from './MaterialDesignAutocomplete';
 import MaterialDesignInput from './MaterialDesignInput';
-import MaterialDesignKeyboard, { isServable, originalInputMode, scrollParent } from './MaterialDesignKeyboard';
+import MaterialDesignKeyboard, { isServable, noteInput, originalInputMode, scrollParent } from './MaterialDesignKeyboard';
 import { ownCssVariables } from './widgetUtils';
 
 function fixture<T>(value: unknown): T {
@@ -20,7 +20,7 @@ const renderProps = fixture<Parameters<MaterialDesignKeyboard['renderWidgetBody'
 
 function keyboard(rxData: Record<string, unknown> = {}, values: Record<string, unknown> = {}, editMode = false): MaterialDesignKeyboard {
     const w = new MaterialDesignKeyboard(fixture<ConstructorParameters<typeof MaterialDesignKeyboard>[0]>({ ...props, editMode }));
-    fixture<{ state: unknown }>(w).state = { rxData: { keyboardLanguage: 'de', keyboardAnimation: 'none', keyboardSuggestions: false, ...rxData }, values };
+    fixture<{ state: unknown }>(w).state = { rxData: { keyboardLanguage: 'de', keyboardAnimation: 'none', keyboardSuggestions: false, keyboardShowOn: 'always', ...rxData }, values };
     return w;
 }
 
@@ -133,6 +133,91 @@ describe('served fields', () => {
         expect(field('title').hasAttribute('inputmode')).toBe(false);
         const inline = container.querySelector('[aria-label="keyboardAria"]');
         expect(inline).not.toBeNull();
+    });
+});
+
+describe('show on', () => {
+    const touchy = (): MaterialDesignKeyboard => keyboard({ keyboardShowOn: 'touch' });
+    const media = (matches: boolean | null): void => {
+        vi.stubGlobal('matchMedia', matches === null ? undefined : (query: string) => ({ matches: matches && query === '(pointer: coarse)' }));
+    };
+    beforeEach(() => { noteInput(null); media(null); });
+    afterEach(() => { vi.unstubAllGlobals(); noteInput(null); });
+
+    it('opens after touch or pen input', () => {
+        for (const type of ['touch', 'pen'] as const) {
+            start(touchy());
+            noteInput(type);
+            focus(field('title'));
+            expect(panel()).not.toBeNull();
+            act(() => current.componentWillUnmount());
+        }
+    });
+
+    it('stays closed after mouse or keyboard input', () => {
+        start(touchy());
+        noteInput('mouse');
+        focus(field('title'));
+        expect(panel()).toBeNull();
+        blur(field('title'));
+        noteInput('keyboard');
+        focus(field('title'));
+        expect(panel()).toBeNull();
+    });
+
+    it('decides by a coarse pointer when no input was seen', () => {
+        media(true);
+        start(touchy());
+        focus(field('title'));
+        expect(panel()).not.toBeNull();
+        blur(field('title'));
+        media(false);
+        focus(field('title'));
+        expect(panel()).toBeNull();
+    });
+
+    it('treats a missing or throwing matchMedia as no touch', () => {
+        start(touchy());
+        focus(field('title'));
+        expect(panel()).toBeNull();
+        blur(field('title'));
+        vi.stubGlobal('matchMedia', () => { throw new Error('no'); });
+        focus(field('title'));
+        expect(panel()).toBeNull();
+    });
+
+    it('also decides for a field that already has the focus when the widget attaches', () => {
+        noteInput('mouse');
+        mount(touchy());
+        act(() => field('title').focus());
+        act(() => current.componentDidMount());
+        rerender();
+        expect(panel()).toBeNull();
+    });
+
+    it('opens on every focus with "always"', () => {
+        start(keyboard({ keyboardShowOn: 'always' }));
+        noteInput('mouse');
+        focus(field('title'));
+        expect(panel()).not.toBeNull();
+    });
+
+    it('keeps the keyboard when a mouse click moves into another served field', () => {
+        start(touchy());
+        noteInput('touch');
+        focus(field('title'));
+        noteInput('mouse');
+        focus(field('place'));
+        expect(panel()).not.toBeNull();
+    });
+
+    it('takes no untrusted input events into account', () => {
+        start(touchy());
+        noteInput('touch');
+        act(() => { document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab' })); });
+        act(() => { document.dispatchEvent(new MouseEvent('pointerdown')); });
+        focus(field('title'));
+        expect(panel()).not.toBeNull();
     });
 });
 

@@ -59,6 +59,34 @@ export function scrollParent(el: Element): HTMLElement {
     return (document.scrollingElement as HTMLElement | null) ?? document.documentElement;
 }
 
+type Input = 'touch' | 'pen' | 'mouse' | 'keyboard' | null;
+let lastInput: Input = null;
+let tracking = false;
+
+/** The type of the last user input; exported for the tests, the listeners below call it. */
+export function noteInput(type: Input): void {
+    lastInput = type;
+}
+
+// Trap: the widget dispatches synthetic keydowns (Enter, arrows) that must not count as keyboard
+// use, hence the isTrusted check.
+function trackInput(): void {
+    if (tracking || typeof document === 'undefined') return;
+    tracking = true;
+    document.addEventListener('pointerdown', event => { if (event.isTrusted) noteInput(event.pointerType === 'touch' || event.pointerType === 'pen' ? event.pointerType : 'mouse'); }, true);
+    document.addEventListener('keydown', event => { if (event.isTrusted) noteInput('keyboard'); }, true);
+}
+
+/** Touch or pen was the last input; with no input seen yet, a coarse pointer stands in for it. */
+function touchInput(): boolean {
+    if (lastInput) return lastInput === 'touch' || lastInput === 'pen';
+    try {
+        return !!window.matchMedia?.('(pointer: coarse)').matches;
+    } catch {
+        return false;
+    }
+}
+
 const KEYFRAMES = '@keyframes mdkb-slide-up{from{transform:translateY(100%)}}@keyframes mdkb-slide-down{from{transform:translateY(-100%)}}@keyframes mdkb-fade{from{opacity:0}}';
 
 /** `ß` would become `SS`; a key keeps its character when upper case changes the length. */
@@ -79,6 +107,7 @@ const attrs: RxWidgetInfo['visAttrs'] = [
             { name: 'keyboardAutoCapitalize', label: 'keyboardAutoCapitalize', type: 'checkbox', default: true },
             { name: 'keyboardEnter', label: 'keyboardEnter', type: 'select', options: opt('keyboardEnter', ['close', 'next', 'stay']), default: 'close' },
             { name: 'keyboardArrows', label: 'keyboardArrows', type: 'checkbox', default: false },
+            { name: 'keyboardShowOn', label: 'keyboardShowOn', type: 'select', options: opt('keyboardShowOn', ['touch', 'always']), default: 'touch' },
         ],
     },
     {
@@ -207,6 +236,7 @@ export default class MaterialDesignKeyboard extends VisWidget {
     private attach(): void {
         if (this.props.editMode || this.listening || typeof document === 'undefined') return;
         this.listening = true;
+        trackInput();
         this.scope = this.placeholder?.closest('[id^="visview_"]') ?? document.body;
         this.suppress();
         this.observer = new MutationObserver(this.suppress);
@@ -253,6 +283,8 @@ export default class MaterialDesignKeyboard extends VisWidget {
 
     private focusOn(el: Field): void {
         const wasHidden = !this.target;
+        // Checked only while closed: a mouse click into another served field keeps an open keyboard.
+        if (wasHidden && s(this.data().keyboardShowOn, 'touch') === 'touch' && !touchInput()) return;
         if (this.draft?.el !== el) this.draft = null;
         if (this.target !== el) this.known = { el, value: this.currentValue(el) };
         this.target = el;

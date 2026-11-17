@@ -26,6 +26,8 @@ shows itself only while one of them has the focus. Template id: `tplVis2-materia
 - **arrow keys** – adds ← ↑ ↓ → keys (on the number pad a fifth column). ← and → move the cursor;
   ↑ and ↓ move through the list of an Autocomplete widget, in any other field they jump to the start
   or the end. Holding a key repeats it.
+- **show on** – `touch or pen only` (default) or `every focus`. On a PC with mouse and keyboard the
+  keyboard stays closed by default.
 
 **placement**
 

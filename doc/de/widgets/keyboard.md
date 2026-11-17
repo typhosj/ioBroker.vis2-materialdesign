@@ -30,6 +30,8 @@ Template-ID: `tplVis2-materialdesign-Keyboard`.
 - **Pfeiltasten** – fügt die Tasten ← ↑ ↓ → hinzu (auf dem Ziffernblock als fünfte Spalte). ← und →
   bewegen den Cursor; ↑ und ↓ gehen durch die Liste eines Autocomplete-Widgets, in jedem anderen Feld
   springen sie an den Anfang oder das Ende. Gedrückt halten wiederholt die Taste.
+- **Anzeigen bei** – `nur bei Finger oder Stift` (Standard) oder `bei jedem Fokus`. An einem PC mit Maus
+  und Tastatur bleibt die Tastatur standardmäßig geschlossen.
 
 **Platzierung**
 
