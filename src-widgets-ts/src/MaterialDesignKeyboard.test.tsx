@@ -738,6 +738,8 @@ describe('ownCssVariables', () => {
 });
 
 describe('word suggestions', () => {
+    // Node 25+ ships its own Web Storage, so patch the prototype of the object the widget writes to.
+    const storageProto = (): Storage => Object.getPrototypeOf(window.localStorage);
     beforeEach(() => window.localStorage.clear());
     const stored = (): Record<string, { w: string; n: number }> => JSON.parse(window.localStorage.getItem('vis2-materialdesign-keyboard-words') ?? '{}');
     const typeInto = (label: string, text: string): void => {
@@ -835,7 +837,7 @@ describe('word suggestions', () => {
     });
 
     it('survives a storage that throws', () => {
-        const spy = vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => { throw new Error('blocked'); });
+        const spy = vi.spyOn(storageProto(), 'getItem').mockImplementation(() => { throw new Error('blocked'); });
         start(keyboard({ keyboardSuggestions: true }));
         focus(field('title'));
         expect(panel()).not.toBeNull();
@@ -843,7 +845,7 @@ describe('word suggestions', () => {
     });
 
     it('still closes and learns nothing when writing the storage throws', () => {
-        const spy = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new Error('full'); });
+        const spy = vi.spyOn(storageProto(), 'setItem').mockImplementation(() => { throw new Error('full'); });
         start(keyboard({ keyboardSuggestions: true }));
         typeInto('title', 'Arzt');
         expect(() => blur(field('title'))).not.toThrow();

@@ -154,7 +154,11 @@ describe('Input interaction', () => {
         const typeNumber = (text: string): void => {
             const w = widget({ inputType: 'number' }, 5);
             mount(w);
-            input().type = 'text';
+            // As the keyboard does: React 19 re-sets `type` on every update, so swallow that.
+            const el = input();
+            const native = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'type');
+            native?.set?.call(el, 'text');
+            Object.defineProperty(el, 'type', { configurable: true, get: () => native?.get?.call(el) as string, set: () => undefined });
             typeText(w, text);
             act(() => { input().dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })); });
         };
