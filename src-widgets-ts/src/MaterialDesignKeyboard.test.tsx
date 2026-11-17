@@ -738,8 +738,23 @@ describe('ownCssVariables', () => {
 });
 
 describe('word suggestions', () => {
-    // Node 25+ ships its own Web Storage, so patch the prototype of the object the widget writes to.
-    const storageProto = (): Storage => Object.getPrototypeOf(window.localStorage);
+    // Node 25+ ships its own Web Storage whose prototype carries no getItem/setItem to spy on, so a
+    // broken storage replaces the whole object for one test instead of patching a prototype.
+    const breakStorage = (method: 'getItem' | 'setItem'): void => {
+        const items = new Map<string, string>();
+        vi.stubGlobal('localStorage', {
+            getItem: (key: string) => {
+                if (method === 'getItem') throw new Error('blocked');
+                return items.get(key) ?? null;
+            },
+            setItem: (key: string, value: string) => {
+                if (method === 'setItem') throw new Error('full');
+                items.set(key, value);
+            },
+            removeItem: (key: string) => items.delete(key),
+            clear: () => items.clear(),
+        });
+    };
     beforeEach(() => window.localStorage.clear());
     const stored = (): Record<string, { w: string; n: number }> => JSON.parse(window.localStorage.getItem('vis2-materialdesign-keyboard-words') ?? '{}');
     const typeInto = (label: string, text: string): void => {
@@ -837,20 +852,21 @@ describe('word suggestions', () => {
     });
 
     it('survives a storage that throws', () => {
-        const spy = vi.spyOn(storageProto(), 'getItem').mockImplementation(() => { throw new Error('blocked'); });
+        breakStorage('getItem');
         start(keyboard({ keyboardSuggestions: true }));
         focus(field('title'));
         expect(panel()).not.toBeNull();
-        spy.mockRestore();
+        vi.unstubAllGlobals();
     });
 
     it('still closes and learns nothing when writing the storage throws', () => {
-        const spy = vi.spyOn(storageProto(), 'setItem').mockImplementation(() => { throw new Error('full'); });
+        breakStorage('setItem');
         start(keyboard({ keyboardSuggestions: true }));
         typeInto('title', 'Arzt');
         expect(() => blur(field('title'))).not.toThrow();
         expect(panel()).toBeNull();
-        spy.mockRestore();
+        expect(window.localStorage.getItem('vis2-materialdesign-keyboard-words')).toBeNull();
+        vi.unstubAllGlobals();
         expect(stored().arzt).toBeUndefined();
     });
 
