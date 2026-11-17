@@ -1,3 +1,5 @@
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+
 import React, { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -421,16 +423,19 @@ describe('placement', () => {
 
     it('does nothing on a resize while hidden and after unmount', () => {
         start(keyboard());
+        const rectOf = vi.fn(() => ({ left: 0, top: 400, width: 600, height: 200, right: 600, bottom: 600, x: 0, y: 400, toJSON: () => ({}) }));
+        placeholder().getBoundingClientRect = rectOf;
         act(() => { window.dispatchEvent(new Event('resize')); });
         rerender();
         expect(panel()).toBeNull();
-        box(placeholder(), 0, 400, 600, 200);
+        expect(rectOf).not.toHaveBeenCalled();
         focus(field('title'));
+        expect(rectOf).toHaveBeenCalledTimes(1);
         act(() => current.componentWillUnmount());
-        box(placeholder(), 0, 111, 600, 200);
         act(() => { window.dispatchEvent(new Event('resize')); });
         rerender();
         expect(panel()).toBeNull();
+        expect(rectOf).toHaveBeenCalledTimes(1);
     });
 });
 
@@ -728,5 +733,206 @@ describe('word suggestions', () => {
         act(() => current.componentWillUnmount());
         act(() => { vi.advanceTimersByTime(2000); });
         expect(stored().worta).toBeDefined();
+    });
+});
+
+describe('click-through', () => {
+    it('lets taps through the invisible rectangle at runtime, not in the editor, and gives the wrapper back', () => {
+        start(keyboard());
+        expect(placeholder().style.pointerEvents).toBe('none');
+        expect(view().style.pointerEvents).toBe('none');
+        const wrapper = view();
+        act(() => root.unmount());
+        expect(wrapper.style.pointerEvents).toBe('');
+        root = createRoot(container);
+        start(keyboard({}, {}, true));
+        expect(placeholder().style.pointerEvents).toBe('');
+        expect(view().style.pointerEvents).toBe('');
+    });
+});
+
+describe('room only where the keyboard is', () => {
+    it('does not push up a field below a keyboard at the top of the view', () => {
+        start(keyboard({ keyboardShowMode: 'pan', keyboardPosition: 'viewTop' }));
+        box(placeholder(), 0, 0, 600, 200);
+        box(view(), 0, 0, 800, 700);
+        box(field('title'), 0, 400, 200, 30);
+        focus(field('title'));
+        expect(view().style.transform).toBe('');
+    });
+
+    it('does not pad or scroll for a field below a keyboard at the top of the view', () => {
+        let scrolled = 0;
+        const scroller = <div data-testid="scroller" style={{ overflowY: 'scroll' }}><input aria-label="inner" /></div>;
+        start(keyboard({ keyboardShowMode: 'pad', keyboardPosition: 'viewTop' }), scroller);
+        const el = container.querySelector('[data-testid="scroller"]') as HTMLElement;
+        Object.defineProperty(el, 'scrollTop', { configurable: true, get: () => scrolled, set: (v: number) => { scrolled = v; } });
+        box(placeholder(), 0, 0, 600, 200);
+        box(view(), 0, 0, 800, 700);
+        box(field('inner'), 0, 400, 200, 30);
+        focus(field('inner'));
+        expect(el.style.paddingBottom).toBe('');
+        expect(scrolled).toBe(0);
+    });
+
+    it('does not push a field under a keyboard at the top of the view off the screen', () => {
+        start(keyboard({ keyboardShowMode: 'pan', keyboardPosition: 'viewTop' }));
+        box(placeholder(), 0, 0, 600, 200);
+        box(view(), 0, 0, 800, 700);
+        box(field('title'), 0, 100, 200, 30);
+        focus(field('title'));
+        expect(view().style.transform).toBe('');
+    });
+
+    it('does not move a field that is entirely above a keyboard at the bottom', () => {
+        start(keyboard({ keyboardShowMode: 'pan' }));
+        box(placeholder(), 0, 400, 600, 200);
+        box(field('title'), 0, 300, 200, 30);
+        focus(field('title'));
+        expect(view().style.transform).toBe('');
+    });
+});
+
+describe('a field focused before the keyboard started', () => {
+    it('gets the keyboard and the system keyboard stays closed for it', () => {
+        const w = keyboard();
+        mount(w);
+        act(() => field('title').focus());
+        act(() => w.componentDidMount());
+        rerender();
+        expect(panel()).not.toBeNull();
+        expect(field('title').getAttribute('inputmode')).toBe('none');
+    });
+
+    it('ignores a focused field it does not serve', () => {
+        const w = keyboard();
+        mount(w);
+        act(() => field('check').focus());
+        act(() => w.componentDidMount());
+        rerender();
+        expect(panel()).toBeNull();
+    });
+});
+
+describe('editMode switch', () => {
+    it('detaches when the widget goes into the editor', () => {
+        start(keyboard());
+        expect(field('title').getAttribute('inputmode')).toBe('none');
+        const remove = vi.spyOn(document, 'removeEventListener');
+        fixture<{ props: unknown }>(current).props = { ...props, editMode: true };
+        act(() => current.componentDidUpdate(fixture<typeof current.props>(props), current.state));
+        expect(field('title').hasAttribute('inputmode')).toBe(false);
+        expect(remove).toHaveBeenCalledWith('focusin', expect.anything(), true);
+        remove.mockRestore();
+    });
+});
+
+describe('typing limits and keys', () => {
+    const area = (): HTMLTextAreaElement => document.querySelector('[aria-label="notes"]') as HTMLTextAreaElement;
+
+    it('drops a character beyond maxLength but still replaces a selection and deletes at the limit', () => {
+        start(keyboard({ keyboardAutoCapitalize: false }));
+        field('title').maxLength = 3;
+        focus(field('title'));
+        tap('a', 'b', 'c', 'd');
+        expect(field('title').value).toBe('abc');
+        act(() => field('title').setSelectionRange(0, 1));
+        tap('x');
+        expect(field('title').value).toBe('xbc');
+        act(() => field('title').setSelectionRange(3, 3));
+        tap('backspace');
+        expect(field('title').value).toBe('xb');
+        tap('y', 'z');
+        expect(field('title').value).toBe('xby');
+    });
+
+    it('applies maxLength to a textarea and a limit of 0 blocks everything', () => {
+        start(keyboard({ keyboardAutoCapitalize: false }), () => <textarea aria-label="notes" maxLength={2} />);
+        focus(area());
+        tap('a', 'b', 'c');
+        expect(area().value).toBe('ab');
+        field('title').maxLength = 0;
+        focus(field('title'));
+        tap('a');
+        expect(field('title').value).toBe('');
+    });
+
+    it('is unlimited without maxLength', () => {
+        start(keyboard({ keyboardAutoCapitalize: false }));
+        focus(field('title'));
+        tap('a', 'b', 'c', 'd', 'e', 'f');
+        expect(field('title').value).toBe('abcdef');
+    });
+
+    it('keeps ß instead of typing and showing SS when shifted', () => {
+        start(keyboard());
+        focus(field('title'));
+        expect(key('a').textContent).toBe('A');
+        expect(key('ß').textContent).toBe('ß');
+        tap('ß');
+        expect(field('title').value).toBe('ß');
+    });
+
+    it('closes when "next" lands on a field that cannot take the focus', () => {
+        start(keyboard({ keyboardEnter: 'next', keyboardFields: 'w1 w2' }));
+        field('place').focus = () => {};
+        focus(field('title'));
+        tap('enter');
+        expect(document.activeElement).toBe(document.body);
+        expect(panel()).toBeNull();
+    });
+});
+
+describe('learning only what was typed', () => {
+    beforeEach(() => window.localStorage.clear());
+    const stored = (): Record<string, { w: string; n: number }> => JSON.parse(window.localStorage.getItem('vis2-materialdesign-keyboard-words') ?? '{}');
+    const typeInto = (label: string, text: string): void => {
+        focus(field(label));
+        act(() => { field(label).value = text; });
+        rerender();
+    };
+
+    it('counts a word once for Enter and the blur that follows it', () => {
+        for (const mode of ['close', 'stay']) {
+            window.localStorage.clear();
+            start(keyboard({ keyboardSuggestions: true, keyboardEnter: mode }));
+            typeInto('title', 'Arzt');
+            tap('enter');
+            if (mode === 'stay') blur(field('title'));
+            expect(stored().arzt?.n).toBe(1);
+            act(() => current.componentWillUnmount());
+            field('title').value = '';
+        }
+    });
+
+    it('learns nothing from a prefilled field that was left unchanged', () => {
+        start(keyboard({ keyboardSuggestions: true }));
+        field('title').value = 'Alt';
+        focus(field('title'));
+        blur(field('title'));
+        expect(stored().alt).toBeUndefined();
+    });
+
+    it('learns a prefilled field once when it was edited', () => {
+        start(keyboard({ keyboardSuggestions: true }));
+        field('title').value = 'Alt';
+        typeInto('title', 'Alt Neu');
+        blur(field('title'));
+        expect(stored().alt?.n).toBe(1);
+        expect(stored().neu?.n).toBe(1);
+    });
+
+    it('does not fill in a suggestion beyond maxLength', () => {
+        window.localStorage.setItem('vis2-materialdesign-keyboard-words', JSON.stringify({ arzt: { w: 'Arzt', n: 5, t: 1 } }));
+        start(keyboard({ keyboardSuggestions: true }));
+        field('title').maxLength = 3;
+        focus(field('title'));
+        act(() => { field('title').value = 'Ar'; });
+        rerender();
+        const word = panel()?.querySelector('[data-suggestion="Arzt"]') as HTMLButtonElement;
+        act(() => { word.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true, cancelable: true })); });
+        act(() => { word.dispatchEvent(new MouseEvent('pointerup', { bubbles: true })); });
+        rerender();
+        expect(field('title').value).toBe('Ar');
     });
 });

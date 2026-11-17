@@ -44,6 +44,12 @@ export function scrollParent(el: Element): HTMLElement {
 
 const KEYFRAMES = '@keyframes mdkb-slide-up{from{transform:translateY(100%)}}@keyframes mdkb-slide-down{from{transform:translateY(-100%)}}@keyframes mdkb-fade{from{opacity:0}}';
 
+/** `ß` would become `SS`; a key keeps its character when upper case changes the length. */
+const upper = (text: string): string => {
+    const result = text.toUpperCase();
+    return result.length === text.length ? result : text;
+};
+
 const opt = (name: string, values: string[]): { value: string; label: string }[] => values.map(value => ({ value, label: `${name}_${value}` }));
 
 const attrs: RxWidgetInfo['visAttrs'] = [
@@ -101,7 +107,10 @@ export default class MaterialDesignKeyboard extends VisWidget {
         return MaterialDesignKeyboard.getWidgetInfo();
     }
 
-    private readonly placeholderRef = React.createRef<HTMLDivElement>();
+    private placeholder: HTMLDivElement | null = null;
+    private wrapperPointerEvents: { el: HTMLElement; value: string } | null = null;
+    /** The value the target had when it got the focus, or when its words were last learned. */
+    private known: { el: Field; value: string } | null = null;
     private target: Field | null = null;
     private scope: Element | null = null;
     private rect: Rect | null = null;
@@ -114,6 +123,8 @@ export default class MaterialDesignKeyboard extends VisWidget {
     private repeatTimer: number | undefined;
     // Known limit: while a field without selection API has the focus, a value written into it from
     // outside is not seen until the focus moves to another field.
+    // Known limit: a number field shows nothing after `.` or `-` until a digit follows, because the
+    // browser reports its value as `''` meanwhile.
     /** Text typed into a field without selection API; such a field reports `''` for `1.` or `-`. */
     private draft: { el: Field; text: string } | null = null;
     private panned: { el: HTMLElement; transform: string; transition: string; offset: number } | null = null;
@@ -162,13 +173,14 @@ export default class MaterialDesignKeyboard extends VisWidget {
     private attach(): void {
         if (this.props.editMode || this.listening || typeof document === 'undefined') return;
         this.listening = true;
-        this.scope = this.placeholderRef.current?.closest('[id^="visview_"]') ?? document.body;
+        this.scope = this.placeholder?.closest('[id^="visview_"]') ?? document.body;
         this.suppress();
         this.observer = new MutationObserver(this.suppress);
         this.observer.observe(this.scope, { childList: true, subtree: true });
         document.addEventListener('focusin', this.onFocusIn, true);
         document.addEventListener('focusout', this.onFocusOut, true);
         window.addEventListener('resize', this.onWindowResize);
+        if (this.serves(document.activeElement)) this.focusOn(document.activeElement);
     }
 
     private detach(): void {
@@ -191,7 +203,8 @@ export default class MaterialDesignKeyboard extends VisWidget {
 
     componentDidUpdate(prevProps: typeof this.props, prevState: typeof this.state): void {
         super.componentDidUpdate(prevProps, prevState);
-        this.attach();
+        if (this.props.editMode) this.detach();
+        else this.attach();
     }
 
     componentWillUnmount(): void {
@@ -200,16 +213,20 @@ export default class MaterialDesignKeyboard extends VisWidget {
     }
 
     private readonly onFocusIn = (event: FocusEvent): void => {
-        if (!this.serves(event.target)) return;
+        if (this.serves(event.target)) this.focusOn(event.target);
+    };
+
+    private focusOn(el: Field): void {
         const wasHidden = !this.target;
-        if (this.draft?.el !== event.target) this.draft = null;
-        this.target = event.target;
+        if (this.draft?.el !== el) this.draft = null;
+        if (this.target !== el) this.known = { el, value: this.currentValue(el) };
+        this.target = el;
         this.symbols = false;
         this.refreshShift();
         if (wasHidden) this.rect = this.measure();
         this.makeRoom();
         this.forceUpdate();
-    };
+    }
 
     private readonly onFocusOut = (event: FocusEvent): void => {
         const el = this.target;
@@ -222,7 +239,7 @@ export default class MaterialDesignKeyboard extends VisWidget {
     };
 
     private measure(): Rect {
-        const own = this.placeholderRef.current?.getBoundingClientRect();
+        const own = this.placeholder?.getBoundingClientRect();
         const height = own?.height ?? 0;
         const position = s(this.data().keyboardPosition, 'editor');
         if (position === 'screenBottom') return { left: 0, top: window.innerHeight - height, width: window.innerWidth, height };
@@ -255,22 +272,29 @@ export default class MaterialDesignKeyboard extends VisWidget {
         if (!el || !rect) return;
         const mode = s(this.data().keyboardShowMode, 'overlay');
         const field = el.getBoundingClientRect();
+        // The field's rectangle already includes the current offset.
+        const shift = this.panned?.offset ?? 0;
+        const top = field.top + shift;
+        const bottom = field.bottom + shift;
+        const lift = panOffset(bottom, rect.top);
+        // Moving up only helps a field the keyboard covers and that stays on screen: below a keyboard
+        // at the top of the view, or under it, moving up would only push the field out of sight.
+        const need = top < rect.top + rect.height && top - lift >= 0 ? lift : 0;
         if (mode === 'pan' && this.scope instanceof HTMLElement) {
             const view = this.scope;
-            // The field's rectangle already includes the current offset.
-            const offset = panOffset(field.bottom + (this.panned?.offset ?? 0), rect.top);
+            const offset = need;
             this.panned ??= { el: view, transform: view.style.transform, transition: view.style.transition, offset: 0 };
             this.panned.offset = offset;
             view.style.transition = `transform ${this.animationMs()}ms`;
             view.style.transform = offset ? `${this.panned.transform} translateY(-${offset}px)`.trim() : this.panned.transform;
         } else if (mode === 'pad') {
             const scroller = scrollParent(el);
-            if (this.padded?.el !== scroller) {
+            if (need && this.padded?.el !== scroller) {
                 this.unpad();
                 this.padded = { el: scroller, paddingBottom: scroller.style.paddingBottom };
                 scroller.style.paddingBottom = `${rect.height}px`;
             }
-            scroller.scrollTop += panOffset(field.bottom, rect.top);
+            scroller.scrollTop += need;
         }
     }
 
@@ -330,6 +354,9 @@ export default class MaterialDesignKeyboard extends VisWidget {
 
     /** The native setter plus an `input` event is what React-controlled fields listen to. */
     private write(el: Field, result: EditResult): void {
+        const before = this.currentValue(el).length;
+        // The native setter bypasses maxlength; an edit may still shorten or keep the length.
+        if (el.maxLength >= 0 && result.value.length > el.maxLength && result.value.length > before) return;
         this.draft = this.selection(el)[0] === null ? { el, text: result.value } : null;
         const proto = el instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
         Object.getOwnPropertyDescriptor(proto, 'value')?.set?.call(el, result.value);
@@ -359,7 +386,7 @@ export default class MaterialDesignKeyboard extends VisWidget {
         const el = this.target;
         if (!el || key === '') return;
         if (typeof key === 'string') {
-            this.type(el, this.shift === 'off' ? key : key.toUpperCase());
+            this.type(el, this.shift === 'off' ? key : upper(key));
             return;
         }
         switch (key.special) {
@@ -408,7 +435,7 @@ export default class MaterialDesignKeyboard extends VisWidget {
             const next = fields[fields.indexOf(el) + 1];
             if (next) {
                 next.focus();
-                return;
+                if (document.activeElement === next) return;
             }
         }
         el.blur();
@@ -492,6 +519,8 @@ export default class MaterialDesignKeyboard extends VisWidget {
         if (!b(this.data().keyboardSuggestions, true)) return;
         if ((el instanceof HTMLInputElement && el.type === 'password') || this.layoutFor(el) === 'number') return;
         const value = this.currentValue(el);
+        if (this.known?.el === el && this.known.value === value) return;
+        if (this.known?.el === el) this.known.value = value;
         if (!wordsIn(value).length) return;
         this.saveWords(learn(this.readWords(), value, Date.now()));
     }
@@ -559,7 +588,7 @@ export default class MaterialDesignKeyboard extends VisWidget {
     private renderKey(key: KeyDef, id: string, colors: Colors, fontSize: number, radius: number): React.JSX.Element {
         if (key === '') return <div aria-hidden="true" key={id} style={{ flex: 1 }} />;
         const special = typeof key === 'string' ? null : key.special;
-        const label = typeof key !== 'string' ? this.keyLabel(key.special) : this.shift === 'off' ? key : key.toUpperCase();
+        const label = typeof key !== 'string' ? this.keyLabel(key.special) : this.shift === 'off' ? key : upper(key);
         const active = special === 'shift' && this.shift !== 'off';
         return (
             <button
@@ -648,12 +677,27 @@ export default class MaterialDesignKeyboard extends VisWidget {
         );
     }
 
+    /**
+     * The hidden keyboard must not block the widgets below it: the vis-2 wrapper around the
+     * placeholder is a hit target of its own, so it is switched too (not in the editor, where the
+     * widget has to stay selectable). The wrapper gets its old value back when the widget goes.
+     */
+    private clickThrough(element: HTMLDivElement | null): void {
+        this.placeholder = element;
+        if (this.wrapperPointerEvents) this.wrapperPointerEvents.el.style.pointerEvents = this.wrapperPointerEvents.value;
+        this.wrapperPointerEvents = null;
+        const wrapper = element?.parentElement;
+        if (!wrapper || this.props.editMode) return;
+        this.wrapperPointerEvents = { el: wrapper, value: wrapper.style.pointerEvents };
+        wrapper.style.pointerEvents = 'none';
+    }
+
     renderWidgetBody(props: RenderProps): React.JSX.Element {
         super.renderWidgetBody(props);
         const editor = !!this.props.editMode;
         const panel = editor || this.target ? this.renderPanel(editor) : null;
         return (
-            <div className="materialdesign-widget materialdesign-keyboard" ref={this.placeholderRef} style={{ height: '100%', position: 'relative', width: '100%' }}>
+            <div className="materialdesign-widget materialdesign-keyboard" ref={element => this.clickThrough(element)} style={{ height: '100%', pointerEvents: editor ? undefined : 'none', position: 'relative', width: '100%' }}>
                 {panel && !editor ? createPortal(panel, document.body) : panel}
             </div>
         );
