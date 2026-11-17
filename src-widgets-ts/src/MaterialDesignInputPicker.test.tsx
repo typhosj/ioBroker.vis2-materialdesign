@@ -149,6 +149,27 @@ describe('Input interaction', () => {
         expect(setValue).toHaveBeenCalledWith('x.0.v', '07:05');
     });
 
+    describe('number input', () => {
+        // A served number field is switched to type text, so unfinished text reaches commit.
+        const typeNumber = (text: string): void => {
+            const w = widget({ inputType: 'number' }, 5);
+            mount(w);
+            input().type = 'text';
+            typeText(w, text);
+            act(() => { input().dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })); });
+        };
+
+        it.each([['1.', 1], ['-3', -3], ['0', 0], [' 7 ', 7], ['1.5', 1.5]])('writes %j as %d', (text, expected) => {
+            typeNumber(text);
+            expect(setValue).toHaveBeenCalledWith('x.0.v', expected);
+        });
+
+        it.each(['-', '.', '-.', '1.2.3', '  ', ''])('writes nothing for %j', text => {
+            typeNumber(text);
+            expect(setValue).not.toHaveBeenCalled();
+        });
+    });
+
     it('opens the picker, writes on OK and returns the focus to the button', () => {
         const w = widget(DATE, '2026-11-10');
         mount(w);

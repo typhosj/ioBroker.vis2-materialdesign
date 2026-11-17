@@ -61,7 +61,4 @@ Tastenabstand und Eckenradius der Tasten. Nicht gesetzte Farben folgen dem Mater
 ## Hinweise
 
 - Felder in anderen Views werden nicht bedient; dort ebenfalls eine Tastatur platzieren. Pro View genau eine Tastatur verwenden.
-- Ein Zahlenfeld zeigt nichts an, solange nur `.` oder `-` getippt ist; die Ziffern erscheinen,
-  sobald eine Ziffer folgt.
-- Zahlenfelder zeigen keinen Cursor, solange die Tastatur sie bedient; die Tastatur hängt dort immer am Ende an.
 - Lernen zwei Geräte im selben Moment in denselben State, kann ein Zähler verloren gehen.

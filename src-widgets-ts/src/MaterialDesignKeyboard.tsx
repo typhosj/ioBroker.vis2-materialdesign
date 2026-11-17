@@ -15,8 +15,8 @@ interface Colors { background: string; key: string; text: string; special: strin
 export const WORDS_KEY = 'vis2-materialdesign-keyboard-words';
 /** `data-mdkb-inputmode` holds the page's own inputmode while the widget has set `none`. */
 const MARK = 'mdkbInputmode';
-/** `data-mdkb-readonly` marks a number field the widget made read-only; a page's own read-only field never has it. */
-const READONLY_MARK = 'mdkbReadonly';
+/** `data-mdkb-type` holds the type of a number field while the widget serves it as `text`. */
+const TYPE_MARK = 'mdkbType';
 const SKIP_TYPES = new Set(['hidden', 'checkbox', 'radio', 'range', 'file', 'color', 'date', 'time', 'datetime-local', 'month', 'week', 'button', 'submit', 'reset', 'image']);
 const ARIA: Record<Special, string> = {
     shift: 'ariaKeyShift', backspace: 'ariaKeyBackspace', enter: 'ariaKeyEnter', close: 'ariaKeyClose',
@@ -27,12 +27,17 @@ const FLEX: Partial<Record<Special, number>> = { space: 4, shift: 1.5, backspace
 export function isServable(el: unknown): el is Field {
     if (el instanceof HTMLTextAreaElement) return !el.readOnly && !el.disabled;
     if (!(el instanceof HTMLInputElement)) return false;
-    return !SKIP_TYPES.has(el.type.toLowerCase()) && (!el.readOnly || el.dataset[READONLY_MARK] !== undefined) && !el.disabled;
+    return !SKIP_TYPES.has(el.type.toLowerCase()) && !el.readOnly && !el.disabled;
 }
 
 /** The inputmode the page gave the field, from before the widget set `none`. */
 export function originalInputMode(el: Field): string {
     return el.dataset[MARK] ?? el.getAttribute('inputmode') ?? '';
+}
+
+/** The type the page gave the field, from before the widget switched a number field to `text`. */
+export function originalType(el: Field): string {
+    return el.dataset[TYPE_MARK] ?? (el instanceof HTMLInputElement ? el.type : 'text');
 }
 
 /** The nearest ancestor that scrolls vertically; the document when there is none. */
@@ -125,9 +130,9 @@ export default class MaterialDesignKeyboard extends VisWidget {
     private repeatTimer: number | undefined;
     // Known limit: while a field without selection API has the focus, a value written into it from
     // outside is not seen until the focus moves to another field.
-    // Known limit: a number field shows nothing after `.` or `-` until a digit follows, because the
-    // browser reports its value as `''` meanwhile.
-    /** Text typed into a field without selection API; such a field reports `''` for `1.` or `-`. */
+    // Known limit: a field without selection API (`type="email"`) reports `''` for text it cannot
+    // parse, so the typed text is kept here instead.
+    /** Text typed into a field without selection API. */
     private draft: { el: Field; text: string } | null = null;
     private panned: { el: HTMLElement; transform: string; transition: string; offset: number } | null = null;
     private padded: { el: HTMLElement; paddingBottom: string } | null = null;
@@ -160,11 +165,12 @@ export default class MaterialDesignKeyboard extends VisWidget {
             if (el.dataset[MARK] !== undefined) continue;
             el.dataset[MARK] = el.getAttribute('inputmode') ?? '';
             el.setAttribute('inputmode', 'none');
-            // Known limit: the Fire OS / Chromium WebView ignores inputmode="none" on type="number" and
-            // opens its number keyboard; readonly keeps it closed. Side effect: no caret in number fields.
+            // The Fire OS / Chromium WebView ignores inputmode="none" on type="number" but honours it on
+            // text. Trap: React re-applies `type` only when the Input's prop changes, so the switch
+            // survives re-renders; a remounted element is caught by the MutationObserver.
             if (el instanceof HTMLInputElement && el.type === 'number') {
-                el.readOnly = true;
-                el.dataset[READONLY_MARK] = '';
+                el.dataset[TYPE_MARK] = 'number';
+                el.type = 'text';
             }
         }
     };
@@ -175,9 +181,9 @@ export default class MaterialDesignKeyboard extends VisWidget {
             if (original) el.setAttribute('inputmode', original);
             else el.removeAttribute('inputmode');
             delete el.dataset[MARK];
-            if (el.dataset[READONLY_MARK] !== undefined) {
-                (el as HTMLInputElement).readOnly = false;
-                delete el.dataset[READONLY_MARK];
+            if (el.dataset[TYPE_MARK] !== undefined) {
+                (el as HTMLInputElement).type = el.dataset[TYPE_MARK];
+                delete el.dataset[TYPE_MARK];
             }
         });
     }
@@ -344,7 +350,7 @@ export default class MaterialDesignKeyboard extends VisWidget {
     }
 
     private layoutFor(el: Field | null): Layout {
-        return chooseLayout(this.data().keyboardLayout, el instanceof HTMLInputElement ? el.type : 'text', el ? originalInputMode(el) : '');
+        return chooseLayout(this.data().keyboardLayout, el ? originalType(el) : 'text', el ? originalInputMode(el) : '');
     }
 
     private keyMap(): KeyMap {
@@ -406,7 +412,7 @@ export default class MaterialDesignKeyboard extends VisWidget {
                 this.type(el, ' ');
                 return;
             case 'decimal':
-                this.type(el, decimalChar(this.keyMap(), el instanceof HTMLInputElement && el.type === 'number'));
+                this.type(el, decimalChar(this.keyMap(), originalType(el) === 'number'));
                 return;
             case 'backspace': {
                 const [start, end] = this.selection(el);
@@ -485,7 +491,7 @@ export default class MaterialDesignKeyboard extends VisWidget {
             case 'symbols': return '?123';
             case 'letters': return 'ABC';
             case 'space': return '';
-            case 'decimal': return decimalChar(this.keyMap(), this.target instanceof HTMLInputElement && this.target.type === 'number');
+            case 'decimal': return decimalChar(this.keyMap(), !!this.target && originalType(this.target) === 'number');
         }
     }
 
@@ -529,7 +535,7 @@ export default class MaterialDesignKeyboard extends VisWidget {
 
     private learnFrom(el: Field): void {
         if (!b(this.data().keyboardSuggestions, true)) return;
-        if ((el instanceof HTMLInputElement && el.type === 'password') || this.layoutFor(el) === 'number') return;
+        if (originalType(el) === 'password' || this.layoutFor(el) === 'number') return;
         const value = this.currentValue(el);
         if (this.known?.el === el && this.known.value === value) return;
         if (this.known?.el === el) this.known.value = value;

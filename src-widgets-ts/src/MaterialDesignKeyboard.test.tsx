@@ -217,26 +217,27 @@ describe('typing', () => {
         focus(field('amount'));
         expect(key('q')).toBeNull();
         tap('1', 'decimal');
-        // The number field itself reports '' for "1."; the keyboard keeps the typed text.
-        expect(field('amount').value).toBe('');
+        expect(field('amount').value).toBe('1.');
         tap('5');
         expect(field('amount').value).toBe('1.5');
-        tap('backspace', 'backspace', 'backspace', '-', '3');
+        tap('backspace', 'backspace', 'backspace', '-');
+        expect(field('amount').value).toBe('-');
+        tap('3');
         expect(field('amount').value).toBe('-3');
         focus(field('place'));
         tap('decimal');
         expect(field('place').value).toBe(',');
     });
 
-    it('forgets the kept number text when another field gets the focus', () => {
-        start(keyboard());
-        focus(field('amount'));
-        tap('-');
+    it('forgets the kept text of a field without selection API when another field gets the focus', () => {
+        start(keyboard(), <input aria-label="mail" type="email" />);
+        focus(field('mail'));
+        tap('a');
         focus(field('title'));
-        focus(field('amount'));
-        act(() => { field('amount').value = '7'; });
-        tap('2');
-        expect(field('amount').value).toBe('72');
+        focus(field('mail'));
+        act(() => { field('mail').value = 'x'; });
+        tap('b');
+        expect(field('mail').value).toBe('xb');
     });
 
     it('repeats backspace while held', () => {
@@ -827,26 +828,33 @@ describe('editMode switch', () => {
     });
 });
 
-describe('number fields keep the system keyboard closed through readonly', () => {
+describe('number fields are served as text', () => {
     const own = (): HTMLInputElement => document.querySelector('[aria-label="own"]') as HTMLInputElement;
     const ownField = <input aria-label="own" readOnly type="number" />;
 
-    it('marks a served number field readonly, not a text field', () => {
+    it('switches a served number field to text with a mark, keeps inputmode none, no readonly', () => {
         start(keyboard());
-        expect(field('amount').readOnly).toBe(true);
-        expect(field('amount').hasAttribute('data-mdkb-readonly')).toBe(true);
-        expect(field('title').readOnly).toBe(false);
-        expect(field('title').hasAttribute('data-mdkb-readonly')).toBe(false);
+        expect(field('amount').type).toBe('text');
+        expect(field('amount').getAttribute('data-mdkb-type')).toBe('number');
+        expect(field('amount').getAttribute('inputmode')).toBe('none');
+        expect(field('amount').readOnly).toBe(false);
+        expect(field('amount').hasAttribute('data-mdkb-readonly')).toBe(false);
+        expect(field('title').type).toBe('text');
+        expect(field('title').hasAttribute('data-mdkb-type')).toBe(false);
         expect(isServable(field('amount'))).toBe(true);
     });
 
-    it('still serves it: panel with the number pad, typing writes the value', () => {
-        start(keyboard());
+    it('still shows the number pad, learns nothing and writes a dot with the German key map', () => {
+        window.localStorage.clear();
+        start(keyboard({ keyboardSuggestions: true, keyboardLanguage: 'de' }));
         focus(field('amount'));
-        expect(panel()).not.toBeNull();
         expect(key('q')).toBeNull();
-        tap('4', '2');
-        expect(field('amount').value).toBe('42');
+        tap('decimal');
+        expect(field('amount').value).toBe('.');
+        expect(key('decimal').textContent).toBe('.');
+        tap('1');
+        blur(field('amount'));
+        expect(window.localStorage.getItem('vis2-materialdesign-keyboard-words')).toBeNull();
     });
 
     it('types into a real Input widget of type number and commits it', () => {
@@ -855,49 +863,60 @@ describe('number fields keep the system keyboard closed through readonly', () =>
         fixture<{ state: unknown }>(input).state = { rxData: { oid: 'x.0.num', inputType: 'number' }, values: {} };
         start(keyboard(), () => <div id="w4">{input.renderWidgetBody(fixture<Parameters<MaterialDesignInput['renderWidgetBody']>[0]>(inputProps))}</div>);
         const el = document.querySelector('#w4 input') as HTMLInputElement;
-        expect(el.type).toBe('number');
-        expect(el.readOnly).toBe(true);
+        expect(el.type).toBe('text');
         focus(el);
-        tap('1', '2');
-        expect(el.value).toBe('12');
+        tap('1', 'decimal', '5');
+        expect(el.value).toBe('1.5');
         tap('enter');
-        expect(String(setValue.mock.lastCall?.[1])).toBe('12');
         expect(setValue.mock.lastCall?.[0]).toBe('x.0.num');
+        expect(setValue.mock.lastCall?.[1]).toBe(1.5);
     });
 
-    it('removes readonly and the mark on unmount and on the switch to the editor', () => {
+    it('writes nothing for a lone minus', () => {
+        const inputProps = { id: 'w4', context: { setValue } };
+        const input = new MaterialDesignInput(fixture<ConstructorParameters<typeof MaterialDesignInput>[0]>(inputProps));
+        fixture<{ state: unknown }>(input).state = { rxData: { oid: 'x.0.num', inputType: 'number' }, values: {} };
+        start(keyboard(), () => <div id="w4">{input.renderWidgetBody(fixture<Parameters<MaterialDesignInput['renderWidgetBody']>[0]>(inputProps))}</div>);
+        const el = document.querySelector('#w4 input') as HTMLInputElement;
+        focus(el);
+        tap('-', 'enter');
+        expect(setValue).not.toHaveBeenCalled();
+    });
+
+    it('restores type and removes the mark on unmount and on the switch to the editor', () => {
         start(keyboard());
         act(() => current.componentWillUnmount());
-        expect(field('amount').readOnly).toBe(false);
-        expect(field('amount').hasAttribute('data-mdkb-readonly')).toBe(false);
+        expect(field('amount').type).toBe('number');
+        expect(field('amount').hasAttribute('data-mdkb-type')).toBe(false);
 
         act(() => root.unmount());
         root = createRoot(container);
         start(keyboard());
-        expect(field('amount').readOnly).toBe(true);
+        expect(field('amount').type).toBe('text');
         fixture<{ props: unknown }>(current).props = { ...props, editMode: true };
         act(() => current.componentDidUpdate(fixture<typeof current.props>(props), current.state));
-        expect(field('amount').readOnly).toBe(false);
-        expect(field('amount').hasAttribute('data-mdkb-readonly')).toBe(false);
+        expect(field('amount').type).toBe('number');
+        expect(field('amount').hasAttribute('data-mdkb-type')).toBe(false);
     });
 
-    it('does not serve or mark a number field the page made read-only, and leaves it read-only', () => {
+    it('does not serve or touch a number field the page made read-only', () => {
         start(keyboard(), ownField);
         expect(isServable(own())).toBe(false);
-        expect(own().hasAttribute('data-mdkb-readonly')).toBe(false);
+        expect(own().type).toBe('number');
+        expect(own().hasAttribute('data-mdkb-type')).toBe(false);
         focus(own());
         expect(panel()).toBeNull();
         act(() => current.componentWillUnmount());
+        expect(own().type).toBe('number');
         expect(own().readOnly).toBe(true);
-        expect(own().hasAttribute('data-mdkb-readonly')).toBe(false);
     });
 
     it('also takes a number field that appears later', async () => {
         start(keyboard());
         mount(current, <input aria-label="late" type="number" />);
         await act(async () => { await Promise.resolve(); });
-        expect(field('late').readOnly).toBe(true);
-        expect(field('late').hasAttribute('data-mdkb-readonly')).toBe(true);
+        expect(field('late').type).toBe('text');
+        expect(field('late').getAttribute('data-mdkb-type')).toBe('number');
     });
 });
 

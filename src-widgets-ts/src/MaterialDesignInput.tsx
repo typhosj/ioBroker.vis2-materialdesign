@@ -480,12 +480,18 @@ export default class MaterialDesignInput extends VisWidget {
     }
 
     private commit(data: InputData, value: string): void {
-        if (data.inputType === 'number' && value === '') {
-            this.localValue = undefined;
-            this.forceUpdate();
+        if (data.inputType === 'number') {
+            // Empty, `-`, `.`, `1.2.3`: no number, so nothing is written and the field falls back.
+            const number = value.trim() === '' ? NaN : Number(value);
+            if (!Number.isFinite(number)) {
+                this.localValue = undefined;
+                this.forceUpdate();
+                return;
+            }
+            setStateValue(this.props, data.oid || '', number);
             return;
         }
-        setStateValue(this.props, data.oid || '', data.inputType === 'number' ? Number(value) : value);
+        setStateValue(this.props, data.oid || '', value);
     }
 
     private writePicker(data: InputData, spec: PickerSpec, value: string): void {
