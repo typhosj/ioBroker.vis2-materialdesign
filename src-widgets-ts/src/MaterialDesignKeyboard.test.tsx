@@ -918,6 +918,52 @@ describe('number fields are served as text', () => {
         expect(field('late').type).toBe('text');
         expect(field('late').getAttribute('data-mdkb-type')).toBe('number');
     });
+
+    describe('under React 19, which assigns type on every update', () => {
+        const ownType = (el: HTMLElement): PropertyDescriptor | undefined => Object.getOwnPropertyDescriptor(el, 'type');
+
+        it('keeps a served number field as text when type is assigned again', () => {
+            start(keyboard());
+            field('amount').type = 'number';
+            expect(field('amount').type).toBe('text');
+            expect(field('amount').getAttribute('type')).toBe('text');
+            focus(field('amount'));
+            tap('1', 'decimal');
+            expect(field('amount').value).toBe('1.');
+            field('amount').type = 'number';
+            expect(field('amount').value).toBe('1.');
+            expect(isServable(field('amount'))).toBe(true);
+        });
+
+        it('removes the guard on unmount and on the switch to the editor', () => {
+            start(keyboard());
+            expect(ownType(field('amount'))).toBeDefined();
+            act(() => current.componentWillUnmount());
+            expect(ownType(field('amount'))).toBeUndefined();
+            expect(field('amount').type).toBe('number');
+            field('amount').type = 'text';
+            expect(field('amount').type).toBe('text');
+
+            act(() => root.unmount());
+            root = createRoot(container);
+            start(keyboard());
+            fixture<{ props: unknown }>(current).props = { ...props, editMode: true };
+            act(() => current.componentDidUpdate(fixture<typeof current.props>(props), current.state));
+            expect(ownType(field('amount'))).toBeUndefined();
+            expect(field('amount').type).toBe('number');
+            field('amount').type = 'text';
+            expect(field('amount').type).toBe('text');
+        });
+
+        it('guards a number field that appears later and leaves text fields alone', async () => {
+            start(keyboard());
+            mount(current, <input aria-label="late" type="number" />);
+            await act(async () => { await Promise.resolve(); });
+            field('late').type = 'number';
+            expect(field('late').type).toBe('text');
+            expect(ownType(field('title'))).toBeUndefined();
+        });
+    });
 });
 
 describe('typing limits and keys', () => {

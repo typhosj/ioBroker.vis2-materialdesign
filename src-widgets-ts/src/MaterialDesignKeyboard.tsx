@@ -166,11 +166,14 @@ export default class MaterialDesignKeyboard extends VisWidget {
             el.dataset[MARK] = el.getAttribute('inputmode') ?? '';
             el.setAttribute('inputmode', 'none');
             // The Fire OS / Chromium WebView ignores inputmode="none" on type="number" but honours it on
-            // text. Trap: React re-applies `type` only when the Input's prop changes, so the switch
-            // survives re-renders; a remounted element is caught by the MutationObserver.
+            // text. A remounted element is caught by the MutationObserver.
             if (el instanceof HTMLInputElement && el.type === 'number') {
                 el.dataset[TYPE_MARK] = 'number';
-                el.type = 'text';
+                // Trap: React 19 re-sets `type` on every update of a controlled input, which would turn
+                // the field back into a number field. The own property swallows that while served.
+                const native = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'type');
+                native?.set?.call(el, 'text');
+                Object.defineProperty(el, 'type', { configurable: true, get: () => native?.get?.call(el) as string, set: () => undefined });
             }
         }
     };
@@ -182,6 +185,8 @@ export default class MaterialDesignKeyboard extends VisWidget {
             else el.removeAttribute('inputmode');
             delete el.dataset[MARK];
             if (el.dataset[TYPE_MARK] !== undefined) {
+                // Own property first, or the assignment below would be swallowed.
+                Reflect.deleteProperty(el, 'type');
                 (el as HTMLInputElement).type = el.dataset[TYPE_MARK];
                 delete el.dataset[TYPE_MARK];
             }
