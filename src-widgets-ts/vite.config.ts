@@ -71,6 +71,7 @@ export default {
         "./MaterialDesignIconList": "./src/MaterialDesignIconList",
         "./MaterialDesignList": "./src/MaterialDesignList",
         "./MaterialDesignInput": "./src/MaterialDesignInput",
+        "./MaterialDesignKeyboard": "./src/MaterialDesignKeyboard",
         "./MaterialDesignInstalledVersion":
           "./src/MaterialDesignInstalledVersion",
         "./MaterialDesignSelect": "./src/MaterialDesignSelect",

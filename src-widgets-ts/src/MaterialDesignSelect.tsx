@@ -7,7 +7,7 @@ import { isComposing, moveHighlight, writeValue } from './autocomplete';
 import { m3ColorExplicit, renderIcon } from './MaterialDesignButtons';
 import { cleanColor, num } from './MaterialDesignProgress';
 import { fill, withAutoFill } from './deviceFill';
-import { squarePreview, RenderProps, VisWidget, createInfo, indexedFields, itemCount, designStyle, designStyleClasses, iconField, legacyInk, legacyInkMuted, legacyOutline, legacySurface, setStateValue, sizeCss, stateValue, stringValue } from './widgetUtils';
+import { squarePreview, RenderProps, VisWidget, createInfo, indexedFields, itemCount, designStyle, designStyleClasses, iconField, legacyInk, legacyInkMuted, legacyOutline, legacySurface, ownCssVariables, setStateValue, sizeCss, stateValue, stringValue } from './widgetUtils';
 
 interface SelectData {
     oid?: string;
@@ -575,18 +575,6 @@ export default class MaterialDesignSelect extends VisWidget {
         return floating ? createPortal(menu, document.body) : menu;
     }
 
-    /** Custom properties the theme writes on the widget element; the portal does not inherit them. */
-    private themeVariables(): Record<string, string> {
-        const host = this.refService?.current;
-        const result: Record<string, string> = {};
-        if (!host) return result;
-        for (let index = 0; index < host.style.length; index++) {
-            const name = host.style[index];
-            if (name.startsWith('--')) result[name] = host.style.getPropertyValue(name);
-        }
-        return result;
-    }
-
     static getWidgetInfo(): RxWidgetInfo {
         return {
             ...createInfo('tplVis2-materialdesign-Select', 'Select', withAutoFill(attrs, autoFillMap), ['inputLayout', 'inputAppendix', 'inputSubText', 'counter', 'icons', 'selectListLayout']),
@@ -699,7 +687,7 @@ export default class MaterialDesignSelect extends VisWidget {
         // The menu keeps an 8 px margin to the window edge, but never gets lower than one item.
         const menuPlace: React.CSSProperties = rect
             ? {
-                  ...this.themeVariables(),
+                  ...ownCssVariables(this.refService?.current),
                   bottom: openUp ? window.innerHeight - rect.top + gap : undefined,
                   left: rect.left,
                   maxHeight: Math.max(itemHeight, Math.min(300, (openUp ? rect.top : window.innerHeight - rect.bottom) - gap - 8)),

@@ -336,6 +336,17 @@ export function setStateValue(props: VisRxWidgetProps, oid: string, value: ioBro
     }
 }
 
+/** Custom properties the theme writes on the widget element; a portal in the page body does not inherit them. */
+export function ownCssVariables(host: HTMLElement | null | undefined): Record<string, string> {
+    const result: Record<string, string> = {};
+    if (!host) return result;
+    for (let index = 0; index < host.style.length; index++) {
+        const name = host.style[index];
+        if (name.startsWith('--')) result[name] = host.style.getPropertyValue(name);
+    }
+    return result;
+}
+
 export const SLIDER_WRITE_INTERVAL = 200;
 
 // Dragging a slider used to write on every pointermove — hundreds of writes per drag, which the

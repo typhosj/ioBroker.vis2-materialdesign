@@ -116,6 +116,7 @@ const portedComponents = [
     "MaterialDesignIconList",
     "MaterialDesignInput",
     "MaterialDesignInstalledVersion",
+    "MaterialDesignKeyboard",
     "MaterialDesignList",
     "MaterialDesignMasonryViews",
     "MaterialDesignProgress",
