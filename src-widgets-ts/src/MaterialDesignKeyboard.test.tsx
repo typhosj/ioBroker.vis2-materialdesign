@@ -285,6 +285,78 @@ describe('Enter and close', () => {
     });
 });
 
+describe('ghost click after the keyboard hides', () => {
+    const clicked = vi.fn();
+    const overlay = (): HTMLElement => document.querySelector('[data-testid="overlay"]') as HTMLElement;
+    const click = (): void => { act(() => { overlay().dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true })); }); };
+    const extra = <div data-testid="overlay" onClick={clicked} />;
+    beforeEach(() => clicked.mockClear());
+
+    it('swallows the click that follows the close key, once', () => {
+        start(keyboard(), extra);
+        focus(field('title'));
+        press('close');
+        rerender();
+        expect(panel()).toBeNull();
+        click();
+        expect(clicked).not.toHaveBeenCalled();
+        click();
+        expect(clicked).toHaveBeenCalledTimes(1);
+    });
+
+    it('stops swallowing after 600 ms', () => {
+        vi.useFakeTimers();
+        start(keyboard(), extra);
+        focus(field('title'));
+        press('close');
+        act(() => { vi.advanceTimersByTime(600); });
+        click();
+        expect(clicked).toHaveBeenCalledTimes(1);
+    });
+
+    it('swallows the click after Enter in close mode and after next on the last field', () => {
+        start(keyboard({ keyboardEnter: 'close' }), extra);
+        focus(field('title'));
+        press('enter');
+        click();
+        expect(clicked).not.toHaveBeenCalled();
+        act(() => current.componentWillUnmount());
+        start(keyboard({ keyboardEnter: 'next', keyboardFields: 'w1' }), extra);
+        focus(field('title'));
+        press('enter');
+        click();
+        expect(clicked).not.toHaveBeenCalled();
+    });
+
+    it('does not swallow after keys that leave the keyboard open', () => {
+        start(keyboard({ keyboardEnter: 'stay' }), extra);
+        focus(field('title'));
+        press('a');
+        click();
+        expect(clicked).toHaveBeenCalledTimes(1);
+        press('enter');
+        click();
+        expect(clicked).toHaveBeenCalledTimes(2);
+    });
+
+    it('does not swallow after Enter moved on to another field', () => {
+        start(keyboard({ keyboardEnter: 'next', keyboardFields: 'w1 w2' }), extra);
+        focus(field('title'));
+        press('enter');
+        click();
+        expect(clicked).toHaveBeenCalledTimes(1);
+    });
+
+    it('removes the pending swallow on unmount', () => {
+        start(keyboard(), extra);
+        focus(field('title'));
+        press('close');
+        act(() => current.componentWillUnmount());
+        click();
+        expect(clicked).toHaveBeenCalledTimes(1);
+    });
+});
+
 describe('cleanup', () => {
     it('stops listening and observing after unmount', async () => {
         start(keyboard());

@@ -218,6 +218,7 @@ export default class MaterialDesignKeyboard extends VisWidget {
     }
 
     private detach(): void {
+        this.stopSwallow();
         if (!this.listening) return;
         this.listening = false;
         this.observer?.disconnect();
@@ -508,6 +509,30 @@ export default class MaterialDesignKeyboard extends VisWidget {
         }, 500);
     }
 
+    private swallowTimer: number | undefined;
+
+    // Trap: a key that hides the keyboard does so on pointerdown, so the panel is gone before the
+    // click of the same tap arrives, and that click hits whatever lies below (a dialog overlay, a
+    // button). pointerdown preventDefault does not suppress it. The capture listener on window runs
+    // before React's root listener.
+    private readonly swallowClick = (): void => {
+        this.stopSwallow();
+        window.addEventListener('click', this.eatClick, true);
+        this.swallowTimer = window.setTimeout(this.stopSwallow, 600);
+    };
+
+    private readonly eatClick = (event: Event): void => {
+        event.stopPropagation();
+        event.preventDefault();
+        this.stopSwallow();
+    };
+
+    private readonly stopSwallow = (): void => {
+        window.removeEventListener('click', this.eatClick, true);
+        window.clearTimeout(this.swallowTimer);
+        this.swallowTimer = undefined;
+    };
+
     private readonly stopRepeat = (): void => {
         if (this.repeatTimer !== undefined) {
             // Timeout and interval ids share one pool, so clearing both is safe.
@@ -654,7 +679,9 @@ export default class MaterialDesignKeyboard extends VisWidget {
                 onPointerDown={event => {
                     event.preventDefault();
                     this.pressed = id;
+                    const shown = !!this.target;
                     this.press(key);
+                    if (shown && !this.target) this.swallowClick();
                     if (special === 'backspace' || (special && ARROW[special])) this.startRepeat(key);
                     this.forceUpdate();
                 }}
