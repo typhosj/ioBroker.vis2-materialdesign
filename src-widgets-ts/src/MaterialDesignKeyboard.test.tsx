@@ -827,6 +827,80 @@ describe('editMode switch', () => {
     });
 });
 
+describe('number fields keep the system keyboard closed through readonly', () => {
+    const own = (): HTMLInputElement => document.querySelector('[aria-label="own"]') as HTMLInputElement;
+    const ownField = <input aria-label="own" readOnly type="number" />;
+
+    it('marks a served number field readonly, not a text field', () => {
+        start(keyboard());
+        expect(field('amount').readOnly).toBe(true);
+        expect(field('amount').hasAttribute('data-mdkb-readonly')).toBe(true);
+        expect(field('title').readOnly).toBe(false);
+        expect(field('title').hasAttribute('data-mdkb-readonly')).toBe(false);
+        expect(isServable(field('amount'))).toBe(true);
+    });
+
+    it('still serves it: panel with the number pad, typing writes the value', () => {
+        start(keyboard());
+        focus(field('amount'));
+        expect(panel()).not.toBeNull();
+        expect(key('q')).toBeNull();
+        tap('4', '2');
+        expect(field('amount').value).toBe('42');
+    });
+
+    it('types into a real Input widget of type number and commits it', () => {
+        const inputProps = { id: 'w4', context: { setValue } };
+        const input = new MaterialDesignInput(fixture<ConstructorParameters<typeof MaterialDesignInput>[0]>(inputProps));
+        fixture<{ state: unknown }>(input).state = { rxData: { oid: 'x.0.num', inputType: 'number' }, values: {} };
+        start(keyboard(), () => <div id="w4">{input.renderWidgetBody(fixture<Parameters<MaterialDesignInput['renderWidgetBody']>[0]>(inputProps))}</div>);
+        const el = document.querySelector('#w4 input') as HTMLInputElement;
+        expect(el.type).toBe('number');
+        expect(el.readOnly).toBe(true);
+        focus(el);
+        tap('1', '2');
+        expect(el.value).toBe('12');
+        tap('enter');
+        expect(String(setValue.mock.lastCall?.[1])).toBe('12');
+        expect(setValue.mock.lastCall?.[0]).toBe('x.0.num');
+    });
+
+    it('removes readonly and the mark on unmount and on the switch to the editor', () => {
+        start(keyboard());
+        act(() => current.componentWillUnmount());
+        expect(field('amount').readOnly).toBe(false);
+        expect(field('amount').hasAttribute('data-mdkb-readonly')).toBe(false);
+
+        act(() => root.unmount());
+        root = createRoot(container);
+        start(keyboard());
+        expect(field('amount').readOnly).toBe(true);
+        fixture<{ props: unknown }>(current).props = { ...props, editMode: true };
+        act(() => current.componentDidUpdate(fixture<typeof current.props>(props), current.state));
+        expect(field('amount').readOnly).toBe(false);
+        expect(field('amount').hasAttribute('data-mdkb-readonly')).toBe(false);
+    });
+
+    it('does not serve or mark a number field the page made read-only, and leaves it read-only', () => {
+        start(keyboard(), ownField);
+        expect(isServable(own())).toBe(false);
+        expect(own().hasAttribute('data-mdkb-readonly')).toBe(false);
+        focus(own());
+        expect(panel()).toBeNull();
+        act(() => current.componentWillUnmount());
+        expect(own().readOnly).toBe(true);
+        expect(own().hasAttribute('data-mdkb-readonly')).toBe(false);
+    });
+
+    it('also takes a number field that appears later', async () => {
+        start(keyboard());
+        mount(current, <input aria-label="late" type="number" />);
+        await act(async () => { await Promise.resolve(); });
+        expect(field('late').readOnly).toBe(true);
+        expect(field('late').hasAttribute('data-mdkb-readonly')).toBe(true);
+    });
+});
+
 describe('typing limits and keys', () => {
     const area = (): HTMLTextAreaElement => document.querySelector('[aria-label="notes"]') as HTMLTextAreaElement;
 

@@ -54,4 +54,5 @@ Material 3 theme.
 - Fields in other views are not served; place a keyboard there too. Use one keyboard per view.
 - A number field shows nothing while only `.` or `-` is typed; the digits appear as soon as a
   digit follows.
+- Number fields show no caret while the keyboard serves them; the keyboard always appends at the end there.
 - Two devices learning into the same state at the same moment can lose one count.

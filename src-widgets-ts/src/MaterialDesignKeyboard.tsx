@@ -15,6 +15,8 @@ interface Colors { background: string; key: string; text: string; special: strin
 export const WORDS_KEY = 'vis2-materialdesign-keyboard-words';
 /** `data-mdkb-inputmode` holds the page's own inputmode while the widget has set `none`. */
 const MARK = 'mdkbInputmode';
+/** `data-mdkb-readonly` marks a number field the widget made read-only; a page's own read-only field never has it. */
+const READONLY_MARK = 'mdkbReadonly';
 const SKIP_TYPES = new Set(['hidden', 'checkbox', 'radio', 'range', 'file', 'color', 'date', 'time', 'datetime-local', 'month', 'week', 'button', 'submit', 'reset', 'image']);
 const ARIA: Record<Special, string> = {
     shift: 'ariaKeyShift', backspace: 'ariaKeyBackspace', enter: 'ariaKeyEnter', close: 'ariaKeyClose',
@@ -25,7 +27,7 @@ const FLEX: Partial<Record<Special, number>> = { space: 4, shift: 1.5, backspace
 export function isServable(el: unknown): el is Field {
     if (el instanceof HTMLTextAreaElement) return !el.readOnly && !el.disabled;
     if (!(el instanceof HTMLInputElement)) return false;
-    return !SKIP_TYPES.has(el.type.toLowerCase()) && !el.readOnly && !el.disabled;
+    return !SKIP_TYPES.has(el.type.toLowerCase()) && (!el.readOnly || el.dataset[READONLY_MARK] !== undefined) && !el.disabled;
 }
 
 /** The inputmode the page gave the field, from before the widget set `none`. */
@@ -158,6 +160,12 @@ export default class MaterialDesignKeyboard extends VisWidget {
             if (el.dataset[MARK] !== undefined) continue;
             el.dataset[MARK] = el.getAttribute('inputmode') ?? '';
             el.setAttribute('inputmode', 'none');
+            // Known limit: the Fire OS / Chromium WebView ignores inputmode="none" on type="number" and
+            // opens its number keyboard; readonly keeps it closed. Side effect: no caret in number fields.
+            if (el instanceof HTMLInputElement && el.type === 'number') {
+                el.readOnly = true;
+                el.dataset[READONLY_MARK] = '';
+            }
         }
     };
 
@@ -167,6 +175,10 @@ export default class MaterialDesignKeyboard extends VisWidget {
             if (original) el.setAttribute('inputmode', original);
             else el.removeAttribute('inputmode');
             delete el.dataset[MARK];
+            if (el.dataset[READONLY_MARK] !== undefined) {
+                (el as HTMLInputElement).readOnly = false;
+                delete el.dataset[READONLY_MARK];
+            }
         });
     }
 
