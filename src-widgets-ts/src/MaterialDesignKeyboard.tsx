@@ -397,7 +397,9 @@ export default class MaterialDesignKeyboard extends VisWidget {
             <div
                 aria-label={VisWidget.t('keyboardAria')}
                 className={`materialdesign-widget materialdesign-keyboard-panel${isM3 ? ` ${designStyleClasses(data, isDark)}` : ''}`}
-                // A tap between two keys must not take the focus from the field either.
+                // A tap between two keys must not take the focus from the field either. Browsers move
+                // the focus as the default action of mousedown; cancelling pointerdown does not reliably stop that.
+                onMouseDown={event => event.preventDefault()}
                 onPointerDown={event => event.preventDefault()}
                 role="group"
                 style={{

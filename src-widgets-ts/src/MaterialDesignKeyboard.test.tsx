@@ -152,12 +152,16 @@ describe('showing and hiding', () => {
         expect(panel()).toBeNull();
     });
 
-    it('keeps the focus in the field while a key is pressed', () => {
+    it('cancels the pointer and mouse press on a key so a browser keeps the focus in the field', () => {
         start(keyboard());
         focus(field('title'));
         const down = new MouseEvent('pointerdown', { bubbles: true, cancelable: true });
+        const mouse = new MouseEvent('mousedown', { bubbles: true, cancelable: true });
         act(() => { key('a').dispatchEvent(down); });
+        act(() => { key('a').dispatchEvent(mouse); });
         expect(down.defaultPrevented).toBe(true);
+        expect(mouse.defaultPrevented).toBe(true);
+        // jsdom never moves the focus on a press, so this alone proves nothing about browsers.
         expect(document.activeElement).toBe(field('title'));
     });
 });
@@ -272,6 +276,74 @@ describe('Enter and close', () => {
         start(keyboard());
         focus(field('title'));
         tap('close');
+        expect(document.activeElement).toBe(document.body);
+        expect(panel()).toBeNull();
+    });
+});
+
+describe('cleanup', () => {
+    it('stops listening and observing after unmount', async () => {
+        start(keyboard());
+        act(() => current.componentWillUnmount());
+        act(() => field('title').focus());
+        rerender();
+        expect(panel()).toBeNull();
+        mount(current, <input aria-label="later" />);
+        await act(async () => { await Promise.resolve(); });
+        expect(field('later').hasAttribute('inputmode')).toBe(false);
+    });
+
+    it('stops a held backspace on unmount', () => {
+        vi.useFakeTimers();
+        start(keyboard({ keyboardAutoCapitalize: false }));
+        focus(field('title'));
+        tap('a', 'b', 'c', 'd');
+        press('backspace');
+        act(() => current.componentWillUnmount());
+        act(() => { vi.advanceTimersByTime(2000); });
+        expect(field('title').value).toBe('abc');
+    });
+
+    it('survives a second unmount and a field removed before it', () => {
+        start(keyboard());
+        const gone = field('place');
+        gone.remove();
+        expect(() => act(() => current.componentWillUnmount())).not.toThrow();
+        expect(() => act(() => current.componentWillUnmount())).not.toThrow();
+        expect(field('title').hasAttribute('inputmode')).toBe(false);
+    });
+});
+
+describe('keyboardFields list', () => {
+    it('serves nothing for an unknown id', () => {
+        start(keyboard({ keyboardFields: 'nope' }));
+        expect(field('title').getAttribute('inputmode')).toBeNull();
+        focus(field('title'));
+        expect(panel()).toBeNull();
+    });
+
+    it('accepts mixed separators', () => {
+        start(keyboard({ keyboardFields: 'w1, ;w2' }));
+        expect(field('title').getAttribute('inputmode')).toBe('none');
+        expect(field('place').getAttribute('inputmode')).toBe('none');
+        expect(field('amount').hasAttribute('inputmode')).toBe(false);
+    });
+});
+
+describe('textarea', () => {
+    const area = (): HTMLTextAreaElement => document.querySelector('[aria-label="notes"]') as HTMLTextAreaElement;
+    const withArea = (): React.ReactNode => <textarea aria-label="notes" />;
+
+    it('types, replaces a selection and blurs on Enter', () => {
+        start(keyboard({ keyboardAutoCapitalize: false }), withArea);
+        focus(area());
+        tap('a', 'b', 'c');
+        expect(area().value).toBe('abc');
+        act(() => area().setSelectionRange(0, 2));
+        tap('x');
+        expect(area().value).toBe('xc');
+        expect(area().selectionStart).toBe(1);
+        tap('enter');
         expect(document.activeElement).toBe(document.body);
         expect(panel()).toBeNull();
     });
