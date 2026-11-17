@@ -4,8 +4,8 @@ import { createPortal } from 'react-dom';
 import type { RxWidgetInfo } from '@iobroker/types-vis-2';
 
 import { m3ColorExplicit } from './MaterialDesignButtons';
-import { applyKey, autoShift, chooseLayout, decimalChar, keyMapFor, NUMBER_ROWS, panOffset, textRows, type EditResult, type KeyDef, type KeyMap, type Layout, type Special } from './keyboard';
-import { createInfo, designStyle, designStyleClasses, legacyInk, legacySurface, ownCssVariables, squarePreview, visLocale, VisWidget, boolValue as b, numberValue as n, textValue as s, type RenderProps } from './widgetUtils';
+import { applyKey, autoShift, chooseLayout, currentWord, decimalChar, forget, keyMapFor, learn, NUMBER_ROWS, panOffset, parseWords, replaceWord, suggest, textRows, wordsIn, type EditResult, type KeyDef, type KeyMap, type Layout, type Special, type Words } from './keyboard';
+import { createInfo, designStyle, designStyleClasses, legacyInk, legacySurface, ownCssVariables, setStateValue, squarePreview, stateValue, visLocale, VisWidget, boolValue as b, numberValue as n, textValue as s, type RenderProps } from './widgetUtils';
 
 export type Field = HTMLInputElement | HTMLTextAreaElement;
 type Shift = 'off' | 'once' | 'lock';
@@ -68,6 +68,15 @@ const attrs: RxWidgetInfo['visAttrs'] = [
         ],
     },
     {
+        name: 'keyboardWords',
+        label: 'group_keyboardWords',
+        fields: [
+            { name: 'keyboardSuggestions', label: 'keyboardSuggestions', type: 'checkbox', default: true },
+            { name: 'keyboardSuggestionCount', label: 'keyboardSuggestionCount', type: 'number', default: 3, min: 1, max: 10 },
+            { name: 'keyboardWordsOid', label: 'keyboardWordsOid', type: 'id' },
+        ],
+    },
+    {
         name: 'keyboardLook',
         label: 'group_keyboardLook',
         fields: [
@@ -109,6 +118,10 @@ export default class MaterialDesignKeyboard extends VisWidget {
     private draft: { el: Field; text: string } | null = null;
     private panned: { el: HTMLElement; transform: string; transition: string; offset: number } | null = null;
     private padded: { el: HTMLElement; paddingBottom: string } | null = null;
+    private wordsCache: Words = {};
+    private wordsSeen: unknown = Symbol('unread');
+    private suggestionTimer: number | undefined;
+    private suggestionForgotten = false;
 
     private data(): Record<string, unknown> {
         return this.state.rxData as unknown as Record<string, unknown>;
@@ -201,6 +214,7 @@ export default class MaterialDesignKeyboard extends VisWidget {
     private readonly onFocusOut = (event: FocusEvent): void => {
         const el = this.target;
         if (!el || event.target !== el) return;
+        this.learnFrom(el);
         // Moving straight into another served field: its focusin takes over.
         if (this.serves(event.relatedTarget)) return;
         this.hide();
@@ -286,6 +300,7 @@ export default class MaterialDesignKeyboard extends VisWidget {
         this.unpan();
         this.unpad();
         this.stopRepeat();
+        this.cancelSuggestionPress();
         this.target = null;
         this.rect = null;
         this.symbols = false;
@@ -384,7 +399,10 @@ export default class MaterialDesignKeyboard extends VisWidget {
         el.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', bubbles: true, cancelable: true }));
         el.dispatchEvent(new Event('change', { bubbles: true }));
         const mode = s(this.data().keyboardEnter, 'close');
-        if (mode === 'stay') return;
+        if (mode === 'stay') {
+            this.learnFrom(el);
+            return;
+        }
         if (mode === 'next') {
             const fields = this.servedFields();
             const next = fields[fields.indexOf(el) + 1];
@@ -430,6 +448,112 @@ export default class MaterialDesignKeyboard extends VisWidget {
             case 'space': return '';
             case 'decimal': return decimalChar(this.keyMap(), this.target instanceof HTMLInputElement && this.target.type === 'number');
         }
+    }
+
+    private wordsOid(): string {
+        return s(this.data().keyboardWordsOid);
+    }
+
+    /** With a state: its last value, overlaid by our own writes until the next value arrives. */
+    private readWords(): Words {
+        const oid = this.wordsOid();
+        if (oid) {
+            const value = stateValue(this.state, oid);
+            if (value !== this.wordsSeen) {
+                this.wordsSeen = value;
+                this.wordsCache = parseWords(value);
+            }
+            return this.wordsCache;
+        }
+        try {
+            return parseWords(window.localStorage.getItem(WORDS_KEY));
+        } catch {
+            return {};
+        }
+    }
+
+    // Known limit: two devices writing the state at almost the same moment can lose one count.
+    private saveWords(words: Words): void {
+        const json = JSON.stringify(words);
+        const oid = this.wordsOid();
+        if (oid) {
+            this.wordsCache = words;
+            setStateValue(this.props, oid, json);
+            return;
+        }
+        try {
+            window.localStorage.setItem(WORDS_KEY, json);
+        } catch {
+            // No storage: there are simply no suggestions.
+        }
+    }
+
+    private learnFrom(el: Field): void {
+        if (!b(this.data().keyboardSuggestions, true)) return;
+        if ((el instanceof HTMLInputElement && el.type === 'password') || this.layoutFor(el) === 'number') return;
+        const value = this.currentValue(el);
+        if (!wordsIn(value).length) return;
+        this.saveWords(learn(this.readWords(), value, Date.now()));
+    }
+
+    private startSuggestionPress(word: string): void {
+        this.cancelSuggestionPress();
+        this.suggestionForgotten = false;
+        this.suggestionTimer = window.setTimeout(() => {
+            this.suggestionTimer = undefined;
+            this.suggestionForgotten = true;
+            this.saveWords(forget(this.readWords(), word));
+            this.forceUpdate();
+        }, 600);
+    }
+
+    private endSuggestionPress(word: string): void {
+        const forgotten = this.suggestionForgotten;
+        this.cancelSuggestionPress();
+        const el = this.target;
+        if (forgotten || !el) return;
+        const value = this.currentValue(el);
+        this.write(el, replaceWord(value, this.selection(el)[0] ?? value.length, word));
+        this.refreshShift();
+        this.forceUpdate();
+    }
+
+    private readonly cancelSuggestionPress = (): void => {
+        if (this.suggestionTimer !== undefined) {
+            window.clearTimeout(this.suggestionTimer);
+            this.suggestionTimer = undefined;
+        }
+    };
+
+    private renderSuggestions(colors: Colors, fontSize: number, gap: number, radius: number): React.JSX.Element | null {
+        const data = this.data();
+        const el = this.target;
+        if (!b(data.keyboardSuggestions, true) || this.layoutFor(el) === 'number') return null;
+        const value = el ? this.currentValue(el) : '';
+        const prefix = el ? currentWord(value, this.selection(el)[0] ?? value.length).word : '';
+        const list = el ? suggest(this.readWords(), prefix, n(data.keyboardSuggestionCount, 3)) : [];
+        return (
+            <div data-suggestions="" style={{ display: 'flex', flex: 1, gap, minHeight: 0 }}>
+                {list.map(word => (
+                    <button
+                        data-suggestion={word}
+                        key={word}
+                        onPointerCancel={this.cancelSuggestionPress}
+                        onPointerDown={event => {
+                            event.preventDefault();
+                            this.startSuggestionPress(word);
+                        }}
+                        onPointerLeave={this.cancelSuggestionPress}
+                        onPointerUp={() => this.endSuggestionPress(word)}
+                        style={{ background: 'transparent', border: 0, borderRadius: radius, color: colors.text, flex: 1, fontSize, minWidth: 0, overflow: 'hidden', padding: '0 4px', textOverflow: 'ellipsis', touchAction: 'manipulation', userSelect: 'none', whiteSpace: 'nowrap' }}
+                        tabIndex={-1}
+                        type="button"
+                    >
+                        {word}
+                    </button>
+                ))}
+            </div>
+        );
     }
 
     private renderKey(key: KeyDef, id: string, colors: Colors, fontSize: number, radius: number): React.JSX.Element {
@@ -514,6 +638,7 @@ export default class MaterialDesignKeyboard extends VisWidget {
                 }}
             >
                 <style>{KEYFRAMES}</style>
+                {this.renderSuggestions(colors, fontSize, gap, radius)}
                 {rows.map((row, r) => (
                     <div key={`row${r}`} style={{ display: 'flex', flex: 1, gap, minHeight: 0 }}>
                         {row.map((k, c) => this.renderKey(k, `${r}-${c}`, colors, fontSize, radius))}

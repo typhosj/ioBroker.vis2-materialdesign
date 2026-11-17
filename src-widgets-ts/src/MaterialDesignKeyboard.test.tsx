@@ -572,3 +572,161 @@ describe('ownCssVariables', () => {
         expect(ownCssVariables(null)).toEqual({});
     });
 });
+
+describe('word suggestions', () => {
+    beforeEach(() => window.localStorage.clear());
+    const stored = (): Record<string, { w: string; n: number }> => JSON.parse(window.localStorage.getItem('vis2-materialdesign-keyboard-words') ?? '{}');
+    const typeInto = (label: string, text: string): void => {
+        focus(field(label));
+        act(() => { field(label).value = text; });
+        rerender();
+    };
+    const suggestion = (word: string): HTMLButtonElement => panel()?.querySelector(`[data-suggestion="${word}"]`) as HTMLButtonElement;
+    const shown = (): (string | null)[] => Array.from(panel()?.querySelectorAll('[data-suggestion]') ?? []).map(b => b.textContent);
+    const seed = (count: number): void => {
+        const words: Record<string, unknown> = {};
+        for (let i = 0; i < count; i++) words[`wort${String.fromCharCode(97 + i)}`] = { w: `Wort${String.fromCharCode(97 + i)}`, n: 20 - i, t: 1 };
+        window.localStorage.setItem('vis2-materialdesign-keyboard-words', JSON.stringify(words));
+    };
+
+    it('learns on leaving a text field, into this browser', () => {
+        start(keyboard({ keyboardSuggestions: true }));
+        typeInto('title', 'Arzt Termin');
+        blur(field('title'));
+        expect(stored().arzt).toMatchObject({ w: 'Arzt', n: 1 });
+        expect(stored().termin).toMatchObject({ w: 'Termin', n: 1 });
+    });
+
+    it('learns on Enter with "stay", but never from passwords, number pads or with suggestions off', () => {
+        start(keyboard({ keyboardSuggestions: true, keyboardEnter: 'stay' }), <input aria-label="secret" type="password" />);
+        typeInto('title', 'Fest');
+        tap('enter');
+        expect(stored().fest?.n).toBe(1);
+        typeInto('secret', 'Geheimwort');
+        blur(field('secret'));
+        typeInto('place', 'Zahlwort');
+        blur(field('place'));
+        expect(stored().geheimwort).toBeUndefined();
+        expect(stored().zahlwort).toBeUndefined();
+
+        rx().keyboardSuggestions = false;
+        typeInto('title', 'Nichts');
+        blur(field('title'));
+        expect(stored().nichts).toBeUndefined();
+    });
+
+    it('writes to the state and keeps two learns before the echo', () => {
+        start(keyboard({ keyboardSuggestions: true, keyboardWordsOid: 'x.0.words' }, { 'x.0.words.val': '{"arzt":{"w":"Arzt","n":4,"t":1}}' }));
+        typeInto('title', 'Arzt');
+        blur(field('title'));
+        typeInto('title', 'Kita');
+        blur(field('title'));
+        const last = JSON.parse(setValue.mock.lastCall?.[1] as string);
+        expect(setValue.mock.lastCall?.[0]).toBe('x.0.words');
+        expect(last.arzt.n).toBe(5);
+        expect(last.kita.n).toBe(1);
+        expect(window.localStorage.getItem('vis2-materialdesign-keyboard-words')).toBeNull();
+    });
+
+    it('shows the most typed words, filters by the started word and fills in a tap', () => {
+        window.localStorage.setItem('vis2-materialdesign-keyboard-words', JSON.stringify({
+            arzt: { w: 'Arzt', n: 5, t: 1 }, arbeit: { w: 'Arbeit', n: 2, t: 1 }, müll: { w: 'Müll', n: 9, t: 1 },
+        }));
+        start(keyboard({ keyboardSuggestions: true, keyboardSuggestionCount: 2 }));
+        focus(field('title'));
+        expect(shown()).toEqual(['Müll', 'Arzt']);
+        tap('a', 'r');
+        expect(field('title').value).toBe('Ar');
+        expect(suggestion('Arzt')).not.toBeNull();
+        act(() => { suggestion('Arzt').dispatchEvent(new MouseEvent('pointerdown', { bubbles: true, cancelable: true })); });
+        act(() => { suggestion('Arzt').dispatchEvent(new MouseEvent('pointerup', { bubbles: true })); });
+        rerender();
+        expect(field('title').value).toBe('Arzt ');
+    });
+
+    it('removes a word on a long press without filling it in', () => {
+        vi.useFakeTimers();
+        window.localStorage.setItem('vis2-materialdesign-keyboard-words', JSON.stringify({ tippfehler: { w: 'Tippfehler', n: 1, t: 1 } }));
+        start(keyboard({ keyboardSuggestions: true }));
+        focus(field('title'));
+        act(() => { suggestion('Tippfehler').dispatchEvent(new MouseEvent('pointerdown', { bubbles: true, cancelable: true })); });
+        act(() => { vi.advanceTimersByTime(600); });
+        act(() => { suggestion('Tippfehler')?.dispatchEvent(new MouseEvent('pointerup', { bubbles: true })); });
+        rerender();
+        expect(stored().tippfehler).toBeUndefined();
+        expect(field('title').value).toBe('');
+        expect(suggestion('Tippfehler')).toBeNull();
+    });
+
+    it('shows no bar on the number pad and none when switched off', () => {
+        start(keyboard({ keyboardSuggestions: true }));
+        focus(field('amount'));
+        expect(panel()?.querySelector('[data-suggestions]')).toBeNull();
+        focus(field('title'));
+        expect(panel()?.querySelector('[data-suggestions]')).not.toBeNull();
+        blur(field('title'));
+        rx().keyboardSuggestions = false;
+        focus(field('title'));
+        expect(panel()?.querySelector('[data-suggestions]')).toBeNull();
+    });
+
+    it('survives a storage that throws', () => {
+        const spy = vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => { throw new Error('blocked'); });
+        start(keyboard({ keyboardSuggestions: true }));
+        focus(field('title'));
+        expect(panel()).not.toBeNull();
+        spy.mockRestore();
+    });
+
+    it('still closes and learns nothing when writing the storage throws', () => {
+        const spy = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new Error('full'); });
+        start(keyboard({ keyboardSuggestions: true }));
+        typeInto('title', 'Arzt');
+        expect(() => blur(field('title'))).not.toThrow();
+        expect(panel()).toBeNull();
+        spy.mockRestore();
+        expect(stored().arzt).toBeUndefined();
+    });
+
+    it('gives no suggestions and no error for a state that is not a word list', () => {
+        for (const value of ['not json', null, undefined, 42, '[1,2]', '{"a":1}']) {
+            start(keyboard({ keyboardSuggestions: true, keyboardWordsOid: 'x.0.words' }, { 'x.0.words.val': value }));
+            focus(field('title'));
+            expect(panel()).not.toBeNull();
+            expect(shown()).toEqual([]);
+            blur(field('title'));
+            act(() => current.componentWillUnmount());
+        }
+    });
+
+    it('keeps the count between 1 and 10 and falls back to 3', () => {
+        seed(12);
+        start(keyboard({ keyboardSuggestions: true, keyboardSuggestionCount: 0 }));
+        focus(field('title'));
+        expect(shown()).toHaveLength(1);
+        blur(field('title'));
+        for (const [count, expected] of [[50, 10], ['abc', 3], [undefined, 3], [4, 4]] as const) {
+            rx().keyboardSuggestionCount = count;
+            focus(field('title'));
+            expect(shown()).toHaveLength(expected);
+            blur(field('title'));
+        }
+    });
+
+    it('does not forget a word when the press is cancelled before 600 ms, and not after unmount', () => {
+        vi.useFakeTimers();
+        seed(1);
+        start(keyboard({ keyboardSuggestions: true }));
+        focus(field('title'));
+        act(() => { suggestion('Worta').dispatchEvent(new MouseEvent('pointerdown', { bubbles: true, cancelable: true })); });
+        act(() => { vi.advanceTimersByTime(599); });
+        act(() => { suggestion('Worta').dispatchEvent(new MouseEvent('pointercancel', { bubbles: true })); });
+        act(() => { vi.advanceTimersByTime(2000); });
+        expect(stored().worta).toBeDefined();
+
+        act(() => { suggestion('Worta').dispatchEvent(new MouseEvent('pointerdown', { bubbles: true, cancelable: true })); });
+        act(() => current.componentWillUnmount());
+        act(() => { vi.advanceTimersByTime(2000); });
+        expect(stored().worta).toBeDefined();
+    });
+});
