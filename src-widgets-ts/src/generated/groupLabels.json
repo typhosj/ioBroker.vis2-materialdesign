@@ -1,5 +1,8 @@
 {
     "en": {
+        "group_keyboardLook": "look",
+        "group_keyboardPlacement": "placement",
+        "group_keyboardWords": "word suggestions",
         "group_alertLayout": "layout",
         "group_autoCompleteListLayout": "menu layout",
         "group_barColors": "bar chart colors:",
@@ -98,6 +101,9 @@
         "group_picker": "picker"
     },
     "de": {
+        "group_keyboardLook": "Aussehen",
+        "group_keyboardPlacement": "Platzierung",
+        "group_keyboardWords": "Wortvorschläge",
         "group_alertLayout": "Layout",
         "group_autoCompleteListLayout": "Menü-Layout",
         "group_barColors": "Balkendiagrammfarben:",
@@ -196,6 +202,9 @@
         "group_picker": "Auswahlhilfe"
     },
     "es": {
+        "group_keyboardLook": "aspecto",
+        "group_keyboardPlacement": "posición en pantalla",
+        "group_keyboardWords": "sugerencias de palabras",
         "group_alertLayout": "diseño",
         "group_autoCompleteListLayout": "diseño del menú",
         "group_barColors": "colores del gráfico de barras:",
@@ -294,6 +303,9 @@
         "group_picker": "selector"
     },
     "fr": {
+        "group_keyboardLook": "apparence",
+        "group_keyboardPlacement": "emplacement",
+        "group_keyboardWords": "suggestions de mots",
         "group_alertLayout": "disposition",
         "group_autoCompleteListLayout": "disposition des menus",
         "group_barColors": "couleurs du graphique à barres:",
@@ -392,6 +404,9 @@
         "group_picker": "sélecteur"
     },
     "it": {
+        "group_keyboardLook": "aspetto",
+        "group_keyboardPlacement": "posizionamento",
+        "group_keyboardWords": "suggerimenti di parole",
         "group_alertLayout": "disposizione",
         "group_autoCompleteListLayout": "layout del menu",
         "group_barColors": "colori del grafico a barre:",
@@ -490,6 +505,9 @@
         "group_picker": "selettore"
     },
     "nl": {
+        "group_keyboardLook": "uiterlijk",
+        "group_keyboardPlacement": "plaatsing",
+        "group_keyboardWords": "woordsuggesties",
         "group_alertLayout": "lay-out",
         "group_autoCompleteListLayout": "menu-indeling",
         "group_barColors": "staafdiagram kleuren:",
@@ -588,6 +606,9 @@
         "group_picker": "kiezer"
     },
     "pl": {
+        "group_keyboardLook": "wygląd",
+        "group_keyboardPlacement": "rozmieszczenie",
+        "group_keyboardWords": "podpowiedzi słów",
         "group_alertLayout": "układ",
         "group_autoCompleteListLayout": "układ menu",
         "group_barColors": "kolory wykresu słupkowego:",
@@ -686,6 +707,9 @@
         "group_picker": "selektor"
     },
     "pt": {
+        "group_keyboardLook": "aparência",
+        "group_keyboardPlacement": "posicionamento",
+        "group_keyboardWords": "sugestões de palavras",
         "group_alertLayout": "disposição",
         "group_autoCompleteListLayout": "layout do menu",
         "group_barColors": "cores do gráfico de barras:",
@@ -784,6 +808,9 @@
         "group_picker": "seletor"
     },
     "ru": {
+        "group_keyboardLook": "внешний вид",
+        "group_keyboardPlacement": "расположение",
+        "group_keyboardWords": "подсказки слов",
         "group_alertLayout": "расположение",
         "group_autoCompleteListLayout": "макет меню",
         "group_barColors": "цвета гистограммы:",
@@ -882,6 +909,9 @@
         "group_picker": "выбор значения"
     },
     "uk": {
+        "group_keyboardLook": "вигляд",
+        "group_keyboardPlacement": "розташування",
+        "group_keyboardWords": "підказки слів",
         "group_alertLayout": "Макет",
         "group_autoCompleteListLayout": "Меню макет",
         "group_barColors": "Стовпчик діаграма COLORS:",
@@ -980,6 +1010,9 @@
         "group_picker": "вибір значення"
     },
     "zh-cn": {
+        "group_keyboardLook": "外观",
+        "group_keyboardPlacement": "位置",
+        "group_keyboardWords": "词语建议",
         "group_alertLayout": "布局",
         "group_autoCompleteListLayout": "菜单布局",
         "group_barColors": "条形图颜色：",
