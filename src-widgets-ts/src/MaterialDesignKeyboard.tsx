@@ -4,7 +4,7 @@ import { createPortal } from 'react-dom';
 import type { RxWidgetInfo } from '@iobroker/types-vis-2';
 
 import { m3ColorExplicit } from './MaterialDesignButtons';
-import { applyKey, autoShift, chooseLayout, decimalChar, keyMapFor, NUMBER_ROWS, textRows, type EditResult, type KeyDef, type KeyMap, type Layout, type Special } from './keyboard';
+import { applyKey, autoShift, chooseLayout, decimalChar, keyMapFor, NUMBER_ROWS, panOffset, textRows, type EditResult, type KeyDef, type KeyMap, type Layout, type Special } from './keyboard';
 import { createInfo, designStyle, designStyleClasses, legacyInk, legacySurface, ownCssVariables, squarePreview, visLocale, VisWidget, boolValue as b, numberValue as n, textValue as s, type RenderProps } from './widgetUtils';
 
 export type Field = HTMLInputElement | HTMLTextAreaElement;
@@ -33,6 +33,17 @@ export function originalInputMode(el: Field): string {
     return el.dataset[MARK] ?? el.getAttribute('inputmode') ?? '';
 }
 
+/** The nearest ancestor that scrolls vertically; the document when there is none. */
+export function scrollParent(el: Element): HTMLElement {
+    for (let node = el.parentElement; node; node = node.parentElement) {
+        const { overflowY } = getComputedStyle(node);
+        if (overflowY === 'auto' || overflowY === 'scroll') return node;
+    }
+    return (document.scrollingElement as HTMLElement | null) ?? document.documentElement;
+}
+
+const KEYFRAMES = '@keyframes mdkb-slide-up{from{transform:translateY(100%)}}@keyframes mdkb-slide-down{from{transform:translateY(-100%)}}@keyframes mdkb-fade{from{opacity:0}}';
+
 const opt = (name: string, values: string[]): { value: string; label: string }[] => values.map(value => ({ value, label: `${name}_${value}` }));
 
 const attrs: RxWidgetInfo['visAttrs'] = [
@@ -44,6 +55,16 @@ const attrs: RxWidgetInfo['visAttrs'] = [
             { name: 'keyboardLanguage', label: 'keyboardLanguage', type: 'select', options: opt('keyboardLanguage', ['auto', 'de', 'en']), default: 'auto' },
             { name: 'keyboardAutoCapitalize', label: 'keyboardAutoCapitalize', type: 'checkbox', default: true },
             { name: 'keyboardEnter', label: 'keyboardEnter', type: 'select', options: opt('keyboardEnter', ['close', 'next', 'stay']), default: 'close' },
+        ],
+    },
+    {
+        name: 'keyboardPlacement',
+        label: 'group_keyboardPlacement',
+        fields: [
+            { name: 'keyboardPosition', label: 'keyboardPosition', type: 'select', options: opt('keyboardPosition', ['editor', 'viewBottom', 'viewTop', 'screenBottom']), default: 'editor' },
+            { name: 'keyboardShowMode', label: 'keyboardShowMode', type: 'select', options: opt('keyboardShowMode', ['overlay', 'pan', 'pad']), default: 'overlay' },
+            { name: 'keyboardAnimation', label: 'keyboardAnimation', type: 'select', options: opt('keyboardAnimation', ['none', 'slide', 'fade']), default: 'slide' },
+            { name: 'keyboardAnimationMs', label: 'keyboardAnimationMs', type: 'number', default: 150, min: 0, max: 2000 },
         ],
     },
     {
@@ -86,6 +107,8 @@ export default class MaterialDesignKeyboard extends VisWidget {
     // outside is not seen until the focus moves to another field.
     /** Text typed into a field without selection API; such a field reports `''` for `1.` or `-`. */
     private draft: { el: Field; text: string } | null = null;
+    private panned: { el: HTMLElement; transform: string; transition: string; offset: number } | null = null;
+    private padded: { el: HTMLElement; paddingBottom: string } | null = null;
 
     private data(): Record<string, unknown> {
         return this.state.rxData as unknown as Record<string, unknown>;
@@ -132,6 +155,7 @@ export default class MaterialDesignKeyboard extends VisWidget {
         this.observer.observe(this.scope, { childList: true, subtree: true });
         document.addEventListener('focusin', this.onFocusIn, true);
         document.addEventListener('focusout', this.onFocusOut, true);
+        window.addEventListener('resize', this.onWindowResize);
     }
 
     private detach(): void {
@@ -141,6 +165,7 @@ export default class MaterialDesignKeyboard extends VisWidget {
         this.observer = null;
         document.removeEventListener('focusin', this.onFocusIn, true);
         document.removeEventListener('focusout', this.onFocusOut, true);
+        window.removeEventListener('resize', this.onWindowResize);
         this.hide();
         this.restore();
         this.scope = null;
@@ -169,6 +194,7 @@ export default class MaterialDesignKeyboard extends VisWidget {
         this.symbols = false;
         this.refreshShift();
         if (wasHidden) this.rect = this.measure();
+        this.makeRoom();
         this.forceUpdate();
     };
 
@@ -183,10 +209,82 @@ export default class MaterialDesignKeyboard extends VisWidget {
 
     private measure(): Rect {
         const own = this.placeholderRef.current?.getBoundingClientRect();
-        return { left: own?.left ?? 0, top: own?.top ?? 0, width: own?.width ?? 0, height: own?.height ?? 0 };
+        const height = own?.height ?? 0;
+        const position = s(this.data().keyboardPosition, 'editor');
+        if (position === 'screenBottom') return { left: 0, top: window.innerHeight - height, width: window.innerWidth, height };
+        const view = position === 'viewBottom' || position === 'viewTop' ? this.scope?.getBoundingClientRect() : undefined;
+        if (view) {
+            // A view taller than the window would put the keyboard off screen.
+            const top = position === 'viewTop' ? Math.max(0, view.top) : Math.min(view.bottom, window.innerHeight) - height;
+            return { left: view.left, top, width: view.width, height };
+        }
+        return { left: own?.left ?? 0, top: own?.top ?? 0, width: own?.width ?? 0, height };
     }
 
+    private animationMs(): number {
+        return Math.max(0, n(this.data().keyboardAnimationMs, 150));
+    }
+
+    private animationStyle(): React.CSSProperties {
+        const data = this.data();
+        const kind = s(data.keyboardAnimation, 'slide');
+        const ms = this.animationMs();
+        if (kind === 'none' || !ms) return {};
+        const name = kind === 'fade' ? 'mdkb-fade' : s(data.keyboardPosition) === 'viewTop' ? 'mdkb-slide-down' : 'mdkb-slide-up';
+        return { animation: `${name} ${ms}ms ease-out` };
+    }
+
+    /** Pan or pad so the focused field ends 8 px above the keyboard. */
+    private makeRoom(): void {
+        const el = this.target;
+        const rect = this.rect;
+        if (!el || !rect) return;
+        const mode = s(this.data().keyboardShowMode, 'overlay');
+        const field = el.getBoundingClientRect();
+        if (mode === 'pan' && this.scope instanceof HTMLElement) {
+            const view = this.scope;
+            // The field's rectangle already includes the current offset.
+            const offset = panOffset(field.bottom + (this.panned?.offset ?? 0), rect.top);
+            this.panned ??= { el: view, transform: view.style.transform, transition: view.style.transition, offset: 0 };
+            this.panned.offset = offset;
+            view.style.transition = `transform ${this.animationMs()}ms`;
+            view.style.transform = offset ? `${this.panned.transform} translateY(-${offset}px)`.trim() : this.panned.transform;
+        } else if (mode === 'pad') {
+            const scroller = scrollParent(el);
+            if (this.padded?.el !== scroller) {
+                this.unpad();
+                this.padded = { el: scroller, paddingBottom: scroller.style.paddingBottom };
+                scroller.style.paddingBottom = `${rect.height}px`;
+            }
+            scroller.scrollTop += panOffset(field.bottom, rect.top);
+        }
+    }
+
+    private unpan(): void {
+        if (!this.panned) return;
+        this.panned.el.style.transform = this.panned.transform;
+        this.panned.el.style.transition = this.panned.transition;
+        this.panned = null;
+    }
+
+    private unpad(): void {
+        if (!this.padded) return;
+        this.padded.el.style.paddingBottom = this.padded.paddingBottom;
+        this.padded = null;
+    }
+
+    private readonly onWindowResize = (): void => {
+        if (!this.target) return;
+        // Measured unpanned: in "editor" position the placeholder moves with the view.
+        this.unpan();
+        this.rect = this.measure();
+        this.makeRoom();
+        this.forceUpdate();
+    };
+
     private hide(): void {
+        this.unpan();
+        this.unpad();
         this.stopRepeat();
         this.target = null;
         this.rect = null;
@@ -211,7 +309,7 @@ export default class MaterialDesignKeyboard extends VisWidget {
         }
     }
 
-    private valueOf(el: Field): string {
+    private currentValue(el: Field): string {
         return this.draft?.el === el ? this.draft.text : el.value;
     }
 
@@ -231,14 +329,14 @@ export default class MaterialDesignKeyboard extends VisWidget {
     private refreshShift(): void {
         const el = this.target;
         if (!el || this.shift === 'lock') return;
-        const value = this.valueOf(el);
+        const value = this.currentValue(el);
         const caret = this.selection(el)[0] ?? value.length;
         this.shift = b(this.data().keyboardAutoCapitalize, true) && this.layoutFor(el) === 'text' && autoShift(value, caret) ? 'once' : 'off';
     }
 
     private type(el: Field, text: string): void {
         const [start, end] = this.selection(el);
-        this.write(el, applyKey(this.valueOf(el), start, end, { kind: 'char', text }));
+        this.write(el, applyKey(this.currentValue(el), start, end, { kind: 'char', text }));
         this.refreshShift();
     }
 
@@ -258,7 +356,7 @@ export default class MaterialDesignKeyboard extends VisWidget {
                 return;
             case 'backspace': {
                 const [start, end] = this.selection(el);
-                this.write(el, applyKey(this.valueOf(el), start, end, { kind: 'backspace' }));
+                this.write(el, applyKey(this.currentValue(el), start, end, { kind: 'backspace' }));
                 this.refreshShift();
                 return;
             }
@@ -405,6 +503,7 @@ export default class MaterialDesignKeyboard extends VisWidget {
                 style={{
                     ...ownCssVariables(this.refService?.current),
                     ...place,
+                    ...(editor ? {} : this.animationStyle()),
                     background: colors.background,
                     boxSizing: 'border-box',
                     display: 'flex',
@@ -414,6 +513,7 @@ export default class MaterialDesignKeyboard extends VisWidget {
                     zIndex: 10000,
                 }}
             >
+                <style>{KEYFRAMES}</style>
                 {rows.map((row, r) => (
                     <div key={`row${r}`} style={{ display: 'flex', flex: 1, gap, minHeight: 0 }}>
                         {row.map((k, c) => this.renderKey(k, `${r}-${c}`, colors, fontSize, radius))}

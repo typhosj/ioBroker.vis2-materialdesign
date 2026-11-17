@@ -3,7 +3,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import MaterialDesignInput from './MaterialDesignInput';
-import MaterialDesignKeyboard, { isServable, originalInputMode } from './MaterialDesignKeyboard';
+import MaterialDesignKeyboard, { isServable, originalInputMode, scrollParent } from './MaterialDesignKeyboard';
 import { ownCssVariables } from './widgetUtils';
 
 function fixture<T>(value: unknown): T {
@@ -346,6 +346,220 @@ describe('textarea', () => {
         tap('enter');
         expect(document.activeElement).toBe(document.body);
         expect(panel()).toBeNull();
+    });
+});
+
+function box(el: Element, left: number, top: number, width: number, height: number): void {
+    (el as HTMLElement).getBoundingClientRect = () => ({ left, top, width, height, right: left + width, bottom: top + height, x: left, y: top, toJSON: () => ({}) });
+}
+const placeholder = (): HTMLElement => container.querySelector('.materialdesign-keyboard') as HTMLElement;
+const view = (): HTMLElement => container.querySelector('#visview_test') as HTMLElement;
+const rx = (): Record<string, unknown> => fixture<{ state: { rxData: Record<string, unknown> } }>(current).state.rxData;
+
+describe('placement', () => {
+    it('sits where the editor placed it', () => {
+        start(keyboard());
+        box(placeholder(), 10, 400, 600, 200);
+        focus(field('title'));
+        expect(panel()?.style.top).toBe('400px');
+        expect(panel()?.style.left).toBe('10px');
+        expect(panel()?.style.width).toBe('600px');
+        expect(panel()?.style.position).toBe('fixed');
+    });
+
+    it('spans the view at its bottom or top, and the screen at its bottom', () => {
+        start(keyboard({ keyboardPosition: 'viewBottom' }));
+        box(placeholder(), 10, 50, 300, 200);
+        box(view(), 100, 0, 800, 700);
+        focus(field('title'));
+        expect([panel()?.style.left, panel()?.style.top, panel()?.style.width]).toEqual(['100px', '500px', '800px']);
+        blur(field('title'));
+
+        rx().keyboardPosition = 'viewTop';
+        focus(field('title'));
+        expect(panel()?.style.top).toBe('0px');
+        blur(field('title'));
+
+        rx().keyboardPosition = 'screenBottom';
+        focus(field('title'));
+        expect(panel()?.style.top).toBe(`${window.innerHeight - 200}px`);
+        expect(panel()?.style.width).toBe(`${window.innerWidth}px`);
+    });
+
+    it('keeps a view taller than the window inside the window', () => {
+        start(keyboard({ keyboardPosition: 'viewBottom' }));
+        box(placeholder(), 0, 0, 300, 200);
+        box(view(), 0, -100, 800, window.innerHeight + 500);
+        focus(field('title'));
+        expect(panel()?.style.top).toBe(`${window.innerHeight - 200}px`);
+    });
+
+    it('keeps a view that starts above the window at the top of the window', () => {
+        start(keyboard({ keyboardPosition: 'viewTop' }));
+        box(placeholder(), 0, 0, 300, 200);
+        box(view(), 0, -100, 800, 700);
+        focus(field('title'));
+        expect(panel()?.style.top).toBe('0px');
+    });
+
+    it('falls back to the editor rectangle for an unknown position', () => {
+        start(keyboard({ keyboardPosition: 'nowhere' }));
+        box(placeholder(), 10, 400, 600, 200);
+        focus(field('title'));
+        expect([panel()?.style.left, panel()?.style.top]).toEqual(['10px', '400px']);
+    });
+
+    it('measures again after a resize', () => {
+        start(keyboard());
+        box(placeholder(), 0, 400, 600, 200);
+        focus(field('title'));
+        box(placeholder(), 0, 300, 600, 200);
+        act(() => { window.dispatchEvent(new Event('resize')); });
+        rerender();
+        expect(panel()?.style.top).toBe('300px');
+    });
+
+    it('does nothing on a resize while hidden and after unmount', () => {
+        start(keyboard());
+        act(() => { window.dispatchEvent(new Event('resize')); });
+        rerender();
+        expect(panel()).toBeNull();
+        box(placeholder(), 0, 400, 600, 200);
+        focus(field('title'));
+        act(() => current.componentWillUnmount());
+        box(placeholder(), 0, 111, 600, 200);
+        act(() => { window.dispatchEvent(new Event('resize')); });
+        rerender();
+        expect(panel()).toBeNull();
+    });
+});
+
+describe('room for the field', () => {
+    it('moves the view up just enough with "pan" and back on hiding', () => {
+        start(keyboard({ keyboardShowMode: 'pan' }));
+        view().style.transform = 'scale(1)';
+        box(placeholder(), 0, 400, 600, 200);
+        box(field('title'), 0, 470, 200, 30);
+        focus(field('title'));
+        expect(view().style.transform).toBe('scale(1) translateY(-108px)');
+        blur(field('title'));
+        expect(view().style.transform).toBe('scale(1)');
+    });
+
+    it('does not move the view when the field is visible', () => {
+        start(keyboard({ keyboardShowMode: 'pan' }));
+        box(placeholder(), 0, 400, 600, 200);
+        box(field('title'), 0, 100, 200, 30);
+        focus(field('title'));
+        expect(view().style.transform).toBe('');
+    });
+
+    it('moves nothing with "overlay" or an unknown mode', () => {
+        for (const mode of ['overlay', 'bogus']) {
+            start(keyboard({ keyboardShowMode: mode }));
+            box(placeholder(), 0, 400, 600, 200);
+            box(field('title'), 0, 470, 200, 30);
+            focus(field('title'));
+            expect(view().style.transform).toBe('');
+            expect(view().style.paddingBottom).toBe('');
+            blur(field('title'));
+            act(() => current.componentWillUnmount());
+        }
+    });
+
+    it('follows the next field without adding up the offset', () => {
+        start(keyboard({ keyboardShowMode: 'pan' }));
+        box(placeholder(), 0, 400, 600, 200);
+        box(field('title'), 0, 470, 200, 30);
+        focus(field('title'));
+        // The view moved up by 108, so the second field's rectangle is already shifted.
+        box(field('place'), 0, 420 - 108, 200, 30);
+        focus(field('place'));
+        expect(view().style.transform).toBe('translateY(-58px)');
+    });
+
+    it('pads the scrolling ancestor and scrolls with "pad"', () => {
+        let scrolled = 0;
+        const scroller = <div data-testid="scroller" style={{ overflowY: 'scroll' }}><input aria-label="inner" /></div>;
+        start(keyboard({ keyboardShowMode: 'pad' }), scroller);
+        const el = container.querySelector('[data-testid="scroller"]') as HTMLElement;
+        Object.defineProperty(el, 'scrollTop', { configurable: true, get: () => scrolled, set: (v: number) => { scrolled = v; } });
+        box(placeholder(), 0, 400, 600, 200);
+        box(field('inner'), 0, 470, 200, 30);
+        focus(field('inner'));
+        expect(el.style.paddingBottom).toBe('200px');
+        expect(scrolled).toBe(108);
+        blur(field('inner'));
+        expect(el.style.paddingBottom).toBe('');
+    });
+
+    it('puts the transform back when unmounted while panned', () => {
+        start(keyboard({ keyboardShowMode: 'pan' }));
+        view().style.transform = 'scale(1)';
+        box(placeholder(), 0, 400, 600, 200);
+        box(field('title'), 0, 470, 200, 30);
+        focus(field('title'));
+        expect(view().style.transform).not.toBe('scale(1)');
+        act(() => current.componentWillUnmount());
+        expect(view().style.transform).toBe('scale(1)');
+        expect(view().style.transition).toBe('');
+    });
+
+    it('puts the padding back when unmounted while padded', () => {
+        const scroller = <div data-testid="scroller" style={{ overflowY: 'scroll', paddingBottom: '3px' }}><input aria-label="inner" /></div>;
+        start(keyboard({ keyboardShowMode: 'pad' }), scroller);
+        const el = container.querySelector('[data-testid="scroller"]') as HTMLElement;
+        box(placeholder(), 0, 400, 600, 200);
+        box(field('inner'), 0, 470, 200, 30);
+        focus(field('inner'));
+        expect(el.style.paddingBottom).toBe('200px');
+        act(() => current.componentWillUnmount());
+        expect(el.style.paddingBottom).toBe('3px');
+    });
+
+    it('finds the scrolling ancestor or falls back to the document', () => {
+        const outer = document.createElement('div');
+        outer.style.overflowY = 'auto';
+        const inner = document.createElement('input');
+        outer.appendChild(inner);
+        document.body.appendChild(outer);
+        expect(scrollParent(inner)).toBe(outer);
+        const lone = document.createElement('input');
+        document.body.appendChild(lone);
+        expect(scrollParent(lone)).toBe(document.scrollingElement ?? document.documentElement);
+        expect(scrollParent(document.createElement('input'))).toBe(document.scrollingElement ?? document.documentElement);
+        outer.remove();
+        lone.remove();
+    });
+});
+
+describe('animation', () => {
+    it('slides in by default, from above at the top, fades or stays still', () => {
+        start(keyboard({ keyboardAnimation: 'slide' }));
+        focus(field('title'));
+        expect(panel()?.style.animation).toContain('mdkb-slide-up 150ms');
+        blur(field('title'));
+        rx().keyboardPosition = 'viewTop';
+        focus(field('title'));
+        expect(panel()?.style.animation).toContain('mdkb-slide-down 150ms');
+        blur(field('title'));
+        Object.assign(rx(), { keyboardAnimation: 'fade', keyboardAnimationMs: 300 });
+        focus(field('title'));
+        expect(panel()?.style.animation).toContain('mdkb-fade 300ms');
+        blur(field('title'));
+        rx().keyboardAnimation = 'none';
+        focus(field('title'));
+        expect(panel()?.style.animation).toBeFalsy();
+    });
+
+    it('does not animate for a duration of 0 or less', () => {
+        start(keyboard({ keyboardAnimation: 'slide', keyboardAnimationMs: 0 }));
+        focus(field('title'));
+        expect(panel()?.style.animation).toBeFalsy();
+        blur(field('title'));
+        rx().keyboardAnimationMs = -50;
+        focus(field('title'));
+        expect(panel()?.style.animation).toBeFalsy();
     });
 });
 
