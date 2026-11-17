@@ -1083,6 +1083,7 @@ describe('icons on the special keys', () => {
         focus(field('title'));
         for (const [name, icon, label] of [['shift', 'apple-keyboard-shift', 'ariaKeyShift'], ['backspace', 'backspace-outline', 'ariaKeyBackspace'], ['enter', 'keyboard-return', 'ariaKeyEnter'], ['close', 'keyboard-close', 'ariaKeyClose']]) {
             expect(key(name).querySelector(`.mdi-${icon}`)).not.toBeNull();
+            expect(key(name).querySelector(`[aria-hidden="true"] .mdi-${icon}`)).not.toBeNull();
             expect(key(name).getAttribute('aria-label')).toBe(label);
             expect(key(name).textContent).toBe('');
         }
@@ -1117,6 +1118,7 @@ describe('arrow keys', () => {
         focus(field('title'));
         for (const [name, icon, label] of [['left', 'arrow-left', 'ariaKeyLeft'], ['up', 'arrow-up', 'ariaKeyUp'], ['down', 'arrow-down', 'ariaKeyDown'], ['right', 'arrow-right', 'ariaKeyRight']]) {
             expect(key(name).querySelector(`.mdi-${icon}`)).not.toBeNull();
+            expect(key(name).querySelector(`[aria-hidden="true"] .mdi-${icon}`)).not.toBeNull();
             expect(key(name).getAttribute('aria-label')).toBe(label);
         }
         focus(field('amount'));

@@ -677,7 +677,7 @@ export default class MaterialDesignKeyboard extends VisWidget {
                 tabIndex={-1}
                 type="button"
             >
-                {icon ? renderIcon(icon, colors.text, fontSize * 1.2) : label}
+                {icon ? <span aria-hidden="true" style={{ display: 'inline-flex' }}>{renderIcon(icon, colors.text, fontSize * 1.2)}</span> : label}
             </button>
         );
     }
