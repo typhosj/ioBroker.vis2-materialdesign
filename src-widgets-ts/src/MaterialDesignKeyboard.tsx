@@ -635,7 +635,7 @@ export default class MaterialDesignKeyboard extends VisWidget {
         const m3c = (saved: unknown, token: string, legacy: string): string => (isM3 && !m3ColorExplicit(saved) ? token : s(saved, legacy));
         const colors: Colors = {
             background: m3c(data.keyboardBackground, 'var(--md-sys-color-surface-container-high)', isDark ? '#121212' : '#eceff1'),
-            key: m3c(data.keyboardKeyColor, 'var(--md-sys-color-surface-container-lowest)', legacySurface(isDark)),
+            key: m3c(data.keyboardKeyColor, 'var(--md-sys-color-surface)', legacySurface(isDark)),
             text: m3c(data.keyboardKeyTextColor, 'var(--md-sys-color-on-surface)', legacyInk(isDark)),
             special: m3c(data.keyboardSpecialKeyColor, 'var(--md-sys-color-secondary-container)', isDark ? '#3a3a3a' : '#cfd8dc'),
         };
