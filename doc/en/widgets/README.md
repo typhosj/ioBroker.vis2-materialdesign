@@ -25,6 +25,7 @@ entries, so check the value once when rebuilding a VIS 1 widget.
 ## Enter values
 
 - [Input](input.md) – enter text or numbers
+- [On-screen Keyboard](keyboard.md) – type into the fields of a view on a wall tablet
 - [Select and Autocomplete](select.md) – choose a value from a list
 - [Slider](slider.md) – change a numeric value horizontally or vertically
 - [Slider Round](slider-round.md) – change a numeric value on a circular control
