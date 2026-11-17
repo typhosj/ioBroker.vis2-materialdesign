@@ -1055,9 +1055,9 @@ export default class MaterialDesignSelect extends VisWidget {
                                           menuTextColor,
                                       );
                                 const background = isSelected
-                                    ? m3c(data.listItemBackgroundSelectedColor, 'var(--md-sys-color-secondary-container)', 'rgba(68, 115, 158, 0.12)')
+                                    ? m3c(data.listItemBackgroundSelectedColor, 'var(--md-sys-color-secondary-container)', isDark ? 'rgba(68, 115, 158, 0.32)' : 'rgba(68, 115, 158, 0.12)')
                                     : isHovered
-                                      ? m3c(data.listItemBackgroundHoverColor, 'var(--md-sys-color-surface-container-high)', 'rgba(0, 0, 0, 0.04)')
+                                      ? m3c(data.listItemBackgroundHoverColor, 'var(--md-sys-color-surface-container-high)', isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.08)')
                                       : m3c(data.listItemBackgroundColor, 'var(--md-sys-color-surface-container)', legacySurface(isDark));
                                 return (
                                     <button

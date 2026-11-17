@@ -394,6 +394,37 @@ describe('select material 3 menu geometry', () => {
     });
 });
 
+// The classic menu is 30 30 30 in the dark theme, so a 4 % black highlight was invisible.
+describe('classic menu highlight colours', () => {
+    function menu(themeType: string, rxData: Record<string, unknown> = {}): string {
+        const widget = new MaterialDesignAutocomplete(fixture<ConstructorParameters<typeof MaterialDesignAutocomplete>[0]>({ context: { setValue: vi.fn(), themeType }, id: 'w0001' }));
+        widget.state = fixture<typeof widget.state>({
+            rxData: { oid: 'test.0.choice', listDataMethod: 'valueList', valueList: '1;2;w', valueListLabels: 'One;Two;Wohnzimmer', inputMode: 'select', ...rxData },
+            values: { 'test.0.choice.val': '2' },
+        });
+        const render = (): React.ReactNode => widget.renderWidgetBody(fixture<Parameters<MaterialDesignAutocomplete['renderWidgetBody']>[0]>({}));
+        const input = (): React.ReactElement<Record<string, unknown>> => findElement(render(), element => element.type === 'input')!;
+        (input().props.onFocus as () => void)();
+        (input().props.onKeyDown as (event: unknown) => void)({ key: 'ArrowDown', preventDefault: vi.fn(), stopPropagation: vi.fn() });
+        return renderToStaticMarkup(render());
+    }
+    const backgroundOf = (html: string, label: string): string => /background:([^;']*)/.exec(html.split('<button').find(part => part.includes(`>${label}<`)) ?? '')?.[1] ?? '';
+
+    it.each([
+        ['dark', 'rgba(255, 255, 255, 0.12)', 'rgba(68, 115, 158, 0.32)'],
+        ['light', 'rgba(0, 0, 0, 0.08)', 'rgba(68, 115, 158, 0.12)'],
+    ])('uses a visible highlight and selection in the %s theme', (themeType, hover, selected) => {
+        const html = menu(themeType);
+        expect(backgroundOf(html, 'One')).toBe(hover);
+        expect(backgroundOf(html, 'Two')).toBe(selected);
+    });
+
+    it('lets an explicit hover colour win and leaves Material 3 on its tokens', () => {
+        expect(backgroundOf(menu('dark', { listItemBackgroundHoverColor: '#123456' }), 'One')).toBe('#123456');
+        expect(backgroundOf(menu('dark', { designStyle: 'material3' }), 'One')).toBe('var(--md-sys-color-surface-container-high)');
+    });
+});
+
 // The hint and counter options sat in the editor doing nothing until 0.4.
 describe('hint and counter', () => {
     const render = (rxData: Record<string, unknown>): string => {
