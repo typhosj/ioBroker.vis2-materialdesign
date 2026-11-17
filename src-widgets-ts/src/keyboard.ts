@@ -5,7 +5,7 @@
 
 export type KeyMap = 'de' | 'en';
 export type Layout = 'text' | 'number';
-export type Special = 'shift' | 'backspace' | 'enter' | 'close' | 'symbols' | 'letters' | 'space' | 'decimal';
+export type Special = 'shift' | 'backspace' | 'enter' | 'close' | 'symbols' | 'letters' | 'space' | 'decimal' | 'left' | 'right' | 'up' | 'down';
 /** A character key, a special key, or `''` for an invisible spacer. */
 export type KeyDef = string | { special: Special };
 export type KeyAction = { kind: 'char'; text: string } | { kind: 'backspace' };
@@ -37,6 +37,23 @@ export function applyKey(value: string, selStart: number | null, selEnd: number 
     if (start === 0) return { value, caret: 0 };
     const width = start >= 2 && isLow(value.charCodeAt(start - 1)) && isHigh(value.charCodeAt(start - 2)) ? 2 : 1;
     return { value: value.slice(0, start - width) + value.slice(start), caret: start - width };
+}
+
+/**
+ * The caret after an arrow key, or `null` when the field has no selection API. A selection
+ * collapses to its edge; otherwise the caret moves one code point.
+ */
+export function moveCaret(value: string, selStart: number | null, selEnd: number | null, direction: 'left' | 'right' | 'start' | 'end'): number | null {
+    if (selStart === null || selEnd === null) return null;
+    const start = Math.min(clamp(value, selStart), clamp(value, selEnd));
+    const end = Math.max(clamp(value, selStart), clamp(value, selEnd));
+    if (direction === 'start') return 0;
+    if (direction === 'end') return value.length;
+    if (start !== end) return direction === 'left' ? start : end;
+    if (direction === 'left') {
+        return start >= 2 && isLow(value.charCodeAt(start - 1)) && isHigh(value.charCodeAt(start - 2)) ? start - 2 : Math.max(0, start - 1);
+    }
+    return isHigh(value.charCodeAt(start)) && isLow(value.charCodeAt(start + 1)) ? start + 2 : Math.min(value.length, start + 1);
 }
 
 export function keyMapFor(setting: unknown, locale: string | undefined): KeyMap {
@@ -85,22 +102,30 @@ const LETTERS: Record<KeyMap, string[][]> = {
 };
 const SYMBOLS: string[][] = ['1234567890', '@#€&-+()/', ';:!?"\'_'].map(row => [...row]);
 
-export function textRows(map: KeyMap, symbols: boolean): KeyDef[][] {
+const ARROWS: KeyDef[] = [{ special: 'left' }, { special: 'up' }, { special: 'down' }, { special: 'right' }];
+
+export function textRows(map: KeyMap, symbols: boolean, arrows = false): KeyDef[][] {
     const [first, second, third] = symbols ? SYMBOLS : LETTERS[map];
     return [
         first,
         second,
         [...(symbols ? [] : [{ special: 'shift' as const }]), ...third, { special: 'backspace' }],
-        [{ special: symbols ? 'letters' : 'symbols' }, ',', { special: 'space' }, '.', { special: 'enter' }, { special: 'close' }],
+        [{ special: symbols ? 'letters' : 'symbols' }, ',', { special: 'space' }, '.', ...(arrows ? ARROWS : []), { special: 'enter' }, { special: 'close' }],
     ];
 }
 
-export const NUMBER_ROWS: KeyDef[][] = [
-    ['1', '2', '3', { special: 'backspace' }],
-    ['4', '5', '6', { special: 'enter' }],
-    ['7', '8', '9', { special: 'close' }],
-    ['-', '0', { special: 'decimal' }, ''],
-];
+export function numberRows(arrows = false): KeyDef[][] {
+    const rows: KeyDef[][] = [
+        ['1', '2', '3', { special: 'backspace' }],
+        ['4', '5', '6', { special: 'enter' }],
+        ['7', '8', '9', { special: 'close' }],
+        ['-', '0', { special: 'decimal' }, ''],
+    ];
+    // Column five: up, down, left, right.
+    return arrows ? rows.map((row, i) => [...row, ARROWS[[1, 2, 0, 3][i]]]) : rows;
+}
+
+export const NUMBER_ROWS = numberRows(false);
 
 export interface WordEntry {
     /** Spelling typed last. */

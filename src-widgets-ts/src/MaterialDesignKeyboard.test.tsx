@@ -4,6 +4,7 @@ import React, { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import MaterialDesignAutocomplete from './MaterialDesignAutocomplete';
 import MaterialDesignInput from './MaterialDesignInput';
 import MaterialDesignKeyboard, { isServable, originalInputMode, scrollParent } from './MaterialDesignKeyboard';
 import { ownCssVariables } from './widgetUtils';
@@ -1073,5 +1074,133 @@ describe('learning only what was typed', () => {
         act(() => { word.dispatchEvent(new MouseEvent('pointerup', { bubbles: true })); });
         rerender();
         expect(field('title').value).toBe('Ar');
+    });
+});
+
+describe('icons on the special keys', () => {
+    it('shows an icon and keeps the label on shift, backspace, enter and close', () => {
+        start(keyboard());
+        focus(field('title'));
+        for (const [name, icon, label] of [['shift', 'apple-keyboard-shift', 'ariaKeyShift'], ['backspace', 'backspace-outline', 'ariaKeyBackspace'], ['enter', 'keyboard-return', 'ariaKeyEnter'], ['close', 'keyboard-close', 'ariaKeyClose']]) {
+            expect(key(name).querySelector(`.mdi-${icon}`)).not.toBeNull();
+            expect(key(name).getAttribute('aria-label')).toBe(label);
+            expect(key(name).textContent).toBe('');
+        }
+    });
+
+    it('shows the caps icon while shift is locked and keeps text on the other special keys', () => {
+        start(keyboard({ keyboardAutoCapitalize: false }));
+        focus(field('title'));
+        tap('shift', 'shift');
+        expect(key('shift').querySelector('.mdi-apple-keyboard-caps')).not.toBeNull();
+        expect(key('shift').querySelector('.mdi-apple-keyboard-shift')).toBeNull();
+        tap('symbols');
+        expect(key('letters').textContent).toBe('ABC');
+        tap('letters');
+        expect(key('symbols').textContent).toBe('?123');
+        focus(field('amount'));
+        expect(key('decimal').textContent).toBe('.');
+    });
+});
+
+describe('arrow keys', () => {
+    const arrows = ['left', 'up', 'down', 'right'];
+
+    it('are absent by default and present with the option, on the letters and on the number pad', () => {
+        start(keyboard());
+        focus(field('title'));
+        for (const name of arrows) expect(key(name)).toBeNull();
+        focus(field('amount'));
+        for (const name of arrows) expect(key(name)).toBeNull();
+        blur(field('amount'));
+        rx().keyboardArrows = true;
+        focus(field('title'));
+        for (const [name, icon, label] of [['left', 'arrow-left', 'ariaKeyLeft'], ['up', 'arrow-up', 'ariaKeyUp'], ['down', 'arrow-down', 'ariaKeyDown'], ['right', 'arrow-right', 'ariaKeyRight']]) {
+            expect(key(name).querySelector(`.mdi-${icon}`)).not.toBeNull();
+            expect(key(name).getAttribute('aria-label')).toBe(label);
+        }
+        focus(field('amount'));
+        for (const name of arrows) expect(key(name)).not.toBeNull();
+        expect(panel()?.querySelectorAll('button')).toHaveLength(19);
+    });
+
+    it('move the caret left and right without changing the value', () => {
+        start(keyboard({ keyboardArrows: true, keyboardAutoCapitalize: false }));
+        focus(field('title'));
+        tap('a', 'b', 'c');
+        tap('left', 'left');
+        expect(field('title').selectionStart).toBe(1);
+        tap('x');
+        expect(field('title').value).toBe('axbc');
+        tap('right', 'right', 'right', 'right');
+        expect(field('title').selectionStart).toBe(4);
+        expect(field('title').value).toBe('axbc');
+        expect(setValue).not.toHaveBeenCalled();
+    });
+
+    it('send a keydown first and leave the caret alone when it is handled', () => {
+        start(keyboard({ keyboardArrows: true, keyboardAutoCapitalize: false }));
+        focus(field('title'));
+        tap('a', 'b');
+        const seen: string[] = [];
+        const handler = (event: KeyboardEvent): void => { seen.push(event.key); event.preventDefault(); };
+        field('title').onkeydown = handler;
+        tap('left', 'up');
+        field('title').onkeydown = null;
+        expect(seen).toEqual(['ArrowLeft', 'ArrowUp']);
+        expect(field('title').selectionStart).toBe(2);
+    });
+
+    it('go to the start and the end of a plain field with up and down', () => {
+        start(keyboard({ keyboardArrows: true, keyboardAutoCapitalize: false }));
+        focus(field('title'));
+        tap('a', 'b', 'c', 'up');
+        expect(field('title').selectionStart).toBe(0);
+        tap('down');
+        expect(field('title').selectionStart).toBe(3);
+        expect(field('title').value).toBe('abc');
+    });
+
+    it('do nothing in a field without selection API and never learn', () => {
+        window.localStorage.clear();
+        start(keyboard({ keyboardArrows: true, keyboardSuggestions: true }), <input aria-label="mail" type="email" />);
+        focus(field('mail'));
+        tap('a');
+        expect(() => tap('left', 'up', 'down', 'right')).not.toThrow();
+        expect(field('mail').value).toBe('A');
+        expect(window.localStorage.getItem('vis2-materialdesign-keyboard-words')).toBeNull();
+        field('mail').value = '';
+    });
+
+    it('repeat while held', () => {
+        vi.useFakeTimers();
+        start(keyboard({ keyboardArrows: true, keyboardAutoCapitalize: false }));
+        focus(field('title'));
+        tap('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h');
+        press('left');
+        act(() => { vi.advanceTimersByTime(499); });
+        expect(field('title').selectionStart).toBe(7);
+        act(() => { vi.advanceTimersByTime(101); });
+        expect(field('title').selectionStart).toBe(5);
+        release('left');
+        act(() => { vi.advanceTimersByTime(500); });
+        expect(field('title').selectionStart).toBe(5);
+        expect(field('title').value).toBe('abcdefgh');
+    });
+
+    it('move through a real Autocomplete list and Enter picks the highlighted item', () => {
+        const id = 'w5';
+        const autoProps = { id, context: { setValue } };
+        const auto = new MaterialDesignAutocomplete(fixture<ConstructorParameters<typeof MaterialDesignAutocomplete>[0]>(autoProps));
+        fixture<{ state: unknown }>(auto).state = { rxData: { oid: 'x.0.room', inputMode: 'write', listDataMethod: 'valueList', valueList: '1;2;3', valueListLabels: 'Wohnzimmer;Kueche;Bad' }, values: {} };
+        start(keyboard({ keyboardArrows: true, keyboardEnter: 'stay' }), () => <div id={id}>{auto.renderWidgetBody(fixture<Parameters<MaterialDesignAutocomplete['renderWidgetBody']>[0]>(autoProps))}</div>);
+        const el = document.querySelector(`#${id} input`) as HTMLInputElement;
+        focus(el);
+        tap('down', 'down');
+        expect(el.getAttribute('aria-activedescendant')).toBe(`${id}-option-1`);
+        tap('up');
+        expect(el.getAttribute('aria-activedescendant')).toBe(`${id}-option-0`);
+        tap('down', 'enter');
+        expect(setValue).toHaveBeenLastCalledWith('x.0.room', '2');
     });
 });

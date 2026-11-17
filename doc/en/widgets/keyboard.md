@@ -23,6 +23,9 @@ shows itself only while one of them has the focus. Template id: `tplVis2-materia
   Enter commits in a multi-line field as well and does not insert a line break. `next field`
   follows the order of the fields in the page (the order the widgets were created in), not their
   position on the screen.
+- **arrow keys** – adds ← ↑ ↓ → keys (on the number pad a fifth column). ← and → move the cursor;
+  ↑ and ↓ move through the list of an Autocomplete widget, in any other field they jump to the start
+  or the end. Holding a key repeats it.
 
 **placement**
 

@@ -10,7 +10,9 @@ import {
     keyMapFor,
     learn,
     MAX_WORDS,
+    moveCaret,
     NUMBER_ROWS,
+    numberRows,
     panOffset,
     parseWords,
     replaceWord,
@@ -155,6 +157,24 @@ describe('key rows', () => {
         expect(NUMBER_ROWS.map(row => row.length)).toEqual([4, 4, 4, 4]);
         expect(NUMBER_ROWS.flat()).toContainEqual({ special: 'decimal' });
         expect(NUMBER_ROWS.flat()).toContain('-');
+        expect(numberRows(false)).toEqual(NUMBER_ROWS);
+    });
+
+    it('adds the arrow keys behind the dot and as a fifth number column', () => {
+        const off = textRows('de', false);
+        expect(textRows('de', false, false)).toEqual(off);
+        expect(textRows('de', false, true)[3]).toEqual([
+            { special: 'symbols' }, ',', { special: 'space' }, '.',
+            { special: 'left' }, { special: 'up' }, { special: 'down' }, { special: 'right' },
+            { special: 'enter' }, { special: 'close' },
+        ]);
+        expect(textRows('de', true, true)[3].slice(0, 1)).toEqual([{ special: 'letters' }]);
+        expect(textRows('de', true, true)[3]).toContainEqual({ special: 'left' });
+        expect(textRows('de', false, true).slice(0, 3)).toEqual(off.slice(0, 3));
+        const rows = numberRows(true);
+        expect(rows.map(row => row.length)).toEqual([5, 5, 5, 5]);
+        expect(rows.map(row => row[3])).toEqual([{ special: 'backspace' }, { special: 'enter' }, { special: 'close' }, '']);
+        expect(rows.map(row => row[4])).toEqual([{ special: 'up' }, { special: 'down' }, { special: 'left' }, { special: 'right' }]);
     });
 });
 
@@ -294,5 +314,47 @@ describe('panOffset', () => {
         expect(panOffset(300, 400)).toBe(0);
         expect(panOffset(500.2, 400)).toBe(109);
         expect(panOffset(500, 400, 0)).toBe(100);
+    });
+});
+
+describe('moveCaret', () => {
+    it('moves one position and stays inside the text', () => {
+        expect(moveCaret('abc', 0, 0, 'left')).toBe(0);
+        expect(moveCaret('abc', 3, 3, 'right')).toBe(3);
+        expect(moveCaret('abc', 1, 1, 'left')).toBe(0);
+        expect(moveCaret('abc', 1, 1, 'right')).toBe(2);
+        expect(moveCaret('', 0, 0, 'right')).toBe(0);
+    });
+
+    it('collapses a selection to its edge, also one given backwards', () => {
+        expect(moveCaret('abcdef', 1, 4, 'left')).toBe(1);
+        expect(moveCaret('abcdef', 1, 4, 'right')).toBe(4);
+        expect(moveCaret('abcdef', 4, 1, 'left')).toBe(1);
+        expect(moveCaret('abcdef', 4, 1, 'right')).toBe(4);
+    });
+
+    it('steps over a surrogate pair as one character', () => {
+        expect(moveCaret('a😀b', 3, 3, 'left')).toBe(1);
+        expect(moveCaret('a😀b', 1, 1, 'right')).toBe(3);
+        expect(moveCaret('a😀b', 2, 2, 'left')).toBe(1);
+    });
+
+    it('goes to the start or the end', () => {
+        expect(moveCaret('abc', 2, 2, 'start')).toBe(0);
+        expect(moveCaret('abc', 1, 2, 'end')).toBe(3);
+    });
+
+    it('does nothing without a selection API', () => {
+        for (const direction of ['left', 'right', 'start', 'end'] as const) {
+            expect(moveCaret('abc', null, null, direction)).toBeNull();
+            expect(moveCaret('abc', 1, null, direction)).toBeNull();
+        }
+    });
+
+    it('clamps NaN and out-of-range positions', () => {
+        expect(moveCaret('abc', 99, 99, 'left')).toBe(2);
+        expect(moveCaret('abc', -5, -5, 'right')).toBe(1);
+        expect(moveCaret('abc', Number.NaN, Number.NaN, 'left')).toBe(2);
+        expect(moveCaret('abc', 99, 99, 'right')).toBe(3);
     });
 });

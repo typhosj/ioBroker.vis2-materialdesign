@@ -27,6 +27,9 @@ Template-ID: `tplVis2-materialdesign-Keyboard`.
   oder `nur übernehmen`. Enter übernimmt auch in einem mehrzeiligen Feld und fügt keinen
   Zeilenumbruch ein. `zum nächsten Feld` folgt der Reihenfolge der Felder in der Seite (der
   Reihenfolge, in der die Widgets angelegt wurden), nicht ihrer Position auf dem Bildschirm.
+- **Pfeiltasten** – fügt die Tasten ← ↑ ↓ → hinzu (auf dem Ziffernblock als fünfte Spalte). ← und →
+  bewegen den Cursor; ↑ und ↓ gehen durch die Liste eines Autocomplete-Widgets, in jedem anderen Feld
+  springen sie an den Anfang oder das Ende. Gedrückt halten wiederholt die Taste.
 
 **Platzierung**
 

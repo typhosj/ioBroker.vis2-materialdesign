@@ -3,8 +3,8 @@ import { createPortal } from 'react-dom';
 
 import type { RxWidgetInfo } from '@iobroker/types-vis-2';
 
-import { m3ColorExplicit } from './MaterialDesignButtons';
-import { applyKey, autoShift, chooseLayout, currentWord, decimalChar, forget, keyMapFor, learn, NUMBER_ROWS, panOffset, parseWords, replaceWord, suggest, textRows, wordsIn, type EditResult, type KeyDef, type KeyMap, type Layout, type Special, type Words } from './keyboard';
+import { m3ColorExplicit, renderIcon } from './MaterialDesignButtons';
+import { applyKey, autoShift, chooseLayout, currentWord, decimalChar, forget, keyMapFor, learn, moveCaret, numberRows, panOffset, parseWords, replaceWord, suggest, textRows, wordsIn, type EditResult, type KeyDef, type KeyMap, type Layout, type Special, type Words } from './keyboard';
 import { createInfo, designStyle, designStyleClasses, legacyInk, legacySurface, ownCssVariables, setStateValue, squarePreview, stateValue, visLocale, VisWidget, boolValue as b, numberValue as n, textValue as s, type RenderProps } from './widgetUtils';
 
 export type Field = HTMLInputElement | HTMLTextAreaElement;
@@ -21,6 +21,16 @@ const SKIP_TYPES = new Set(['hidden', 'checkbox', 'radio', 'range', 'file', 'col
 const ARIA: Record<Special, string> = {
     shift: 'ariaKeyShift', backspace: 'ariaKeyBackspace', enter: 'ariaKeyEnter', close: 'ariaKeyClose',
     symbols: 'ariaKeySymbols', letters: 'ariaKeyLetters', space: 'ariaKeySpace', decimal: 'ariaKeyDecimal',
+    left: 'ariaKeyLeft', right: 'ariaKeyRight', up: 'ariaKeyUp', down: 'ariaKeyDown',
+};
+const ICON: Partial<Record<Special, string>> = {
+    shift: 'apple-keyboard-shift', backspace: 'backspace-outline', enter: 'keyboard-return', close: 'keyboard-close',
+    left: 'arrow-left', right: 'arrow-right', up: 'arrow-up', down: 'arrow-down',
+};
+/** Arrow keys: the keydown name, and where the caret goes when nobody handles it. */
+const ARROW: Partial<Record<Special, { key: string; move: 'left' | 'right' | 'start' | 'end' }>> = {
+    left: { key: 'ArrowLeft', move: 'left' }, right: { key: 'ArrowRight', move: 'right' },
+    up: { key: 'ArrowUp', move: 'start' }, down: { key: 'ArrowDown', move: 'end' },
 };
 const FLEX: Partial<Record<Special, number>> = { space: 4, shift: 1.5, backspace: 1.5, enter: 1.5, symbols: 1.5, letters: 1.5 };
 
@@ -68,6 +78,7 @@ const attrs: RxWidgetInfo['visAttrs'] = [
             { name: 'keyboardLanguage', label: 'keyboardLanguage', type: 'select', options: opt('keyboardLanguage', ['auto', 'de', 'en']), default: 'auto' },
             { name: 'keyboardAutoCapitalize', label: 'keyboardAutoCapitalize', type: 'checkbox', default: true },
             { name: 'keyboardEnter', label: 'keyboardEnter', type: 'select', options: opt('keyboardEnter', ['close', 'next', 'stay']), default: 'close' },
+            { name: 'keyboardArrows', label: 'keyboardArrows', type: 'checkbox', default: false },
         ],
     },
     {
@@ -442,7 +453,30 @@ export default class MaterialDesignKeyboard extends VisWidget {
             case 'close':
                 el.blur();
                 return;
+            case 'left':
+            case 'right':
+            case 'up':
+            case 'down':
+                this.arrow(el, key.special);
+                return;
         }
+    }
+
+    /** The page or an Autocomplete gets the arrow first; the caret moves only when it did not take it. */
+    private arrow(el: Field, special: Special): void {
+        const { key, move } = ARROW[special]!;
+        const event = new KeyboardEvent('keydown', { key, code: key, bubbles: true, cancelable: true });
+        el.dispatchEvent(event);
+        if (event.defaultPrevented) return;
+        const [start, end] = this.selection(el);
+        const caret = moveCaret(this.currentValue(el), start, end, move);
+        if (caret === null) return;
+        try {
+            el.setSelectionRange(caret, caret);
+        } catch {
+            // No selection API: nothing to move.
+        }
+        this.refreshShift();
     }
 
     private enter(el: Field): void {
@@ -489,14 +523,10 @@ export default class MaterialDesignKeyboard extends VisWidget {
 
     private keyLabel(special: Special): string {
         switch (special) {
-            case 'shift': return this.shift === 'lock' ? '⇪' : '⇧';
-            case 'backspace': return '⌫';
-            case 'enter': return '↵';
-            case 'close': return '⌄';
             case 'symbols': return '?123';
             case 'letters': return 'ABC';
-            case 'space': return '';
             case 'decimal': return decimalChar(this.keyMap(), !!this.target && originalType(this.target) === 'number');
+            default: return '';
         }
     }
 
@@ -613,6 +643,7 @@ export default class MaterialDesignKeyboard extends VisWidget {
         const special = typeof key === 'string' ? null : key.special;
         const label = typeof key !== 'string' ? this.keyLabel(key.special) : this.shift === 'off' ? key : upper(key);
         const active = special === 'shift' && this.shift !== 'off';
+        const icon = special === 'shift' && this.shift === 'lock' ? 'apple-keyboard-caps' : special ? ICON[special] : undefined;
         return (
             <button
                 aria-label={special ? VisWidget.t(ARIA[special]) : undefined}
@@ -624,7 +655,7 @@ export default class MaterialDesignKeyboard extends VisWidget {
                     event.preventDefault();
                     this.pressed = id;
                     this.press(key);
-                    if (special === 'backspace') this.startRepeat(key);
+                    if (special === 'backspace' || (special && ARROW[special])) this.startRepeat(key);
                     this.forceUpdate();
                 }}
                 onPointerLeave={this.stopRepeat}
@@ -646,7 +677,7 @@ export default class MaterialDesignKeyboard extends VisWidget {
                 tabIndex={-1}
                 type="button"
             >
-                {label}
+                {icon ? renderIcon(icon, colors.text, fontSize * 1.2) : label}
             </button>
         );
     }
@@ -665,7 +696,8 @@ export default class MaterialDesignKeyboard extends VisWidget {
         const gap = Math.max(0, n(data.keyboardKeyGap, 6));
         const fontSize = Math.max(8, n(data.keyboardFontSize, 18));
         const radius = Math.max(0, n(data.keyboardKeyRadius, 8));
-        const rows = this.layoutFor(this.target) === 'number' ? NUMBER_ROWS : textRows(this.keyMap(), this.symbols);
+        const arrows = b(data.keyboardArrows, false);
+        const rows = this.layoutFor(this.target) === 'number' ? numberRows(arrows) : textRows(this.keyMap(), this.symbols, arrows);
         const place: React.CSSProperties = editor || !this.rect ? { inset: 0, position: 'absolute' } : { ...this.rect, position: 'fixed' };
         return (
             <div
