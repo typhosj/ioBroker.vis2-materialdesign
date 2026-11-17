@@ -24,7 +24,9 @@ Template-ID: `tplVis2-materialdesign-Keyboard`.
 - **Großbuchstabe am Anfang** – die Umschalttaste ist in einem leeren Feld und nach `. `
   eingeschaltet.
 - **Enter-Taste** – `übernehmen und schließen`, `zum nächsten Feld` (schließt nach dem letzten)
-  oder `nur übernehmen`.
+  oder `nur übernehmen`. Enter übernimmt auch in einem mehrzeiligen Feld und fügt keinen
+  Zeilenumbruch ein. `zum nächsten Feld` folgt der Reihenfolge der Felder in der Seite (der
+  Reihenfolge, in der die Widgets angelegt wurden), nicht ihrer Position auf dem Bildschirm.
 
 **Platzierung**
 
@@ -34,7 +36,9 @@ Template-ID: `tplVis2-materialdesign-Keyboard`.
 - **beim Einblenden** – `View überdecken`, `View nach oben schieben` (nur so weit, dass das Feld
   8 px über der Tastatur bleibt) oder `Platz anhängen und scrollen` (der scrollende Container
   bekommt unten Platz und scrollt das Feld ins Sichtfeld; in einer Dialog View **scrollY**
-  einschalten, sonst wird der Platz abgeschnitten).
+  einschalten, sonst wird der Platz abgeschnitten). Die letzten beiden wirken nur, wenn die
+  Tastatur unter dem Feld liegt, sie sind also für die unteren Positionen gedacht; eine Tastatur
+  oben in der View überdeckt die View, was auch gewählt ist.
 - **Animation** und **Animationsdauer (ms)** – wie die Tastatur erscheint (`keine`, `einblenden`
   oder `hineinschieben`); das Ausblenden geschieht sofort.
 
@@ -45,7 +49,7 @@ Template-ID: `tplVis2-materialdesign-Keyboard`.
   ein und hängt ein Leerzeichen an; langes Drücken entfernt das Wort aus der Liste (für gelernte
   Tippfehler).
 - **Anzahl Vorschläge** – 1 bis 10.
-- **State für die Wörter (leer: dieser Browser)** – ein State, der die Liste als JSON hält und
+- **State für die Wörter (leer: dieser Browser)** – ein String-State, der die Liste als JSON hält und
   von allen Geräten geteilt wird, die ihn benutzen. Leer hält die Liste nur in diesem Browser.
   Wörter werden gelernt, wenn ein Feld verlassen wird oder Enter übernimmt, nie aus
   Passwortfeldern oder vom Ziffernblock, höchstens 200 Wörter. Wer Admin-Zugriff hat, kann die
@@ -56,5 +60,7 @@ Tastenabstand und Eckenradius der Tasten. Nicht gesetzte Farben folgen dem Mater
 
 ## Hinweise
 
-- Felder in anderen Views werden nicht bedient; dort ebenfalls eine Tastatur platzieren.
+- Felder in anderen Views werden nicht bedient; dort ebenfalls eine Tastatur platzieren. Pro View genau eine Tastatur verwenden.
+- Ein Zahlenfeld zeigt nichts an, solange nur `.` oder `-` getippt ist; die Ziffern erscheinen,
+  sobald eine Ziffer folgt.
 - Lernen zwei Geräte im selben Moment in denselben State, kann ein Zähler verloren gehen.

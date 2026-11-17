@@ -20,6 +20,9 @@ shows itself only while one of them has the focus. Template id: `tplVis2-materia
   other language QWERTY.
 - **capital letter at the start** – shift is on in an empty field and after `. `.
 - **Enter key** – `commit and close`, `next field` (closes after the last one) or `commit only`.
+  Enter commits in a multi-line field as well and does not insert a line break. `next field`
+  follows the order of the fields in the page (the order the widgets were created in), not their
+  position on the screen.
 
 **placement**
 
@@ -28,6 +31,8 @@ shows itself only while one of them has the focus. Template id: `tplVis2-materia
 - **on showing** – `cover the view`, `move the view up` (only as far as needed to keep the field
   8 px above the keyboard) or `add room and scroll` (the scrolling container gets room below and
   scrolls the field into sight; in a Dialog View turn on **scrollY**, otherwise the room is cut off).
+  The last two only act when the keyboard is below the field, so they are meant for the bottom
+  positions; a keyboard at the top of the view covers the view, whatever is chosen.
 - **animation** and **animation duration** – how the keyboard appears; hiding is immediate.
 
 **word suggestions**
@@ -36,7 +41,7 @@ shows itself only while one of them has the focus. Template id: `tplVis2-materia
   started, only words that begin with it. Tap fills the word in and adds a space; a long press
   removes the word from the list (for learned typos).
 - **number of suggestions** – 1 to 10.
-- **state for the words** – a state that keeps the list as JSON, shared by every device that uses
+- **state for the words** – a string state that keeps the list as JSON, shared by every device that uses
   it. Empty keeps the list in this browser only. Words are learned when a field is left or Enter
   commits, never from password fields or the number pad, at most 200 words. Anyone with admin
   access can read the words in the state.
@@ -46,5 +51,7 @@ Material 3 theme.
 
 ## Notes
 
-- Fields in other views are not served; place a keyboard there too.
+- Fields in other views are not served; place a keyboard there too. Use one keyboard per view.
+- A number field shows nothing while only `.` or `-` is typed; the digits appear as soon as a
+  digit follows.
 - Two devices learning into the same state at the same moment can lose one count.
