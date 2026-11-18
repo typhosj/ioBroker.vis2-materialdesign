@@ -270,7 +270,11 @@ describe('autocomplete write mode and keyboard', () => {
         keys(widget, 'ArrowDown');
         expect(active(widget)).toBe('w0001-option-0');
         // The highlighted item leaves the list without a keystroke, e.g. a new list from the state.
+        const before = widget.state.rxData;
         widget.state = fixture<typeof widget.state>({ ...widget.state, rxData: { ...widget.state.rxData, valueList: '1;2', valueListLabels: 'One;Two' } });
+        expect(active(widget)).toBeUndefined();
+        // Its item coming back does not bring the highlight back.
+        widget.state = fixture<typeof widget.state>({ ...widget.state, rxData: before });
         expect(active(widget)).toBeUndefined();
     });
 
@@ -419,6 +423,19 @@ describe('classic menu highlight colours', () => {
         expect(backgroundOf(html, 'Two')).toBe(selected);
     });
 
+    it.each([
+        ['dark', 'rgba(255, 255, 255, 0.08)'],
+        ['light', 'rgba(0, 0, 0, 0.06)'],
+    ])('gives the filled field a visible surface in the %s theme', (themeType, surface) => {
+        const widget = new MaterialDesignSelect(fixture<ConstructorParameters<typeof MaterialDesignSelect>[0]>({ context: { themeType }, id: 'w0003' }));
+        widget.state = fixture<typeof widget.state>({ rxData: { listDataMethod: 'valueList', valueList: '1', valueListLabels: 'One', inputLayout: 'filled' }, values: {} });
+        const field = findElement(widget.renderWidgetBody(fixture<Parameters<MaterialDesignSelect['renderWidgetBody']>[0]>({})), element => element.type === 'button');
+        expect((field?.props.style as React.CSSProperties).background).toBe(surface);
+        widget.state = fixture<typeof widget.state>({ rxData: { ...widget.state.rxData, inputLayoutBackgroundColor: '#abcdef' }, values: {} });
+        const own = findElement(widget.renderWidgetBody(fixture<Parameters<MaterialDesignSelect['renderWidgetBody']>[0]>({})), element => element.type === 'button');
+        expect((own?.props.style as React.CSSProperties).background).toBe('#abcdef');
+    });
+
     it('lets an explicit hover colour win and leaves Material 3 on its tokens', () => {
         expect(backgroundOf(menu('dark', { listItemBackgroundHoverColor: '#123456' }), 'One')).toBe('#123456');
         expect(backgroundOf(menu('dark', { designStyle: 'material3' }), 'One')).toBe('var(--md-sys-color-surface-container-high)');
@@ -531,13 +548,28 @@ describe('menu above every container', () => {
         update.mockClear();
         window.dispatchEvent(new Event('scroll'));
         window.dispatchEvent(new Event('resize'));
-        expect(update).toHaveBeenCalledTimes(2);
+        // A view moved by a transform transition, as the keyboard's pan does it.
+        document.body.dispatchEvent(new Event('transitionend', { bubbles: true }));
+        expect(update).toHaveBeenCalledTimes(3);
 
         openSelect(widget);
         widget.componentDidUpdate(widget.props, widget.state);
         update.mockClear();
         window.dispatchEvent(new Event('scroll'));
+        document.body.dispatchEvent(new Event('transitionend', { bubbles: true }));
         expect(update).not.toHaveBeenCalled();
+    });
+
+    it('writes the picked entry of a plain select and closes the menu', () => {
+        const { widget } = mounted({ left: 0, top: 0, width: 200, height: 40 });
+        const setValue = (widget.props.context as unknown as { setValue: ReturnType<typeof vi.fn> }).setValue;
+        openSelect(widget);
+        const item = findElement(menuOf(widget).menu, element => element.type === 'button' && findElement(element.props.children as React.ReactNode, child => child.props.children === 'Two') !== undefined);
+        (item?.props.onClick as () => void)();
+        expect(setValue).toHaveBeenCalledWith('test.0.choice', '2');
+        expect(menuOf(widget).menu).toBeUndefined();
+        const field = findElement(widget.renderWidgetBody(renderProps), element => element.type === 'button');
+        expect(renderToStaticMarkup(field as React.ReactElement)).toContain('Two');
     });
 
     it('closes the select on a press outside field and menu, not on one inside', () => {

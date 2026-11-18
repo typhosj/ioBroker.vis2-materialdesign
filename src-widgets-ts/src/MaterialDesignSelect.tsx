@@ -98,6 +98,13 @@ interface SelectData {
     [key: string]: unknown;
 }
 
+interface MenuView {
+    list: SelectItem[];
+    visibleList: SelectItem[];
+    highlighted: SelectItem | undefined;
+    menuShown: boolean;
+}
+
 interface SelectItem {
     value: string | number | boolean;
     text: string;
@@ -424,7 +431,8 @@ export default class MaterialDesignSelect extends VisWidget {
     // Whether the window and document listeners of the open menu are registered.
     private listening = false;
 
-    // The menu sits at fixed coordinates in the page body, so it has to follow the field.
+    // The menu sits at fixed coordinates in the page body, so it has to follow the field. A view
+    // moved by a transform (the keyboard's pan) reports neither scroll nor resize, only transitionend.
     private readonly onViewportChange = (): void => {
         if (this.open) this.forceUpdate();
     };
@@ -443,10 +451,12 @@ export default class MaterialDesignSelect extends VisWidget {
         if (this.open) {
             window.addEventListener('scroll', this.onViewportChange, true);
             window.addEventListener('resize', this.onViewportChange);
+            window.addEventListener('transitionend', this.onViewportChange, true);
             document.addEventListener('pointerdown', this.onOutsidePointer, true);
         } else {
             window.removeEventListener('scroll', this.onViewportChange, true);
             window.removeEventListener('resize', this.onViewportChange);
+            window.removeEventListener('transitionend', this.onViewportChange, true);
             document.removeEventListener('pointerdown', this.onOutsidePointer, true);
         }
     }
@@ -496,14 +506,7 @@ export default class MaterialDesignSelect extends VisWidget {
         this.forceUpdate();
     }
 
-    private onAutocompleteKey(
-        event: React.KeyboardEvent,
-        list: SelectItem[],
-        visibleList: SelectItem[],
-        highlighted: SelectItem | undefined,
-        data: SelectData,
-        menuShown: boolean,
-    ): void {
+    private onAutocompleteKey(event: React.KeyboardEvent, data: SelectData, { list, visibleList, highlighted, menuShown }: MenuView): void {
         if (isComposing(event)) return;
         const oid = data.oid || '';
         if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
@@ -565,16 +568,6 @@ export default class MaterialDesignSelect extends VisWidget {
         super.componentWillUnmount();
     }
 
-    /**
-     * Puts the open menu into the page body once the field is mounted, so no dialog, view or widget
-     * with `overflow: hidden` clips it. Unmounted (server prerender, tests) it stays inline.
-     * Known limit: in a view scaled with a CSS transform the menu sits at the right place but is
-     * not scaled with the view.
-     */
-    private placeMenu(menu: React.JSX.Element, floating: boolean): React.ReactNode {
-        return floating ? createPortal(menu, document.body) : menu;
-    }
-
     static getWidgetInfo(): RxWidgetInfo {
         return {
             ...createInfo('tplVis2-materialdesign-Select', 'Select', withAutoFill(attrs, autoFillMap), ['inputLayout', 'inputAppendix', 'inputSubText', 'counter', 'icons', 'selectListLayout']),
@@ -605,6 +598,8 @@ export default class MaterialDesignSelect extends VisWidget {
         const filter = this.isAutocomplete && this.dirty ? this.filterText : undefined;
         const visibleList = filter ? list.filter(item => item.text.toLowerCase().includes(filter.toLowerCase())) : list;
         const highlighted = visibleList.find(item => String(item.value) === this.hoveredValue);
+        // Cleared, not hidden: the highlight must not come back when its item returns to the list.
+        if (!highlighted) this.hoveredValue = undefined;
         const menuShown =
             this.open &&
             (!this.isAutocomplete ||
@@ -714,6 +709,153 @@ export default class MaterialDesignSelect extends VisWidget {
         const hasDetails = showMessage || !!data.showInputCounter;
         const detailColor = (value: unknown, fallback: string): string =>
             (isM3 && !m3ColorExplicit(value) ? 'var(--md-sys-color-on-surface-variant)' : color(value, fallback));
+        // In the page body no dialog, view or widget with `overflow: hidden` clips the menu; unmounted
+        // (server prerender, tests) it stays inline.
+        // Known limit: in a view scaled with a CSS transform the menu sits at the right place but is
+        // not scaled with the view.
+        const menu = menuShown ? (
+            <div
+                ref={element => {
+                    this.menuRef = element;
+                }}
+                {...(this.isAutocomplete
+                    ? {
+                          id: listId,
+                          // Pressing an item or the scrollbar must not blur the input: the blur
+                          // would write the half-typed text and close the menu before the click.
+                          onMouseDown: (event: React.MouseEvent) => event.preventDefault(),
+                          role: 'listbox',
+                      }
+                    : {})}
+                className={`v-menu__content v-select-list${floating ? ` materialdesign-widget${isM3 ? ` ${designStyleClasses(data, isDark)}` : ''}` : ''}`}
+                style={{
+                    ...menuPlace,
+                    background: m3c(data.listItemBackgroundColor, 'var(--md-sys-color-surface-container)', legacySurface(isDark)),
+                    borderRadius: isM3 ? 'var(--md-sys-shape-corner-extra-small)' : undefined,
+                    boxShadow: isM3 ? 'var(--md-sys-elevation-level2)' : '0 4px 6px rgba(32, 33, 36, 0.28)',
+                    overflowY: 'auto',
+                }}
+            >
+                {visibleList.map((item, index) => {
+                    const isSelected = String(item.value) === String(current);
+                    const isHovered = this.hoveredValue === String(item.value);
+                    const itemColor = isSelected
+                        ? m3c(data.listItemFontSelectedColor, 'var(--md-sys-color-on-secondary-container)', '#44739e')
+                        : m3c(
+                              isHovered ? data.listItemFontHoverColor : data.listItemFontColor,
+                              'var(--md-sys-color-on-surface)',
+                              menuTextColor,
+                          );
+                    const background = isSelected
+                        ? m3c(data.listItemBackgroundSelectedColor, 'var(--md-sys-color-secondary-container)', isDark ? 'rgba(68, 115, 158, 0.32)' : 'rgba(68, 115, 158, 0.12)')
+                        : isHovered
+                          ? m3c(data.listItemBackgroundHoverColor, 'var(--md-sys-color-surface-container-high)', isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.08)')
+                          : m3c(data.listItemBackgroundColor, 'var(--md-sys-color-surface-container)', legacySurface(isDark));
+                    return (
+                        <button
+                            key={String(item.value)}
+                            {...(this.isAutocomplete
+                                ? { 'aria-selected': isSelected, id: `${idBase}-option-${index}`, role: 'option', tabIndex: -1 }
+                                : {})}
+                            className={`v-list-item${isSelected ? ' v-list-item--active' : ''}`}
+                            onClick={() => this.commitItem(item, data.oid || '')}
+                            onMouseEnter={() => {
+                                this.hoveredValue = String(item.value);
+                                this.forceUpdate();
+                            }}
+                            onMouseLeave={() => {
+                                this.hoveredValue = undefined;
+                                this.forceUpdate();
+                            }}
+                            style={{
+                                alignItems: 'center',
+                                background,
+                                border: 0,
+                                boxSizing: 'border-box',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                minHeight: itemHeight,
+                                padding: '6px 12px',
+                                textAlign: 'left',
+                                width: '100%',
+                            }}
+                            type="button"
+                        >
+                            {item.icon ? (
+                                <span style={{ flex: '0 0 auto', marginRight: 12 }}>
+                                    {renderIcon(
+                                        item.icon,
+                                        color(
+                                            isSelected
+                                                ? data.listIconSelectedColor
+                                                : isHovered
+                                                  ? data.listIconHoverColor
+                                                  : item.imageColor,
+                                            color(data.listIconColor, isM3 ? 'var(--md-sys-color-on-surface-variant)' : '#44739e'),
+                                        ),
+                                        num(data.listIconSize, 20),
+                                        !!item.imageColor,
+                                    )}
+                                </span>
+                            ) : null}
+                            <span style={{ flex: '1 1 auto', minWidth: 0 }}>
+                                <span
+                                    className="materialdesign-v-list-item-title"
+                                    style={{
+                                        color: itemColor,
+                                        display: 'block',
+                                        fontFamily: data.listItemFont || undefined,
+                                        fontSize: sizeCss(data.listItemFontSize, 16),
+                                    }}
+                                >
+                                    {item.text}
+                                </span>
+                                {item.subText ? (
+                                    <span
+                                        className="materialdesign-v-list-item-subtitle"
+                                        style={{
+                                            color: color(
+                                                isSelected
+                                                    ? data.listItemSubFontSelectedColor
+                                                    : isHovered
+                                                      ? data.listItemSubFontHoverColor
+                                                      : data.listItemSubFontColor,
+                                                itemColor,
+                                            ),
+                                            display: 'block',
+                                            fontFamily: data.listItemSubFont || undefined,
+                                            fontSize: sizeCss(data.listItemSubFontSize, 14),
+                                        }}
+                                    >
+                                        {item.subText}
+                                    </span>
+                                ) : null}
+                            </span>
+                            {data.showValue ? (
+                                <span
+                                    className="materialdesign-v-list-item-value"
+                                    style={{
+                                        color: color(
+                                            isSelected
+                                                ? data.listItemValueFontSelectedColor
+                                                : isHovered
+                                                  ? data.listItemValueFontHoverColor
+                                                  : data.listItemValueFontColor,
+                                            itemColor,
+                                        ),
+                                        fontFamily: data.listItemValueFont || undefined,
+                                        fontSize: sizeCss(data.listItemValueFontSize, 14),
+                                        marginLeft: 8,
+                                    }}
+                                >
+                                    {String(item.value)}
+                                </span>
+                            ) : null}
+                        </button>
+                    );
+                })}
+            </div>
+        ) : null;
         return (
             <div
                 className={`materialdesign-widget materialdesign-select${isM3 ? ` ${designStyleClasses(data, this.isDarkTheme())}` : ''}`}
@@ -752,7 +894,7 @@ export default class MaterialDesignSelect extends VisWidget {
                                         ? filled
                                             ? 'var(--md-sys-color-surface-container-high)'
                                             : 'transparent'
-                                        : color(data.inputLayoutBackgroundColor, filled ? 'rgba(0, 0, 0, 0.06)' : 'transparent'),
+                                        : color(data.inputLayoutBackgroundColor, filled ? (isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)') : 'transparent'),
                             border: 0,
                             borderBottom: enclosed ? 0 : `1px solid ${border}`,
                             borderRadius: rounded ? 28 : enclosed ? 4 : filled ? '4px 4px 0 0' : undefined,
@@ -892,7 +1034,7 @@ export default class MaterialDesignSelect extends VisWidget {
                                         this.startInput(displayed, write);
                                     }}
                                     onFocus={() => this.startInput(displayed, write)}
-                                    onKeyDown={event => this.onAutocompleteKey(event, list, visibleList, highlighted, data, menuShown)}
+                                    onKeyDown={event => this.onAutocompleteKey(event, data, { list, visibleList, highlighted, menuShown })}
                                     placeholder={selected?.text || ''}
                                     ref={element => { this.inputRef = element; }}
                                     role="combobox"
@@ -1021,159 +1163,7 @@ export default class MaterialDesignSelect extends VisWidget {
                             ) : null}
                         </div>
                     ) : null}
-                    {menuShown ? this.placeMenu(
-                        <div
-                            ref={element => {
-                                this.menuRef = element;
-                            }}
-                            {...(this.isAutocomplete
-                                ? {
-                                      id: listId,
-                                      // Pressing an item or the scrollbar must not blur the input: the blur
-                                      // would write the half-typed text and close the menu before the click.
-                                      onMouseDown: (event: React.MouseEvent) => event.preventDefault(),
-                                      role: 'listbox',
-                                  }
-                                : {})}
-                            className={`v-menu__content v-select-list${floating ? ` materialdesign-widget${isM3 ? ` ${designStyleClasses(data, isDark)}` : ''}` : ''}`}
-                            style={{
-                                ...menuPlace,
-                                background: m3c(data.listItemBackgroundColor, 'var(--md-sys-color-surface-container)', legacySurface(isDark)),
-                                borderRadius: isM3 ? 'var(--md-sys-shape-corner-extra-small)' : undefined,
-                                boxShadow: isM3 ? 'var(--md-sys-elevation-level2)' : '0 4px 6px rgba(32, 33, 36, 0.28)',
-                                overflowY: 'auto',
-                            }}
-                        >
-                            {visibleList.map((item, index) => {
-                                const isSelected = String(item.value) === String(current);
-                                const isHovered = this.hoveredValue === String(item.value);
-                                const itemColor = isSelected
-                                    ? m3c(data.listItemFontSelectedColor, 'var(--md-sys-color-on-secondary-container)', '#44739e')
-                                    : m3c(
-                                          isHovered ? data.listItemFontHoverColor : data.listItemFontColor,
-                                          'var(--md-sys-color-on-surface)',
-                                          menuTextColor,
-                                      );
-                                const background = isSelected
-                                    ? m3c(data.listItemBackgroundSelectedColor, 'var(--md-sys-color-secondary-container)', isDark ? 'rgba(68, 115, 158, 0.32)' : 'rgba(68, 115, 158, 0.12)')
-                                    : isHovered
-                                      ? m3c(data.listItemBackgroundHoverColor, 'var(--md-sys-color-surface-container-high)', isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.08)')
-                                      : m3c(data.listItemBackgroundColor, 'var(--md-sys-color-surface-container)', legacySurface(isDark));
-                                return (
-                                    <button
-                                        key={String(item.value)}
-                                        {...(this.isAutocomplete
-                                            ? { 'aria-selected': isSelected, id: `${idBase}-option-${index}`, role: 'option', tabIndex: -1 }
-                                            : {})}
-                                        className={`v-list-item${isSelected ? ' v-list-item--active' : ''}`}
-                                        onClick={() => {
-                                            if (this.isAutocomplete) {
-                                                this.commitItem(item, data.oid || '');
-                                                return;
-                                            }
-                                            this.localValue = item.value;
-                                            setStateValue(this.props, data.oid || '', item.value);
-                                            this.filterText = undefined;
-                                            this.open = false;
-                                            this.forceUpdate();
-                                        }}
-                                        onMouseEnter={() => {
-                                            this.hoveredValue = String(item.value);
-                                            this.forceUpdate();
-                                        }}
-                                        onMouseLeave={() => {
-                                            this.hoveredValue = undefined;
-                                            this.forceUpdate();
-                                        }}
-                                        style={{
-                                            alignItems: 'center',
-                                            background,
-                                            border: 0,
-                                            boxSizing: 'border-box',
-                                            cursor: 'pointer',
-                                            display: 'flex',
-                                            minHeight: itemHeight,
-                                            padding: '6px 12px',
-                                            textAlign: 'left',
-                                            width: '100%',
-                                        }}
-                                        type="button"
-                                    >
-                                        {item.icon ? (
-                                            <span style={{ flex: '0 0 auto', marginRight: 12 }}>
-                                                {renderIcon(
-                                                    item.icon,
-                                                    color(
-                                                        isSelected
-                                                            ? data.listIconSelectedColor
-                                                            : isHovered
-                                                              ? data.listIconHoverColor
-                                                              : item.imageColor,
-                                                        color(data.listIconColor, isM3 ? 'var(--md-sys-color-on-surface-variant)' : '#44739e'),
-                                                    ),
-                                                    num(data.listIconSize, 20),
-                                                    !!item.imageColor,
-                                                )}
-                                            </span>
-                                        ) : null}
-                                        <span style={{ flex: '1 1 auto', minWidth: 0 }}>
-                                            <span
-                                                className="materialdesign-v-list-item-title"
-                                                style={{
-                                                    color: itemColor,
-                                                    display: 'block',
-                                                    fontFamily: data.listItemFont || undefined,
-                                                    fontSize: sizeCss(data.listItemFontSize, 16),
-                                                }}
-                                            >
-                                                {item.text}
-                                            </span>
-                                            {item.subText ? (
-                                                <span
-                                                    className="materialdesign-v-list-item-subtitle"
-                                                    style={{
-                                                        color: color(
-                                                            isSelected
-                                                                ? data.listItemSubFontSelectedColor
-                                                                : isHovered
-                                                                  ? data.listItemSubFontHoverColor
-                                                                  : data.listItemSubFontColor,
-                                                            itemColor,
-                                                        ),
-                                                        display: 'block',
-                                                        fontFamily: data.listItemSubFont || undefined,
-                                                        fontSize: sizeCss(data.listItemSubFontSize, 14),
-                                                    }}
-                                                >
-                                                    {item.subText}
-                                                </span>
-                                            ) : null}
-                                        </span>
-                                        {data.showValue ? (
-                                            <span
-                                                className="materialdesign-v-list-item-value"
-                                                style={{
-                                                    color: color(
-                                                        isSelected
-                                                            ? data.listItemValueFontSelectedColor
-                                                            : isHovered
-                                                              ? data.listItemValueFontHoverColor
-                                                              : data.listItemValueFontColor,
-                                                        itemColor,
-                                                    ),
-                                                    fontFamily: data.listItemValueFont || undefined,
-                                                    fontSize: sizeCss(data.listItemValueFontSize, 14),
-                                                    marginLeft: 8,
-                                                }}
-                                            >
-                                                {String(item.value)}
-                                            </span>
-                                        ) : null}
-                                    </button>
-                                );
-                            })}
-                        </div>
-                    , floating) : null}
+                    {menu && floating ? createPortal(menu, document.body) : menu}
                 </div>
             </div>
         );

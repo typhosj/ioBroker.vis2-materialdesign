@@ -56,12 +56,6 @@ screenshots are German.
 
 - **position / use position offset** – whether the menu opens `auto`, `top` or
   `bottom`.
-
-The open menu lies above the whole page: a dialog, a view or a widget that clips
-its content does not hide it. It stays at the field, also while scrolling, and is
-at most as high as the room up to the window edge (300 px at most). The Select
-closes its menu on a tap outside field and menu too, the Autocomplete when the
-field is left. In a view scaled with CSS the menu is not scaled with it.
 - **open Menu at using clear button** – clearing the value opens the list again.
 - **show icon of selected item** – where in the input field the selected entry's
   icon appears: `don't display`, `prepend`, `prepend-inner` or `append-outer`. It
@@ -69,6 +63,13 @@ field is left. In a view scaled with CSS the menu is not scaled with it.
 - **show value** – each menu row also shows its value to the right of the text.
 - Row height, fonts and colors of the list each cover the normal, hovered and
   selected state.
+
+The open menu lies above the whole page: a dialog, a view or a widget that clips
+its content does not hide it. It stays at the field, also while scrolling and
+after the [on-screen keyboard](keyboard.md) moved the view, and is at most as
+high as the room up to the window edge (300 px at most). The Select closes its
+menu on a tap outside field and menu too, the Autocomplete when the field is
+left. In a view scaled with CSS the menu is not scaled with it.
 
 **menu item [n]**
 

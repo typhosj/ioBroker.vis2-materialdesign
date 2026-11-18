@@ -58,13 +58,6 @@ Einstellungen sind selbsterklärend.
 
 - **Position / Positionsoffset verwenden** – ob das Menü `auto`, `top` oder
   `bottom` öffnet.
-
-Das offene Menü liegt über der ganzen Seite: Ein Dialog, eine View oder ein
-Widget mit abgeschnittenem Rand verdeckt es nicht. Es bleibt am Feld, auch beim
-Scrollen, und wird höchstens so hoch wie der Platz bis zum Fensterrand
-(höchstens 300 px). Das Select schließt sein Menü auch bei einem Tipp außerhalb
-von Feld und Menü, das Autocomplete beim Verlassen des Felds. In einer per CSS
-skalierten View wird das Menü nicht mitskaliert.
 - **Menü auch über Schaltfläche Löschen öffnen** – nach dem Löschen des Werts
   öffnet sich die Liste erneut.
 - **Symbol des ausgewählten Elements anzeigen** – wo im Eingabefeld das Symbol
@@ -74,6 +67,14 @@ skalierten View wird das Menü nicht mitskaliert.
   dem Text.
 - Zeilenhöhe, Schriften und Farben der Liste gelten je für den normalen,
   überfahrenen und ausgewählten Zustand.
+
+Das offene Menü liegt über der ganzen Seite: Ein Dialog, eine View oder ein
+Widget mit abgeschnittenem Rand verdeckt es nicht. Es bleibt am Feld, auch beim
+Scrollen und nachdem die [Bildschirmtastatur](keyboard.md) die View verschoben
+hat, und wird höchstens so hoch wie der Platz bis zum Fensterrand (höchstens
+300 px). Das Select schließt sein Menü auch bei einem Tipp außerhalb von Feld
+und Menü, das Autocomplete beim Verlassen des Felds. In einer per CSS skalierten
+View wird das Menü nicht mitskaliert.
 
 **Menüpunkt [n]**
 
