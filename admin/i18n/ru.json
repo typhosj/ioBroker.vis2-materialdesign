@@ -148,7 +148,7 @@
     "calendarTimeAxisStartTime": "час начала",
     "calendarTimeAxisWidth": "ширина",
     "calendarView": "просмотр календаря",
-    "eventClickOid": "object ID on event click",
+    "eventClickOid": "ID объекта при нажатии на событие",
     "calendarWeekdays": "дни недели, которые будут показаны",
     "calendarWeeksNumbersBackground": "фоновый цвет",
     "calendarWeeksNumbersFont": "шрифт",
