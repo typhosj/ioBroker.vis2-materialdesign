@@ -9,9 +9,9 @@ import {
     forget,
     keyMapFor,
     learn,
+    MAX_WORD_LENGTH,
     MAX_WORDS,
     moveCaret,
-    NUMBER_ROWS,
     numberRows,
     panOffset,
     parseWords,
@@ -154,10 +154,10 @@ describe('key rows', () => {
     });
 
     it('has four equally long number rows', () => {
-        expect(NUMBER_ROWS.map(row => row.length)).toEqual([4, 4, 4, 4]);
-        expect(NUMBER_ROWS.flat()).toContainEqual({ special: 'decimal' });
-        expect(NUMBER_ROWS.flat()).toContain('-');
-        expect(numberRows(false)).toEqual(NUMBER_ROWS);
+        const rows = numberRows();
+        expect(rows.map(row => row.length)).toEqual([4, 4, 4, 4]);
+        expect(rows.flat()).toContainEqual({ special: 'decimal' });
+        expect(rows.flat()).toContain('-');
     });
 
     it('adds the arrow keys behind the dot and as a fifth number column', () => {
@@ -185,6 +185,11 @@ describe('wordsIn', () => {
         expect(wordsIn("Kita's Fest")).toEqual(["Kita's", 'Fest']);
         expect(wordsIn('2026 1-2 --- ab 3G4')).toEqual(['3G4']);
         expect(wordsIn('')).toEqual([]);
+    });
+
+    it('skips a word longer than MAX_WORD_LENGTH characters', () => {
+        const longest = 'ä'.repeat(MAX_WORD_LENGTH);
+        expect(wordsIn(`${longest} ${longest}x Ende`)).toEqual([longest, 'Ende']);
     });
 });
 
@@ -218,6 +223,31 @@ describe('parseWords', () => {
         const words = parseWords('{"x":{"w":"__proto__","n":1,"t":1}}');
         expect(Object.keys(words)).toEqual([]);
         expect(Object.getPrototypeOf(words)).toBe(Object.prototype);
+    });
+
+    it('keeps at most MAX_WORDS of a foreign list, the most typed ones', () => {
+        const raw: Record<string, unknown> = {};
+        for (let i = 0; i < MAX_WORDS + 50; i++) raw[`k${i}`] = { w: `wort${i}`, n: i + 1, t: i };
+        const words = parseWords(JSON.stringify(raw));
+        expect(Object.keys(words)).toHaveLength(MAX_WORDS);
+        expect(words.wort49).toBeUndefined();
+        expect(words.wort50).toBeDefined();
+        expect(words[`wort${MAX_WORDS + 49}`]).toBeDefined();
+
+        const exact: Record<string, unknown> = {};
+        for (let i = 0; i < MAX_WORDS; i++) exact[`k${i}`] = { w: `wort${i}`, n: 1, t: i };
+        expect(Object.keys(parseWords(exact))).toHaveLength(MAX_WORDS);
+    });
+
+    it('drops a word longer than MAX_WORD_LENGTH characters', () => {
+        const longest = 'ü'.repeat(MAX_WORD_LENGTH);
+        const words = parseWords({ a: { w: longest, n: 1, t: 1 }, b: { w: `${longest}x`, n: 1, t: 1 } });
+        expect(Object.keys(words)).toEqual([longest]);
+    });
+
+    it('keeps the higher count when two entries spell the same word', () => {
+        expect(parseWords({ a: { w: 'Arzt', n: 7, t: 1 }, b: { w: 'ARZT', n: 2, t: 9 } })).toEqual({ arzt: { w: 'Arzt', n: 7, t: 1 } });
+        expect(parseWords({ a: { w: 'arzt', n: 2, t: 1 }, b: { w: 'Arzt', n: 3, t: 2 } })).toEqual({ arzt: { w: 'Arzt', n: 3, t: 2 } });
     });
 });
 

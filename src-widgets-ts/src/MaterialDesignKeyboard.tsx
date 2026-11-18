@@ -5,12 +5,22 @@ import type { RxWidgetInfo } from '@iobroker/types-vis-2';
 
 import { m3ColorExplicit, renderIcon } from './MaterialDesignButtons';
 import { applyKey, autoShift, chooseLayout, currentWord, decimalChar, forget, keyMapFor, learn, moveCaret, numberRows, panOffset, parseWords, replaceWord, suggest, textRows, wordsIn, type EditResult, type KeyDef, type KeyMap, type Layout, type Special, type Words } from './keyboard';
-import { createInfo, designStyle, designStyleClasses, legacyInk, legacySurface, ownCssVariables, setStateValue, squarePreview, stateValue, visLocale, VisWidget, boolValue as b, numberValue as n, textValue as s, type RenderProps } from './widgetUtils';
+import { createInfo, designStyle, designStyleClasses, legacyInk, legacySurface, ownCssVariables, passWrapperClicks, setStateValue, squarePreview, stateValue, visLocale, VisWidget, boolValue as b, numberValue as n, textValue as s, type RenderProps } from './widgetUtils';
 
 export type Field = HTMLInputElement | HTMLTextAreaElement;
 type Shift = 'off' | 'once' | 'lock';
 interface Rect { left: number; top: number; width: number; height: number }
-interface Colors { background: string; key: string; text: string; special: string }
+interface Look { background: string; key: string; text: string; special: string; fontSize: number; gap: number; radius: number }
+interface KeyInfo {
+    aria: string;
+    icon?: string;
+    label?: string;
+    flex?: number;
+    /** The keydown name, and where the caret goes when nobody handles it. */
+    arrow?: { key: string; move: 'left' | 'right' | 'start' | 'end' };
+    /** Painted in the key color, not the special key color. */
+    charLook?: true;
+}
 
 export const WORDS_KEY = 'vis2-materialdesign-keyboard-words';
 /** `data-mdkb-inputmode` holds the page's own inputmode while the widget has set `none`. */
@@ -18,21 +28,22 @@ const MARK = 'mdkbInputmode';
 /** `data-mdkb-type` holds the type of a number field while the widget serves it as `text`. */
 const TYPE_MARK = 'mdkbType';
 const SKIP_TYPES = new Set(['hidden', 'checkbox', 'radio', 'range', 'file', 'color', 'date', 'time', 'datetime-local', 'month', 'week', 'button', 'submit', 'reset', 'image']);
-const ARIA: Record<Special, string> = {
-    shift: 'ariaKeyShift', backspace: 'ariaKeyBackspace', enter: 'ariaKeyEnter', close: 'ariaKeyClose',
-    symbols: 'ariaKeySymbols', letters: 'ariaKeyLetters', space: 'ariaKeySpace', decimal: 'ariaKeyDecimal',
-    left: 'ariaKeyLeft', right: 'ariaKeyRight', up: 'ariaKeyUp', down: 'ariaKeyDown',
+const KEYS: Record<Special, KeyInfo> = {
+    shift: { aria: 'ariaKeyShift', icon: 'apple-keyboard-shift', flex: 1.5 },
+    backspace: { aria: 'ariaKeyBackspace', icon: 'backspace-outline', flex: 1.5 },
+    enter: { aria: 'ariaKeyEnter', icon: 'keyboard-return', flex: 1.5 },
+    close: { aria: 'ariaKeyClose', icon: 'keyboard-close' },
+    symbols: { aria: 'ariaKeySymbols', label: '?123', flex: 1.5 },
+    letters: { aria: 'ariaKeyLetters', label: 'ABC', flex: 1.5 },
+    space: { aria: 'ariaKeySpace', flex: 4, charLook: true },
+    decimal: { aria: 'ariaKeyDecimal', charLook: true },
+    left: { aria: 'ariaKeyLeft', icon: 'arrow-left', arrow: { key: 'ArrowLeft', move: 'left' } },
+    right: { aria: 'ariaKeyRight', icon: 'arrow-right', arrow: { key: 'ArrowRight', move: 'right' } },
+    up: { aria: 'ariaKeyUp', icon: 'arrow-up', arrow: { key: 'ArrowUp', move: 'start' } },
+    down: { aria: 'ariaKeyDown', icon: 'arrow-down', arrow: { key: 'ArrowDown', move: 'end' } },
 };
-const ICON: Partial<Record<Special, string>> = {
-    shift: 'apple-keyboard-shift', backspace: 'backspace-outline', enter: 'keyboard-return', close: 'keyboard-close',
-    left: 'arrow-left', right: 'arrow-right', up: 'arrow-up', down: 'arrow-down',
-};
-/** Arrow keys: the keydown name, and where the caret goes when nobody handles it. */
-const ARROW: Partial<Record<Special, { key: string; move: 'left' | 'right' | 'start' | 'end' }>> = {
-    left: { key: 'ArrowLeft', move: 'left' }, right: { key: 'ArrowRight', move: 'right' },
-    up: { key: 'ArrowUp', move: 'start' }, down: { key: 'ArrowDown', move: 'end' },
-};
-const FLEX: Partial<Record<Special, number>> = { space: 4, shift: 1.5, backspace: 1.5, enter: 1.5, symbols: 1.5, letters: 1.5 };
+
+const clampTo = (value: number, min: number, max: number): number => Math.min(max, Math.max(min, value));
 
 export function isServable(el: unknown): el is Field {
     if (el instanceof HTMLTextAreaElement) return !el.readOnly && !el.disabled;
@@ -40,17 +51,22 @@ export function isServable(el: unknown): el is Field {
     return !SKIP_TYPES.has(el.type.toLowerCase()) && !el.readOnly && !el.disabled;
 }
 
-/** The inputmode the page gave the field, from before the widget set `none`. */
 export function originalInputMode(el: Field): string {
     return el.dataset[MARK] ?? el.getAttribute('inputmode') ?? '';
 }
 
-/** The type the page gave the field, from before the widget switched a number field to `text`. */
 export function originalType(el: Field): string {
     return el.dataset[TYPE_MARK] ?? (el instanceof HTMLInputElement ? el.type : 'text');
 }
 
-/** The nearest ancestor that scrolls vertically; the document when there is none. */
+// Trap: React 19 re-sets `type` on every update of a controlled input, which would turn the field
+// back into a number field. The own property swallows that until `restore` deletes it.
+export function serveAsText(el: HTMLInputElement): void {
+    const native = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'type');
+    native?.set?.call(el, 'text');
+    Object.defineProperty(el, 'type', { configurable: true, get: () => native?.get?.call(el) as string, set: () => undefined });
+}
+
 export function scrollParent(el: Element): HTMLElement {
     for (let node = el.parentElement; node; node = node.parentElement) {
         const { overflowY } = getComputedStyle(node);
@@ -61,23 +77,38 @@ export function scrollParent(el: Element): HTMLElement {
 
 type Input = 'touch' | 'pen' | 'mouse' | 'keyboard' | null;
 let lastInput: Input = null;
-let tracking = false;
+let trackers = 0;
 
-/** The type of the last user input; exported for the tests, the listeners below call it. */
 export function noteInput(type: Input): void {
     lastInput = type;
 }
 
+const isTouch = (event: Event): boolean => {
+    const type = (event as Partial<PointerEvent>).pointerType;
+    return type === 'touch' || type === 'pen';
+};
+
 // Trap: the widget dispatches synthetic keydowns (Enter, arrows) that must not count as keyboard
 // use, hence the isTrusted check.
-function trackInput(): void {
-    if (tracking || typeof document === 'undefined') return;
-    tracking = true;
-    document.addEventListener('pointerdown', event => { if (event.isTrusted) noteInput(event.pointerType === 'touch' || event.pointerType === 'pen' ? event.pointerType : 'mouse'); }, true);
-    document.addEventListener('keydown', event => { if (event.isTrusted) noteInput('keyboard'); }, true);
+const notePointer = (event: PointerEvent): void => {
+    if (event.isTrusted) noteInput(isTouch(event) ? (event.pointerType as Input) : 'mouse');
+};
+const noteKey = (event: KeyboardEvent): void => {
+    if (event.isTrusted) noteInput('keyboard');
+};
+
+/** One pair of document listeners for all keyboards; the last one to stop removes them. */
+function trackInput(on: boolean): void {
+    trackers = Math.max(0, trackers + (on ? 1 : -1));
+    if (on && trackers === 1) {
+        document.addEventListener('pointerdown', notePointer, true);
+        document.addEventListener('keydown', noteKey, true);
+    } else if (!on && trackers === 0) {
+        document.removeEventListener('pointerdown', notePointer, true);
+        document.removeEventListener('keydown', noteKey, true);
+    }
 }
 
-/** Touch or pen was the last input; with no input seen yet, a coarse pointer stands in for it. */
 function touchInput(): boolean {
     if (lastInput) return lastInput === 'touch' || lastInput === 'pen';
     try {
@@ -134,9 +165,9 @@ const attrs: RxWidgetInfo['visAttrs'] = [
         label: 'group_keyboardLook',
         fields: [
             ...['keyboardBackground', 'keyboardKeyColor', 'keyboardKeyTextColor', 'keyboardSpecialKeyColor'].map(name => ({ name, label: name, type: 'color' as const })),
-            { name: 'keyboardFontSize', label: 'keyboardFontSize', type: 'number', default: 18, min: 8 },
-            { name: 'keyboardKeyGap', label: 'keyboardKeyGap', type: 'number', default: 6, min: 0 },
-            { name: 'keyboardKeyRadius', label: 'keyboardKeyRadius', type: 'number', default: 8, min: 0 },
+            { name: 'keyboardFontSize', label: 'keyboardFontSize', type: 'number', default: 18, min: 8, max: 64 },
+            { name: 'keyboardKeyGap', label: 'keyboardKeyGap', type: 'number', default: 6, min: 0, max: 32 },
+            { name: 'keyboardKeyRadius', label: 'keyboardKeyRadius', type: 'number', default: 8, min: 0, max: 64 },
         ],
     },
 ];
@@ -155,7 +186,7 @@ export default class MaterialDesignKeyboard extends VisWidget {
     }
 
     private placeholder: HTMLDivElement | null = null;
-    private wrapperPointerEvents: { el: HTMLElement; value: string } | null = null;
+    private wrapper: HTMLElement | null = null;
     /** The value the target had when it got the focus, or when its words were last learned. */
     private known: { el: Field; value: string } | null = null;
     private target: Field | null = null;
@@ -163,6 +194,8 @@ export default class MaterialDesignKeyboard extends VisWidget {
     private rect: Rect | null = null;
     private observer: MutationObserver | null = null;
     private listening = false;
+    /** The fields carry `inputmode="none"`; with `touch` only from the first touch or pen input on. */
+    private serving = false;
     private symbols = false;
     private shift: Shift = 'off';
     private lastShiftTap = 0;
@@ -172,7 +205,6 @@ export default class MaterialDesignKeyboard extends VisWidget {
     // outside is not seen until the focus moves to another field.
     // Known limit: a field without selection API (`type="email"`) reports `''` for text it cannot
     // parse, so the typed text is kept here instead.
-    /** Text typed into a field without selection API. */
     private draft: { el: Field; text: string } | null = null;
     private panned: { el: HTMLElement; transform: string; transition: string; offset: number } | null = null;
     private padded: { el: HTMLElement; paddingBottom: string } | null = null;
@@ -189,7 +221,6 @@ export default class MaterialDesignKeyboard extends VisWidget {
         return s(this.data().keyboardFields).split(/[\s,;]+/).filter(Boolean);
     }
 
-    /** Served: servable, inside the own view, and inside a listed widget when there is a list. */
     private serves(el: unknown): el is Field {
         if (!isServable(el) || !this.scope?.contains(el)) return false;
         const ids = this.fieldIds();
@@ -200,7 +231,13 @@ export default class MaterialDesignKeyboard extends VisWidget {
         return this.scope ? Array.from(this.scope.querySelectorAll('input, textarea')).filter((el): el is Field => this.serves(el)) : [];
     }
 
+    private startServing(): void {
+        this.serving = true;
+        this.suppress();
+    }
+
     private readonly suppress = (): void => {
+        if (!this.serving) return;
         for (const el of this.servedFields()) {
             if (el.dataset[MARK] !== undefined) continue;
             el.dataset[MARK] = el.getAttribute('inputmode') ?? '';
@@ -209,11 +246,7 @@ export default class MaterialDesignKeyboard extends VisWidget {
             // text. A remounted element is caught by the MutationObserver.
             if (el instanceof HTMLInputElement && el.type === 'number') {
                 el.dataset[TYPE_MARK] = 'number';
-                // Trap: React 19 re-sets `type` on every update of a controlled input, which would turn
-                // the field back into a number field. The own property swallows that while served.
-                const native = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'type');
-                native?.set?.call(el, 'text');
-                Object.defineProperty(el, 'type', { configurable: true, get: () => native?.get?.call(el) as string, set: () => undefined });
+                serveAsText(el);
             }
         }
     };
@@ -236,11 +269,13 @@ export default class MaterialDesignKeyboard extends VisWidget {
     private attach(): void {
         if (this.props.editMode || this.listening || typeof document === 'undefined') return;
         this.listening = true;
-        trackInput();
+        trackInput(true);
         this.scope = this.placeholder?.closest('[id^="visview_"]') ?? document.body;
-        this.suppress();
+        if (s(this.data().keyboardShowOn, 'touch') !== 'touch' || touchInput()) this.startServing();
         this.observer = new MutationObserver(this.suppress);
         this.observer.observe(this.scope, { childList: true, subtree: true });
+        // Capture runs before the browser moves the focus, so `inputmode` is set in time.
+        document.addEventListener('pointerdown', this.onPointerDown, true);
         document.addEventListener('focusin', this.onFocusIn, true);
         document.addEventListener('focusout', this.onFocusOut, true);
         window.addEventListener('resize', this.onWindowResize);
@@ -251,13 +286,16 @@ export default class MaterialDesignKeyboard extends VisWidget {
         this.stopSwallow();
         if (!this.listening) return;
         this.listening = false;
+        trackInput(false);
         this.observer?.disconnect();
         this.observer = null;
+        document.removeEventListener('pointerdown', this.onPointerDown, true);
         document.removeEventListener('focusin', this.onFocusIn, true);
         document.removeEventListener('focusout', this.onFocusOut, true);
         window.removeEventListener('resize', this.onWindowResize);
         this.hide();
         this.restore();
+        this.serving = false;
         this.scope = null;
     }
 
@@ -281,10 +319,18 @@ export default class MaterialDesignKeyboard extends VisWidget {
         if (this.serves(event.target)) this.focusOn(event.target);
     };
 
-    private focusOn(el: Field): void {
+    /** A tap into a field that already has the focus fires no focusin, so it opens the keyboard here. */
+    private readonly onPointerDown = (event: PointerEvent): void => {
+        if (!isTouch(event)) return;
+        if (!this.serving) this.startServing();
+        const el = event.target;
+        if (!this.target && this.serves(el) && el === document.activeElement) this.focusOn(el, true);
+    };
+
+    private focusOn(el: Field, touched = touchInput()): void {
         const wasHidden = !this.target;
         // Checked only while closed: a mouse click into another served field keeps an open keyboard.
-        if (wasHidden && s(this.data().keyboardShowOn, 'touch') === 'touch' && !touchInput()) return;
+        if (wasHidden && s(this.data().keyboardShowOn, 'touch') === 'touch' && !touched) return;
         if (this.draft?.el !== el) this.draft = null;
         if (this.target !== el) this.known = { el, value: this.currentValue(el) };
         this.target = el;
@@ -320,7 +366,7 @@ export default class MaterialDesignKeyboard extends VisWidget {
     }
 
     private animationMs(): number {
-        return Math.max(0, n(this.data().keyboardAnimationMs, 150));
+        return clampTo(n(this.data().keyboardAnimationMs, 150), 0, 2000);
     }
 
     private animationStyle(): React.CSSProperties {
@@ -332,7 +378,6 @@ export default class MaterialDesignKeyboard extends VisWidget {
         return { animation: `${name} ${ms}ms ease-out` };
     }
 
-    /** Pan or pad so the focused field ends 8 px above the keyboard. */
     private makeRoom(): void {
         const el = this.target;
         const rect = this.rect;
@@ -495,9 +540,8 @@ export default class MaterialDesignKeyboard extends VisWidget {
         }
     }
 
-    /** The page or an Autocomplete gets the arrow first; the caret moves only when it did not take it. */
     private arrow(el: Field, special: Special): void {
-        const { key, move } = ARROW[special]!;
+        const { key, move } = KEYS[special].arrow!;
         const event = new KeyboardEvent('keydown', { key, code: key, bubbles: true, cancelable: true });
         el.dispatchEvent(event);
         if (event.defaultPrevented) return;
@@ -579,49 +623,48 @@ export default class MaterialDesignKeyboard extends VisWidget {
     };
 
     private keyLabel(special: Special): string {
-        switch (special) {
-            case 'symbols': return '?123';
-            case 'letters': return 'ABC';
-            case 'decimal': return decimalChar(this.keyMap(), !!this.target && originalType(this.target) === 'number');
-            default: return '';
-        }
+        if (special === 'decimal') return decimalChar(this.keyMap(), !!this.target && originalType(this.target) === 'number');
+        return KEYS[special].label ?? '';
     }
 
     private wordsOid(): string {
         return s(this.data().keyboardWordsOid);
     }
 
-    /** With a state: its last value, overlaid by our own writes until the next value arrives. */
-    private readWords(): Words {
+    private storedWords(): unknown {
         const oid = this.wordsOid();
-        if (oid) {
-            const value = stateValue(this.state, oid);
-            if (value !== this.wordsSeen) {
-                this.wordsSeen = value;
-                this.wordsCache = parseWords(value);
-            }
-            return this.wordsCache;
-        }
+        if (oid) return stateValue(this.state, oid);
         try {
-            return parseWords(window.localStorage.getItem(WORDS_KEY));
+            return window.localStorage.getItem(WORDS_KEY);
         } catch {
-            return {};
+            return null;
         }
+    }
+
+    /** Parsed again only when the stored value changed; own writes stand until the state echoes them. */
+    private readWords(): Words {
+        const value = this.storedWords();
+        if (value !== this.wordsSeen) {
+            this.wordsSeen = value;
+            this.wordsCache = parseWords(value);
+        }
+        return this.wordsCache;
     }
 
     // Known limit: two devices writing the state at almost the same moment can lose one count.
     private saveWords(words: Words): void {
         const json = JSON.stringify(words);
         const oid = this.wordsOid();
+        this.wordsCache = words;
         if (oid) {
-            this.wordsCache = words;
             setStateValue(this.props, oid, json);
             return;
         }
         try {
             window.localStorage.setItem(WORDS_KEY, json);
+            this.wordsSeen = json;
         } catch {
-            // No storage: there are simply no suggestions.
+            // No storage: the words last until the page reloads.
         }
     }
 
@@ -664,7 +707,7 @@ export default class MaterialDesignKeyboard extends VisWidget {
         }
     };
 
-    private renderSuggestions(colors: Colors, fontSize: number, gap: number, radius: number): React.JSX.Element | null {
+    private renderSuggestions(look: Look): React.JSX.Element | null {
         const data = this.data();
         const el = this.target;
         if (!b(data.keyboardSuggestions, true) || this.layoutFor(el) === 'number') return null;
@@ -672,7 +715,7 @@ export default class MaterialDesignKeyboard extends VisWidget {
         const prefix = el ? currentWord(value, this.selection(el)[0] ?? value.length).word : '';
         const list = el ? suggest(this.readWords(), prefix, n(data.keyboardSuggestionCount, 3)) : [];
         return (
-            <div data-suggestions="" style={{ display: 'flex', flex: 1, gap, minHeight: 0 }}>
+            <div data-suggestions="" style={{ display: 'flex', flex: 1, gap: look.gap, minHeight: 0 }}>
                 {list.map(word => (
                     <button
                         data-suggestion={word}
@@ -684,7 +727,7 @@ export default class MaterialDesignKeyboard extends VisWidget {
                         }}
                         onPointerLeave={this.cancelSuggestionPress}
                         onPointerUp={() => this.endSuggestionPress(word)}
-                        style={{ background: 'transparent', border: 0, borderRadius: radius, color: colors.text, flex: 1, fontSize, minWidth: 0, overflow: 'hidden', padding: '0 4px', textOverflow: 'ellipsis', touchAction: 'manipulation', userSelect: 'none', whiteSpace: 'nowrap' }}
+                        style={{ background: 'transparent', border: 0, borderRadius: look.radius, color: look.text, flex: 1, fontSize: look.fontSize, minWidth: 0, overflow: 'hidden', padding: '0 4px', textOverflow: 'ellipsis', touchAction: 'manipulation', userSelect: 'none', whiteSpace: 'nowrap' }}
                         tabIndex={-1}
                         type="button"
                     >
@@ -695,15 +738,16 @@ export default class MaterialDesignKeyboard extends VisWidget {
         );
     }
 
-    private renderKey(key: KeyDef, id: string, colors: Colors, fontSize: number, radius: number): React.JSX.Element {
+    private renderKey(key: KeyDef, id: string, look: Look): React.JSX.Element {
         if (key === '') return <div aria-hidden="true" key={id} style={{ flex: 1 }} />;
         const special = typeof key === 'string' ? null : key.special;
+        const info = special ? KEYS[special] : null;
         const label = typeof key !== 'string' ? this.keyLabel(key.special) : this.shift === 'off' ? key : upper(key);
         const active = special === 'shift' && this.shift !== 'off';
-        const icon = special === 'shift' && this.shift === 'lock' ? 'apple-keyboard-caps' : special ? ICON[special] : undefined;
+        const icon = special === 'shift' && this.shift === 'lock' ? 'apple-keyboard-caps' : info?.icon;
         return (
             <button
-                aria-label={special ? VisWidget.t(ARIA[special]) : undefined}
+                aria-label={info ? VisWidget.t(info.aria) : undefined}
                 aria-pressed={special === 'shift' ? active : undefined}
                 data-key={special ?? key}
                 key={id}
@@ -714,20 +758,20 @@ export default class MaterialDesignKeyboard extends VisWidget {
                     const shown = !!this.target;
                     this.press(key);
                     if (shown && !this.target) this.swallowClick();
-                    if (special === 'backspace' || (special && ARROW[special])) this.startRepeat(key);
+                    if (special === 'backspace' || info?.arrow) this.startRepeat(key);
                     this.forceUpdate();
                 }}
                 onPointerLeave={this.stopRepeat}
                 onPointerUp={this.stopRepeat}
                 style={{
-                    background: special ? colors.special : colors.key,
+                    background: info && !info.charLook ? look.special : look.key,
                     border: 0,
-                    borderRadius: radius,
+                    borderRadius: look.radius,
                     boxShadow: active ? 'inset 0 -3px 0 currentColor' : undefined,
-                    color: colors.text,
+                    color: look.text,
                     filter: this.pressed === id ? 'brightness(0.85)' : undefined,
-                    flex: (special && FLEX[special]) ?? 1,
-                    fontSize,
+                    flex: info?.flex ?? 1,
+                    fontSize: look.fontSize,
                     minWidth: 0,
                     padding: 0,
                     touchAction: 'manipulation',
@@ -736,7 +780,7 @@ export default class MaterialDesignKeyboard extends VisWidget {
                 tabIndex={-1}
                 type="button"
             >
-                {icon ? <span aria-hidden="true" style={{ display: 'inline-flex' }}>{renderIcon(icon, colors.text, fontSize * 1.2)}</span> : label}
+                {icon ? <span aria-hidden="true" style={{ display: 'inline-flex' }}>{renderIcon(icon, look.text, look.fontSize * 1.2)}</span> : label}
             </button>
         );
     }
@@ -746,15 +790,15 @@ export default class MaterialDesignKeyboard extends VisWidget {
         const isDark = this.isDarkTheme();
         const isM3 = designStyle(data) === 'material3';
         const m3c = (saved: unknown, token: string, legacy: string): string => (isM3 && !m3ColorExplicit(saved) ? token : s(saved, legacy));
-        const colors: Colors = {
+        const look: Look = {
             background: m3c(data.keyboardBackground, 'var(--md-sys-color-surface-container-high)', isDark ? '#121212' : '#eceff1'),
             key: m3c(data.keyboardKeyColor, 'var(--md-sys-color-surface)', legacySurface(isDark)),
             text: m3c(data.keyboardKeyTextColor, 'var(--md-sys-color-on-surface)', legacyInk(isDark)),
             special: m3c(data.keyboardSpecialKeyColor, 'var(--md-sys-color-secondary-container)', isDark ? '#3a3a3a' : '#cfd8dc'),
+            fontSize: clampTo(n(data.keyboardFontSize, 18), 8, 64),
+            gap: clampTo(n(data.keyboardKeyGap, 6), 0, 32),
+            radius: clampTo(n(data.keyboardKeyRadius, 8), 0, 64),
         };
-        const gap = Math.max(0, n(data.keyboardKeyGap, 6));
-        const fontSize = Math.max(8, n(data.keyboardFontSize, 18));
-        const radius = Math.max(0, n(data.keyboardKeyRadius, 8));
         const arrows = b(data.keyboardArrows, false);
         const rows = this.layoutFor(this.target) === 'number' ? numberRows(arrows) : textRows(this.keyMap(), this.symbols, arrows);
         const place: React.CSSProperties = editor || !this.rect ? { inset: 0, position: 'absolute' } : { ...this.rect, position: 'fixed' };
@@ -771,39 +815,30 @@ export default class MaterialDesignKeyboard extends VisWidget {
                     ...ownCssVariables(this.refService?.current),
                     ...place,
                     ...(editor ? {} : this.animationStyle()),
-                    background: colors.background,
+                    background: look.background,
                     boxSizing: 'border-box',
                     display: 'flex',
                     flexDirection: 'column',
-                    gap,
-                    padding: gap,
+                    gap: look.gap,
+                    padding: look.gap,
                     zIndex: 10000,
                 }}
             >
                 <style>{KEYFRAMES}</style>
-                {this.renderSuggestions(colors, fontSize, gap, radius)}
+                {this.renderSuggestions(look)}
                 {rows.map((row, r) => (
-                    <div key={`row${r}`} style={{ display: 'flex', flex: 1, gap, minHeight: 0 }}>
-                        {row.map((k, c) => this.renderKey(k, `${r}-${c}`, colors, fontSize, radius))}
+                    <div key={`row${r}`} style={{ display: 'flex', flex: 1, gap: look.gap, minHeight: 0 }}>
+                        {row.map((k, c) => this.renderKey(k, `${r}-${c}`, look))}
                     </div>
                 ))}
             </div>
         );
     }
 
-    /**
-     * The hidden keyboard must not block the widgets below it: the vis-2 wrapper around the
-     * placeholder is a hit target of its own, so it is switched too (not in the editor, where the
-     * widget has to stay selectable). The wrapper gets its old value back when the widget goes.
-     */
     private clickThrough(element: HTMLDivElement | null): void {
         this.placeholder = element;
-        if (this.wrapperPointerEvents) this.wrapperPointerEvents.el.style.pointerEvents = this.wrapperPointerEvents.value;
-        this.wrapperPointerEvents = null;
-        const wrapper = element?.parentElement;
-        if (!wrapper || this.props.editMode) return;
-        this.wrapperPointerEvents = { el: wrapper, value: wrapper.style.pointerEvents };
-        wrapper.style.pointerEvents = 'none';
+        if (!element && this.wrapper) this.wrapper.style.pointerEvents = '';
+        this.wrapper = passWrapperClicks(element, this.props.editMode);
     }
 
     renderWidgetBody(props: RenderProps): React.JSX.Element {

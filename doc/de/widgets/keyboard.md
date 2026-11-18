@@ -31,7 +31,9 @@ Template-ID: `tplVis2-materialdesign-Keyboard`.
   bewegen den Cursor; ↑ und ↓ gehen durch die Liste eines Autocomplete-Widgets, in jedem anderen Feld
   springen sie an den Anfang oder das Ende. Gedrückt halten wiederholt die Taste.
 - **Anzeigen bei** – `nur bei Finger oder Stift` (Standard) oder `bei jedem Fokus`. An einem PC mit Maus
-  und Tastatur bleibt die Tastatur standardmäßig geschlossen.
+  und Tastatur bleibt die Tastatur standardmäßig geschlossen, und die Felder bleiben, wie sie sind
+  (Zahlenfelder behalten ihre Pfeile), bis ein Finger oder Stift den Bildschirm berührt. Ein Tipp
+  in ein Feld, das den Fokus schon per Mausklick hat, öffnet die Tastatur ebenfalls.
 
 **Platzierung**
 
@@ -44,8 +46,8 @@ Template-ID: `tplVis2-materialdesign-Keyboard`.
   einschalten, sonst wird der Platz abgeschnitten). Die letzten beiden wirken nur, wenn die
   Tastatur unter dem Feld liegt, sie sind also für die unteren Positionen gedacht; eine Tastatur
   oben in der View überdeckt die View, was auch gewählt ist.
-- **Animation** und **Animationsdauer (ms)** – wie die Tastatur erscheint (`keine`, `einblenden`
-  oder `hineinschieben`); das Ausblenden geschieht sofort.
+- **Animation** und **Animationsdauer (ms)** (0 bis 2000) – wie die Tastatur erscheint (`keine`,
+  `einblenden` oder `hineinschieben`); das Ausblenden geschieht sofort.
 
 **Wortvorschläge**
 
@@ -57,11 +59,13 @@ Template-ID: `tplVis2-materialdesign-Keyboard`.
 - **State für die Wörter (leer: dieser Browser)** – ein String-State, der die Liste als JSON hält und
   von allen Geräten geteilt wird, die ihn benutzen. Leer hält die Liste nur in diesem Browser.
   Wörter werden gelernt, wenn ein Feld verlassen wird oder Enter übernimmt, nie aus
-  Passwortfeldern oder vom Ziffernblock, höchstens 200 Wörter. Wer Admin-Zugriff hat, kann die
-  Wörter im State lesen.
+  Passwortfeldern oder vom Ziffernblock, höchstens 200 Wörter mit höchstens 40 Zeichen. Wer
+  Admin-Zugriff hat, kann die Wörter im State lesen.
 
-**Aussehen** – Hintergrund, Tastenfarbe, Tastenschrift, Farbe der Sondertasten, Schriftgröße,
-Tastenabstand und Eckenradius der Tasten. Nicht gesetzte Farben folgen dem Material-3-Theme.
+**Aussehen** – Hintergrund, Tastenfarbe, Tastenschrift, Farbe der Sondertasten, Schriftgröße (8 bis
+64), Tastenabstand (0 bis 32) und Eckenradius der Tasten (0 bis 64). Die Farbe der Sondertasten gilt
+für ⇧, ⌫, ↵, ⌄, `?123`/`ABC` und die Pfeiltasten; Leertaste und Dezimaltaste sehen aus wie die
+Buchstabentasten. Nicht gesetzte Farben folgen dem Material-3-Theme.
 
 ## Hinweise
 

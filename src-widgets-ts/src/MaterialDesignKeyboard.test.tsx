@@ -219,6 +219,72 @@ describe('show on', () => {
         focus(field('title'));
         expect(panel()).not.toBeNull();
     });
+
+    const pointer = (el: Element, type: string | undefined): void => {
+        const event = new MouseEvent('pointerdown', { bubbles: true, cancelable: true });
+        if (type) Object.defineProperty(event, 'pointerType', { value: type });
+        act(() => { el.dispatchEvent(event); });
+        rerender();
+    };
+
+    it('leaves the fields alone on a device used by mouse until a touch or pen arrives', () => {
+        for (const type of ['touch', 'pen']) {
+            noteInput('mouse');
+            start(touchy());
+            expect(field('title').hasAttribute('inputmode')).toBe(false);
+            expect(field('amount').type).toBe('number');
+            pointer(field('check'), 'mouse');
+            pointer(field('check'), undefined);
+            expect(field('amount').type).toBe('number');
+            pointer(field('check'), type);
+            expect(field('title').getAttribute('inputmode')).toBe('none');
+            expect(field('amount').type).toBe('text');
+            act(() => current.componentWillUnmount());
+            expect(field('amount').type).toBe('number');
+            expect(field('title').hasAttribute('inputmode')).toBe(false);
+        }
+    });
+
+    it('serves the fields at once on a coarse pointer, and always with "always"', () => {
+        media(true);
+        start(touchy());
+        expect(field('amount').type).toBe('text');
+        act(() => current.componentWillUnmount());
+        noteInput('mouse');
+        start(keyboard({ keyboardShowOn: 'always' }));
+        expect(field('amount').type).toBe('text');
+    });
+
+    it('opens on a tap into a field that already has the focus from a mouse click', () => {
+        noteInput('mouse');
+        start(touchy());
+        focus(field('title'));
+        expect(panel()).toBeNull();
+        pointer(field('title'), 'mouse');
+        expect(panel()).toBeNull();
+        pointer(field('place'), 'touch');
+        expect(panel()).toBeNull();
+        pointer(field('title'), 'touch');
+        expect(panel()).not.toBeNull();
+        expect(field('title').getAttribute('inputmode')).toBe('none');
+    });
+});
+
+describe('input tracking listeners', () => {
+    it('are removed when the last keyboard stops', () => {
+        const remove = vi.spyOn(document, 'removeEventListener');
+        const removed = (type: string): number => remove.mock.calls.filter(([name, , capture]) => name === type && capture === true).length;
+        start(keyboard());
+        const second = keyboard();
+        act(() => second.componentDidMount());
+        act(() => current.componentWillUnmount());
+        expect(removed('keydown')).toBe(0);
+        act(() => second.componentWillUnmount());
+        act(() => second.componentWillUnmount());
+        expect(removed('keydown')).toBe(1);
+        expect(removed('pointerdown')).toBe(3);
+        remove.mockRestore();
+    });
 });
 
 describe('showing and hiding', () => {
@@ -895,6 +961,22 @@ describe('word suggestions', () => {
         }
     });
 
+    it('parses the stored words only when they change, not on every key', () => {
+        seed(3);
+        const raw = window.localStorage.getItem('vis2-materialdesign-keyboard-words');
+        const parse = vi.spyOn(JSON, 'parse');
+        const parsedStored = (): number => parse.mock.calls.filter(([text]) => text === raw).length;
+        start(keyboard({ keyboardSuggestions: true, keyboardAutoCapitalize: false }));
+        focus(field('title'));
+        tap('w', 'o', 'r');
+        expect(parsedStored()).toBe(1);
+        expect(shown()).toEqual(['Worta', 'Wortb', 'Wortc']);
+        window.localStorage.setItem('vis2-materialdesign-keyboard-words', JSON.stringify({ wolke: { w: 'Wolke', n: 1, t: 1 } }));
+        tap('backspace');
+        expect(shown()).toEqual(['Wolke']);
+        parse.mockRestore();
+    });
+
     it('does not forget a word when the press is cancelled before 600 ms, and not after unmount', () => {
         vi.useFakeTimers();
         seed(1);
@@ -1276,6 +1358,38 @@ describe('icons on the special keys', () => {
         expect(key('symbols').textContent).toBe('?123');
         focus(field('amount'));
         expect(key('decimal').textContent).toBe('.');
+    });
+});
+
+describe('look', () => {
+    it('paints only the function keys in the special key color', () => {
+        start(keyboard({ keyboardKeyColor: 'rgb(1, 1, 1)', keyboardSpecialKeyColor: 'rgb(2, 2, 2)', keyboardArrows: true }));
+        focus(field('title'));
+        for (const name of ['shift', 'backspace', 'enter', 'close', 'symbols', 'left', 'right', 'up', 'down']) expect(key(name).style.background).toBe('rgb(2, 2, 2)');
+        for (const name of ['q', 'space', ',']) expect(key(name).style.background).toBe('rgb(1, 1, 1)');
+        tap('symbols');
+        expect(key('letters').style.background).toBe('rgb(2, 2, 2)');
+        focus(field('amount'));
+        expect(key('decimal').style.background).toBe('rgb(1, 1, 1)');
+        expect(key('1').style.background).toBe('rgb(1, 1, 1)');
+    });
+
+    it('keeps font size, gap, radius and animation time within their limits at runtime', () => {
+        const sizes = (): string[] => [key('q').style.fontSize, panel()!.style.gap, key('q').style.borderRadius];
+        start(keyboard({ keyboardFontSize: 500, keyboardKeyGap: 1000, keyboardKeyRadius: 900, keyboardAnimation: 'fade', keyboardAnimationMs: 99999 }));
+        focus(field('title'));
+        expect(sizes()).toEqual(['64px', '32px', '64px']);
+        expect(panel()!.style.animation).toContain('2000ms');
+        blur(field('title'));
+        Object.assign(rx(), { keyboardFontSize: -3, keyboardKeyGap: -1, keyboardKeyRadius: -9, keyboardAnimationMs: -5 });
+        focus(field('title'));
+        expect(sizes()).toEqual(['8px', '0px', '0px']);
+        expect(panel()!.style.animation).toBe('');
+        blur(field('title'));
+        Object.assign(rx(), { keyboardFontSize: 64, keyboardKeyGap: 32, keyboardKeyRadius: 64, keyboardAnimationMs: 2000 });
+        focus(field('title'));
+        expect(sizes()).toEqual(['64px', '32px', '64px']);
+        expect(panel()!.style.animation).toContain('2000ms');
     });
 });
 

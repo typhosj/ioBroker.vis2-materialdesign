@@ -447,6 +447,15 @@ export function liftWidgetLayer(root: HTMLElement | null, zIndex: number | null)
     wrapper.style.zIndex = String(zIndex);
 }
 
+// Trap: `pointer-events: none` on a widget's own root does not let clicks through to the widgets
+// below, because the vis-2 wrapper around it is a hit target of its own. In the editor the widget
+// has to stay selectable, so the wrapper is switched back there. Returns the wrapper it switched.
+export function passWrapperClicks(root: HTMLElement | null, editMode: boolean | undefined): HTMLElement | null {
+    const wrapper = root?.parentElement ?? null;
+    if (wrapper) wrapper.style.pointerEvents = editMode ? '' : 'none';
+    return wrapper;
+}
+
 export function card(children: React.ReactNode): React.JSX.Element {
     return <div style={{ boxSizing: 'border-box', width: '100%', height: '100%', padding: 8 }}>{children}</div>;
 }

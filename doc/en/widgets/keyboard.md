@@ -27,7 +27,9 @@ shows itself only while one of them has the focus. Template id: `tplVis2-materia
   ↑ and ↓ move through the list of an Autocomplete widget, in any other field they jump to the start
   or the end. Holding a key repeats it.
 - **show on** – `touch or pen only` (default) or `every focus`. On a PC with mouse and keyboard the
-  keyboard stays closed by default.
+  keyboard stays closed by default, and the fields stay as they are (number fields keep their
+  arrows) until a finger or pen touches the screen. A tap into a field that already has the focus
+  from a mouse click opens the keyboard as well.
 
 **placement**
 
@@ -38,7 +40,8 @@ shows itself only while one of them has the focus. Template id: `tplVis2-materia
   scrolls the field into sight; in a Dialog View turn on **scrollY**, otherwise the room is cut off).
   The last two only act when the keyboard is below the field, so they are meant for the bottom
   positions; a keyboard at the top of the view covers the view, whatever is chosen.
-- **animation** and **animation duration** – how the keyboard appears; hiding is immediate.
+- **animation** and **animation duration** (0 to 2000 ms) – how the keyboard appears; hiding is
+  immediate.
 
 **word suggestions**
 
@@ -48,11 +51,12 @@ shows itself only while one of them has the focus. Template id: `tplVis2-materia
 - **number of suggestions** – 1 to 10.
 - **state for the words** – a string state that keeps the list as JSON, shared by every device that uses
   it. Empty keeps the list in this browser only. Words are learned when a field is left or Enter
-  commits, never from password fields or the number pad, at most 200 words. Anyone with admin
-  access can read the words in the state.
+  commits, never from password fields or the number pad, at most 200 words of at most 40
+  characters. Anyone with admin access can read the words in the state.
 
-**look** – background, key colors, font size, key gap and corner radius. Unset colors follow the
-Material 3 theme.
+**look** – background, key colors, font size (8 to 64), key gap (0 to 32) and corner radius (0 to
+64). The special key color paints ⇧, ⌫, ↵, ⌄, `?123`/`ABC` and the arrow keys; space and the
+decimal key look like the letter keys. Unset colors follow the Material 3 theme.
 
 ## Notes
 

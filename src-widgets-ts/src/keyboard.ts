@@ -1,8 +1,3 @@
-/**
- * Pure logic of the on-screen keyboard widget: editing at the caret, key maps and layouts, and
- * the list of most typed words. No DOM here, so every rule is testable on its own.
- */
-
 export type KeyMap = 'de' | 'en';
 export type Layout = 'text' | 'number';
 export type Special = 'shift' | 'backspace' | 'enter' | 'close' | 'symbols' | 'letters' | 'space' | 'decimal' | 'left' | 'right' | 'up' | 'down';
@@ -74,13 +69,11 @@ export function decimalChar(map: KeyMap, numberType: boolean): string {
     return numberType || map === 'en' ? '.' : ',';
 }
 
-/** Shift starts on in an empty field and after a full stop followed by a space. */
 export function autoShift(value: string, caret: number): boolean {
     const before = value.slice(0, clamp(value, caret));
     return before.trim() === '' || /\.\s+$/.test(before);
 }
 
-/** The word right before the caret: from the last whitespace up to the caret. */
 export function currentWord(value: string, caret: number): { start: number; word: string } {
     const end = clamp(value, caret);
     let start = end;
@@ -88,7 +81,6 @@ export function currentWord(value: string, caret: number): { start: number; word
     return { start, word: value.slice(start, end) };
 }
 
-/** Replaces the started word with a suggestion and puts a space behind it. */
 export function replaceWord(value: string, caret: number, suggestion: string): EditResult {
     const end = clamp(value, caret);
     const { start } = currentWord(value, end);
@@ -125,8 +117,6 @@ export function numberRows(arrows = false): KeyDef[][] {
     return arrows ? rows.map((row, i) => [...row, ARROWS[[1, 2, 0, 3][i]]]) : rows;
 }
 
-export const NUMBER_ROWS = numberRows(false);
-
 export interface WordEntry {
     /** Spelling typed last. */
     w: string;
@@ -138,16 +128,29 @@ export interface WordEntry {
 /** Keyed by the lower-case word. */
 export type Words = Record<string, WordEntry>;
 
-// Known limit: at most 200 words; on overflow the rarest, then the longest unused word goes; words of the current entry are kept.
+// Known limit: at most 200 words of at most 40 characters; on overflow the rarest, then the longest
+// unused word goes; words of the current entry are kept.
 export const MAX_WORDS = 200;
+export const MAX_WORD_LENGTH = 40;
 
 const WORD = /[\p{L}\p{N}'-]+/gu;
 
+const charCount = (word: string): number => [...word].length;
+
 export function wordsIn(text: string): string[] {
-    return (text.match(WORD) ?? []).filter(word => [...word].length >= 3 && /\p{L}/u.test(word));
+    return (text.match(WORD) ?? []).filter(word => charCount(word) >= 3 && charCount(word) <= MAX_WORD_LENGTH && /\p{L}/u.test(word));
 }
 
-/** Reads the stored list; anything malformed becomes an empty list or loses the bad entry. */
+function evict(words: Words, keep: (entry: WordEntry) => boolean): Words {
+    const keys = Object.keys(words);
+    if (keys.length > MAX_WORDS) {
+        keys.sort((a, b) => Number(keep(words[a])) - Number(keep(words[b])) || words[a].n - words[b].n || words[a].t - words[b].t)
+            .slice(0, keys.length - MAX_WORDS)
+            .forEach(key => delete words[key]);
+    }
+    return words;
+}
+
 export function parseWords(raw: unknown): Words {
     let value: unknown = raw;
     if (typeof raw === 'string') {
@@ -162,13 +165,15 @@ export function parseWords(raw: unknown): Words {
     for (const entry of Object.values(value as Record<string, unknown>)) {
         const e = entry as Partial<WordEntry> | null;
         if (!e || typeof e !== 'object' || typeof e.w !== 'string' || typeof e.n !== 'number' || typeof e.t !== 'number') continue;
-        if (!Number.isFinite(e.n) || e.n < 1 || !Number.isFinite(e.t)) continue;
+        if (!Number.isFinite(e.n) || e.n < 1 || !Number.isFinite(e.t) || charCount(e.w) > MAX_WORD_LENGTH) continue;
         const key = e.w.toLowerCase();
         // The list is a plain object fed from a state anyone may write.
         if (key === '__proto__') continue;
-        words[key] = { w: e.w, n: Math.floor(e.n), t: e.t };
+        const n = Math.floor(e.n);
+        if (Object.hasOwn(words, key) && words[key].n >= n) continue;
+        words[key] = { w: e.w, n, t: e.t };
     }
-    return words;
+    return evict(words, () => false);
 }
 
 export function learn(words: Words, text: string, now: number): Words {
@@ -177,13 +182,7 @@ export function learn(words: Words, text: string, now: number): Words {
         const key = word.toLowerCase();
         next[key] = { w: word, n: (Object.hasOwn(next, key) ? next[key].n : 0) + 1, t: now };
     }
-    const keys = Object.keys(next);
-    if (keys.length > MAX_WORDS) {
-        keys.sort((a, b) => Number(next[a].t === now) - Number(next[b].t === now) || next[a].n - next[b].n || next[a].t - next[b].t)
-            .slice(0, keys.length - MAX_WORDS)
-            .forEach(key => delete next[key]);
-    }
-    return next;
+    return evict(next, entry => entry.t === now);
 }
 
 export function forget(words: Words, word: string): Words {
@@ -192,7 +191,6 @@ export function forget(words: Words, word: string): Words {
     return next;
 }
 
-/** Most frequent words starting with `prefix` (all words for an empty prefix), at most 10. */
 export function suggest(words: Words, prefix: string, count: number): string[] {
     const wanted = prefix.toLowerCase();
     const limit = Math.max(1, Math.min(10, Math.trunc(Number.isFinite(count) ? count : 3)));
@@ -204,7 +202,6 @@ export function suggest(words: Words, prefix: string, count: number): string[] {
         .map(([, entry]) => (capital ? entry.w.charAt(0).toUpperCase() + entry.w.slice(1) : entry.w));
 }
 
-/** How far the view has to move up so the field ends `gap` px above the keyboard. */
 export function panOffset(fieldBottom: number, keyboardTop: number, gap = 8): number {
     return Math.max(0, Math.ceil(fieldBottom + gap - keyboardTop));
 }

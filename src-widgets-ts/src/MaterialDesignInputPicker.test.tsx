@@ -7,6 +7,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 vi.mock('./pickerFormat', async importOriginal => ({ ...(await importOriginal<typeof import('./pickerFormat')>()), deviceLocale: () => 'de-DE' }));
 
 import MaterialDesignInput, { materialPickerKind, pickerColors } from './MaterialDesignInput';
+import { serveAsText } from './MaterialDesignKeyboard';
 
 function fixture<T>(value: unknown): T {
     return value as T;
@@ -150,15 +151,11 @@ describe('Input interaction', () => {
     });
 
     describe('number input', () => {
-        // A served number field is switched to type text, so unfinished text reaches commit.
+        // A number field served by the keyboard is a text field, so unfinished text reaches commit.
         const typeNumber = (text: string): void => {
             const w = widget({ inputType: 'number' }, 5);
             mount(w);
-            // As the keyboard does: React 19 re-sets `type` on every update, so swallow that.
-            const el = input();
-            const native = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'type');
-            native?.set?.call(el, 'text');
-            Object.defineProperty(el, 'type', { configurable: true, get: () => native?.get?.call(el) as string, set: () => undefined });
+            serveAsText(input());
             typeText(w, text);
             act(() => { input().dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })); });
         };
