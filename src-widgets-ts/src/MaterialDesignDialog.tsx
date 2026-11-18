@@ -166,6 +166,14 @@ export function dialogInfo(kind: Kind): RxWidgetInfo {
       default: "button",
     },
     { name: "showDialogOid", label: "showDialogOid", type: "id" as const },
+    // Opt-in: a dialog converted from vis 1 can still carry an object ID from the datapoint mode,
+    // which vis 1 never wrote in the button mode.
+    {
+      name: "showDialogOidReport",
+      label: "showDialogOidReport",
+      type: "checkbox" as const,
+      hidden: (data: Record<string, unknown>) => s(data.showDialogMethod, "button") !== "button",
+    },
     {
       name: "fullscreenResolutionLower",
       label: "fullscreenResolutionLower",
@@ -295,7 +303,15 @@ export class MaterialDesignDialog extends VisWidget {
     if (this.measureTimer !== undefined) window.clearTimeout(this.measureTimer);
     this.measureTimer = undefined;
     this.polling = false;
+    // A view change unmounts an open dialog without its close handler; the state would stay true.
+    if (this.open) {
+      this.open = false;
+      this.reportOpen(this.state.rxData as unknown as Data, false);
+    }
     super.componentWillUnmount?.();
+  }
+  private reportOpen(d: Data, open: boolean): void {
+    if (s(d.showDialogMethod, "button") === "button" && b(d.showDialogOidReport)) setStateValue(this.props, s(d.showDialogOid), open);
   }
   // VIS2 views position widgets absolutely, so the embedded view has no intrinsic height and loads
   // asynchronously; poll scrollHeight and size the container to it.
@@ -389,12 +405,14 @@ export class MaterialDesignDialog extends VisWidget {
       if (byState) setStateValue(this.props, s(d.showDialogOid), false);
       else {
         this.open = false;
+        this.reportOpen(d, false);
         this.forceUpdate();
       }
     };
     const show = () => {
       this.feedback(d);
       this.open = true;
+      this.reportOpen(d, true);
       this.forceUpdate();
     };
     const fullscreen =

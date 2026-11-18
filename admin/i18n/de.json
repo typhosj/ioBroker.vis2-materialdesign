@@ -847,6 +847,7 @@
     "showColumn": "Spalte anzeigen",
     "showDialogMethod": "Methode zum Anzeigen des Dialogs",
     "showDialogOid": "Boolescher Schalter zum Anzeigen des Dialogs",
+    "showDialogOidReport": "Schaltfläche: geöffnet/geschlossen in die Objekt-ID schreiben",
     "showDivider": "Trennlinie anzeigen",
     "showHeader": "Zeilenüberschrift anzeigen",
     "showInCenterOfScreen": "Dialog in der Mitte des Bildschirms anzeigen",

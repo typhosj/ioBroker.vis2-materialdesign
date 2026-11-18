@@ -28,6 +28,12 @@ iFrame-Gruppe. Nicht aufgeführte Einstellungen sind selbsterklärend.
   Widgets öffnet ihn) oder `Datenpunkt`.
 - **Boolescher Schalter zum Anzeigen des Dialogs** – der State für die Methode
   `Datenpunkt`: `true` öffnet den Dialog, das Schließen schreibt `false` zurück.
+- **Schaltfläche: geöffnet/geschlossen in die Objekt-ID schreiben** – nur bei der
+  Methode `Schaltfläche`: der Dialog schreibt beim Öffnen `true` und beim
+  Schließen `false` in die Objekt-ID darüber, auch wenn die View wechselt,
+  während er offen ist, damit ein Skript darauf reagieren kann. Standardmäßig
+  aus, damit ein Dialog, der noch eine Objekt-ID aus der Methode `Datenpunkt`
+  trägt, nichts schreibt.
 - **Vollbilddialog anzeigen, wenn die Auflösung niedriger ist als** – unterhalb
   dieser Fensterbreite in Pixeln füllt der Dialog den Bildschirm.
 - **Ansicht** – die im Dialog gezeigte VIS-2-Ansicht (nur View-Variante).

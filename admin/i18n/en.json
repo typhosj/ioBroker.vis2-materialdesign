@@ -847,6 +847,7 @@
     "showColumn": "show column",
     "showDialogMethod": "method to show dialog",
     "showDialogOid": "boolean switch  to show dialog",
+    "showDialogOidReport": "button: report open/closed to the object ID",
     "showDivider": "show divider",
     "showHeader": "show row heading",
     "showInCenterOfScreen": "show dialog in center of screen",

@@ -122,6 +122,7 @@ to wait with an upgrade.
 - (typhosj) Added **tooltip text appendix** to the data sets of the Line History chart: each line shows its own unit in the tooltip, for example °C next to %. Left empty, a line keeps the text appendix of the tooltip group (Scrounger/ioBroker.vis-materialdesign#120)
 - (typhosj) Added the time ranges 5, 10 and 20 years to the Line History chart, also as values for **control interval with object**; two years used to be the longest range (Scrounger/ioBroker.vis-materialdesign#210)
 - (typhosj) Added **state field** to the Value widget: besides the value it can show the last change, the last update, the acknowledge flag, the quality or the source of the state. The two timestamps appear as local date and time, or follow **convert timestamp to datetime** (Scrounger/ioBroker.vis-materialdesign#180)
+- (typhosj) Added **button: report open/closed to the object ID** to the Dialog widget: opened by its own button, it writes `true` into **boolean switch to show dialog** when it opens and `false` when it closes or the view changes, so a script can react to it. The option is off by default, so an object ID left over from the datapoint method stays untouched (Scrounger/ioBroker.vis-materialdesign#156)
 
 ### 1.3.0 (2026-11-18)
 

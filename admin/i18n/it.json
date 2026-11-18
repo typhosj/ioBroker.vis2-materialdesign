@@ -847,6 +847,7 @@
     "showColumn": "mostra colonna",
     "showDialogMethod": "metodo per mostrare la finestra di dialogo",
     "showDialogOid": "interruttore booleano per mostrare la finestra di dialogo",
+    "showDialogOidReport": "pulsante: scrivi aperto/chiuso nell'ID oggetto",
     "showDivider": "mostra divisore",
     "showHeader": "mostra intestazione riga",
     "showInCenterOfScreen": "mostra la finestra di dialogo al centro dello schermo",

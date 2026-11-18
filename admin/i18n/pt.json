@@ -847,6 +847,7 @@
     "showColumn": "mostrar coluna",
     "showDialogMethod": "método para mostrar o diálogo",
     "showDialogOid": "interruptor booleano para mostrar o diálogo",
+    "showDialogOidReport": "botão: escrever aberto/fechado no ID do objeto",
     "showDivider": "mostrar divisor",
     "showHeader": "mostrar cabeçalho da linha",
     "showInCenterOfScreen": "mostrar diálogo no centro da tela",

@@ -847,6 +847,7 @@
     "showColumn": "显示专栏",
     "showDialogMethod": "显示对话框的方法",
     "showDialogOid": "布尔开关以显示对话框",
+    "showDialogOidReport": "按钮：将打开/关闭写入对象 ID",
     "showDivider": "显示分隔线",
     "showHeader": "显示行标题",
     "showInCenterOfScreen": "在屏幕中央显示对话框",

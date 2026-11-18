@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 
-import { MaterialDesignDialog } from './MaterialDesignDialog';
+import { MaterialDesignDialog, dialogInfo } from './MaterialDesignDialog';
 
 function fixture<T>(value: unknown): T { return value as T; }
 
@@ -87,5 +87,87 @@ describe('open dialog', () => {
         expect(noTitle.querySelector('header button')).not.toBeNull();
         expect(noTitle.querySelector('header')!.textContent).not.toContain('Neuer Eintrag');
         expect(open({ showTitle: false }).querySelector('header')).toBeNull();
+    });
+});
+
+// upstream-#156: opened by its button, the dialog never told the object ID, so no script could react.
+describe('dialog opened by its button reports to the object ID', () => {
+    const OID = '0_userdata.0.dialogOpen';
+    type Node = { type?: unknown; props?: Record<string, unknown> };
+    // Walks the element tree for the first element of the given tag with a click handler.
+    const findClickable = (node: unknown, tag: string, from = 0): (() => void) | undefined => {
+        const found: Array<() => void> = [];
+        const walk = (current: unknown): void => {
+            if (Array.isArray(current)) { current.forEach(walk); return; }
+            const element = current as Node | null;
+            if (!element || typeof element !== 'object' || !element.props) return;
+            if (element.type === tag && typeof element.props.onClick === 'function') found.push(element.props.onClick as () => void);
+            walk(element.props.children);
+        };
+        walk(node);
+        return found[from];
+    };
+    const make = (rxData: Record<string, unknown>) => {
+        const setValue = vi.fn();
+        const socket = { subscribeState: vi.fn(() => Promise.resolve()), unsubscribeState: vi.fn() };
+        const dialog = new MaterialDesignDialog(fixture<ConstructorParameters<typeof MaterialDesignDialog>[0]>({ context: { setValue, socket } }), 'view');
+        dialog.state = fixture<typeof dialog.state>({ rxData: { showDialogMethod: 'button', ...rxData }, values: {} });
+        dialog.forceUpdate = vi.fn();
+        const tree = () => dialog.renderWidgetBody(fixture<Parameters<typeof dialog.renderWidgetBody>[0]>({}));
+        return { dialog, setValue, tree };
+    };
+
+    it('writes true on open and false on close when switched on', () => {
+        const { setValue, tree } = make({ showDialogOid: OID, showDialogOidReport: true });
+        findClickable(tree(), 'button')!();
+        expect(setValue).toHaveBeenLastCalledWith(OID, true);
+        // Open now: the first button with a handler is the trigger, the footer close button follows.
+        const open = tree();
+        const closeButton = findClickable(open, 'button', 1);
+        expect(closeButton).toBeDefined();
+        closeButton!();
+        expect(setValue).toHaveBeenLastCalledWith(OID, false);
+    });
+
+    // vis 1 never wrote the object ID in the button mode; a converted dialog can still carry one.
+    it('writes nothing while the option is off', () => {
+        for (const report of [undefined, false, '']) {
+            const { setValue, tree } = make({ showDialogOid: OID, showDialogOidReport: report });
+            findClickable(tree(), 'button')!();
+            findClickable(tree(), 'button', 1)?.();
+            expect(setValue, String(report)).not.toHaveBeenCalled();
+        }
+    });
+
+    it('writes nothing without an object ID', () => {
+        const { setValue, tree } = make({ showDialogOid: '', showDialogOidReport: true });
+        findClickable(tree(), 'button')!();
+        findClickable(tree(), 'button', 1)?.();
+        expect(setValue).not.toHaveBeenCalled();
+    });
+
+    it('writes false when the view changes while the dialog is open', () => {
+        const { dialog, setValue, tree } = make({ showDialogOid: OID, showDialogOidReport: true });
+        findClickable(tree(), 'button')!();
+        dialog.componentWillUnmount();
+        expect(setValue.mock.calls).toEqual([[OID, true], [OID, false]]);
+    });
+
+    it('writes nothing on unmount when the dialog is closed', () => {
+        const { dialog, setValue, tree } = make({ showDialogOid: OID, showDialogOidReport: true });
+        dialog.componentWillUnmount();
+        expect(setValue).not.toHaveBeenCalled();
+        findClickable(tree(), 'button')!();
+        findClickable(tree(), 'button', 1)!();
+        setValue.mockClear();
+        dialog.componentWillUnmount();
+        expect(setValue).not.toHaveBeenCalled();
+    });
+
+    it('offers the option only for the button mode', () => {
+        const field = dialogInfo('view').visAttrs.flatMap(group => group.fields as Array<{ name: string; hidden?: (data: Record<string, unknown>) => boolean }>).find(entry => entry.name === 'showDialogOidReport');
+        expect(field?.hidden?.({ showDialogMethod: 'button' })).toBe(false);
+        expect(field?.hidden?.({})).toBe(false);
+        expect(field?.hidden?.({ showDialogMethod: 'datapoint' })).toBe(true);
     });
 });

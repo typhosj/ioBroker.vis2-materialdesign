@@ -847,6 +847,7 @@
     "showColumn": "Показати стовпець",
     "showDialogMethod": "METHOD TO показати діалог",
     "showDialogOid": "boolean перемикач  to показати діалог",
+    "showDialogOidReport": "кнопка: записувати відкрито/закрито в ID об'єкта",
     "showDivider": "Показати DIVIDER",
     "showHeader": "Показати рядок HEADING",
     "showInCenterOfScreen": "показати діалог in center of screen",

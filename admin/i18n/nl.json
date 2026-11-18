@@ -847,6 +847,7 @@
     "showColumn": "toon kolom",
     "showDialogMethod": "methode om dialoog weer te geven",
     "showDialogOid": "booleaanse schakelaar om dialoogvenster te tonen",
+    "showDialogOidReport": "knop: open/gesloten naar de object-ID schrijven",
     "showDivider": "toon scheidingslijn",
     "showHeader": "rijrichting weergeven",
     "showInCenterOfScreen": "dialoogvenster weergeven in midden van scherm",

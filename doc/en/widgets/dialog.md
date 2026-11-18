@@ -29,6 +29,11 @@ ioBroker system language, so the screenshots are German.
   `datapoint`.
 - **boolean switch to show dialog** – the state for the `datapoint` method:
   `true` opens the dialog, closing writes `false` back.
+- **button: report open/closed to the object ID** – only for the `button`
+  method: the dialog writes `true` into the object ID above when it opens and
+  `false` when it closes, also when the view changes while it is open, so a
+  script can react. Off by default, so a dialog that still carries an object ID
+  from the `datapoint` method writes nothing.
 - **show fullscreen dialog if resolution is lower than** – below this window
   width in pixels the dialog fills the screen.
 - **view** – the VIS 2 view shown inside the dialog (view variant only).

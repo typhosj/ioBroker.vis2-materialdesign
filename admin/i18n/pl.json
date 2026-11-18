@@ -847,6 +847,7 @@
     "showColumn": "pokaż kolumnę",
     "showDialogMethod": "metoda, aby wyświetlić okno dialogowe",
     "showDialogOid": "przełącznik boolean, aby wyświetlić okno dialogowe",
+    "showDialogOidReport": "przycisk: zapisuj otwarcie/zamknięcie w ID obiektu",
     "showDivider": "pokaż dzielnik",
     "showHeader": "pokaż nagłówek wiersza",
     "showInCenterOfScreen": "pokaż okno dialogowe na środku ekranu",
