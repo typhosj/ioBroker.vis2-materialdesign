@@ -119,6 +119,12 @@ describe('shared checkbox/switch behavior', () => {
             expect(render('switch', {}, { cursor }).props.style.cursor, String(cursor)).toBe('pointer');
         }
         expect(render('switch', {}, {}).props.style.cursor).toBe('pointer');
+
+        // An inert label shows the arrow, unless the widget cursor says otherwise.
+        const inert = (rxStyle?: Record<string, unknown>): string => renderToStaticMarkup(render('switch', { labelFalse: 'Licht', labelClickActive: false }, rxStyle));
+        expect(inert()).toMatch(/cursor:default[^>]*>Licht/);
+        expect(inert({ cursor: 'copy' })).toMatch(/cursor:copy[^>]*>Licht/);
+        expect(inert({ cursor: '  ' })).toMatch(/cursor:default[^>]*>Licht/);
     });
 
     // "activate label click" only changed the cursor: the click handler sits on the whole widget, so

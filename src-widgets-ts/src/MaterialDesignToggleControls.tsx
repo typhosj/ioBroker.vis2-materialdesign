@@ -233,6 +233,7 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
             const labelPosition = data.labelPosition || 'right';
             const switchMargin = labelPosition === 'off' ? 0 : 10;
             const labelClick = boolValue(data.labelClickActive, true);
+            const userCursor = typeof this.state.rxStyle?.cursor === 'string' ? this.state.rxStyle.cursor.trim() : '';
             const labelElement =
                 labelPosition === 'off' ? null : (
                     <span
@@ -241,7 +242,7 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
                         style={{
                             alignItems: 'center',
                             color: isM3 ? m3(on ? data.labelColorTrue : data.labelColorFalse, 'var(--md-sys-color-on-surface)') : color(on ? data.labelColorTrue : data.labelColorFalse, '#44739e'),
-                            cursor: labelClick ? 'inherit' : 'default',
+                            cursor: labelClick ? 'inherit' : userCursor || 'default',
                             display: 'inline-flex',
                             // VIS1 spreads label and control apart in a wide widget; `1 1 auto` replicates that.
                             flex: '1 1 auto',
@@ -271,7 +272,6 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
                 writeValue(this.props, data, !on);
             };
 
-            const userCursor = typeof this.state.rxStyle?.cursor === 'string' ? this.state.rxStyle.cursor.trim() : '';
             const controlFilter = locked ? `grayscale(${asNumber(data.lockFilterGrayscale, 0)}%)` : undefined;
             const control =
                 def.kind === 'switch' ? (
