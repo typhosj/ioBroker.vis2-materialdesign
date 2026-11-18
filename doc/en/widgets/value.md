@@ -22,6 +22,7 @@ screenshots are German.
 
 **Common**
 
+- **state field** – which field of the state is shown: `value` (the default), `last change` (`lc`), `last update` (`ts`), `acknowledged` (`ack`), `quality` (`q`) or `source` (`from`, the adapter instance that wrote it). The two timestamps are shown as local date and time; with **convert timestamp to datetime** they take its template, with **convert seconds to duration** they count as seconds since 1970.
 - **target type** – how the state is interpreted: `automatic`, `number`, `string`, `boolean` or `linked` (a clickable value opening the object).
 - **override text** – replaces the finished output with your own text, in which `#value` stands for the formatted value, e.g. `Counter: #value`. If the output contains pipe characters, the parts are available individually as `#value[0]`, `#value[1]`, …
 

@@ -21,6 +21,7 @@ aufgeführte Einstellungen sind selbsterklärend.
 
 **Allgemein**
 
+- **Feld des Datenpunkts** – welches Feld des States angezeigt wird: `Wert` (Vorgabe), `letzte Änderung` (`lc`), `letzte Aktualisierung` (`ts`), `bestätigt` (`ack`), `Qualität` (`q`) oder `Quelle` (`from`, die Adapterinstanz, die ihn geschrieben hat). Die beiden Zeitstempel erscheinen als lokales Datum mit Uhrzeit; mit **Zeitstempel in Datum / Uhrzeit konvertieren** nehmen sie dessen Vorlage an, mit **Sekunden in Dauer umwandeln** zählen sie als Sekunden seit 1970.
 - **Zieltyp** – wie der State interpretiert wird: `automatisch`, `Zahl`, `string`, `boolean` oder `verknüpft` (klickbarer Wert, der das Objekt öffnet).
 - **Text überschreiben** – ersetzt die fertige Ausgabe durch einen eigenen Text, in dem `#value` für den formatierten Wert steht, z. B. `Zähler: #value`. Enthält die Ausgabe Pipe-Zeichen, sind die Teile einzeln als `#value[0]`, `#value[1]`, … verfügbar.
 

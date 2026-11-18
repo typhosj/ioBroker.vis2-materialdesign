@@ -152,8 +152,10 @@ export const valueTextAttrs = [
     },
 ];
 
-export function stateValue(state: VisRxWidgetState, oid: string): ioBroker.StateValue | undefined {
-    return oid ? state.values?.[`${oid}.val`] : undefined;
+// vis-2 keeps every field of a subscribed state in `values`; its type declares only some of them.
+export type StateField = 'val' | 'lc' | 'ts' | 'ack' | 'q' | 'from';
+export function stateValue(state: VisRxWidgetState, oid: string, field: StateField = 'val'): ioBroker.StateValue | undefined {
+    return oid ? (state.values as Record<string, ioBroker.StateValue> | undefined)?.[`${oid}.${field}`] : undefined;
 }
 
 /**

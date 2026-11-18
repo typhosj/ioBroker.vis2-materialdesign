@@ -1272,5 +1272,12 @@
     "solid": "contínua",
     "dashed": "tracejada",
     "dotted": "pontilhada",
-    "tooltipAppendText": "anexo de texto da dica"
+    "tooltipAppendText": "anexo de texto da dica",
+    "valueAttribute": "campo do estado",
+    "val": "valor",
+    "lc": "última alteração",
+    "ts": "última atualização",
+    "ack": "confirmado",
+    "q": "qualidade",
+    "from": "origem"
 }

@@ -1272,5 +1272,12 @@
     "solid": "ciągła",
     "dashed": "kreskowana",
     "dotted": "kropkowana",
-    "tooltipAppendText": "dopisek tekstu podpowiedzi"
+    "tooltipAppendText": "dopisek tekstu podpowiedzi",
+    "valueAttribute": "pole stanu",
+    "val": "wartość",
+    "lc": "ostatnia zmiana",
+    "ts": "ostatnia aktualizacja",
+    "ack": "potwierdzone",
+    "q": "jakość",
+    "from": "źródło"
 }

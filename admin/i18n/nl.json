@@ -1272,5 +1272,12 @@
     "solid": "doorgetrokken",
     "dashed": "gestreept",
     "dotted": "gestippeld",
-    "tooltipAppendText": "tekstaanhangsel tooltip"
+    "tooltipAppendText": "tekstaanhangsel tooltip",
+    "valueAttribute": "veld van de status",
+    "val": "waarde",
+    "lc": "laatste wijziging",
+    "ts": "laatste update",
+    "ack": "bevestigd",
+    "q": "kwaliteit",
+    "from": "bron"
 }

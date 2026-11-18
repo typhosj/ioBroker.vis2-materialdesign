@@ -1272,5 +1272,12 @@
     "solid": "continue",
     "dashed": "tirets",
     "dotted": "pointillés",
-    "tooltipAppendText": "suffixe de l'info-bulle"
+    "tooltipAppendText": "suffixe de l'info-bulle",
+    "valueAttribute": "champ de l'état",
+    "val": "valeur",
+    "lc": "dernière modification",
+    "ts": "dernière mise à jour",
+    "ack": "acquitté",
+    "q": "qualité",
+    "from": "source"
 }

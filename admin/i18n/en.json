@@ -1272,5 +1272,12 @@
     "solid": "solid",
     "dashed": "dashed",
     "dotted": "dotted",
-    "tooltipAppendText": "tooltip text appendix"
+    "tooltipAppendText": "tooltip text appendix",
+    "valueAttribute": "state field",
+    "val": "value",
+    "lc": "last change",
+    "ts": "last update",
+    "ack": "acknowledged",
+    "q": "quality",
+    "from": "source"
 }

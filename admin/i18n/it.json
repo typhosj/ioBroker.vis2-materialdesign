@@ -1272,5 +1272,12 @@
     "solid": "continua",
     "dashed": "tratteggiata",
     "dotted": "punteggiata",
-    "tooltipAppendText": "appendice testo tooltip"
+    "tooltipAppendText": "appendice testo tooltip",
+    "valueAttribute": "campo dello stato",
+    "val": "valore",
+    "lc": "ultima modifica",
+    "ts": "ultimo aggiornamento",
+    "ack": "confermato",
+    "q": "qualità",
+    "from": "origine"
 }

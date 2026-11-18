@@ -1272,5 +1272,12 @@
     "solid": "实线",
     "dashed": "虚线",
     "dotted": "点线",
-    "tooltipAppendText": "提示框文本后缀"
+    "tooltipAppendText": "提示框文本后缀",
+    "valueAttribute": "状态字段",
+    "val": "值",
+    "lc": "最后更改",
+    "ts": "最后更新",
+    "ack": "已确认",
+    "q": "质量",
+    "from": "来源"
 }

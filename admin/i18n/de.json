@@ -1272,5 +1272,12 @@
     "solid": "durchgezogen",
     "dashed": "gestrichelt",
     "dotted": "gepunktet",
-    "tooltipAppendText": "Tooltip Textanhang"
+    "tooltipAppendText": "Tooltip Textanhang",
+    "valueAttribute": "Feld des Datenpunkts",
+    "val": "Wert",
+    "lc": "letzte Änderung",
+    "ts": "letzte Aktualisierung",
+    "ack": "bestätigt",
+    "q": "Qualität",
+    "from": "Quelle"
 }

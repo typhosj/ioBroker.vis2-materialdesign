@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 import { renderToStaticMarkup } from 'react-dom/server';
 
-import MaterialDesignValue, { formatBoolean, formatNumber, formattedValue, type ValueData } from './MaterialDesignValue';
+import MaterialDesignValue, { attributeValue, formatBoolean, formatNumber, formattedValue, type ValueData } from './MaterialDesignValue';
+import { visLocale } from './widgetUtils';
 
 const data = (overrides: Partial<ValueData>): ValueData => overrides as unknown as ValueData;
 
@@ -113,5 +114,56 @@ describe('change effect and hidden-on-load', () => {
         const instance = widget({ oid: 'test.0.v', effectFontColor: '#ff0000' }, 1);
         render(instance);
         expect(update(instance, 2)).not.toContain('#ff0000');
+    });
+});
+
+const fixture = <T>(value: unknown): T => value as T;
+const at = (values: Record<string, unknown> | undefined, d: ValueData): unknown => attributeValue(fixture<Parameters<typeof attributeValue>[0]>({ values }), d);
+
+// upstream-#180: the widget could only show `val`, never when the state last changed or who wrote it.
+describe('MaterialDesignValue state attribute', () => {
+    const LC = Date.UTC(2026, 10, 18, 9, 30, 15);
+    const values = { 'test.0.v.val': 21.5, 'test.0.v.lc': LC, 'test.0.v.ts': LC + 1000, 'test.0.v.ack': true, 'test.0.v.q': 0, 'test.0.v.from': 'system.adapter.hm-rpc.0' };
+
+    it('reads the chosen field and keeps val as the default', () => {
+        expect(at(values, data({ oid: 'test.0.v' }))).toBe(21.5);
+        expect(at(values, data({ oid: 'test.0.v', valueAttribute: 'val' }))).toBe(21.5);
+        expect(at(values, data({ oid: 'test.0.v', valueAttribute: 'ack' }))).toBe(true);
+        expect(at(values, data({ oid: 'test.0.v', valueAttribute: 'q' }))).toBe(0);
+        expect(at(values, data({ oid: 'test.0.v', valueAttribute: 'from' }))).toBe('system.adapter.hm-rpc.0');
+    });
+
+    it('treats an unknown field name as val and reads nothing without an object ID', () => {
+        expect(at(values, data({ oid: 'test.0.v', valueAttribute: 'user' }))).toBe(21.5);
+        expect(at(values, data({ oid: 'test.0.v', valueAttribute: '' }))).toBe(21.5);
+        expect(at(values, data({ valueAttribute: 'lc' }))).toBeUndefined();
+        expect(at(undefined, data({ oid: 'test.0.v', valueAttribute: 'lc' }))).toBeUndefined();
+    });
+
+    it('hands lc and ts to the converters in seconds', () => {
+        expect(at(values, data({ oid: 'test.0.v', valueAttribute: 'lc', convertToTimestamp: 'HH:mm' }))).toBe(LC / 1000);
+        expect(at(values, data({ oid: 'test.0.v', valueAttribute: 'ts', convertToDuration: 'hh:mm' }))).toBe(LC / 1000 + 1);
+        expect(formatNumber(LC / 1000, data({ convertToTimestamp: 'YYYY-MM-DD' }))).toBe('2026-11-18');
+    });
+
+    it('shows lc and ts as local date and time when no converter is set', () => {
+        expect(at(values, data({ oid: 'test.0.v', valueAttribute: 'lc' }))).toBe(new Date(LC).toLocaleString(visLocale()));
+    });
+
+    it('shows nothing for a missing or broken timestamp instead of 1970', () => {
+        for (const broken of [undefined, null, '', 'abc', Number.NaN]) {
+            expect(at({ 'test.0.v.lc': broken }, data({ oid: 'test.0.v', valueAttribute: 'lc' })), String(broken)).toBeUndefined();
+        }
+    });
+
+    it('renders the last change in the widget', () => {
+        const instance = new MaterialDesignValue(fixture<ConstructorParameters<typeof MaterialDesignValue>[0]>({ context: {} }));
+        instance.state = fixture<typeof instance.state>({ rxData: { oid: 'test.0.v', valueAttribute: 'lc', convertToTimestamp: 'YYYY-MM-DD' }, values });
+        expect(renderToStaticMarkup(instance.renderWidgetBody(fixture<Parameters<MaterialDesignValue['renderWidgetBody']>[0]>({})))).toContain('2026-11-18');
+    });
+
+    it('offers the field as a select in the editor', () => {
+        const field = MaterialDesignValue.getWidgetInfo().visAttrs.flatMap(group => group.fields as Array<{ name: string; options?: string[] }>).find(entry => entry.name === 'valueAttribute');
+        expect(field?.options).toEqual(['val', 'lc', 'ts', 'ack', 'q', 'from']);
     });
 });

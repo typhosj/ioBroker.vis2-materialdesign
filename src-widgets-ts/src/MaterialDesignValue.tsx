@@ -1,12 +1,13 @@
 import React from 'react';
 
-import type { RxWidgetInfo, VisRxWidgetProps } from '@iobroker/types-vis-2';
+import type { RxWidgetInfo, VisRxWidgetProps, VisRxWidgetState } from '@iobroker/types-vis-2';
 
-import { squarePreview, BaseRxData, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, iconField, numberValue, optionalNumber, sizeCss, stateValue, formatMoment, formatDurationTokens, humanizeDuration, visLocale, sanitizeHtml, stringValue } from './widgetUtils';
+import { squarePreview, BaseRxData, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, iconField, numberValue, optionalNumber, sizeCss, stateValue, type StateField, formatMoment, formatDurationTokens, humanizeDuration, visLocale, sanitizeHtml, stringValue } from './widgetUtils';
 import { renderIcon } from './MaterialDesignButtons';
 import { fill, withAutoFill } from './deviceFill';
 
 export interface ValueData extends BaseRxData {
+    valueAttribute?: string;
     targetType?: 'auto' | 'number' | 'string' | 'boolean' | 'linked';
     overrideText?: string;
     textAlign?: 'start' | 'center' | 'end';
@@ -43,6 +44,17 @@ export interface ValueData extends BaseRxData {
 }
 
 
+const VALUE_ATTRIBUTES: readonly StateField[] = ['val', 'lc', 'ts', 'ack', 'q', 'from'];
+
+// `lc` and `ts` are milliseconds, but `convertToTimestamp`/`convertToDuration` work in seconds.
+export function attributeValue(state: VisRxWidgetState, data: ValueData): unknown {
+    const attribute = VALUE_ATTRIBUTES.find(field => field === data.valueAttribute) ?? 'val';
+    const raw = stateValue(state, data.oid, attribute);
+    if (attribute !== 'lc' && attribute !== 'ts') return raw;
+    if (typeof raw !== 'number' || !Number.isFinite(raw)) return undefined;
+    return data.convertToTimestamp || data.convertToDuration ? raw / 1000 : new Date(raw).toLocaleString(visLocale());
+}
+
 // Issue #15: picking the datapoint fills what the object's own metadata already says.
 const autoFillMap = {
     oid: [
@@ -60,6 +72,7 @@ const attrs: RxWidgetInfo['visAttrs'] = [
         name: 'common',
         fields: [
             { name: 'oid', label: 'oid', type: 'id' },
+            { name: 'valueAttribute', label: 'valueAttribute', type: 'select', options: [...VALUE_ATTRIBUTES], default: 'val' },
             { name: 'targetType', label: 'targetType', type: 'select', options: ['auto', 'number', 'string', 'boolean', 'linked'], default: 'auto' },
             { name: 'overrideText', label: 'overrideText', type: 'html' },
         ],
@@ -268,7 +281,7 @@ export default class MaterialDesignValue extends VisWidget {
 
     // `changeEffect`: the value briefly switches to its own color and size when it changes, so a
     // change is noticeable on a dashboard nobody is staring at.
-    private seenValue: ioBroker.StateValue | undefined;
+    private seenValue: unknown;
     private seenAny = false;
     private effectUntil = 0;
     private effectTimer?: number;
@@ -283,7 +296,7 @@ export default class MaterialDesignValue extends VisWidget {
     renderWidgetBody(props: RenderProps): React.JSX.Element {
         super.renderWidgetBody(props);
         const data = this.state.rxData as ValueData;
-        const value = stateValue(this.state, data.oid);
+        const value = attributeValue(this.state, data);
         // The value briefly switches to its own color and size when it changes, so a change is
         // noticeable on a dashboard nobody is staring at.
         if (value !== this.seenValue) {
