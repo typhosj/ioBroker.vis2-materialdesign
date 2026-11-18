@@ -182,6 +182,18 @@ describe('line history chart', () => {
         widget.componentWillUnmount();
     });
 
+    // Without an X-axis time format the tooltip title read "lll" instead of date and time.
+    it('titles the tooltip with date and time when no time format is set', async () => {
+        const ts = new Date(2026, 0, 2, 12, 34).getTime();
+        const widget = await loaded({ dataCount: 1, oid: 'a' }, [[{ ts, val: 1 }]]);
+        const callbacks = configOf(widget).options.plugins.tooltip.callbacks as { title: (items: object[]) => unknown };
+        const title = String(callbacks.title([{ datasetIndex: 0, dataIndex: 0 }]));
+        expect(title).not.toContain('lll');
+        expect(title).toContain('2026');
+        expect(title).toMatch(/12:34/);
+        widget.componentWillUnmount();
+    });
+
     // upstream-#120: one appendix for the whole tooltip could not tell °C from %.
     it('gives each data set its own tooltip unit and falls back to the tooltip group appendix', async () => {
         const widget = await loaded({ dataCount: 3, oid: 'a', oid1: 'b', oid2: 'c', legendText: 'T', legendText1: 'H', legendText2: 'P', tooltipBodyAppend: ' x', tooltipAppendText: ' °C', tooltipAppendText1: ' %', tooltipAppendText2: '' }, [[{ ts: 1, val: 20 }], [{ ts: 1, val: 50 }], [{ ts: 1, val: 7 }]]);

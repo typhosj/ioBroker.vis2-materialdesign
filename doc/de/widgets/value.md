@@ -37,7 +37,7 @@ aufgeführte Einstellungen sind selbsterklärend.
 - **Einheit** – an die Zahl angehängter Einheitentext.
 - **Berechnung** – mathematischer Ausdruck, der vor der Anzeige auf den Wert angewendet wird. Der Wert steht als `#value` im Ausdruck, z. B. `#value/1000` für Wh → kWh. Ein Ausdruck ohne `#value` wird nicht ausgewertet.
 - **Sekunden in Dauer umwandeln** – Vorlage aus den Zeichen `d`, `h`, `m`, `s` (doppelt = zweistellig), z. B. `hh:mm:ss`. Die größte verwendete Einheit sammelt den Überlauf: `mm:ss` zeigt bei 2 Stunden `120:00`. Text in eckigen Klammern bleibt wörtlich stehen — nötig für Einheitenwörter, deren Buchstaben sonst als Vorlage gelten: `hh:mm [Std]`. Der Sonderwert `humanize` schreibt die Dauer in der Sprache der Oberfläche aus, gerundet auf die größte passende Einheit („2 Stunden“, „45 Sekunden“).
-- **Zeitstempel in Datum / Uhrzeit konvertieren** – erwartet **Sekunden** seit 1970, nicht Millisekunden. Vorlage aus `YYYY`, `YY`, `MMMM`, `MMM`, `MM`, `M`, `DD`, `D`, `dddd`, `ddd`, `dd`, `HH`, `H`, `hh`, `h`, `mm`, `m`, `ss`, `s`, `A`, `a`; eckige Klammern wieder wörtlich. Leer gelassen gilt das Datums- und Zeitformat des Browsers.
+- **Zeitstempel in Datum / Uhrzeit konvertieren** – erwartet **Sekunden** seit 1970, nicht Millisekunden. Vorlage aus `YYYY`, `YY`, `MMMM`, `MMM`, `MM`, `M`, `DD`, `D`, `dddd`, `ddd`, `dd`, `HH`, `H`, `hh`, `h`, `mm`, `m`, `ss`, `s`, `A`, `a`, dazu die lokalisierten Vorlagen `LT`, `LTS`, `L`, `l`, `LL`, `ll`, `LLL`, `lll`, `LLLL`, `llll` (Datum und Uhrzeit in der Systemsprache); eckige Klammern wieder wörtlich. Leer gelassen gilt das Datums- und Zeitformat des Browsers.
 
 <img src="../../media/vis2_value_editor_2.png" width="340" alt="Wertanzeige Symbol-Optionen">
 

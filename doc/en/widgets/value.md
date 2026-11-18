@@ -38,7 +38,7 @@ screenshots are German.
 - **unit** – unit text appended to the number.
 - **calculate** – math expression applied to the value before display. The value is available as `#value`, e.g. `#value/1000` for Wh → kWh. An expression without `#value` is not evaluated.
 - **convert seconds to duration** – template built from the letters `d`, `h`, `m`, `s` (doubled = two digits), e.g. `hh:mm:ss`. The largest unit used collects the overflow: `mm:ss` shows `120:00` for two hours. Text in square brackets stays literal — needed for unit words whose letters would otherwise count as template letters: `hh:mm [hrs]`. The special value `humanize` writes the duration out in the interface language, rounded to the largest fitting unit (`2 hours`, `45 seconds`).
-- **convert timestamp to datetime** – expects **seconds** since 1970, not milliseconds. Template built from `YYYY`, `YY`, `MMMM`, `MMM`, `MM`, `M`, `DD`, `D`, `dddd`, `ddd`, `dd`, `HH`, `H`, `hh`, `h`, `mm`, `m`, `ss`, `s`, `A`, `a`; square brackets stay literal again. Left empty, the browser's own date and time format applies.
+- **convert timestamp to datetime** – expects **seconds** since 1970, not milliseconds. Template built from `YYYY`, `YY`, `MMMM`, `MMM`, `MM`, `M`, `DD`, `D`, `dddd`, `ddd`, `dd`, `HH`, `H`, `hh`, `h`, `mm`, `m`, `ss`, `s`, `A`, `a`, plus the localized presets `LT`, `LTS`, `L`, `l`, `LL`, `ll`, `LLL`, `lll`, `LLLL`, `llll` (date and time in the system language); square brackets stay literal again. Left empty, the browser's own date and time format applies.
 
 <img src="../../media/vis2_value_editor_2.png" width="340" alt="Value icon options">
 

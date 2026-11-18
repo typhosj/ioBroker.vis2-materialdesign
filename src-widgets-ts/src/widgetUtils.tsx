@@ -203,7 +203,23 @@ export function formatMoment(date: Date, token: string, locale?: string): string
     if (!token) return '';
     const pad = (value: number): string => String(value).padStart(2, '0');
     const hours12 = date.getHours() % 12 || 12;
+    const intl = (options: Intl.DateTimeFormatOptions): string => new Intl.DateTimeFormat(locale, options).format(date);
+    const time: Intl.DateTimeFormatOptions = { hour: 'numeric', minute: '2-digit' };
+    const longDate: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
+    const shortDate: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric' };
     const map: Record<string, () => string> = {
+        // moment's localized presets. Without them a template such as the Line History tooltip
+        // default `lll` came out letter for letter.
+        LTS: () => intl({ ...time, second: '2-digit' }),
+        LT: () => intl(time),
+        LLLL: () => intl({ weekday: 'long', ...longDate, ...time }),
+        LLL: () => intl({ ...longDate, ...time }),
+        LL: () => intl(longDate),
+        L: () => intl({ year: 'numeric', month: '2-digit', day: '2-digit' }),
+        llll: () => intl({ weekday: 'short', ...shortDate, ...time }),
+        lll: () => intl({ ...shortDate, ...time }),
+        ll: () => intl(shortDate),
+        l: () => intl({ year: 'numeric', month: 'numeric', day: 'numeric' }),
         YYYY: () => String(date.getFullYear()),
         YY: () => String(date.getFullYear()).slice(-2),
         MMMM: () => new Intl.DateTimeFormat(locale, { month: 'long' }).format(date),
@@ -226,7 +242,7 @@ export function formatMoment(date: Date, token: string, locale?: string): string
         A: () => (date.getHours() < 12 ? 'AM' : 'PM'),
         a: () => (date.getHours() < 12 ? 'am' : 'pm'),
     };
-    return replaceTokens(token, /YYYY|YY|MMMM|MMM|MM|M|dddd|ddd|dd|DD|D|HH|H|hh|h|mm|m|ss|s|A|a/g, match => (map[match] ? map[match]() : match));
+    return replaceTokens(token, /LTS|LT|LLLL|LLL|LL|L|llll|lll|ll|l|YYYY|YY|MMMM|MMM|MM|M|dddd|ddd|dd|DD|D|HH|H|hh|h|mm|m|ss|s|A|a/g, match => (map[match] ? map[match]() : match));
 }
 
 // The largest unit present accumulates the overflow, matching moment-duration-format.

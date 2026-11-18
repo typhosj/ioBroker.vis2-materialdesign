@@ -341,6 +341,28 @@ describe('widget utilities', () => {
         expect(formatMoment(new Date(2024, 0, 5, 15, 0, 0), 'h A')).toBe('3 PM');
     });
 
+    // The Line History tooltip default `lll` came out as the three letters, because the localized
+    // presets of moment were missing.
+    it('formats the localized moment presets in the given language', () => {
+        const date = new Date(2024, 0, 5, 9, 7, 3);
+        const intl = (options: Intl.DateTimeFormatOptions, locale = 'de-DE'): string => new Intl.DateTimeFormat(locale, options).format(date);
+        expect(formatMoment(date, 'LT', 'de-DE')).toBe(intl({ hour: 'numeric', minute: '2-digit' }));
+        expect(formatMoment(date, 'LTS', 'de-DE')).toBe(intl({ hour: 'numeric', minute: '2-digit', second: '2-digit' }));
+        expect(formatMoment(date, 'L', 'de-DE')).toBe('05.01.2024');
+        expect(formatMoment(date, 'l', 'de-DE')).toBe('5.1.2024');
+        expect(formatMoment(date, 'LL', 'de-DE')).toBe('5. Januar 2024');
+        expect(formatMoment(date, 'll', 'en-US')).toBe('Jan 5, 2024');
+        expect(formatMoment(date, 'lll', 'en-US')).toBe(intl({ year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }, 'en-US'));
+        expect(formatMoment(date, 'LLLL', 'de-DE')).toContain('Freitag');
+        expect(formatMoment(date, 'llll', 'en-US')).toContain('Fri');
+        for (const preset of ['LT', 'LTS', 'L', 'l', 'LL', 'll', 'LLL', 'lll', 'LLLL', 'llll']) {
+            expect(formatMoment(date, preset, 'de-DE'), preset).not.toMatch(/[Ll]/);
+        }
+        // A preset next to ordinary tokens, and brackets still keep an L literal.
+        expect(formatMoment(date, 'L [um] HH:mm', 'de-DE')).toBe('05.01.2024 um 09:07');
+        expect(formatMoment(date, '[LT]', 'de-DE')).toBe('LT');
+    });
+
     it('formats durations with the largest present token accumulating overflow', () => {
         expect(formatDurationTokens(3661, 'hh:mm:ss')).toBe('01:01:01');
         expect(formatDurationTokens(3700, 'mm:ss')).toBe('61:40'); // minutes accumulate the hour
