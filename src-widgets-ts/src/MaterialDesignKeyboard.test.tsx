@@ -134,6 +134,19 @@ describe('served fields', () => {
         const inline = container.querySelector('[aria-label="keyboardAria"]');
         expect(inline).not.toBeNull();
     });
+
+    // vis-2 selects a widget through an overlay above it; a panel raised over that overlay made the
+    // keyboard impossible to click in the editor.
+    it('stays below the editor overlay, but above the page at runtime', () => {
+        start(keyboard({}, {}, true));
+        expect((container.querySelector('[aria-label="keyboardAria"]') as HTMLElement).style.zIndex).toBe('');
+        act(() => current.componentWillUnmount());
+        act(() => root.unmount());
+        root = createRoot(container);
+        start(keyboard());
+        focus(field('title'));
+        expect(panel()?.style.zIndex).toBe('10000');
+    });
 });
 
 describe('show on', () => {
@@ -1372,6 +1385,19 @@ describe('look', () => {
         focus(field('amount'));
         expect(key('decimal').style.background).toBe('rgb(1, 1, 1)');
         expect(key('1').style.background).toBe('rgb(1, 1, 1)');
+    });
+
+    // ⌫ and ↵ were 1.5 wide and ⌄ was not, so the digits of the lower rows sat off the column grid.
+    it('gives every number pad key the same width, but keeps the wide keys on the letters', () => {
+        start(keyboard({ keyboardArrows: true }));
+        focus(field('amount'));
+        const flexes = Array.from(panel()!.querySelectorAll<HTMLElement>('[data-key], [aria-hidden="true"]')).filter(el => el.parentElement?.parentElement === panel()).map(el => el.style.flex);
+        expect(flexes).toHaveLength(20);
+        expect(new Set(flexes)).toEqual(new Set([key('1').style.flex]));
+        expect(key('backspace').style.flex).toBe(key('close').style.flex);
+        focus(field('title'));
+        expect(key('space').style.flex).not.toBe(key('q').style.flex);
+        expect(key('backspace').style.flex).not.toBe(key('q').style.flex);
     });
 
     it('keeps font size, gap, radius and animation time within their limits at runtime', () => {

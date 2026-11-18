@@ -738,7 +738,7 @@ export default class MaterialDesignKeyboard extends VisWidget {
         );
     }
 
-    private renderKey(key: KeyDef, id: string, look: Look): React.JSX.Element {
+    private renderKey(key: KeyDef, id: string, look: Look, pad: boolean): React.JSX.Element {
         if (key === '') return <div aria-hidden="true" key={id} style={{ flex: 1 }} />;
         const special = typeof key === 'string' ? null : key.special;
         const info = special ? KEYS[special] : null;
@@ -770,7 +770,8 @@ export default class MaterialDesignKeyboard extends VisWidget {
                     boxShadow: active ? 'inset 0 -3px 0 currentColor' : undefined,
                     color: look.text,
                     filter: this.pressed === id ? 'brightness(0.85)' : undefined,
-                    flex: info?.flex ?? 1,
+                    // The number pad is a grid: a wider key would shift the columns of its row.
+                    flex: pad ? 1 : (info?.flex ?? 1),
                     fontSize: look.fontSize,
                     minWidth: 0,
                     padding: 0,
@@ -800,7 +801,8 @@ export default class MaterialDesignKeyboard extends VisWidget {
             radius: clampTo(n(data.keyboardKeyRadius, 8), 0, 64),
         };
         const arrows = b(data.keyboardArrows, false);
-        const rows = this.layoutFor(this.target) === 'number' ? numberRows(arrows) : textRows(this.keyMap(), this.symbols, arrows);
+        const pad = this.layoutFor(this.target) === 'number';
+        const rows = pad ? numberRows(arrows) : textRows(this.keyMap(), this.symbols, arrows);
         const place: React.CSSProperties = editor || !this.rect ? { inset: 0, position: 'absolute' } : { ...this.rect, position: 'fixed' };
         return (
             <div
@@ -821,14 +823,16 @@ export default class MaterialDesignKeyboard extends VisWidget {
                     flexDirection: 'column',
                     gap: look.gap,
                     padding: look.gap,
-                    zIndex: 10000,
+                    // Trap: in the editor vis-2 selects a widget through an overlay above it; a raised
+                    // panel would cover that overlay and the widget could not be clicked.
+                    zIndex: editor ? undefined : 10000,
                 }}
             >
                 <style>{KEYFRAMES}</style>
                 {this.renderSuggestions(look)}
                 {rows.map((row, r) => (
                     <div key={`row${r}`} style={{ display: 'flex', flex: 1, gap: look.gap, minHeight: 0 }}>
-                        {row.map((k, c) => this.renderKey(k, `${r}-${c}`, look))}
+                        {row.map((k, c) => this.renderKey(k, `${r}-${c}`, look, pad))}
                     </div>
                 ))}
             </div>
