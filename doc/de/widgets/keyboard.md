@@ -7,7 +7,17 @@ Bildschirm verdeckt. Sie bedient die Textfelder ihrer View, hält die System-Tas
 Felder geschlossen und erscheint nur, solange eines davon den Fokus hat.
 Template-ID: `tplVis2-materialdesign-Keyboard`.
 
+<img src="../../media/vis2_keyboard_runtime.png" alt="Bildschirmtastatur mit Wortvorschlägen und Pfeiltasten unter einem Textfeld">
+
+Bei einem Zahlenfeld zeigt sie den Ziffernblock:
+
+<img src="../../media/vis2_keyboard_runtime_numbers.png" alt="Ziffernblock der Bildschirmtastatur unter einem Zahlenfeld">
+
 ## Editor-Einstellungen
+
+Die Editor-Oberfläche folgt der ioBroker-Systemsprache; die Screenshots sind deutsch.
+
+<img src="../../media/vis2_keyboard_editor_overview.png" width="340" alt="Tastatur Allgemein und Platzierung">
 
 **Allgemein**
 
@@ -49,6 +59,8 @@ Template-ID: `tplVis2-materialdesign-Keyboard`.
 - **Animation** und **Animationsdauer (ms)** (0 bis 2000) – wie die Tastatur erscheint (`keine`,
   `einblenden` oder `hineinschieben`); das Ausblenden geschieht sofort.
 
+<img src="../../media/vis2_keyboard_editor_2.png" width="340" alt="Tastatur Wortvorschläge und Aussehen">
+
 **Wortvorschläge**
 
 - **Wortvorschläge anzeigen** – eine Leiste über den Tasten mit den am häufigsten getippten
@@ -66,6 +78,19 @@ Template-ID: `tplVis2-materialdesign-Keyboard`.
 64), Tastenabstand (0 bis 32) und Eckenradius der Tasten (0 bis 64). Die Farbe der Sondertasten gilt
 für ⇧, ⌫, ↵, ⌄, `?123`/`ABC` und die Pfeiltasten; Leertaste und Dezimaltaste sehen aus wie die
 Buchstabentasten. Nicht gesetzte Farben folgen dem Material-3-Theme.
+
+## Gestaltungsstil
+
+Die Stile **Klassisch** (links) und **Material 3** (rechts) nebeneinander, siehe
+[Gestaltungsstil](../README.md#gestaltungsstil), jeweils mit einem getippten
+Wortanfang und seinen Vorschlägen. Nicht gesetzte Farben folgen dem Stil und dem
+Dark-Theme.
+
+<img src="../../media/vis2_keyboard_styles.png" alt="Bildschirmtastatur im klassischen und im Material-3-Stil">
+
+Dieselben Tastaturen bei eingeschaltetem Dark-Theme:
+
+<img src="../../media/vis2_keyboard_styles_dark.png" alt="Bildschirmtastatur im klassischen und im Material-3-Stil, dunkel">
 
 ## Hinweise
 

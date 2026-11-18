@@ -6,7 +6,17 @@ A keyboard inside the vis page for wall tablets, where the Android keyboard cove
 screen. It serves the text fields of its view, keeps the system keyboard closed for them and
 shows itself only while one of them has the focus. Template id: `tplVis2-materialdesign-Keyboard`.
 
+<img src="../../media/vis2_keyboard_runtime.png" alt="On-screen keyboard with word suggestions and arrow keys below a text field">
+
+On a number field it shows the number pad:
+
+<img src="../../media/vis2_keyboard_runtime_numbers.png" alt="On-screen keyboard number pad below a number field">
+
 ## Editor settings
+
+The editor UI follows the ioBroker system language, so the screenshots are German.
+
+<img src="../../media/vis2_keyboard_editor_overview.png" width="340" alt="Keyboard general and placement options">
 
 **Common**
 
@@ -43,6 +53,8 @@ shows itself only while one of them has the focus. Template id: `tplVis2-materia
 - **animation** and **animation duration** (0 to 2000 ms) – how the keyboard appears; hiding is
   immediate.
 
+<img src="../../media/vis2_keyboard_editor_2.png" width="340" alt="Keyboard word suggestion and look options">
+
 **word suggestions**
 
 - **show word suggestions** – a bar above the keys with the most typed words; while a word is
@@ -57,6 +69,18 @@ shows itself only while one of them has the focus. Template id: `tplVis2-materia
 **look** – background, key colors, font size (8 to 64), key gap (0 to 32) and corner radius (0 to
 64). The special key color paints ⇧, ⌫, ↵, ⌄, `?123`/`ABC` and the arrow keys; space and the
 decimal key look like the letter keys. Unset colors follow the Material 3 theme.
+
+## Design style
+
+The **Classic** (left) and **Material 3** (right) style side by side, see
+[Design style](../README.md#design-style), each with a typed word and its
+suggestions. Unset colors follow the style and the dark theme.
+
+<img src="../../media/vis2_keyboard_styles.png" alt="On-screen keyboard in the Classic and the Material 3 style">
+
+The same keyboards with the dark theme switched on:
+
+<img src="../../media/vis2_keyboard_styles_dark.png" alt="On-screen keyboard in the Classic and the Material 3 style, dark theme">
 
 ## Notes
 

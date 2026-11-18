@@ -38,6 +38,8 @@ screenshots are German.
   opens once that many characters are typed. `0` (default) opens it on focus.
   The arrow keys always open it.
 
+<img src="../../media/vis2_autocomplete_editor_overview.png" width="340" alt="Autocomplete general options with input mode, input type and the typed characters for the menu">
+
 **data of menu**
 
 - **input method for the menu data** – `via editor` (indexed **menu item [n]**
@@ -97,6 +99,8 @@ each take an icon or an image plus size and color.
 ## Keyboard (Autocomplete)
 
 The focus stays in the input field; the list is operated with one highlight.
+
+<img src="../../media/vis2_autocomplete_runtime_menu.png" alt="Open Autocomplete menu with the highlighted entry Wohnzimmer and the selected entry Küche">
 
 - **↓ / ↑** – opens the menu and moves the highlight; it wraps at the ends.
 - **Enter** – takes the highlighted entry. Without a highlight, `write` writes the

@@ -39,6 +39,8 @@ Einstellungen sind selbsterklärend.
   sich erst, wenn so viele Zeichen getippt sind. `0` (Standard) öffnet es schon
   beim Antippen. Die Pfeiltasten öffnen es immer.
 
+<img src="../../media/vis2_autocomplete_editor_overview.png" width="340" alt="Autocomplete Allgemein mit Eingabemodus, Eingabetyp und den Zeichen bis zum Menü">
+
 **Daten des Menüs**
 
 - **Eingabemethode für die Menüdaten** – `über den Editor` (indizierte Gruppen
@@ -104,6 +106,8 @@ Symbol** lässt sich je ein Icon oder ein Bild samt Größe und Farbe wählen.
 ## Tastatur (Autocomplete)
 
 Der Fokus bleibt im Eingabefeld; die Liste wird mit einer Markierung bedient.
+
+<img src="../../media/vis2_autocomplete_runtime_menu.png" alt="Offenes Autocomplete-Menü mit markiertem Eintrag Wohnzimmer und gewähltem Eintrag Küche">
 
 - **↓ / ↑** – öffnet das Menü und bewegt die Markierung; am Ende geht es oben
   wieder los.

@@ -9,7 +9,8 @@ Template-ID: `tplVis2-materialdesign-TopAppBar-Navigation`.
 
 ## Editor-Einstellungen
 
-Die Screenshots zeigen die Allgemein-/Bar-Gruppen sowie die Menüdaten und einen
+Die Screenshots zeigen die Allgemein-/Bar-Gruppen, Layout und Farben der
+Navigationsleiste sowie die Menüdaten und einen
 Eintrag. Nicht aufgeführte Einstellungen sind selbsterklärend.
 
 <img src="../../media/vis2_top_app_bar_editor_overview.png" width="340" alt="Top App Bar Allgemein und Layout">
@@ -45,6 +46,8 @@ Eintrag. Nicht aufgeführte Einstellungen sind selbsterklärend.
   `right`) setzen Abstand und Seite dieses Icons.
 - Farben und Schrift des Balkens setzen die Felder darunter, dazu **z-Index**
   (Vorgabe 998) für die Stapelreihenfolge gegenüber anderen Widgets.
+
+<img src="../../media/vis2_top_app_bar_editor_3.png" width="340" alt="Top App Bar Navigationsleiste: Layout und Farben">
 
 Die Gruppe **Navigationsleiste: Layout** bestimmt das **Layout** des Drawers
 (`modal`, `permanent` oder `auto` — `auto` bleibt bis zur unter **Layout 'auto':
@@ -92,8 +95,9 @@ Die Menüeinträge stammen aus den Daten- und Eintragsgruppen:
 
 Die Stile **Klassisch** (links) und **Material 3** (rechts) nebeneinander, siehe
 [Gestaltungsstil](../README.md#gestaltungsstil): die Layouts standard, dense und
-short, fester Titel, eigene Farbe, permanenter Drawer und Drawer nur mit
-Symbolen.
+short, fester Titel, eigene Farbe, permanenter Drawer, Drawer nur mit
+Symbolen, nur die Menü-Schaltfläche, Titelsymbol rechts mit Abstand, Drawer-Kopf mit
+eigener Textfarbe und zentrierte Einträge.
 
 <img src="../../media/vis2_top_app_bar_styles.png" alt="Top App Bar im klassischen und im Material-3-Stil">
 
