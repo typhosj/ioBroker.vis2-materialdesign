@@ -71,6 +71,7 @@ JSON-Eigenschaften unten.
 | `barBorderWidth` | Breite des Balkenrahmens |
 | `barIsStacked` | aktiviert Stapelung für die Reihe und ihre Y-Achse |
 | `barStackId` | Reihen mit derselben ID bilden einen Stapel |
+| `barPattern` | `hatch` füllt die Balken mit diagonalen Streifen in `color`, zum Beispiel den Netzbezug in einem gestapelten Verbrauchsbalken |
 | `yAxis_id` | Reihen mit derselben ID verwenden dieselbe Y-Achse; ohne Angabe nutzen alle ID `0` |
 | `yAxis_position` | platziert diese Y-Achse links oder rechts |
 | `yAxis_min`, `yAxis_max` | feste Grenzen dieser Y-Achse; leere Werte skalieren automatisch |

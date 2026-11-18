@@ -41,6 +41,16 @@ describe('datalabelsConfig', () => {
         expect((saved.color as (context: unknown) => string)(context)).toBe('#00696d');
     });
 
+    // The hatch pattern of the JSON chart: labelColorFor cannot read a function and fell back to black.
+    it('reads a label on a pattern-filled element against the chart surface', () => {
+        const onBar = datalabelsConfig({}, label, { align: 'center', anchor: 'center' }) as Record<string, unknown>;
+        const hatched = { dataIndex: 0, dataset: { backgroundColor: () => ({}) } };
+        expect((onBar.color as (context: unknown) => string)(hatched)).toBe('#44739e');
+        const saved = datalabelsConfig({}, () => ({ text: 'x', color: '#00696d' }), { align: 'center', anchor: 'center' }) as Record<string, unknown>;
+        expect((saved.color as (context: unknown) => string)(hatched)).toBe('#00696d');
+        expect((onBar.color as (context: unknown) => string)({ dataIndex: 0, dataset: {} })).toBe('#000');
+    });
+
     // Upstream #68: the box behind the value. Unset must leave the plugin drawing nothing at all.
     it('passes the label box through and stays invisible while unset', () => {
         expect(datalabelsConfig({}, label, { align: 'top', anchor: 'end' })).toMatchObject({ backgroundColor: null, borderColor: null, borderRadius: 0, borderWidth: 0 });

@@ -1,7 +1,7 @@
 import { squarePreview, createInfo, designStyle, boolValue as b, numberValue as n, textValue as s } from './widgetUtils';
 import type { RxWidgetInfo } from "@iobroker/types-vis-2";
 import { colorSchemes } from "./MaterialDesignColorScheme";
-import { ChartWidget, cardGroup, legendGroup, tooltipGroup, valuesGroup, type ChartSpec } from "./MaterialDesignChartCanvas";
+import { ChartWidget, canvasColor, cardGroup, legendGroup, tooltipGroup, valuesGroup, type ChartSpec } from "./MaterialDesignChartCanvas";
 import { chartAxis, m3ChartColors } from "./chartAxis";
 
 type Graph = {
@@ -19,6 +19,7 @@ type Graph = {
   barBorderColor?: string;
   barBorderWidth?: number;
   barIsStacked?: boolean;
+  barPattern?: string;
   datalabel_show?: boolean | "auto";
   datalabel_steps?: number;
   datalabel_minDigits?: number;
@@ -52,6 +53,32 @@ export const jsonChartValue = (raw: unknown): number | null => {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : null;
 };
+// One tile per color; the cap guards against a state that sends a new color with every update.
+const hatchTiles = new Map<string, HTMLCanvasElement>();
+export function hatchPattern(context: { chart?: { ctx?: CanvasRenderingContext2D; canvas?: HTMLCanvasElement } }, color: string): CanvasPattern | string {
+  const resolved = s(canvasColor(color, context.chart?.canvas), color);
+  const ctx = context.chart?.ctx;
+  if (!ctx || typeof document === "undefined") return resolved;
+  let tile = hatchTiles.get(resolved);
+  if (!tile) {
+    tile = document.createElement("canvas");
+    tile.width = tile.height = 8;
+    const pen = tile.getContext("2d");
+    if (!pen) return resolved;
+    pen.strokeStyle = resolved;
+    pen.lineWidth = 2;
+    pen.beginPath();
+    // Three diagonals, so the stripes run on seamlessly across tile borders.
+    for (const offset of [-8, 0, 8]) {
+      pen.moveTo(offset, 8);
+      pen.lineTo(offset + 8, 0);
+    }
+    pen.stroke();
+    if (hatchTiles.size >= 64) hatchTiles.clear();
+    hatchTiles.set(resolved, tile);
+  }
+  return ctx.createPattern(tile, "repeat") ?? resolved;
+}
 export function graphAxisId(graph: Graph): string {
   return `yAxis_id_${n((graph as Record<string, unknown>).yAxis_id, 0)}`;
 }
@@ -241,7 +268,9 @@ export default class MaterialDesignChartJson extends ChartWidget {
         colors: [s(graph.color) || undefined],
         extra: ([color]) => ({
           type: s(graph.type, s(data.chartType, "bar")),
-          backgroundColor: b(graph.line_UseFillColor) ? s(graph.line_FillColor, `${color}33`) : color,
+          backgroundColor: s(graph.barPattern) === "hatch"
+            ? (context: Parameters<typeof hatchPattern>[0]) => hatchPattern(context, color)
+            : b(graph.line_UseFillColor) ? s(graph.line_FillColor, `${color}33`) : color,
           borderWidth: n(graph.line_Thickness, n(graph.barBorderWidth, 2)),
           stepped: b(graph.line_steppedLine),
           spanGaps: b(graph.line_spanGaps, true),

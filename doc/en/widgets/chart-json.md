@@ -71,6 +71,7 @@ per-dataset appearance comes from the JSON properties below.
 | `barBorderWidth` | bar border width |
 | `barIsStacked` | enables stacking for the dataset and its Y axis |
 | `barStackId` | datasets with the same ID form one stack |
+| `barPattern` | `hatch` fills the bars with diagonal stripes in `color`, for example the grid import inside a stacked consumption bar |
 | `yAxis_id` | datasets with the same ID share a Y axis; omitted values all use ID `0` |
 | `yAxis_position` | places this Y axis on the left or right |
 | `yAxis_min`, `yAxis_max` | fixed limits for this Y axis; empty values retain automatic scaling |

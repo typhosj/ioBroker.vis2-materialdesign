@@ -33,14 +33,17 @@ if (typeof (Chart as { register?: unknown }).register === "function") {
   );
 }
 
+// M3 paths pass tokens, which no color parser (and no canvas) reads — resolve them off the canvas,
+// where the widget root's custom properties are in scope.
+export function canvasColor(color: unknown, canvas?: HTMLCanvasElement): unknown {
+  const token = typeof color === "string" && color.match(/^var\((--[^),]+)/)?.[1];
+  return token && canvas ? getComputedStyle(canvas).getPropertyValue(token).trim() : color;
+}
+
 // Value labels sit ON the drawn element, so a fixed color is unreadable on half the palette.
 export function labelColorFor(context: { dataIndex: number; dataset?: { backgroundColor?: unknown }; chart?: { canvas?: HTMLCanvasElement } }): string {
   const background = context.dataset?.backgroundColor;
-  let color = Array.isArray(background) ? background[context.dataIndex] : background;
-  // M3 paths pass tokens, which no color parser reads — resolve them off the canvas, where the
-  // widget root's custom properties are in scope.
-  const token = typeof color === "string" && color.match(/^var\((--[^),]+)/)?.[1];
-  if (token && context.chart?.canvas) color = getComputedStyle(context.chart.canvas).getPropertyValue(token).trim();
+  const color = canvasColor(Array.isArray(background) ? background[context.dataIndex] : background, context.chart?.canvas);
   return (typeof color === "string" && m3OnColor(color)) || "#000";
 }
 
@@ -83,7 +86,9 @@ export function datalabelsConfig(
     borderColor: textValue(data.valuesBorderColor) || null,
     borderRadius: numberValue(data.valuesBorderRadius),
     borderWidth: numberValue(data.valuesBorderWidth),
-    color: (context: LabelContext): string => label(context).color || (onElement ? labelColorFor(context) : offElementColor(context)),
+    // A scriptable fill (the JSON chart's hatch pattern) has no color to contrast with and is mostly
+    // transparent, so the label reads against the chart surface like one off the element.
+    color: (context: LabelContext): string => label(context).color || (onElement && typeof context.dataset?.backgroundColor !== "function" ? labelColorFor(context) : offElementColor(context)),
     display: show === "showValuesOff" ? false : (context: LabelContext): boolean | string => (context.dataIndex % steps === 0 ? visible : false),
     font: { family: textValue(data.valuesFontFamily) || undefined, size: numberValue(data.valuesFontSize, 12) },
     formatter: (_value: unknown, context: LabelContext): string => label(context).text,

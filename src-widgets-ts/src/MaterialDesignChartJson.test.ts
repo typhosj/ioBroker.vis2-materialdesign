@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
-import MaterialDesignChartJson, { chartJsonInput, distinctAxisGraphs, graphAxisId, jsonChartValue } from './MaterialDesignChartJson';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import MaterialDesignChartJson, { chartJsonInput, distinctAxisGraphs, graphAxisId, hatchPattern, jsonChartValue } from './MaterialDesignChartJson';
 import { chartConfig } from './MaterialDesignChartCanvas';
 
 describe('MaterialDesignChartJson gaps', () => {
@@ -105,5 +105,40 @@ describe('json chartSpec', () => {
     it('prints just the value for a graph without legendText', () => {
         const callbacks = config({}, { graphs: [{ data: [1.23456] }] }).options.plugins.tooltip.callbacks as { label: (item: object) => unknown };
         expect(dot(String(callbacks.label({ datasetIndex: 0, dataIndex: 0 })))).toBe('1.23');
+    });
+});
+
+// Grid import as a hatched part of each stacked consumption bar; before this the color could only be
+// a plain string, so the part could only be told apart by a second shade.
+describe('barPattern hatch', () => {
+    type Pen = { strokeStyle: string; lineWidth: number; beginPath: () => void; moveTo: () => void; lineTo: () => void; stroke: () => void };
+    const pen = (): Pen => ({ strokeStyle: '', lineWidth: 0, beginPath: vi.fn(), moveTo: vi.fn(), lineTo: vi.fn(), stroke: vi.fn() });
+    afterEach(() => vi.restoreAllMocks());
+
+    it('fills a hatched graph with a stripe pattern in its color and leaves the others plain', () => {
+        const stripes = pen();
+        vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(fixture<ReturnType<HTMLCanvasElement['getContext']>>(stripes));
+        const pattern = fixture<CanvasPattern>({ kind: 'pattern' });
+        const createPattern = vi.fn(() => pattern);
+        const result = config({}, { graphs: [{ data: [1], color: '#ff0000', barPattern: 'hatch' }, { data: [2], color: '#00ff00' }] });
+        const [hatched, plain] = result.data.datasets;
+        expect(plain.backgroundColor).toBe('#00ff00');
+        expect(typeof hatched.backgroundColor).toBe('function');
+        expect(hatched.borderColor).toBe('#ff0000');
+        const fill = hatched.backgroundColor as (context: object) => unknown;
+        expect(fill({ chart: { ctx: { createPattern } } })).toBe(pattern);
+        expect(stripes.strokeStyle).toBe('#ff0000');
+        expect(stripes.stroke).toHaveBeenCalled();
+    });
+
+    it('falls back to the plain color where no canvas can draw the pattern', () => {
+        vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+        expect(hatchPattern({}, '#123456')).toBe('#123456');
+        expect(hatchPattern({ chart: { ctx: fixture<CanvasRenderingContext2D>({ createPattern: () => null }) } }, '#654321')).toBe('#654321');
+    });
+
+    it('ignores an unknown pattern name', () => {
+        const [dataset] = config({}, { graphs: [{ data: [1], color: '#ff0000', barPattern: 'dots' }] }).data.datasets;
+        expect(dataset.backgroundColor).toBe('#ff0000');
     });
 });
