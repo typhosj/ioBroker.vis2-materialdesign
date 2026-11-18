@@ -31,8 +31,9 @@ export function calendarEvent(row: Record<string, unknown>): Event {
 }
 const events = (v: unknown): Event[] => { try { const value: unknown = JSON.parse(s(v)); return Array.isArray(value) ? value.filter(row => row && typeof row === 'object').map(row => ({ ...calendarEvent(row as Record<string, unknown>), raw: row as Record<string, unknown> })) : []; } catch { return []; } };
 // A tap hands the row over unchanged, so a consumer finds its own IDs (`_IDID`, `_calId`, …) in it;
-// the browser instance tells a consumer with per-browser states which browser asked.
-export const eventClickValue = (instance: string, row: Record<string, unknown> | undefined): string => JSON.stringify({ instance, event: row ?? {} });
+// the browser instance tells a consumer with per-browser states which browser asked. The time makes
+// a second tap on the same event a new value, or an `on(id)` script with `change: "ne"` misses it.
+export const eventClickValue = (instance: string, row: Record<string, unknown> | undefined, ts: number): string => JSON.stringify({ instance, ts, event: row ?? {} });
 const visInstance = (): string => { const instance = (window as unknown as { vis?: { instance?: unknown } }).vis?.instance; return typeof instance === 'string' ? instance : ''; };
 export const eventMinutes = (value: unknown, fallback = 0): number => {
     const match = s(value).match(/(?:T|\s)(\d{1,2}):(\d{2})/);
@@ -156,7 +157,7 @@ export default class MaterialDesignCalendar extends VisWidget {
     private eventActions(d: Data, event: Event): React.HTMLAttributes<HTMLDivElement> {
         const oid = s(d.eventClickOid).trim();
         if (!oid) return {};
-        const press = (): void => { this.feedback(d); setStateValue(this.props, oid, eventClickValue(visInstance(), event.raw)); };
+        const press = (): void => { this.feedback(d); setStateValue(this.props, oid, eventClickValue(visInstance(), event.raw, Date.now())); };
         return { role: 'button', tabIndex: 0, onClick: press, onKeyDown: keyEvent => { if (keyEvent.key === 'Enter' || keyEvent.key === ' ') { keyEvent.preventDefault(); press(); } } };
     }
     renderWidgetBody(props: RenderProps): React.JSX.Element {

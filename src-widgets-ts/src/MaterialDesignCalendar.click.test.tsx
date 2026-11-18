@@ -43,12 +43,12 @@ afterEach(() => {
 });
 
 describe('eventClickValue', () => {
-    it('wraps the unchanged row with the browser instance', () => {
-        expect(JSON.parse(eventClickValue('a.f1fa48', row))).toEqual({ instance: 'a.f1fa48', event: row });
+    it('wraps the unchanged row with the browser instance and the time', () => {
+        expect(JSON.parse(eventClickValue('a.f1fa48', row, 1700000000000))).toEqual({ instance: 'a.f1fa48', ts: 1700000000000, event: row });
     });
 
     it('writes an empty event for a missing row', () => {
-        expect(JSON.parse(eventClickValue('', undefined))).toEqual({ instance: '', event: {} });
+        expect(JSON.parse(eventClickValue('', undefined, 0))).toEqual({ instance: '', ts: 0, event: {} });
     });
 });
 
@@ -61,7 +61,7 @@ describe('calendar event tap', () => {
             expect(setValue).toHaveBeenCalledTimes(1);
             const [id, value] = setValue.mock.calls[0];
             expect(id).toBe('google-calendar.0.draft.edit');
-            expect(JSON.parse(String(value))).toEqual({ instance: 'a.f1fa48', event: row });
+            expect(JSON.parse(String(value))).toMatchObject({ instance: 'a.f1fa48', event: row });
         });
     }
 
@@ -89,4 +89,19 @@ describe('calendar event tap', () => {
             expect(setValue).not.toHaveBeenCalled();
         });
     }
+});
+
+describe('a second tap on the same event', () => {
+    it('writes a new value, so a script listening for changes sees it', () => {
+        const now = vi.spyOn(Date, 'now');
+        mount({ calendarView: 'week', eventClickOid: 'x.0.edit' });
+        now.mockReturnValue(1000);
+        act(() => { event().dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+        now.mockReturnValue(2000);
+        act(() => { event().dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+        const [first, second] = setValue.mock.calls.map(([, value]) => JSON.parse(String(value)) as { ts: number; event: unknown });
+        expect([first.ts, second.ts]).toEqual([1000, 2000]);
+        expect(second.event).toEqual(first.event);
+        now.mockRestore();
+    });
 });

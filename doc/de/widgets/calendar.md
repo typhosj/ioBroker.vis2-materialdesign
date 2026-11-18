@@ -23,10 +23,11 @@ Datumsformat-Gruppen. Nicht aufgeführte Einstellungen sind selbsterklärend.
 - **Objekt-ID** – State mit dem JSON-Termin-Array.
 - **Kalenderansicht** – `Monat`, `Woche` oder `Tag`.
 - **Objekt-ID bei Klick auf Termin** – optional. Ein Tipp (oder Enter/Leertaste)
-  auf einen Termin schreibt `{"instance": "<vis-Browser-Instanz>", "event":
-  <Zeile des Termins>}` als JSON in diesen State. Die Zeile kommt unverändert an,
-  ein Skript oder Adapter findet darin seine eigenen Felder (beim ical-Adapter
-  z. B. `_IDID`). Leer: Termine sind nicht antippbar.
+  auf einen Termin schreibt `{"instance": "<vis-Browser-Instanz>", "ts":
+  <Zeitpunkt in ms>, "event": <Zeile des Termins>}` als JSON in diesen State. Die
+  Zeile kommt unverändert an, ein Skript oder Adapter findet darin seine eigenen
+  Felder (beim ical-Adapter z. B. `_IDID`). `ts` macht auch einen zweiten Tipp
+  auf denselben Termin zu einem neuen Wert. Leer: Termine sind nicht antippbar.
 
 **Layout**
 
