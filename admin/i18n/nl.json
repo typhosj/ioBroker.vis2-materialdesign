@@ -1280,5 +1280,10 @@
     "ts": "laatste update",
     "ack": "bevestigd",
     "q": "kwaliteit",
-    "from": "bron"
+    "from": "bron",
+    "collapseSubMenusOnClose": "submenu's sluiten wanneer het menu sluit",
+    "url": "URL",
+    "urlTarget": "URL openen in",
+    "_blank": "nieuw tabblad",
+    "_self": "hetzelfde tabblad"
 }

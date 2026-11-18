@@ -1280,5 +1280,10 @@
     "ts": "ostatnia aktualizacja",
     "ack": "potwierdzone",
     "q": "jakość",
-    "from": "źródło"
+    "from": "źródło",
+    "collapseSubMenusOnClose": "zamykaj podmenu przy zamknięciu menu",
+    "url": "URL",
+    "urlTarget": "otwórz URL w",
+    "_blank": "nowej karcie",
+    "_self": "tej samej karcie"
 }

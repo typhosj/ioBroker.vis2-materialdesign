@@ -306,3 +306,97 @@ describe('top app bar submenus (issues #30 and #31)', () => {
         expect(color({ navDefaultValue: 0, designStyle: 'material3' }, 'home')).toBe('var(--md-sys-color-primary)');
     });
 });
+
+describe('top app bar modal menu (upstream-#124 and #123)', () => {
+    const base = {
+        drawerLayout: 'modal',
+        oid: 'test.0.nav',
+        navItemCount: 2,
+        labels0: 'EG',
+        submenus0: '[{"text":"Wohnzimmer","icon":"sofa"},{"text":"Küche"}]',
+        labels1: 'OG',
+        submenus1: '[{"text":"Bad","icon":"shower"}]',
+    };
+    // Flat indexes: EG 0, Wohnzimmer 1, Küche 2, OG 3, Bad 4.
+    const make = (rxData: Record<string, unknown>) => {
+        const setValue = vi.fn();
+        const widget = new MaterialDesignTopAppBar(fixture<ConstructorParameters<typeof MaterialDesignTopAppBar>[0]>({ context: { setValue } }));
+        widget.state = fixture<typeof widget.state>({ rxData: { ...base, ...rxData }, values: {} });
+        widget.forceUpdate = vi.fn();
+        const tree = (): React.ReactElement<Record<string, unknown>> => widget.renderWidgetBody(fixture<Parameters<MaterialDesignTopAppBar['renderWidgetBody']>[0]>({})) as React.ReactElement<Record<string, unknown>>;
+        const press = (className: string): void => (collectByClass(tree(), className)[0].props.onClick as () => void)();
+        const click = (text: string): void => {
+            const row = collectByClass(tree(), 'mdc-list-item').find(element => renderToStaticMarkup(element).includes(`>${text}<`));
+            if (!row) throw new Error(`no row ${text}`);
+            (row.props.onClick as () => void)();
+        };
+        const drawerHtml = (): string => renderToStaticMarkup(collectByClass(tree(), 'mdc-drawer')[0]);
+        return { widget, setValue, press, click, drawerHtml };
+    };
+    const MENU = 'mdc-top-app-bar__navigation-icon';
+
+    it('shows the submenus closed after the menu was closed, if switched on', () => {
+        for (const close of ['mdc-drawer-scrim', MENU]) {
+            for (const collapse of [true, false]) {
+                const { press, click, drawerHtml } = make({ collapseSubMenusOnClose: collapse });
+                press(MENU);
+                click('EG');
+                expect(drawerHtml()).toContain('Wohnzimmer');
+                press(close);
+                press(MENU);
+                expect(drawerHtml().includes('Wohnzimmer'), `${close} ${collapse}`).toBe(!collapse);
+            }
+        }
+    });
+
+    it('keeps the submenu closed when the selection that closed the menu comes back from the state', () => {
+        for (const collapse of [true, false]) {
+            const { widget, setValue, press, click, drawerHtml } = make({ collapseSubMenusOnClose: collapse });
+            press(MENU);
+            click('EG');
+            click('Wohnzimmer');
+            expect(setValue).toHaveBeenCalledWith('test.0.nav', 1);
+            widget.state = fixture<typeof widget.state>({ ...widget.state, values: { 'test.0.nav.val': 1 } });
+            press(MENU);
+            expect(drawerHtml().includes('Wohnzimmer'), String(collapse)).toBe(!collapse);
+        }
+    });
+
+    it('opens the URL of an entry in a new tab instead of selecting it', () => {
+        const open = vi.spyOn(window, 'open').mockReturnValue(null);
+        try {
+            const json = make({ drawerItemsDataMethod: 'jsonStringObject', drawerItemsJsonString: '[{"text":"Doku","url":"https://example.com/doc"},{"text":"Böse","url":"javascript:alert(1)"}]' });
+            json.press(MENU);
+            json.click('Doku');
+            expect(open).toHaveBeenCalledWith('https://example.com/doc', '_blank', 'noopener,noreferrer');
+            expect(json.setValue).not.toHaveBeenCalled();
+            // The modal menu closes after the click, as after any other entry.
+            expect(renderToStaticMarkup(collectByClass(json.widget.renderWidgetBody(fixture<Parameters<MaterialDesignTopAppBar['renderWidgetBody']>[0]>({})), 'mdc-drawer-scrim')[0] ?? <i />)).toBe('<i></i>');
+            json.press(MENU);
+            json.click('Böse');
+            expect(open).toHaveBeenCalledTimes(1);
+            expect(json.setValue).not.toHaveBeenCalled();
+
+            const editor = make({ navItemCount: 1, submenus0: '', labels0: 'Wetter', url0: 'https://example.com/weather', urlTarget0: '_blank' });
+            editor.press(MENU);
+            editor.click('Wetter');
+            expect(open).toHaveBeenLastCalledWith('https://example.com/weather', '_blank', 'noopener,noreferrer');
+
+            // Same key in the JSON string as in the editor; `_self` navigates the tab, no popup.
+            const assign = vi.fn();
+            vi.stubGlobal('location', { ...window.location, assign });
+            const self = make({ drawerItemsDataMethod: 'jsonStringObject', drawerItemsJsonString: '[{"text":"Hier","url":"https://example.com/here","urlTarget":"_self"}]' });
+            self.press(MENU);
+            self.click('Hier');
+            expect(assign).toHaveBeenCalledWith('https://example.com/here');
+            expect(open).toHaveBeenCalledTimes(2);
+        } finally {
+            vi.unstubAllGlobals();
+            open.mockRestore();
+        }
+        const fields = MaterialDesignTopAppBar.getWidgetInfo().visAttrs.flatMap(group => group.fields as Array<{ name: string; options?: string[] }>);
+        // Indexed group: the field is declared once, vis-2 appends the row index when it stores it.
+        expect(fields.find(field => field.name === 'urlTarget')?.options).toEqual(['_blank', '_self']);
+    });
+});
+

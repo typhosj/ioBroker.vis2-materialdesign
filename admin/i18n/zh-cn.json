@@ -1280,5 +1280,10 @@
     "ts": "最后更新",
     "ack": "已确认",
     "q": "质量",
-    "from": "来源"
+    "from": "来源",
+    "collapseSubMenusOnClose": "关闭菜单时收起子菜单",
+    "url": "URL",
+    "urlTarget": "打开 URL 于",
+    "_blank": "新标签页",
+    "_self": "当前标签页"
 }

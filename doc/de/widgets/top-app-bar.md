@@ -56,7 +56,9 @@ Vorgabe 800 px), **Breite**, **Zeilenüberschrift anzeigen** samt **Kopfzeile
 Text**, **Beschriftungen für Listenelemente anzeigen** (aus heißt: nur Symbole)
 und den **Trennlinien Stil** (`standard`, `padded`, `inset`, ebenfalls roh).
 **Andere Untermenüs beim Öffnen zuklappen** macht die Untermenüs zum Akkordeon:
-Öffnet sich eines, klappen alle anderen zu. **Listenelementausrichtung** richtet
+Öffnet sich eines, klappen alle anderen zu. **Untermenüs beim Schließen des
+Menüs zuklappen** zeigt jedes Untermenü beim nächsten Öffnen zugeklappt statt so,
+wie es verlassen wurde. **Listenelementausrichtung** richtet
 den Eintragstext aus, im Modus nur Symbole das Symbol.
 
 Die drei Gruppen **Navigationsleiste: Farben**, **Untermenü-Layout** und
@@ -76,7 +78,8 @@ Die Menüeinträge stammen aus den Daten- und Eintragsgruppen:
   indizierte Gruppe **Navigationsleiste: Element**) oder **JSON-String**. Bei
   JSON verschwindet die indizierte Gruppe, und **JSON-Sting für
   Navigationselemente** hält ein Array aus `{ "text", "menuId", "icon",
-  "iconColor", "subMenuIconColor", "header", "divider", "subMenus" }`.
+  "iconColor", "subMenuIconColor", "header", "divider", "subMenus", "url",
+  "urlTarget" }`.
   `subMenuIconColor` färbt die Symbole der Untereinträge dieses Eintrags.
 - **Menüpunkt-ID** – der Wert, den die zweite Objekt-ID für diesen Eintrag
   bekommt. Der Index in der ersten Objekt-ID hängt nicht daran.
@@ -90,6 +93,12 @@ Die Menüeinträge stammen aus den Daten- und Eintragsgruppen:
   Ein Eintrag mit Untermenü klappt beim Klick nur auf; **Wert
   auch schreiben, wenn Eintrag zum Untermenü umschalten gedrückt wird** schreibt
   zusätzlich seinen Index.
+- **URL** / **URL öffnen in** – ein Eintrag mit URL öffnet diese Seite, statt
+  eine View zu wählen, in `neuem Tab` oder `demselben Tab`; in die Objekt-IDs
+  wird nichts geschrieben. Im JSON-String heißt das `"url"`, mit
+  `"urlTarget": "_self"` für denselben Tab, auch bei Untereinträgen. Es öffnen nur
+  Web-Adressen, `mailto:` und `tel:`; eine relative Adresse wie
+  `/vis-2/?main#car` bleibt auf diesem Server.
 
 ## Gestaltungsstil
 

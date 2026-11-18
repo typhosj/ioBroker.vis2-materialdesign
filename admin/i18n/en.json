@@ -1280,5 +1280,10 @@
     "ts": "last update",
     "ack": "acknowledged",
     "q": "quality",
-    "from": "source"
+    "from": "source",
+    "collapseSubMenusOnClose": "close submenus when the menu closes",
+    "url": "URL",
+    "urlTarget": "open URL in",
+    "_blank": "new tab",
+    "_self": "same tab"
 }

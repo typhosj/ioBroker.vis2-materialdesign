@@ -1280,5 +1280,10 @@
     "ts": "letzte Aktualisierung",
     "ack": "bestätigt",
     "q": "Qualität",
-    "from": "Quelle"
+    "from": "Quelle",
+    "collapseSubMenusOnClose": "Untermenüs beim Schließen des Menüs zuklappen",
+    "url": "URL",
+    "urlTarget": "URL öffnen in",
+    "_blank": "neuem Tab",
+    "_self": "demselben Tab"
 }

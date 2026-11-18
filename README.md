@@ -123,6 +123,8 @@ to wait with an upgrade.
 - (typhosj) Added the time ranges 5, 10 and 20 years to the Line History chart, also as values for **control interval with object**; two years used to be the longest range (Scrounger/ioBroker.vis-materialdesign#210)
 - (typhosj) Added **state field** to the Value widget: besides the value it can show the last change, the last update, the acknowledge flag, the quality or the source of the state. The two timestamps appear as local date and time, or follow **convert timestamp to datetime** (Scrounger/ioBroker.vis-materialdesign#180)
 - (typhosj) Added **button: report open/closed to the object ID** to the Dialog widget: opened by its own button, it writes `true` into **boolean switch to show dialog** when it opens and `false` when it closes or the view changes, so a script can react to it. The option is off by default, so an object ID left over from the datapoint method stays untouched (Scrounger/ioBroker.vis-materialdesign#156)
+- (typhosj) Added **close submenus when the menu closes** to the Top App Bar: each time the menu opens again, every submenu is closed instead of left as it was (Scrounger/ioBroker.vis-materialdesign#124)
+- (typhosj) Added **URL** and **open URL in** to the entries of the Top App Bar (`"url"` and `"urlTarget"` in the JSON string): such an entry opens a web page in a new or in the same tab instead of selecting a view (Scrounger/ioBroker.vis-materialdesign#123)
 
 ### 1.3.0 (2026-11-18)
 

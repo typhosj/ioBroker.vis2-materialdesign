@@ -1280,5 +1280,10 @@
     "ts": "última actualización",
     "ack": "confirmado",
     "q": "calidad",
-    "from": "origen"
+    "from": "origen",
+    "collapseSubMenusOnClose": "cerrar los submenús al cerrar el menú",
+    "url": "URL",
+    "urlTarget": "abrir URL en",
+    "_blank": "pestaña nueva",
+    "_self": "misma pestaña"
 }

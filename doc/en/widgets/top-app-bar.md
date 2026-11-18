@@ -57,7 +57,9 @@ layout auto change on resoltuion higher than**, 800 px by default), its
 **width**, **show row heading** with **header text**, **show list items labels**
 (off means icons only) and the **divider style** (`standard`, `padded`, `inset`,
 untranslated as well). **close other submenus when one opens** turns the
-submenus into an accordion: when one opens, all others close. **list item
+submenus into an accordion: when one opens, all others close. **close
+submenus when the menu closes** shows every submenu closed each time the menu
+opens again, instead of as it was left. **list item
 alignment** aligns the entry text, or the icon when only icons are shown.
 
 The three groups **navigation bar colors**, **sub menu layout** and **sub menu
@@ -77,8 +79,8 @@ Menu entries come from the data and item groups:
   of navigation bar** group) or **JSON string**. With JSON the indexed group
   disappears and **JSON Sting for navigation items** holds an array of
   `{ "text", "menuId", "icon", "iconColor", "subMenuIconColor", "header",
-  "divider", "subMenus" }`. `subMenuIconColor` colors the icons of this entry's
-  submenu entries.
+  "divider", "subMenus", "url", "urlTarget" }`. `subMenuIconColor` colors the icons
+  of this entry's submenu entries.
 - **menu item id** – the value the second object id receives for this entry. The
   index in the first object id does not depend on it.
 - **label / header / divider** – entry text, a section heading above the entry
@@ -90,6 +92,12 @@ Menu entries come from the data and item groups:
   `[{ "text": "Living room", "icon": "sofa", "divider": true }, { "text": "Kitchen", "icon": "fridge" }]`.
   An entry with a submenu only expands on click; **set
   value on click at item that toggle submenu** also writes its index.
+- **URL** / **open URL in** – an entry with a URL opens that page instead of
+  selecting a view, in a `new tab` or the `same tab`; nothing is written to the
+  object ids. In the JSON string this is `"url"` with `"urlTarget": "_self"` for
+  the same tab, also on submenu entries. Only web addresses, `mailto:` and
+  `tel:` open; a relative address such as `/vis-2/?main#car` stays on this
+  server.
 
 ## Design style
 
