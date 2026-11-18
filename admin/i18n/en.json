@@ -1267,5 +1267,10 @@
     "ariaPreviousMonth": "Previous month",
     "ariaNextMonth": "Next month",
     "ariaChooseYear": "Choose year",
-    "collapseOtherSubMenus": "close other submenus when one opens"
+    "collapseOtherSubMenus": "close other submenus when one opens",
+    "lineStyle": "line style",
+    "solid": "solid",
+    "dashed": "dashed",
+    "dotted": "dotted",
+    "tooltipAppendText": "tooltip text appendix"
 }

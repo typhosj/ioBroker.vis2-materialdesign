@@ -1267,5 +1267,10 @@
     "ariaPreviousMonth": "Vorheriger Monat",
     "ariaNextMonth": "Nächster Monat",
     "ariaChooseYear": "Jahr auswählen",
-    "collapseOtherSubMenus": "Andere Untermenüs beim Öffnen zuklappen"
+    "collapseOtherSubMenus": "Andere Untermenüs beim Öffnen zuklappen",
+    "lineStyle": "Linienstil",
+    "solid": "durchgezogen",
+    "dashed": "gestrichelt",
+    "dotted": "gepunktet",
+    "tooltipAppendText": "Tooltip Textanhang"
 }

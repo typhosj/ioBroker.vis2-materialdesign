@@ -1267,5 +1267,10 @@
     "ariaPreviousMonth": "Poprzedni miesiąc",
     "ariaNextMonth": "Następny miesiąc",
     "ariaChooseYear": "Wybierz rok",
-    "collapseOtherSubMenus": "zwiń pozostałe podmenu po otwarciu jednego"
+    "collapseOtherSubMenus": "zwiń pozostałe podmenu po otwarciu jednego",
+    "lineStyle": "styl linii",
+    "solid": "ciągła",
+    "dashed": "kreskowana",
+    "dotted": "kropkowana",
+    "tooltipAppendText": "dopisek tekstu podpowiedzi"
 }

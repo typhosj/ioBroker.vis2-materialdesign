@@ -1267,5 +1267,10 @@
     "ariaPreviousMonth": "Mois précédent",
     "ariaNextMonth": "Mois suivant",
     "ariaChooseYear": "Choisir l'année",
-    "collapseOtherSubMenus": "fermer les autres sous-menus à l'ouverture d'un sous-menu"
+    "collapseOtherSubMenus": "fermer les autres sous-menus à l'ouverture d'un sous-menu",
+    "lineStyle": "style de ligne",
+    "solid": "continue",
+    "dashed": "tirets",
+    "dotted": "pointillés",
+    "tooltipAppendText": "suffixe de l'info-bulle"
 }

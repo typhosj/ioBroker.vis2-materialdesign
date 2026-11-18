@@ -1267,5 +1267,10 @@
     "ariaPreviousMonth": "Mese precedente",
     "ariaNextMonth": "Mese successivo",
     "ariaChooseYear": "Scegli anno",
-    "collapseOtherSubMenus": "chiudi gli altri sottomenu all'apertura di uno"
+    "collapseOtherSubMenus": "chiudi gli altri sottomenu all'apertura di uno",
+    "lineStyle": "stile linea",
+    "solid": "continua",
+    "dashed": "tratteggiata",
+    "dotted": "punteggiata",
+    "tooltipAppendText": "appendice testo tooltip"
 }

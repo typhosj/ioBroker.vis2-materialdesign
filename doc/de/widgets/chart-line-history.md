@@ -11,7 +11,7 @@ jeden verwendeten State aktivierte Aufzeichnung.
 ## Zeitraum und Aktualisierung
 
 - **History-Adapterinstanz:** Quelle aller Zeitreihen.
-- **Anzuzeigender Zeitraum:** rückwirkendes Fenster bis zum aktuellen Zeitpunkt.
+- **Anzuzeigender Zeitraum:** rückwirkendes Fenster bis zum aktuellen Zeitpunkt, von 30 Sekunden bis 20 Jahre.
 - **Zeitraum über Objekt:** überschreibt das feste Fenster zur Laufzeit.
 - **Aktualisierung:** in Echtzeit, in festem Intervall oder über ein Triggerobjekt.
 - **Chart-Timeout:** maximale Wartezeit der History-Abfrage in Sekunden.
@@ -55,6 +55,8 @@ Chart-Timeout erhöhen.
 ## Verlauf und Achsen
 
 - `steppedLine` zeichnet Zustandswechsel als Stufen statt als direkte Verbindung.
+- **Linienstil** zeichnet eine Linie durchgezogen, gestrichelt oder gepunktet; die Lücken wachsen mit der Linienstärke.
+- **Tooltip Textanhang** in einer Datensatz-Gruppe ist die Einheit dieser Linie im Tooltip, zum Beispiel ` °C` für die eine und ` %` für die andere Linie. Leer übernimmt die Linie den Textanhang der Tooltip-Gruppe.
 - Füllfarbe schattiert den Bereich unter einer Linie; ohne eigene Füllfarbe wird eine transparente Linienfarbe verwendet.
 - Neu angelegte Datensätze teilen standardmäßig eine Y-Achse. Deren Position, Titel und Grenzen stammen aus der ersten Datensatzgruppe. Leere Min-/Max-Felder behalten automatische Skalierung.
 - X-Achsen-Zeitformat verwendet Moment-Format-Token, beispielsweise `HH:mm` für eine 24-Stunden-Anzeige. Dasselbe Format wird auf Sekunden, Minuten, Stunden und Tage angewendet. Eine Liste mit einem Format je Einheit, wie vis-materialdesign sie gespeichert hat, zum Beispiel `{"minute":"H:mm","day":"ddd DD."}`, wird ebenfalls gelesen: Die Achse nimmt das Format der Einheit, die zum Abstand ihrer Beschriftungen passt.

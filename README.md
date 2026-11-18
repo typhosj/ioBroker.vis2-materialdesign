@@ -116,6 +116,12 @@ full per-widget option and is not deprecated, so nothing you report is a reason
 to wait with an upgrade.
 
 ## Changelog
+### **WORK IN PROGRESS**
+
+- (typhosj) Added **line style** to the data sets of the Line History chart: a line can be drawn solid, dashed or dotted, and the gaps grow with the line width (Scrounger/ioBroker.vis-materialdesign#218)
+- (typhosj) Added **tooltip text appendix** to the data sets of the Line History chart: each line shows its own unit in the tooltip, for example °C next to %. Left empty, a line keeps the text appendix of the tooltip group (Scrounger/ioBroker.vis-materialdesign#120)
+- (typhosj) Added the time ranges 5, 10 and 20 years to the Line History chart, also as values for **control interval with object**; two years used to be the longest range (Scrounger/ioBroker.vis-materialdesign#210)
+
 ### 1.3.0 (2026-11-18)
 
 - (typhosj) Added the **On-screen Keyboard** widget for wall tablets, where the Android keyboard covers half of the screen: it serves the text fields of its view, keeps the system keyboard closed for them and appears only while one of them has the focus. Letters (QWERTZ or QWERTY) or a number pad, chosen from the field; placed as in the editor or docked to the view or screen, covering the view, moving it up or adding room; the Enter key commits and closes, jumps to the next field or only commits; optional arrow keys move the cursor or through the list of an Autocomplete; a bar suggests the most typed words, kept in this browser or in a state shared by several devices. By default it opens only after a tap with finger or pen, so a PC with mouse and keyboard keeps its normal fields

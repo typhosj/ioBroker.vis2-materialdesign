@@ -1267,5 +1267,10 @@
     "ariaPreviousMonth": "Vorige maand",
     "ariaNextMonth": "Volgende maand",
     "ariaChooseYear": "Jaar kiezen",
-    "collapseOtherSubMenus": "andere submenu's sluiten wanneer er één opent"
+    "collapseOtherSubMenus": "andere submenu's sluiten wanneer er één opent",
+    "lineStyle": "lijnstijl",
+    "solid": "doorgetrokken",
+    "dashed": "gestreept",
+    "dotted": "gestippeld",
+    "tooltipAppendText": "tekstaanhangsel tooltip"
 }

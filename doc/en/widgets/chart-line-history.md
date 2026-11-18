@@ -11,7 +11,7 @@ for every state used by the widget.
 ## Time range and refresh
 
 - **History adapter instance:** source of all time series.
-- **Time interval to show:** rolling window ending at the current time.
+- **Time interval to show:** rolling window ending at the current time, from 30 seconds up to 20 years.
 - **Control interval with object:** overrides the fixed window at runtime.
 - **Refresh:** in real time, at a fixed interval or through a trigger object.
 - **Chart timeout:** maximum wait for the history request in seconds.
@@ -54,6 +54,8 @@ check recording and the selected range first, then increase Chart timeout.
 ## Lines and axes
 
 - `steppedLine` draws state changes as steps instead of direct connections.
+- **Line style** draws a line solid, dashed or dotted; the gaps grow with the line width.
+- **Tooltip text appendix** in a dataset group is that line's unit in the tooltip, for example ` °C` for one line and ` %` for another. Left empty, the line takes the text appendix of the tooltip group.
 - Fill color shades the area below a line; without a custom fill color, a transparent line color is used.
 - Newly configured datasets share one Y axis by default. Its position, title and limits come from the first dataset group. Empty min/max fields retain automatic scaling.
 - X-axis time format uses Moment format tokens, for example `HH:mm` for a 24-hour display. The same format is applied to seconds, minutes, hours and days. A per-unit list as vis-materialdesign stored it, for example `{"minute":"H:mm","day":"ddd DD."}`, is read too: the axis takes the format of the unit that fits the spacing of its labels.

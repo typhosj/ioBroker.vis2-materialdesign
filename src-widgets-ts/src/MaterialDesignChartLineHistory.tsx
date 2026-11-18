@@ -36,7 +36,17 @@ const intervals: Record<string, number> = {
   "6 months": 15768000000,
   "1 year": 31536000000,
   "2 years": 63072000000,
+  "5 years": 157680000000,
+  "10 years": 315360000000,
+  "20 years": 630720000000,
 };
+// chart.js `borderDash`, scaled with the line so a thick line keeps visible gaps.
+export function lineDash(style: unknown, width: number): number[] {
+  const w = Math.max(1, width);
+  if (style === "dashed") return [w * 4, w * 2];
+  if (style === "dotted") return [w, w * 1.5];
+  return [];
+}
 // vis-2 stores row 0 of an indexed group under the plain base name, higher rows as `${name}${i}`.
 export const item = (d: Data, key: string, i: number): unknown => { const v = d[`${key}${i}`]; return v !== undefined ? v : (i === 0 ? d[key] : undefined); };
 const TIME_UNITS: Array<[string, number]> = [
@@ -152,6 +162,7 @@ const attrs: RxWidgetInfo["visAttrs"] = [
       },
       { name: "steppedLine", label: "steppedLine", type: "checkbox" },
       num("lineThikness"),
+      { name: "lineStyle", label: "lineStyle", type: "select", options: ["solid", "dashed", "dotted"], default: "solid" },
       color("dataColor"),
       { name: "useFillColor", label: "useFillColor", type: "checkbox" },
       color("fillColor"),
@@ -162,6 +173,7 @@ const attrs: RxWidgetInfo["visAttrs"] = [
       num("valuesMinDecimals"),
       num("valuesMaxDecimals"),
       { name: "valuesAppendText", label: "valuesAppendText", type: "text" },
+      { name: "tooltipAppendText", label: "tooltipAppendText", type: "text" },
       color("valuesFontColor"),
       { name: "valuesFontFamily", label: "valuesFontFamily", type: "fontname" },
       num("valuesFontSize"),
@@ -419,6 +431,7 @@ export default class MaterialDesignChartLineHistory extends ChartWidget {
             backgroundColor: b(item(d, "useFillColor", i)) ? s(item(d, "fillColor", i), `${color}33`) : "transparent",
             fill: b(item(d, "useFillColor", i)),
             borderWidth: n(item(d, "lineThikness", i), 2),
+            borderDash: lineDash(item(d, "lineStyle", i), n(item(d, "lineThikness", i), 2)),
             stepped: b(item(d, "steppedLine", i)),
             tension: 0,
             pointBackgroundColor: s(item(d, "pointColor", i), color),
@@ -430,7 +443,10 @@ export default class MaterialDesignChartLineHistory extends ChartWidget {
       }),
       scales,
       valueLabel: (point, _number, fallback) => ({ ...fallback, color: fallback.color || point.color }),
-      tooltip: { title: point => fmtTime(point.x, timeFmt || "lll") },
+      tooltip: {
+        title: point => fmtTime(point.x, timeFmt || "lll"),
+        label: (point, number) => `${point.datasetLabel ? `${point.datasetLabel}: ` : ""}${number}${s(item(d, "tooltipAppendText", point.datasetIndex), s(d.tooltipBodyAppend))}`,
+      },
     };
   }
 }

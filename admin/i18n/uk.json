@@ -1267,5 +1267,10 @@
     "ariaPreviousMonth": "Попередній місяць",
     "ariaNextMonth": "Наступний місяць",
     "ariaChooseYear": "Вибрати рік",
-    "collapseOtherSubMenus": "згортати інші підменю під час відкриття одного"
+    "collapseOtherSubMenus": "згортати інші підменю під час відкриття одного",
+    "lineStyle": "стиль лінії",
+    "solid": "суцільна",
+    "dashed": "штрихова",
+    "dotted": "пунктирна",
+    "tooltipAppendText": "приписка тексту підказки"
 }

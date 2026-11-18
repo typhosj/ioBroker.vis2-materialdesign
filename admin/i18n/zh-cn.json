@@ -1267,5 +1267,10 @@
     "ariaPreviousMonth": "上个月",
     "ariaNextMonth": "下个月",
     "ariaChooseYear": "选择年份",
-    "collapseOtherSubMenus": "打开一个子菜单时收起其他子菜单"
+    "collapseOtherSubMenus": "打开一个子菜单时收起其他子菜单",
+    "lineStyle": "线条样式",
+    "solid": "实线",
+    "dashed": "虚线",
+    "dotted": "点线",
+    "tooltipAppendText": "提示框文本后缀"
 }

@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { chartConfig } from './MaterialDesignChartCanvas';
-import MaterialDesignChartLineHistory, { distinctAxisRows, item, rowAxisId, timeFormatFor } from './MaterialDesignChartLineHistory';
+import MaterialDesignChartLineHistory, { distinctAxisRows, item, lineDash, rowAxisId, timeFormatFor } from './MaterialDesignChartLineHistory';
 
 function fixture<T>(value: unknown): T { return value as T; }
 
@@ -180,6 +180,54 @@ describe('line history chart', () => {
         expect(dot(String(callbacks.label({ datasetIndex: 0, dataIndex: 0 })))).toMatch(/^Temperatur: 20\.3 °C$/);
         expect(String(callbacks.title([{ datasetIndex: 0, dataIndex: 0 }]))).toMatch(/^\d\d:\d\d$/);
         widget.componentWillUnmount();
+    });
+
+    // upstream-#120: one appendix for the whole tooltip could not tell °C from %.
+    it('gives each data set its own tooltip unit and falls back to the tooltip group appendix', async () => {
+        const widget = await loaded({ dataCount: 3, oid: 'a', oid1: 'b', oid2: 'c', legendText: 'T', legendText1: 'H', legendText2: 'P', tooltipBodyAppend: ' x', tooltipAppendText: ' °C', tooltipAppendText1: ' %', tooltipAppendText2: '' }, [[{ ts: 1, val: 20 }], [{ ts: 1, val: 50 }], [{ ts: 1, val: 7 }]]);
+        const label = (configOf(widget).options.plugins.tooltip.callbacks as { label: (item: object) => unknown }).label;
+        expect(label({ datasetIndex: 0, dataIndex: 0 })).toBe('T: 20 °C');
+        expect(label({ datasetIndex: 1, dataIndex: 0 })).toBe('H: 50 %');
+        expect(label({ datasetIndex: 2, dataIndex: 0 })).toBe('P: 7 x');
+        widget.componentWillUnmount();
+    });
+
+    // upstream-#218
+    it('dashes or dots a line from its row and keeps the default solid', async () => {
+        const widget = await loaded({ dataCount: 3, oid: 'a', oid1: 'b', oid2: 'c', lineStyle1: 'dashed', lineStyle2: 'dotted', lineThikness2: 4 }, [[{ ts: 1, val: 1 }], [{ ts: 1, val: 1 }], [{ ts: 1, val: 1 }]]);
+        expect(configOf(widget).data.datasets.map(dataset => dataset.borderDash)).toEqual([[], [8, 4], [4, 6]]);
+        widget.componentWillUnmount();
+    });
+
+    // upstream-#210: two years was the longest range, a yearly value needs twenty.
+    it('offers ranges beyond two years and queries the history from that far back', async () => {
+        const options = MaterialDesignChartLineHistory.getWidgetInfo().visAttrs.flatMap(group => group.fields as Array<{ name: string; options?: string[] }>).find(field => field.name === 'timeIntervalToShow')?.options;
+        expect(options?.slice(-4)).toEqual(['2 years', '5 years', '10 years', '20 years']);
+        const before = Date.now();
+        let start = 0;
+        const getHistory = vi.fn((_id: string, options: { start: number }) => { start = options.start; return Promise.resolve([]); });
+        const widget = new MaterialDesignChartLineHistory(fixture<ConstructorParameters<typeof MaterialDesignChartLineHistory>[0]>({ context: { socket: { getHistory, subscribeState: vi.fn().mockResolvedValue(undefined), unsubscribeState: vi.fn() } } }));
+        widget.state = fixture<typeof widget.state>({ rxData: { historyAdapterInstance: 'history.0', refreshMethod: 'byObject', dataCount: 1, oid: 'a', timeIntervalToShow: '20 years' }, values: {} });
+        widget.componentDidMount();
+        await vi.waitFor(() => expect(getHistory).toHaveBeenCalledTimes(1));
+        const after = Date.now();
+        const span = 20 * 365 * 86400000;
+        expect(start).toBeGreaterThanOrEqual(before - span);
+        expect(start).toBeLessThanOrEqual(after - span);
+        widget.componentWillUnmount();
+    });
+});
+
+describe('lineDash', () => {
+    it('scales dashes and dots with the line width and treats anything else as solid', () => {
+        expect(lineDash('dashed', 2)).toEqual([8, 4]);
+        expect(lineDash('dotted', 2)).toEqual([2, 3]);
+        expect(lineDash('solid', 2)).toEqual([]);
+        expect(lineDash(undefined, 2)).toEqual([]);
+        expect(lineDash('bogus', 2)).toEqual([]);
+        // A zero or negative width still leaves visible gaps instead of an empty dash array.
+        expect(lineDash('dashed', 0)).toEqual([4, 2]);
+        expect(lineDash('dotted', -3)).toEqual([1, 1.5]);
     });
 });
 
