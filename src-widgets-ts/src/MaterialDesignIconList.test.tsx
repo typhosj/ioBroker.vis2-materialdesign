@@ -1,7 +1,9 @@
+import { act } from 'react';
+import { createRoot } from 'react-dom/client';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 
-import MaterialDesignIconList from './MaterialDesignIconList';
+import MaterialDesignIconList, { scrollIntoBox } from './MaterialDesignIconList';
 
 function fixture<T>(value: unknown): T { return value as T; }
 
@@ -43,5 +45,120 @@ describe('icon list box layout', () => {
         const html = render({ ...list, headers: 'head', header_padding_bottom: 12 });
         expect(html).toContain('padding:6px 16px 12px 16px');
         expect(html).toContain('min-height:60px');
+    });
+});
+
+// upstream-#108: in a long list the active entry could sit out of view.
+describe('icon list scroll to active', () => {
+    type Box = { top: number; bottom: number; left: number; right: number };
+    const rect = (element: HTMLElement, box: Box): void => { element.getBoundingClientRect = () => fixture<DOMRect>(box); };
+    const size = (element: HTMLElement, values: Record<string, number>): void => {
+        for (const [key, value] of Object.entries(values)) Object.defineProperty(element, key, { configurable: true, value });
+    };
+    const scene = () => {
+        const root = document.createElement('div');
+        const box = document.createElement('div');
+        const entry = document.createElement('div');
+        box.style.overflowY = 'auto';
+        box.style.overflowX = 'hidden';
+        root.appendChild(box);
+        box.appendChild(entry);
+        size(box, { scrollHeight: 1000, clientHeight: 200, scrollWidth: 100, clientWidth: 100 });
+        rect(box, { top: 0, bottom: 200, left: 0, right: 100 });
+        return { root, box, entry };
+    };
+
+    it('scrolls the list box down or up just enough to show the entry', () => {
+        const { root, box, entry } = scene();
+        rect(entry, { top: 450, bottom: 500, left: 0, right: 100 });
+        scrollIntoBox(entry, root);
+        expect(box.scrollTop).toBe(300);
+        rect(entry, { top: -80, bottom: -30, left: 0, right: 100 });
+        box.scrollTop = 300;
+        scrollIntoBox(entry, root);
+        expect(box.scrollTop).toBe(220);
+    });
+
+    it('leaves a visible entry where it is and lines up an oversized one with its top', () => {
+        const { root, box, entry } = scene();
+        rect(entry, { top: 50, bottom: 100, left: 0, right: 100 });
+        scrollIntoBox(entry, root);
+        expect(box.scrollTop).toBe(0);
+        rect(entry, { top: 100, bottom: 600, left: 0, right: 100 });
+        scrollIntoBox(entry, root);
+        expect(box.scrollTop).toBe(100);
+    });
+
+    it('scrolls a horizontal list sideways', () => {
+        const { root, box, entry } = scene();
+        box.style.overflowY = 'hidden';
+        box.style.overflowX = 'auto';
+        size(box, { scrollHeight: 200, clientHeight: 200, scrollWidth: 900, clientWidth: 100 });
+        rect(entry, { top: 0, bottom: 50, left: 300, right: 360 });
+        scrollIntoBox(entry, root);
+        expect(box.scrollLeft).toBe(260);
+    });
+
+    it('never scrolls past the widget root, so the view and the page stay put', () => {
+        const page = document.createElement('div');
+        const { root, box, entry } = scene();
+        size(box, { scrollHeight: 200, clientHeight: 200 });
+        page.style.overflowY = 'auto';
+        size(page, { scrollHeight: 5000, clientHeight: 500 });
+        rect(page, { top: 0, bottom: 500, left: 0, right: 100 });
+        page.appendChild(root);
+        rect(entry, { top: 900, bottom: 950, left: 0, right: 100 });
+        scrollIntoBox(entry, root);
+        expect(page.scrollTop).toBe(0);
+    });
+
+    const list = { countListItems: 3, listType0: 'buttonState', oid0: 'a.0.x', listTypeButtonStateValue0: '1', listType1: 'buttonState', oid1: 'a.0.x', listTypeButtonStateValue1: '2', listType2: 'buttonState', oid2: 'a.0.x', listTypeButtonStateValue2: '3' };
+
+    it('marks only the active entry', () => {
+        const widget = new MaterialDesignIconList(fixture<ConstructorParameters<typeof MaterialDesignIconList>[0]>({ context: {} }));
+        widget.state = fixture<typeof widget.state>({ rxData: list, values: { 'a.0.x.val': 2 } });
+        const html = renderToStaticMarkup(widget.renderWidgetBody(fixture<Parameters<MaterialDesignIconList['renderWidgetBody']>[0]>({})));
+        expect(html.match(/data-active="true"/g)).toHaveLength(1);
+    });
+
+    it('follows only a change of the active entry, and only when switched on', () => {
+        (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+        const run = (scrollToActive: boolean): number[] => {
+            const container = document.createElement('div');
+            document.body.appendChild(container);
+            const root = createRoot(container);
+            const widget = new MaterialDesignIconList(fixture<ConstructorParameters<typeof MaterialDesignIconList>[0]>({ context: {} }));
+            // Renders with entry `value` active and lets the widget react as after a real update.
+            const show = (value: number): HTMLElement => {
+                widget.state = fixture<typeof widget.state>({ rxData: { ...list, scrollToActive }, values: { 'a.0.x.val': value } });
+                act(() => root.render(widget.renderWidgetBody(fixture<Parameters<MaterialDesignIconList['renderWidgetBody']>[0]>({}))));
+                const box = container.querySelector<HTMLElement>('.materialdesign-icon-list-scroll')!;
+                size(box, { scrollHeight: 1000, clientHeight: 200, scrollWidth: 100, clientWidth: 100 });
+                rect(box, { top: 0, bottom: 200, left: 0, right: 100 });
+                container.querySelectorAll<HTMLElement>('.materialdesign-icon-list-item').forEach((entry, index) => rect(entry, { top: 250 + 200 * index, bottom: 300 + 200 * index, left: 0, right: 100 }));
+                widget.componentDidUpdate(widget.props, widget.state);
+                return box;
+            };
+            try {
+                const box = show(2);
+                const first = box.scrollTop;
+                // The user scrolls back; a re-render with the same active entry must leave that alone.
+                box.scrollTop = 0;
+                show(2);
+                const unchanged = box.scrollTop;
+                show(3);
+                return [first, unchanged, box.scrollTop];
+            } finally {
+                act(() => root.unmount());
+                container.remove();
+            }
+        };
+        expect(run(true)).toEqual([300, 0, 500]);
+        expect(run(false)).toEqual([0, 0, 0]);
+    });
+
+    it('offers the option as a checkbox', () => {
+        const fields = MaterialDesignIconList.getWidgetInfo().visAttrs.flatMap(group => group.fields as Array<{ name: string; type?: string }>);
+        expect(fields.find(field => field.name === 'scrollToActive')?.type).toBe('checkbox');
     });
 });

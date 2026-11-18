@@ -51,6 +51,9 @@ The grid arrangement lives in the **Common** group:
 
 - **wrap items** / **count of maximum list items per row** – how cells flow into rows.
 - **distance between items** – spacing between cells.
+- **scroll to the active entry** – when another entry becomes active, the list
+  scrolls inside its own box until that entry is visible. The view and the page
+  around the widget stay where they are.
 
 The **layout of list item** group holds **layout** (`standard`, `card`,
 `cardOutlined`), **layout of elements** (`vertical` or `horizontal` — icon above

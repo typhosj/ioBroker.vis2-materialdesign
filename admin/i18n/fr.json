@@ -1285,5 +1285,6 @@
     "url": "URL",
     "urlTarget": "ouvrir l'URL dans",
     "_blank": "nouvel onglet",
-    "_self": "même onglet"
+    "_self": "même onglet",
+    "scrollToActive": "défiler jusqu'à l'entrée active"
 }

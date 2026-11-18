@@ -125,6 +125,7 @@ to wait with an upgrade.
 - (typhosj) Added **button: report open/closed to the object ID** to the Dialog widget: opened by its own button, it writes `true` into **boolean switch to show dialog** when it opens and `false` when it closes or the view changes, so a script can react to it. The option is off by default, so an object ID left over from the datapoint method stays untouched (Scrounger/ioBroker.vis-materialdesign#156)
 - (typhosj) Added **close submenus when the menu closes** to the Top App Bar: each time the menu opens again, every submenu is closed instead of left as it was (Scrounger/ioBroker.vis-materialdesign#124)
 - (typhosj) Added **URL** and **open URL in** to the entries of the Top App Bar (`"url"` and `"urlTarget"` in the JSON string): such an entry opens a web page in a new or in the same tab instead of selecting a view (Scrounger/ioBroker.vis-materialdesign#123)
+- (typhosj) Added **scroll to the active entry** to the Icon List: when another entry becomes active, the list scrolls inside its own box until that entry is visible, while the view and the page stay where they are (Scrounger/ioBroker.vis-materialdesign#108)
 
 ### 1.3.0 (2026-11-18)
 

@@ -1285,5 +1285,6 @@
     "url": "URL",
     "urlTarget": "abrir URL em",
     "_blank": "nova aba",
-    "_self": "mesma aba"
+    "_self": "mesma aba",
+    "scrollToActive": "rolar até a entrada ativa"
 }

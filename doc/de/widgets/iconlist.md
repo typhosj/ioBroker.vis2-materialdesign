@@ -51,6 +51,9 @@ Die Rasteranordnung liegt in der Gruppe **Allgemein**:
 
 - **Elemente umbrechen** / **Anzahl der maximalen Listenelemente pro Zeile** – wie Zellen in Zeilen fließen.
 - **Abstand zwischen Elementen** – Abstand zwischen den Zellen.
+- **zum aktiven Eintrag scrollen** – wird ein anderer Eintrag aktiv, scrollt die
+  Liste in ihrem eigenen Rahmen, bis er zu sehen ist. View und Seite um das
+  Widget bleiben stehen.
 
 In der Gruppe **Layout des Listenelements** liegen **Layout** (`standard`, `Karte`,
 `cardOutlined`), **Layout der Elemente** (`vertikal` oder `horizontal`, Icon über

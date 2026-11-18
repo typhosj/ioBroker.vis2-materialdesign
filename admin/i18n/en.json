@@ -1285,5 +1285,6 @@
     "url": "URL",
     "urlTarget": "open URL in",
     "_blank": "new tab",
-    "_self": "same tab"
+    "_self": "same tab",
+    "scrollToActive": "scroll to the active entry"
 }
