@@ -17,9 +17,11 @@ const show = (pin: Parameters<typeof PinPad>[0]['pin']) => {
     const onCancel = vi.fn();
     act(() => root.render(<PinPad dark={false} m3 onCancel={onCancel} onUnlock={onUnlock} pin={pin} />));
     const key = (label: string) => [...document.querySelectorAll<HTMLButtonElement>('[data-pin-key]')].find(button => button.dataset.pinKey === label)!;
-    const press = (label: string) => act(() => { key(label).click(); });
+    const down = (label: string) => act(() => { key(label).dispatchEvent(new MouseEvent('pointerdown', { bubbles: true })); });
+    const press = (label: string) => { down(label); act(() => { key(label).click(); }); };
+    const ghostClick = (label: string) => act(() => { key(label).click(); });
     const dots = () => document.querySelectorAll('[data-pin-dot][data-filled="true"]').length;
-    return { onUnlock, onCancel, key, press, dots };
+    return { onUnlock, onCancel, key, press, down, ghostClick, dots };
 };
 
 describe('PinPad', () => {
@@ -57,6 +59,21 @@ describe('PinPad', () => {
         expect(pad.onUnlock).toHaveBeenCalledWith('123');
         pad.press('cancel');
         expect(pad.onCancel).toHaveBeenCalledTimes(1);
+    });
+
+    it('ignores a click that has no pointerdown on the same key (ghost click of the opening tap)', () => {
+        const pad = show({ kind: 'pin', pin: '12' });
+        pad.ghostClick('1');
+        expect(pad.dots()).toBe(0);
+        pad.down('1');
+        pad.ghostClick('2');
+        expect(pad.dots()).toBe(0);
+        pad.press('1');
+        expect(pad.dots()).toBe(1);
+        pad.ghostClick('1');
+        expect(pad.dots()).toBe(1);
+        pad.ghostClick('cancel');
+        expect(pad.onCancel).not.toHaveBeenCalled();
     });
 
     it('takes digits, Backspace and Escape from a hardware keyboard', () => {

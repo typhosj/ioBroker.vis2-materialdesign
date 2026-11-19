@@ -15,6 +15,8 @@ export default function PinPad({ pin, m3, dark, onUnlock, onCancel }: PinPadProp
     const [digits, setDigits] = useState('');
     const [wrong, setWrong] = useState(false);
     const dialogRef = useRef<HTMLDivElement>(null);
+    // The compatibility click that follows the tap which opened the pad is hit-tested on the pad: a key only acts when its own pointerdown came first.
+    const armed = useRef<string | null>(null);
     const ready = pin.kind === 'pin';
     const length = ready ? pin.pin.length : 4;
     const look = keyLook({}, m3, dark);
@@ -73,7 +75,14 @@ export default function PinPad({ pin, m3, dark, onUnlock, onCancel }: PinPadProp
                             data-pin-key={key}
                             disabled={!ready && key !== 'cancel'}
                             key={key}
-                            onClick={() => press(key)}
+                            onClick={() => {
+                                if (armed.current !== key) return;
+                                armed.current = null;
+                                press(key);
+                            }}
+                            onPointerCancel={() => { armed.current = null; }}
+                            onPointerDown={() => { armed.current = key; }}
+                            onPointerLeave={event => { if (event.pointerType === 'mouse') armed.current = null; }}
                             style={{ background: /^\d$/.test(key) ? look.key : look.special, border: 0, borderRadius: look.radius, color: look.text, fontSize: key === 'cancel' ? 14 : look.fontSize, height: 52, opacity: !ready && key !== 'cancel' ? 0.38 : 1, touchAction: 'manipulation', userSelect: 'none' }}
                             tabIndex={-1}
                             type="button"
