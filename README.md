@@ -116,6 +116,12 @@ full per-widget option and is not deprecated, so nothing you report is a reason
 to wait with an upgrade.
 
 ## Changelog
+### **WORK IN PROGRESS**
+
+- (typhosj) Added a **PIN** to every widget with a lock: the PIN pad asks for 1 to 12 digits, and the right PIN unlocks every widget with the same PIN until the lock time ends. It protects against accidental taps and children, not against attackers (Scrounger/ioBroker.vis-materialdesign#111)
+- (typhosj) Added the **lock** to Input, Select, Autocomplete, Slider and Round Slider: a tap unlocks the widget, or asks for the PIN, and it locks again after the lock time (Scrounger/ioBroker.vis-materialdesign#112)
+- (typhosj) **Read only** can be bound to another state on every form widget, and Input, Select and Autocomplete have it now, for example to allow the start time only while automatic mode is on (Scrounger/ioBroker.vis-materialdesign#96)
+
 ### 1.4.0 (2026-11-19)
 
 - (typhosj) Added **position of the menu** to the Top App Bar: the menu button and the drawer can move to the right edge together, for example where the ioBroker app puts its own button over the top left corner (Scrounger/ioBroker.vis-materialdesign#193)
