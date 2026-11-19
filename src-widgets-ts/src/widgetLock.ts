@@ -1,6 +1,7 @@
-import type { RxWidgetInfoAttributesFieldText } from '@iobroker/types-vis-2';
+import type { RxWidgetInfo, RxWidgetInfoAttributesFieldText } from '@iobroker/types-vis-2';
 
 import { looksLikeBinding } from './deviceFill';
+import { iconField } from './widgetUtils';
 
 export type Pin = { kind: 'none' } | { kind: 'pin'; pin: string } | { kind: 'invalid' };
 export type LockRequest = 'open' | 'unlocked' | 'pin' | 'blocked';
@@ -33,6 +34,18 @@ export function pinFieldError(data: Record<string, unknown>): string | false {
 
 // vis-2 shows a string returned by `error` as the field's helper text (translated).
 export const lockPinField: RxWidgetInfoAttributesFieldText = { name: 'lockPin', label: 'lockPin', type: 'text', error: pinFieldError as unknown as NonNullable<RxWidgetInfoAttributesFieldText['error']> };
+
+export const lockGroup = {
+    name: 'lock',
+    label: 'group_lock',
+    fields: [
+        { name: 'lockEnabled', label: 'lockEnabled', type: 'checkbox' },
+        { name: 'autoLockAfter', label: 'autoLockAfter', type: 'number', default: 10 },
+        lockPinField,
+        iconField('lockIcon', 'lockIcon', 'lock-outline'),
+        { name: 'lockIconColor', label: 'lockIconColor', type: 'color' },
+    ],
+} as RxWidgetInfo['visAttrs'][number];
 
 const pinUntil = new Map<string, number>();
 const pinTimers = new Map<string, ReturnType<typeof setTimeout>>();

@@ -18,7 +18,9 @@ import {
     resolveHour12,
     todayParts,
 } from './pickerFormat';
-import { squarePreview, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, iconField, legacyInk, legacyInkMuted, legacyOutline, isReadOnly, setStateValue, sizeCss, stateValue } from './widgetUtils';
+import PinPad from './PinPad';
+import { WidgetLock, lockGroup, lockSeconds, pinOf, type LockOptions } from './widgetLock';
+import { boolValue, textValue, squarePreview, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, iconField, legacyInk, legacyInkMuted, legacyOutline, isReadOnly, setStateValue, sizeCss, stateValue } from './widgetUtils';
 
 interface InputData {
     oid?: string;
@@ -81,6 +83,11 @@ interface InputData {
     appendOuterIcon?: string;
     appendOuterIconSize?: number;
     appendOuterIconColor?: string;
+    lockEnabled?: boolean;
+    lockPin?: string;
+    autoLockAfter?: number;
+    lockIcon?: string;
+    lockIconColor?: string;
 }
 
 // Issue #15: picking the datapoint fills what the object's own metadata already says.
@@ -292,6 +299,7 @@ const attrs: RxWidgetInfo['visAttrs'] = [
             { name: 'pickerOnAccentColor', label: 'pickerOnAccentColor', type: 'color' },
         ],
     },
+    lockGroup,
 ];
 
 function layoutClass(layoutValue: string | undefined): string {
@@ -457,6 +465,8 @@ export default class MaterialDesignInput extends VisWidget {
     private readonly rootRef = React.createRef<HTMLDivElement>();
     private pickerOpen = false;
     private readonly pickerButtonRef = React.createRef<HTMLButtonElement>();
+    private readonly inputRef = React.createRef<HTMLInputElement>();
+    private readonly lock = new WidgetLock(() => this.forceUpdate());
 
     constructor(props: VisRxWidgetProps) {
         super(props);
@@ -469,9 +479,24 @@ export default class MaterialDesignInput extends VisWidget {
         this.rootRef.current?.parentElement?.parentElement?.style.setProperty('overflow', 'visible', 'important');
     }
 
+    componentWillUnmount(): void {
+        this.lock.dispose();
+        super.componentWillUnmount?.();
+    }
+
+    private lockOptions(data: InputData): LockOptions {
+        return {
+            enabled: boolValue(data.lockEnabled),
+            pin: pinOf(data.lockPin, (this.state?.data as Record<string, unknown> | undefined)?.lockPin),
+            seconds: lockSeconds(data.autoLockAfter),
+            readOnly: isReadOnly(data),
+            editMode: !!this.props.editMode,
+        };
+    }
+
     static getWidgetInfo(): RxWidgetInfo {
         return {
-            ...createInfo('tplVis2-materialdesign-Input', 'Input', withAutoFill(attrs, autoFillMap), ['inputLayout', 'inputAppendix', 'inputSubText', 'counter', 'icons']),
+            ...createInfo('tplVis2-materialdesign-Input', 'Input', withAutoFill(attrs, autoFillMap), ['inputLayout', 'inputAppendix', 'inputSubText', 'counter', 'icons', 'lock']),
             visPrev: squarePreview('F060E'),
             visDefaultStyle: { width: 150, height: 38 },
         };
@@ -522,6 +547,9 @@ export default class MaterialDesignInput extends VisWidget {
         super.renderWidgetBody(props);
         const data = this.state.rxData as InputData;
         const readOnly = isReadOnly(data);
+        const opts = this.lockOptions(data);
+        const locked = this.lock.isLocked(opts);
+        const blocked = readOnly || locked;
         const state = stateValue(this.state, data.oid || '');
         if (state !== this.seenStateValue) {
             this.seenStateValue = state;
@@ -792,22 +820,31 @@ export default class MaterialDesignInput extends VisWidget {
                                         </label>
                                     ) : null}
                                     <input
-                                        readOnly={readOnly}
+                                        ref={this.inputRef}
+                                        readOnly={blocked}
+                                        onPointerDown={event => {
+                                            if (!locked) return;
+                                            // The tap that unlocks must not also place the caret in a still-readonly field.
+                                            event.preventDefault();
+                                            if (this.lock.request(opts) === 'unlocked') window.setTimeout(() => this.inputRef.current?.focus());
+                                        }}
                                         autoFocus={!!data.autoFocus}
                                         // The picker mask has a fixed length; a shorter max length would make every entry invalid.
                                         maxLength={!spec && data.inputMaxLength ? num(data.inputMaxLength, 0) : undefined}
                                         onBlur={event => {
                                             this.focused = false;
-                                            if (readOnly) {
+                                            if (blocked) {
+                                                this.lock.hold(false, opts);
                                                 this.forceUpdate();
                                                 return;
                                             }
                                             if (spec) {
                                                 this.commitPicker(data, spec, event.target.value);
-                                                return;
+                                            } else {
+                                                this.commit(data, event.target.value);
+                                                this.forceUpdate();
                                             }
-                                            this.commit(data, event.target.value);
-                                            this.forceUpdate();
+                                            this.lock.hold(false, opts);
                                         }}
                                         onChange={event => {
                                             this.localValue = spec
@@ -824,10 +861,11 @@ export default class MaterialDesignInput extends VisWidget {
                                         }}
                                         onFocus={() => {
                                             this.focused = true;
+                                            this.lock.hold(true, opts);
                                             this.forceUpdate();
                                         }}
                                         onKeyDown={event => {
-                                            if (readOnly || event.key !== 'Enter') {
+                                            if (blocked || event.key !== 'Enter') {
                                                 return;
                                             }
                                             if (spec) {
@@ -878,7 +916,12 @@ export default class MaterialDesignInput extends VisWidget {
                                             {data.inputSuffix}
                                         </div>
                                     ) : null}
-                                    {data.clearIconShow !== false && value !== '' && !readOnly ? (
+                                    {locked ? (
+                                        <span data-lock-icon="" style={{ alignItems: 'center', display: 'flex', flex: '0 0 auto', marginLeft: 4 }}>
+                                            {renderIcon(textValue(data.lockIcon, 'lock-outline'), textValue(data.lockIconColor, '#B22222'), 18, true)}
+                                        </span>
+                                    ) : null}
+                                    {data.clearIconShow !== false && value !== '' && !blocked ? (
                                         <button
                                             aria-label={VisWidget.t('ariaClearInput')}
                                             onClick={() => {
@@ -913,7 +956,7 @@ export default class MaterialDesignInput extends VisWidget {
                                             )}
                                         </button>
                                     ) : null}
-                                    {spec && !readOnly ? (
+                                    {spec && !blocked ? (
                                         <button
                                             aria-haspopup="dialog"
                                             aria-label={spec.kind === 'date' ? VisWidget.t('ariaOpenDatePicker') : VisWidget.t('ariaOpenTimePicker')}
@@ -1037,6 +1080,21 @@ export default class MaterialDesignInput extends VisWidget {
                         spec={spec}
                         today={todayParts(new Date())}
                     />
+                ) : null}
+                {this.lock.padOpen ? (
+                    // The pad is a portal, but its clicks and keys still bubble through the React tree.
+                    <span onClick={event => event.stopPropagation()} onKeyDown={event => event.stopPropagation()}>
+                        <PinPad
+                            dark={this.isDarkTheme()}
+                            m3={isM3}
+                            onCancel={() => this.lock.pinCancelled()}
+                            onUnlock={pin => {
+                                this.lock.pinAccepted(pin, opts.seconds);
+                                window.setTimeout(() => this.inputRef.current?.focus());
+                            }}
+                            pin={opts.pin}
+                        />
+                    </span>
                 ) : null}
             </div>
         );
