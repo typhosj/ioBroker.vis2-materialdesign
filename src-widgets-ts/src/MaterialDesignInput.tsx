@@ -484,6 +484,11 @@ export default class MaterialDesignInput extends VisWidget {
         super.componentWillUnmount?.();
     }
 
+    // A field focused while still locked got no hold from onFocus, and the unlocking tap fires no new focus event.
+    private holdIfFocused(opts: LockOptions): void {
+        if (document.activeElement === this.inputRef.current) this.lock.hold(true, opts);
+    }
+
     private lockOptions(data: InputData): LockOptions {
         return {
             enabled: boolValue(data.lockEnabled),
@@ -548,7 +553,7 @@ export default class MaterialDesignInput extends VisWidget {
         const data = this.state.rxData as InputData;
         const readOnly = isReadOnly(data);
         const opts = this.lockOptions(data);
-        const locked = this.lock.isLocked(opts);
+        const locked = !readOnly && this.lock.isLocked(opts);
         const blocked = readOnly || locked;
         const state = stateValue(this.state, data.oid || '');
         if (state !== this.seenStateValue) {
@@ -826,7 +831,10 @@ export default class MaterialDesignInput extends VisWidget {
                                             if (!locked) return;
                                             // The tap that unlocks must not also place the caret in a still-readonly field.
                                             event.preventDefault();
-                                            if (this.lock.request(opts) === 'unlocked') window.setTimeout(() => this.inputRef.current?.focus());
+                                            if (this.lock.request(opts) === 'unlocked') {
+                                                this.holdIfFocused(opts);
+                                                window.setTimeout(() => this.inputRef.current?.focus());
+                                            }
                                         }}
                                         autoFocus={!!data.autoFocus}
                                         // The picker mask has a fixed length; a shorter max length would make every entry invalid.
@@ -1090,6 +1098,7 @@ export default class MaterialDesignInput extends VisWidget {
                             onCancel={() => this.lock.pinCancelled()}
                             onUnlock={pin => {
                                 this.lock.pinAccepted(pin, opts.seconds);
+                                this.holdIfFocused(opts);
                                 window.setTimeout(() => this.inputRef.current?.focus());
                             }}
                             pin={opts.pin}

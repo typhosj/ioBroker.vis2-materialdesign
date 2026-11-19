@@ -82,6 +82,31 @@ describe('Input lock (upstream #112)', () => {
         expect(vi.getTimerCount()).toBe(0);
     });
 
+    it('read-only with the lock enabled shows no lock icon and a tap is left alone', () => {
+        const w = make({ readOnly: 'true' });
+        expect(find(w.tree(), el => el.props['data-lock-icon'] !== undefined)).toBeUndefined();
+        const preventDefault = vi.fn();
+        (w.field().props.onPointerDown as (e: unknown) => void)({ preventDefault });
+        expect(preventDefault).not.toHaveBeenCalled();
+    });
+
+    it('a field focused while locked is held once the tap unlocks it', () => {
+        const w = make({});
+        const el = { focus: () => undefined } as unknown as HTMLInputElement;
+        (w.input as unknown as { inputRef: { current: unknown } }).inputRef.current = el;
+        Object.defineProperty(document, 'activeElement', { configurable: true, get: () => el });
+        try {
+            (w.field().props.onFocus as () => void)();
+            (w.field().props.onPointerDown as (e: unknown) => void)({ preventDefault: () => undefined });
+            vi.advanceTimersByTime(5000);
+            expect(w.field().props.readOnly).toBe(false);
+            (w.field().props.onBlur as (e: unknown) => void)({ target: { value: 'v' } });
+            expect(w.field().props.readOnly).toBe(true);
+        } finally {
+            delete (document as unknown as Record<string, unknown>).activeElement;
+        }
+    });
+
     it('unmounting clears the relock timer', () => {
         const w = make({});
         (w.field().props.onPointerDown as (e: unknown) => void)({ preventDefault: () => undefined });
