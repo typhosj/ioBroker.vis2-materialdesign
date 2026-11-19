@@ -24,8 +24,10 @@ function copyAllFiles() {
     if (existsSync(`${srcTs}build/customWidgets.ssr.js`)) {
         cpSync(`${srcTs}build/customWidgets.ssr.js`, `${widgetTarget}/customWidgets.ssr.js`);
     }
-    if (existsSync(`${srcTs}build/mf-stats.json`)) {
-        cpSync(`${srcTs}build/mf-stats.json`, `${widgetTarget}/mf-stats.json`);
+    for (const file of ['mf-manifest.json', 'mf-stats.json']) {
+        if (existsSync(`${srcTs}build/${file}`)) {
+            cpSync(`${srcTs}build/${file}`, `${widgetTarget}/${file}`);
+        }
     }
     if (existsSync(`${srcTs}build/assets`)) {
         cpSync(`${srcTs}build/assets`, `${widgetTarget}/assets`, { recursive: true });

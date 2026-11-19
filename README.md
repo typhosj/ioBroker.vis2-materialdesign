@@ -128,6 +128,7 @@ to wait with an upgrade.
 - (typhosj) Added **URL** and **open URL in** to the entries of the Top App Bar (`"url"` and `"urlTarget"` in the JSON string): such an entry opens a web page in a new or in the same tab instead of selecting a view (Scrounger/ioBroker.vis-materialdesign#123)
 - (typhosj) Added **scroll to the active entry** to the Icon List: when another entry becomes active, the list scrolls inside its own box until that entry is visible, while the view and the page stay where they are (Scrounger/ioBroker.vis-materialdesign#108)
 - (typhosj) Fixed the tooltip title of the Line History chart, which read "lll" while no time format was set for the X axis: it shows date and time in the system language now. The localized presets of moment (`LT`, `LTS`, `L`, `l`, `LL`, `ll`, `LLL`, `lll`, `LLLL`, `llll`) work in every date template of the widgets
+- (typhosj) Fixed a "404 Not Found" for `mf-manifest.json` in the browser console on every vis-2 page load: the file is now shipped next to the widget bundle
 
 ### 1.3.0 (2026-11-18)
 

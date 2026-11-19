@@ -213,6 +213,30 @@ assert.deepStrictEqual(
     "React 18 share fallbacks must only be loaded through import(), or the widget set crashes on vis-2 with React 19",
 );
 
+// vis-2 (React 19 builds) fetches mf-manifest.json next to customWidgets.js before mf-stats.json, so a
+// missing manifest is a 404 on every page load. Without either file it skips this check, with one
+// that does not share react (and react/jsx-runtime) it refuses the widget set — same rule as vis-2.
+function vis2ShareProblem(manifest) {
+    const names = Array.isArray(manifest?.shared) ? manifest.shared.map((entry) => entry?.name) : [];
+    if (!names.length) return null;
+    if (!names.includes("react")) return "react";
+    return names.includes("react/jsx-runtime") ? null : "jsx-runtime";
+}
+assert.strictEqual(vis2ShareProblem(null), null);
+assert.strictEqual(vis2ShareProblem({}), null);
+assert.strictEqual(vis2ShareProblem({ shared: "react" }), null);
+assert.strictEqual(vis2ShareProblem({ shared: [] }), null);
+assert.strictEqual(vis2ShareProblem({ shared: [null, { name: "react-dom" }] }), "react");
+assert.strictEqual(vis2ShareProblem({ shared: [{ name: "react" }] }), "jsx-runtime");
+assert.strictEqual(vis2ShareProblem({ shared: [{ name: "react" }, { name: "react/jsx-runtime" }] }), null);
+for (const file of ["mf-manifest.json", "mf-stats.json"]) {
+    const full = path.join(widgetDir, file);
+    assert.ok(fs.existsSync(full), `widgets/vis2-materialdesign/${file} must exist - run npm run build`);
+    const manifest = JSON.parse(fs.readFileSync(full, "utf8"));
+    assert.ok(manifest.shared?.length, `${file} must list the shared modules`);
+    assert.strictEqual(vis2ShareProblem(manifest), null, `${file} must share react and react/jsx-runtime for vis-2`);
+}
+
 for (const file of walk(path.join(root, "admin"), (name) => name.endsWith(".json") && !name.endsWith("tsconfig.json"))) {
     JSON.parse(fs.readFileSync(file, "utf8"));
 }
