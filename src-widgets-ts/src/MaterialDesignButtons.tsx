@@ -4,7 +4,7 @@ import type { RxWidgetInfo, VisRxWidgetProps } from '@iobroker/types-vis-2';
 import { symbolName } from './IconFilePicker';
 import { fill, withAutoFill, type FillMap } from './deviceFill';
 
-import { squarePreview, PressState, RenderProps, SliderWriter, VisWidget, createInfo, indexedFields, itemCount, designStyle, designStyleClasses, iconField, numberValue, parseActionValue, safeWidgetUrl, setStateValue, sizeCss, stateValue, sanitizeHtml, stringValue } from './widgetUtils';
+import { isReadOnly, squarePreview, PressState, RenderProps, SliderWriter, VisWidget, createInfo, indexedFields, itemCount, designStyle, designStyleClasses, iconField, numberValue, parseActionValue, safeWidgetUrl, setStateValue, sizeCss, stateValue, sanitizeHtml, stringValue } from './widgetUtils';
 
 type ButtonKind = 'navigation' | 'link' | 'state' | 'multiState' | 'addition' | 'toggle' | 'slider';
 type ButtonLayout = 'default' | 'vertical' | 'icon';
@@ -137,7 +137,7 @@ const actionFields = {
     ],
     toggle: [
         { name: 'oid', label: 'oid', type: 'id' },
-        { name: 'readOnly', label: 'readOnly', type: 'checkbox' },
+        { name: 'readOnly', label: 'readOnly', type: 'checkbox', noBinding: false },
         { name: 'toggleType', label: 'toggleType', type: 'select', options: ['boolean', 'value'], default: 'boolean' },
         { name: 'pushButton', label: 'pushButton', type: 'checkbox' },
         { name: 'valueOff', label: 'valueOff', type: 'text' },
@@ -146,7 +146,7 @@ const actionFields = {
     ],
     slider: [
         { name: 'oid', label: 'oid', type: 'id' },
-        { name: 'readOnly', label: 'readOnly', type: 'checkbox' },
+        { name: 'readOnly', label: 'readOnly', type: 'checkbox', noBinding: false },
         { name: 'sliderOnly', label: 'sliderOnly', type: 'checkbox' },
         { name: 'sendValueOnRelease', label: 'sendValueOnRelease', type: 'checkbox' },
         { name: 'valueOff', label: 'valueOff', type: 'number' },
@@ -472,7 +472,7 @@ function execute(def: ButtonDefinition, props: VisRxWidgetProps, data: ButtonDat
     } else if (def.kind === 'addition') {
         const step = numeric(data.value, 0);
         setStateValue(props, data.oid || '', clampByMinMax(numeric(current, 0) + step, data.minmax, step));
-    } else if ((def.kind === 'toggle' || def.kind === 'slider') && !data.readOnly) {
+    } else if ((def.kind === 'toggle' || def.kind === 'slider') && !isReadOnly(data)) {
         const onValue = def.kind === 'slider' ? numeric(data.valueOn, 100) : data.toggleType === 'value' ? parseActionValue(String(data.valueOn ?? true)) : true;
         const offValue = def.kind === 'slider' ? numeric(data.valueOff, 0) : data.toggleType === 'value' ? parseActionValue(String(data.valueOff ?? false)) : false;
         setStateValue(props, data.oid || '', isOn(current, data) ? offValue : onValue);
@@ -553,7 +553,7 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
             // nothing — and must not buzz and click either, which it did while the feedback ran ahead
             // of this check. `readOnly` only exists on the toggle and slider kinds; it is undefined,
             // and therefore harmless, on the rest.
-            if (data.readOnly && !locked) {
+            if (isReadOnly(data) && !locked) {
                 return;
             }
             feedback(data);
@@ -603,7 +603,7 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
         }
 
         pushDown(data: ButtonData): void {
-            if (def.kind !== 'toggle' || data.readOnly || !data.pushButton) {
+            if (def.kind !== 'toggle' || isReadOnly(data) || !data.pushButton) {
                 return;
             }
             feedback(data);
@@ -618,7 +618,7 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
         }
 
         pushUp(data: ButtonData): void {
-            if (this.isLocked(data) || def.kind !== 'toggle' || data.readOnly || !data.pushButton) {
+            if (this.isLocked(data) || def.kind !== 'toggle' || isReadOnly(data) || !data.pushButton) {
                 return;
             }
             const offValue = data.toggleType === 'value' ? parseActionValue(String(data.valueOff ?? false)) : false;
@@ -626,7 +626,7 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
         }
 
         setSliderFromPointer(event: React.PointerEvent<SVGSVGElement>, data: ButtonData): void {
-            if (data.readOnly || this.isLocked(data)) {
+            if (isReadOnly(data) || this.isLocked(data)) {
                 return;
             }
             // Mark slider interaction so the button's mouse-up does not clobber the dragged value.
@@ -748,7 +748,7 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
                         aria-pressed={on}
                         // A read-only button writes nothing, so `aria-disabled` is the honest state and makes the M3
                         // disabled rule apply. Legacy has no rule for it.
-                        aria-disabled={data.readOnly ? true : undefined}
+                        aria-disabled={isReadOnly(data) ? true : undefined}
                         className={isM3 ? (isIcon ? `mdw-md3-icon-button mdw-md3-icon-button--${m3IconVariant} mdw-state-layer` : `mdw-md3-button mdw-md3-button--${m3Variant} mdw-state-layer`) : undefined}
                         style={{
                             width: '100%',
@@ -760,7 +760,7 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
                             // Without a fill the primary color has to move to border and label — the on-primary
                             // color (white by default) would be invisible on the view background.
                             color: isM3 ? (fgExplicit ? secondary : undefined) : flatButton && !isIcon ? primary : secondary,
-                            cursor: data.readOnly ? 'default' : 'pointer',
+                            cursor: isReadOnly(data) ? 'default' : 'pointer',
                             padding: isIcon ? 0 : '0 8px',
                             display: 'flex',
                             flexDirection: direction,
@@ -888,11 +888,11 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
                                         }
                                     }}
                                     style={{
-                                        cursor: data.readOnly || locked ? 'default' : 'pointer',
+                                        cursor: isReadOnly(data) || locked ? 'default' : 'pointer',
                                         display: sliderVisible ? 'block' : 'none',
                                         left: '50%',
                                         overflow: 'visible',
-                                        pointerEvents: data.readOnly || locked ? 'none' : 'auto',
+                                        pointerEvents: isReadOnly(data) || locked ? 'none' : 'auto',
                                         position: 'absolute',
                                         top: '50%',
                                         touchAction: 'none',

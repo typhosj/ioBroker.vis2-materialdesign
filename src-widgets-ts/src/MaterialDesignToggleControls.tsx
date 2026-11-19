@@ -4,7 +4,7 @@ import type { RxWidgetInfo, VisRxWidgetProps } from '@iobroker/types-vis-2';
 
 import { renderIcon, m3ColorExplicit } from './MaterialDesignButtons';
 import { fill, withAutoFill } from './deviceFill';
-import { boolValue, squarePreview, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, iconField, m3Switch, parseActionValue, setStateValue, sizeCss, stateValue, stringValue } from './widgetUtils';
+import { boolValue, isReadOnly, squarePreview, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, iconField, m3Switch, parseActionValue, setStateValue, sizeCss, stateValue, stringValue } from './widgetUtils';
 
 export interface ToggleControlData {
     oid?: string;
@@ -53,7 +53,7 @@ interface ControlDefinition {
 
 const baseFields = [
     { name: 'oid', label: 'oid', type: 'id' },
-    { name: 'readOnly', label: 'readOnly', type: 'checkbox' },
+    { name: 'readOnly', label: 'readOnly', type: 'checkbox', noBinding: false },
     { name: 'toggleType', label: 'toggleType', type: 'select', options: ['boolean', 'value'], default: 'boolean' },
     { name: 'valueOff', label: 'valueOff', type: 'text' },
     { name: 'valueOn', label: 'valueOn', type: 'text' },
@@ -261,7 +261,7 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
                 // Same condition as the cursor below: a locked control still reacts (unlocking is a
                 // real interaction), a read-only one does nothing — and must not buzz and click
                 // either, which it did while the feedback ran ahead of this check.
-                if (data.readOnly && !locked) {
+                if (isReadOnly(data) && !locked) {
                     return;
                 }
                 feedback(data);
@@ -278,13 +278,13 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
                     isM3 ? (
                         // The geometry lives in m3Switch() because List renders the same control.
                         m3Switch({
-                            disabled: !!data.readOnly,
+                            disabled: isReadOnly(data),
                             filter: controlFilter,
                             icon: !!data.md3SwitchIcon,
                             input: (
                                 <input
                                     checked={on}
-                                    disabled={!!data.readOnly}
+                                    disabled={isReadOnly(data)}
                                     onChange={() => undefined}
                                     role="switch"
                                     style={{ cursor: 'inherit', inset: 0, margin: 0, opacity: 0, position: 'absolute', width: '100%', height: '100%' }}
@@ -364,7 +364,7 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
                                     <input
                                         checked={on}
                                         className="mdc-switch__native-control"
-                                        disabled={!!data.readOnly}
+                                        disabled={isReadOnly(data)}
                                         onChange={() => undefined}
                                         role="switch"
                                         style={{ cursor: 'inherit', opacity: 0 }}
@@ -377,7 +377,7 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
                 ) : (
                     <div
                         aria-checked={on}
-                        aria-disabled={data.readOnly ? true : undefined}
+                        aria-disabled={isReadOnly(data) ? true : undefined}
                         className={`mdc-checkbox mdc-checkbox--upgraded${on ? ' mdc-checkbox--selected' : ''} mdc-ripple-upgraded mdc-ripple-upgraded--unbounded`}
                         role="checkbox"
                         style={{
@@ -386,7 +386,7 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
                             flex: '0 0 auto',
                             height: 40,
                             // M3 renders a disabled control at 38% content opacity; legacy never dimmed read-only.
-                            opacity: isM3 && data.readOnly ? .38 : undefined,
+                            opacity: isM3 && isReadOnly(data) ? .38 : undefined,
                             padding: 0,
                             position: 'relative',
                             width: 40,
@@ -398,7 +398,7 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
                         <input
                             checked={on}
                             className="mdc-checkbox__native-control"
-                            disabled={!!data.readOnly}
+                            disabled={isReadOnly(data)}
                             onChange={() => undefined}
                             style={{ cursor: 'inherit', opacity: 0, position: 'absolute' }}
                             type="checkbox"
@@ -470,7 +470,7 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
                         alignItems: 'center',
                         boxSizing: 'border-box',
                         // vis-2 puts the cursor from "CSS common" on its wrapper; an inline value here hides it.
-                        cursor: userCursor || (data.readOnly && !locked ? 'default' : 'pointer'),
+                        cursor: userCursor || (isReadOnly(data) && !locked ? 'default' : 'pointer'),
                         display: 'flex',
                         flexDirection: labelPosition === 'left' ? 'row-reverse' : 'row',
                         height: '100%',

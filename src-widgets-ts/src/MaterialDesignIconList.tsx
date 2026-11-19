@@ -143,7 +143,7 @@ const attrs: RxWidgetInfo['visAttrs'] = [
         { name: 'listTypeButtonNav', label: 'listTypeButtonNav', type: 'views' },
         { name: 'listTypeButtonLink', label: 'listTypeButtonLink', type: 'url' },
         { name: 'lockEnabled', label: 'lockEnabled', type: 'checkbox' },
-        { name: 'readOnly', label: 'readOnly', type: 'checkbox' },
+        { name: 'readOnly', label: 'readOnly', type: 'checkbox', noBinding: false },
         { name: 'itemBackgroundColor', label: 'itemBackgroundColor', type: 'color' },
         { name: 'label', label: 'label', type: 'html' },
         { name: 'subLabel', label: 'subLabel', type: 'html' },

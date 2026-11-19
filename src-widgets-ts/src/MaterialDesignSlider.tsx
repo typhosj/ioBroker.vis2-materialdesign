@@ -5,7 +5,7 @@ import type { RxWidgetInfo, VisRxWidgetProps } from '@iobroker/types-vis-2';
 import { cleanColor, num, snapToStep } from './MaterialDesignProgress';
 import { fill, withAutoFill } from './deviceFill';
 import { m3ColorExplicit } from './MaterialDesignButtons';
-import { squarePreview, RenderProps, SliderWriter, VisWidget, boundedCount, createInfo, designStyle, designStyleClasses, setStateValue, sizeCss, sliderKeyValue, stateValue, sanitizeHtml } from './widgetUtils';
+import { isReadOnly, squarePreview, RenderProps, SliderWriter, VisWidget, boundedCount, createInfo, designStyle, designStyleClasses, setStateValue, sizeCss, sliderKeyValue, stateValue, sanitizeHtml } from './widgetUtils';
 
 // The old widget got track/thumb geometry from ambient legacy Vuetify CSS, which is gone.
 const SLIDER_CSS = `
@@ -111,7 +111,7 @@ const attrs: RxWidgetInfo['visAttrs'] = [
             { name: 'orientation', label: 'orientation', type: 'select', options: ['horizontal', 'vertical'], default: 'horizontal' },
             { name: 'reverseSlider', label: 'reverseSlider', type: 'checkbox' },
             { name: 'knobSize', label: 'knobSize', type: 'select', options: ['knobSmall', 'knobMedium', 'knobBig'], default: 'knobSmall' },
-            { name: 'readOnly', label: 'readOnly', type: 'checkbox' },
+            { name: 'readOnly', label: 'readOnly', type: 'checkbox', noBinding: false },
             { name: 'min', label: 'min', type: 'number' },
             { name: 'max', label: 'max', type: 'number' },
             { name: 'step', label: 'step', type: 'number', default: 1 },
@@ -346,7 +346,7 @@ export default class MaterialDesignSlider extends VisWidget {
         const before = isM3 && !m3ColorExplicit(data.colorBeforeThumb) ? 'var(--md-sys-color-primary)' : cleanColor(data.colorBeforeThumb, '#44739e');
         const thumb = isM3 && !m3ColorExplicit(data.colorThumb) ? 'var(--md-sys-color-primary)' : cleanColor(data.colorThumb, before);
         const after = isM3 && !m3ColorExplicit(data.colorAfterThumb) ? 'var(--md-sys-color-surface-container-high)' : cleanColor(data.colorAfterThumb, 'rgba(161, 161, 161, 0.26)');
-        const disabled = !!data.readOnly || isWorking(stateValue(this.state, data['oid-working'] || ''));
+        const disabled = isReadOnly(data) || isWorking(stateValue(this.state, data['oid-working'] || ''));
         const showThumbLabel = data.showThumbLabel === 'yes' || data.showThumbLabel === 'always';
         // A saved project can hold a non-string here, and `.split` on it threw — which blanks the whole
         // VIS2 view, since a view renders its widgets in one tree without an error boundary.

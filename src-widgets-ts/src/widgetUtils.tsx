@@ -87,6 +87,10 @@ export function boolValue(value: unknown, fallback = false): boolean {
     return value === undefined || value === null || value === '' ? fallback : value === true || value === 'true' || value === 1 || value === '1';
 }
 
+export function isReadOnly(data: { readOnly?: unknown }): boolean {
+    return boolValue(data.readOnly);
+}
+
 // How many indexed rows a "count" option asks for. VIS 1 stored the LAST INDEX in these options, so
 // its "number of data sets = 3" drew four — the label promised one thing and the loop `i <= count`
 // did another. Here the number means the number of rows, and the editor hides the row at index

@@ -14,7 +14,7 @@ import MaterialDesignSlider from './MaterialDesignSlider';
 import MaterialDesignSwitch from './MaterialDesignSwitch';
 import MaterialDesignTable from './MaterialDesignTable';
 import MaterialDesignValue from './MaterialDesignValue';
-import { resetEnumCache, type FillSocket } from './deviceFill';
+import { overwritable, resetEnumCache, type FillSocket } from './deviceFill';
 import { OWNED_KEY, TOUCHED_KEY } from './autoFillKeys';
 
 const temperature = {
@@ -379,5 +379,14 @@ describe('widgets fill themselves from the selected object', () => {
             socket,
         );
         expect(called).toBe(0);
+    });
+});
+
+describe('autofill keeps a bound read-only', () => {
+    it('does not overwrite a binding, but fills an empty field', () => {
+        expect(overwritable('readOnly', { readOnly: '{a:0_userdata.0.auto;!a}' }, {})).toBe(false);
+        expect(overwritable('readOnly', { readOnly: '{0_userdata.0.auto}' }, {})).toBe(false);
+        expect(overwritable('readOnly', {}, {})).toBe(true);
+        expect(overwritable('readOnly', { readOnly: '' }, {})).toBe(true);
     });
 });

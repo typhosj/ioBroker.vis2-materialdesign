@@ -220,7 +220,7 @@ export async function readSource(oid: string, socket: FillSocket, withValue = fa
  * itself and never calls the field's `onChange` (WidgetBindingField.onChange), so no sentinel can
  * have been recorded for it - the value has to speak for itself.
  */
-function looksLikeBinding(value: string): boolean {
+export function looksLikeBinding(value: string): boolean {
     const open = value.indexOf('{');
     return open >= 0 && value.indexOf('}', open + 1) > open;
 }

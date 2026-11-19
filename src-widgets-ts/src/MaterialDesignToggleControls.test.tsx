@@ -169,3 +169,20 @@ describe('shared checkbox/switch behavior', () => {
         }
     });
 });
+
+describe('read-only from a binding', () => {
+    it.each([
+        ['false', true],
+        ['0', true],
+        ['', true],
+        ['true', false],
+        ['1', false],
+    ])('readOnly %j writes: %s', (readOnly, writes) => {
+        const setValue = vi.fn();
+        const Control = createToggleControlClass({ id: 'test', name: 'Test', kind: 'switch' });
+        const control = new Control(fixture<ConstructorParameters<typeof Control>[0]>({ context: { setValue } }));
+        control.state = fixture<typeof control.state>({ rxData: { oid: 'test.0.mode', readOnly }, values: {} });
+        fixture<React.ReactElement<{ onClick: () => void }>>(control.renderWidgetBody(fixture<Parameters<typeof control.renderWidgetBody>[0]>({}))).props.onClick();
+        expect(setValue.mock.calls.length).toBe(writes ? 1 : 0);
+    });
+});

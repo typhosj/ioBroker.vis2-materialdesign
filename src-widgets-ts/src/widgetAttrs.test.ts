@@ -340,3 +340,20 @@ describe('theme entries write into a field the widget has', () => {
         expect(orphans, `theme writes into nothing: ${orphans.join(', ')}`).toEqual([]);
     });
 });
+
+// upstream #96: read-only follows another state through a vis-2 binding. vis-2 hides the binding
+// symbol on checkbox fields unless the widget sets noBinding: false.
+describe('read-only fields are bindable', () => {
+    const fields = Object.entries(modules).flatMap(([file, module]) => (module.default?.getWidgetInfo?.()?.visAttrs || [])
+        .flatMap(group => (group.fields || []) as Array<{ name?: string; noBinding?: boolean }>)
+        .filter(field => field.name === 'readOnly')
+        .map(field => [file, field] as const));
+
+    it('finds the read-only fields', () => {
+        expect(fields.length).toBeGreaterThanOrEqual(6);
+    });
+
+    it.each(fields)('%s offers the binding', (_file, field) => {
+        expect(field.noBinding).toBe(false);
+    });
+});

@@ -5,7 +5,7 @@ import type { RxWidgetInfo, VisRxWidgetProps } from '@iobroker/types-vis-2';
 import { cleanColor, num, snapToStep } from './MaterialDesignProgress';
 import { fill, withAutoFill } from './deviceFill';
 import { m3ColorExplicit } from './MaterialDesignButtons';
-import { squarePreview, RenderProps, SliderWriter, VisWidget, createInfo, designStyle, designStyleClasses, setStateValue, sizeCss, sliderKeyValue, stateValue, sanitizeHtml } from './widgetUtils';
+import { isReadOnly, squarePreview, RenderProps, SliderWriter, VisWidget, createInfo, designStyle, designStyleClasses, setStateValue, sizeCss, sliderKeyValue, stateValue, sanitizeHtml } from './widgetUtils';
 
 export interface RoundSliderData {
     oid?: string;
@@ -68,7 +68,7 @@ const attrs: RxWidgetInfo['visAttrs'] = [
             { name: 'min', label: 'min', type: 'number' },
             { name: 'max', label: 'max', type: 'number' },
             { name: 'step', label: 'step', type: 'number', default: 1 },
-            { name: 'readOnly', label: 'readOnly', type: 'checkbox' },
+            { name: 'readOnly', label: 'readOnly', type: 'checkbox', noBinding: false },
             { name: 'startAngle', label: 'startAngle', type: 'slider', min: 0, max: 360, step: 1, default: 135 },
             { name: 'arcLength', label: 'arcLength', type: 'slider', min: 0, max: 360, step: 1, default: 270 },
             { name: 'sliderWidth', label: 'sliderWidth', type: 'number' },
@@ -233,7 +233,7 @@ export default class MaterialDesignRoundSlider extends VisWidget {
             this.optimisticValue = undefined;
         }
         const value = current(this.optimisticValue ?? rawState, data);
-        const disabled = !!data.readOnly || working(stateValue(this.state, data['oid-working'] || ''));
+        const disabled = isReadOnly(data) || working(stateValue(this.state, data['oid-working'] || ''));
         const start = num(data.startAngle, 135);
         const arc = num(data.arcLength, 270);
         const sliderWidth = num(data.sliderWidth, 3);
