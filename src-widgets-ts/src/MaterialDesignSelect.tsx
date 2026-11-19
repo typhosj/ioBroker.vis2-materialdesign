@@ -512,6 +512,23 @@ export default class MaterialDesignSelect extends VisWidget {
         if (this.inputRef && document.activeElement === this.inputRef) this.lock.hold(true, opts);
     }
 
+    // The unlocking tap on a field that is already focused fires no focus event, so the On-screen Keyboard would not open: blur and focus it again.
+    // refocusing keeps that blur from committing or closing.
+    private refocusing = false;
+
+    private refocus(): void {
+        window.setTimeout(() => {
+            const field = this.inputRef;
+            if (!field) return;
+            if (document.activeElement === field) {
+                this.refocusing = true;
+                field.blur();
+                this.refocusing = false;
+            }
+            field.focus();
+        });
+    }
+
     private commit(value: ioBroker.StateValue, oid: string): void {
         this.localValue = value;
         setStateValue(this.props, oid, value);
@@ -912,7 +929,7 @@ export default class MaterialDesignSelect extends VisWidget {
                                 if (this.lock.request(opts) !== 'unlocked') return;
                                 if (this.isAutocomplete) {
                                     this.holdIfFocused(opts);
-                                    window.setTimeout(() => this.inputRef?.focus());
+                                    this.refocus();
                                     return;
                                 }
                                 this.open = true;
@@ -1070,6 +1087,7 @@ export default class MaterialDesignSelect extends VisWidget {
                                     aria-expanded={menuShown}
                                     readOnly={blocked}
                                     onBlur={() => {
+                                        if (this.refocusing) return;
                                         if (write && this.dirty && !blocked) this.commit(writeValue(list, this.filterText ?? ''), data.oid || '');
                                         this.closeMenu();
                                     }}
@@ -1082,13 +1100,22 @@ export default class MaterialDesignSelect extends VisWidget {
                                         this.open = true;
                                         this.forceUpdate();
                                     }}
+                                    onPointerDown={event => {
+                                        if (!locked) return;
+                                        // The tap that unlocks must not focus the still-readonly field: the focus follows once it is writable.
+                                        event.preventDefault();
+                                        if (this.lock.request(opts) === 'unlocked') {
+                                            this.holdIfFocused(opts);
+                                            this.refocus();
+                                        }
+                                    }}
                                     onClick={event => {
                                         event.stopPropagation();
                                         if (readOnly) return;
                                         if (locked) {
                                             if (this.lock.request(opts) === 'unlocked') {
                                                 this.holdIfFocused(opts);
-                                                window.setTimeout(() => this.inputRef?.focus());
+                                                this.refocus();
                                             }
                                             return;
                                         }
@@ -1159,6 +1186,8 @@ export default class MaterialDesignSelect extends VisWidget {
                                     setStateValue(this.props, data.oid || '', '');
                                     this.filterText = undefined;
                                     this.open = !!data.openOnClear;
+                                    // The plain Select's menu holds the lock; the Autocomplete is paired through focus and blur.
+                                    if (!this.isAutocomplete) this.lock.hold(this.open, opts);
                                     this.forceUpdate();
                                     if (this.isAutocomplete && data.openOnClear) this.inputRef?.focus();
                                 }}
@@ -1247,7 +1276,7 @@ export default class MaterialDesignSelect extends VisWidget {
                                 this.lock.pinAccepted(pin, opts.seconds);
                                 if (this.isAutocomplete) {
                                     this.holdIfFocused(opts);
-                                    window.setTimeout(() => this.inputRef?.focus());
+                                    this.refocus();
                                     return;
                                 }
                                 this.open = true;

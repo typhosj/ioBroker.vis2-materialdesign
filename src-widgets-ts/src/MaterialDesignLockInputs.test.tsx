@@ -94,7 +94,7 @@ describe('Input lock (upstream #112)', () => {
 
     it('a field focused while locked is held once the tap unlocks it', () => {
         const w = make({});
-        const el = { focus: () => undefined } as unknown as HTMLInputElement;
+        const el = { blur: () => undefined, focus: () => undefined } as unknown as HTMLInputElement;
         (w.input as unknown as { inputRef: { current: unknown } }).inputRef.current = el;
         Object.defineProperty(document, 'activeElement', { configurable: true, get: () => el });
         try {
@@ -109,6 +109,44 @@ describe('Input lock (upstream #112)', () => {
         }
     });
 
+    it('an autofocused field is blurred and focused again by the unlocking tap, without a commit, and stays held', () => {
+        const w = make({});
+        const calls: string[] = [];
+        const el = {
+            blur: () => { calls.push('blur'); (w.field().props.onBlur as (e: unknown) => void)({ target: { value: 'abc' } }); },
+            focus: () => { calls.push('focus'); (w.field().props.onFocus as () => void)(); },
+        };
+        (w.input as unknown as { inputRef: { current: unknown } }).inputRef.current = el;
+        Object.defineProperty(document, 'activeElement', { configurable: true, get: () => el });
+        try {
+            (w.field().props.onFocus as () => void)();
+            (w.field().props.onPointerDown as (e: unknown) => void)({ preventDefault: () => undefined });
+            vi.advanceTimersByTime(10);
+            expect(calls).toEqual(['blur', 'focus']);
+            expect(w.setValue).not.toHaveBeenCalled();
+            vi.advanceTimersByTime(5000);
+            expect(w.field().props.readOnly).toBe(false);
+            (w.field().props.onBlur as (e: unknown) => void)({ target: { value: 'abc' } });
+            expect(w.field().props.readOnly).toBe(true);
+        } finally {
+            delete (document as unknown as Record<string, unknown>).activeElement;
+        }
+    });
+
+    it('the material picker holds the lock while the dialog is open; every close releases it', () => {
+        for (const close of ['onCancel', 'onConfirm']) {
+            const w = make({ inputType: 'date', pickerStyle: 'material' });
+            (w.field().props.onPointerDown as (e: unknown) => void)({ preventDefault: () => undefined });
+            (find(w.tree(), el => el.props['aria-haspopup'] === 'dialog')!.props.onClick as () => void)();
+            vi.advanceTimersByTime(5000);
+            expect(w.field().props.readOnly).toBe(false);
+            const dialog = find(w.tree(), el => typeof el.props.onConfirm === 'function')!;
+            (dialog.props[close] as (v?: unknown) => void)(close === 'onConfirm' ? "2026-11-10" : undefined);
+            expect(w.field().props.readOnly).toBe(true);
+            w.input.componentWillUnmount();
+        }
+    });
+
     it('unmounting clears the relock timer', () => {
         const w = make({});
         (w.field().props.onPointerDown as (e: unknown) => void)({ preventDefault: () => undefined });
@@ -120,9 +158,9 @@ describe('Input lock (upstream #112)', () => {
 
 describe('Select / Autocomplete lock', () => {
     const items = { listDataMethod: 'jsonStringObject', jsonStringObject: '[{"value":1,"text":"One"}]' };
-    const select = (rxData: Record<string, unknown>) => {
+    const select = (rxData: Record<string, unknown>, values: Record<string, unknown> = {}) => {
         const w = new MaterialDesignSelect(fixture<ConstructorParameters<typeof MaterialDesignSelect>[0]>({ context: { setValue: vi.fn() } }));
-        w.state = fixture<typeof w.state>({ rxData: { lockEnabled: true, autoLockAfter: 3, ...items, ...rxData }, data: rxData, values: {} });
+        w.state = fixture<typeof w.state>({ rxData: { lockEnabled: true, autoLockAfter: 3, ...items, ...rxData }, data: rxData, values });
         const tree = () => w.renderWidgetBody(fixture<Parameters<typeof w.renderWidgetBody>[0]>({}));
         const button = () => find(tree(), el => el.type === 'button')!;
         const isOpen = () => (w as unknown as { open: boolean }).open;
@@ -206,12 +244,83 @@ describe('Select / Autocomplete lock', () => {
 
     it('an Autocomplete focused while locked is held once the tap unlocks it, and relocks on blur', () => {
         const a = autocomplete({});
-        const el = { focus: () => undefined };
+        const el = { blur: () => undefined, focus: () => undefined };
         (a.w as unknown as { inputRef: unknown }).inputRef = el;
         Object.defineProperty(document, 'activeElement', { configurable: true, get: () => el });
         try {
             (a.field().props.onFocus as () => void)();
             (a.field().props.onClick as (e: unknown) => void)({ stopPropagation: () => undefined });
+            vi.advanceTimersByTime(5000);
+            expect(a.field().props.readOnly).toBe(false);
+            (a.field().props.onBlur as () => void)();
+            expect(a.field().props.readOnly).toBe(true);
+        } finally {
+            delete (document as unknown as Record<string, unknown>).activeElement;
+        }
+    });
+
+    const clearButton = (tree: React.ReactNode) => find(tree, el => el.props['aria-label'] === 'ariaClearInput')!;
+    const clearOnClick = (tree: React.ReactNode) => (clearButton(tree).props.onClick as (e: unknown) => void)({ stopPropagation: () => undefined });
+    const clear = { oid: 'test.0.s', clearIconShow: true };
+    const picked = { 'test.0.s.val': 1 };
+
+    it('clearing while the menu is open closes it and lets the widget relock', () => {
+        const s = select(clear, picked);
+        (s.button().props.onClick as () => void)();
+        expect(s.isOpen()).toBe(true);
+        clearOnClick(s.tree());
+        expect(s.isOpen()).toBe(false);
+        vi.advanceTimersByTime(5000);
+        expect(lockIcon(s.tree())).toBeDefined();
+    });
+
+    it('clearing with openOnClear opens the menu and holds the lock until it closes', () => {
+        const s = select({ ...clear, openOnClear: true }, picked);
+        (s.button().props.onClick as () => void)();
+        (s.button().props.onClick as () => void)();
+        expect(s.isOpen()).toBe(false);
+        (s.button().props.onClick as () => void)();
+        expect(s.isOpen()).toBe(true);
+        (s.button().props.onClick as () => void)();
+        expect(s.isOpen()).toBe(false);
+        clearOnClick(s.tree());
+        expect(s.isOpen()).toBe(true);
+        vi.advanceTimersByTime(5000);
+        expect(lockIcon(s.tree())).toBeUndefined();
+        (s.w as unknown as { closeMenu: () => void }).closeMenu();
+        expect(lockIcon(s.tree())).toBeDefined();
+    });
+
+    it('a pointerdown on the locked Autocomplete keeps the focus off the readonly field, unlocks, then focuses', () => {
+        const a = autocomplete({});
+        const focus = vi.fn();
+        (a.w as unknown as { inputRef: unknown }).inputRef = { focus };
+        const preventDefault = vi.fn();
+        (a.field().props.onPointerDown as (e: unknown) => void)({ preventDefault });
+        expect(preventDefault).toHaveBeenCalled();
+        expect(a.field().props.readOnly).toBe(false);
+        expect(focus).not.toHaveBeenCalled();
+        vi.advanceTimersByTime(10);
+        expect(focus).toHaveBeenCalledTimes(1);
+        // The pointerdown of an already unlocked field is left alone.
+        (a.field().props.onPointerDown as (e: unknown) => void)({ preventDefault });
+        expect(preventDefault).toHaveBeenCalledTimes(1);
+    });
+
+    it('an Autocomplete focused while locked is blurred and focused again by the unlocking tap, and stays held', () => {
+        const a = autocomplete({});
+        const calls: string[] = [];
+        const el = {
+            blur: () => { calls.push('blur'); (a.field().props.onBlur as () => void)(); },
+            focus: () => { calls.push('focus'); (a.field().props.onFocus as () => void)(); },
+        };
+        (a.w as unknown as { inputRef: unknown }).inputRef = el;
+        Object.defineProperty(document, 'activeElement', { configurable: true, get: () => el });
+        try {
+            (a.field().props.onFocus as () => void)();
+            (a.field().props.onPointerDown as (e: unknown) => void)({ preventDefault: () => undefined });
+            vi.advanceTimersByTime(10);
+            expect(calls).toEqual(['blur', 'focus']);
             vi.advanceTimersByTime(5000);
             expect(a.field().props.readOnly).toBe(false);
             (a.field().props.onBlur as () => void)();
@@ -234,7 +343,7 @@ describe('Autocomplete lock after Escape', () => {
         const w = new MaterialDesignAutocomplete(fixture<ConstructorParameters<typeof MaterialDesignAutocomplete>[0]>({ context: { setValue: vi.fn() } }));
         w.state = fixture<typeof w.state>({ rxData: { lockEnabled: true, autoLockAfter: 3, inputMode: 'write', listDataMethod: 'jsonStringObject', jsonStringObject: '[{"value":1,"text":"One"}]' }, data: {}, values: {} });
         const field = () => find(w.renderWidgetBody(fixture<Parameters<typeof w.renderWidgetBody>[0]>({})), el => el.type === 'input')!;
-        const el = { focus: () => undefined };
+        const el = { blur: () => undefined, focus: () => undefined };
         (w as unknown as { inputRef: unknown }).inputRef = el;
         Object.defineProperty(document, 'activeElement', { configurable: true, get: () => el });
         try {
@@ -256,7 +365,7 @@ describe('Autocomplete lock, Escape after the lock time', () => {
         const w = new MaterialDesignAutocomplete(fixture<ConstructorParameters<typeof MaterialDesignAutocomplete>[0]>({ context: { setValue: vi.fn() } }));
         w.state = fixture<typeof w.state>({ rxData: { lockEnabled: true, autoLockAfter: 3, inputMode: 'write', listDataMethod: 'jsonStringObject', jsonStringObject: '[{"value":1,"text":"One"}]' }, data: {}, values: {} });
         const field = () => find(w.renderWidgetBody(fixture<Parameters<typeof w.renderWidgetBody>[0]>({})), el => el.type === 'input')!;
-        const el = { focus: () => undefined };
+        const el = { blur: () => undefined, focus: () => undefined };
         (w as unknown as { inputRef: unknown }).inputRef = el;
         Object.defineProperty(document, 'activeElement', { configurable: true, get: () => el });
         try {

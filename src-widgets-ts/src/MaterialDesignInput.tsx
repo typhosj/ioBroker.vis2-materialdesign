@@ -489,6 +489,23 @@ export default class MaterialDesignInput extends VisWidget {
         if (document.activeElement === this.inputRef.current) this.lock.hold(true, opts);
     }
 
+    // The unlocking tap on a field that is already focused fires no focus event, so the On-screen Keyboard would not open: blur and focus it again.
+    // refocusing keeps that blur from committing or releasing the hold.
+    private refocusing = false;
+
+    private refocus(): void {
+        window.setTimeout(() => {
+            const field = this.inputRef.current;
+            if (!field) return;
+            if (document.activeElement === field) {
+                this.refocusing = true;
+                field.blur();
+                this.refocusing = false;
+            }
+            field.focus();
+        });
+    }
+
     private lockOptions(data: InputData): LockOptions {
         return {
             enabled: boolValue(data.lockEnabled),
@@ -544,6 +561,7 @@ export default class MaterialDesignInput extends VisWidget {
 
     private closePicker(): void {
         this.pickerOpen = false;
+        this.lock.hold(false, this.lockOptions(this.state.rxData));
         this.forceUpdate();
         this.pickerButtonRef.current?.focus();
     }
@@ -833,13 +851,14 @@ export default class MaterialDesignInput extends VisWidget {
                                             event.preventDefault();
                                             if (this.lock.request(opts) === 'unlocked') {
                                                 this.holdIfFocused(opts);
-                                                window.setTimeout(() => this.inputRef.current?.focus());
+                                                this.refocus();
                                             }
                                         }}
                                         autoFocus={!!data.autoFocus}
                                         // The picker mask has a fixed length; a shorter max length would make every entry invalid.
                                         maxLength={!spec && data.inputMaxLength ? num(data.inputMaxLength, 0) : undefined}
                                         onBlur={event => {
+                                            if (this.refocusing) return;
                                             this.focused = false;
                                             if (blocked) {
                                                 this.lock.hold(false, opts);
@@ -970,6 +989,7 @@ export default class MaterialDesignInput extends VisWidget {
                                             aria-label={spec.kind === 'date' ? VisWidget.t('ariaOpenDatePicker') : VisWidget.t('ariaOpenTimePicker')}
                                             onClick={() => {
                                                 this.pickerOpen = true;
+                                                this.lock.hold(true, opts);
                                                 this.forceUpdate();
                                             }}
                                             ref={this.pickerButtonRef}
@@ -1099,7 +1119,7 @@ export default class MaterialDesignInput extends VisWidget {
                             onUnlock={pin => {
                                 this.lock.pinAccepted(pin, opts.seconds);
                                 this.holdIfFocused(opts);
-                                window.setTimeout(() => this.inputRef.current?.focus());
+                                this.refocus();
                             }}
                             pin={opts.pin}
                         />
