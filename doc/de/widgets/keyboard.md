@@ -65,11 +65,16 @@ Die Editor-Oberfläche folgt der ioBroker-Systemsprache; die Screenshots sind de
 
 **Wortvorschläge**
 
-- **Wortvorschläge anzeigen** – eine Leiste über den Tasten mit den am häufigsten getippten
-  Wörtern; solange ein Wort begonnen ist, nur Wörter, die damit beginnen. Antippen setzt das Wort
-  ein und hängt ein Leerzeichen an; langes Drücken entfernt das Wort aus der Liste (für gelernte
-  Tippfehler).
+- **Wortvorschläge anzeigen** – eine Leiste über den Tasten mit den gelernten Wörtern, schon bevor
+  etwas getippt ist; solange ein Wort begonnen ist, nur Wörter, die damit beginnen. Antippen setzt
+  das Wort ein und hängt ein Leerzeichen an; langes Drücken entfernt das Wort aus der Liste (für
+  gelernte Tippfehler).
 - **Anzahl Vorschläge** – 1 bis 10.
+- **Reihenfolge der Vorschläge** – `häufig und zuletzt verwendet` (Standard): die Anzahl eines
+  Wortes verliert alle 30 Tage ohne Verwendung die Hälfte ihres Gewichts, häufige Wörter stehen
+  also vorn, ein früher oft, aber lange nicht mehr benutztes Wort rutscht nach hinten.
+  `am häufigsten` sortiert nur nach der Anzahl, `zuletzt verwendet` nur nach der letzten
+  Verwendung.
 - **State für die Wörter (leer: dieser Browser)** – ein String-State, der die Liste als JSON hält und
   von allen Geräten geteilt wird, die ihn benutzen. Leer hält die Liste nur in diesem Browser.
   Wörter werden gelernt, wenn ein Feld verlassen wird oder Enter übernimmt, nie aus

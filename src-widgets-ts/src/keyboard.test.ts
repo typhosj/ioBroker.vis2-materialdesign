@@ -311,8 +311,58 @@ describe('suggest', () => {
         müll: { w: 'Müll', n: 9, t: 1 },
     };
 
-    it('orders by count, then by last use', () => {
-        expect(suggest(words, '', 10)).toEqual(['Müll', 'Arzttermin', 'Arzt', 'Arbeit']);
+    it('orders by count, then by last use, with "frequent"', () => {
+        expect(suggest(words, '', 10, 'frequent')).toEqual(['Müll', 'Arzttermin', 'Arzt', 'Arbeit']);
+    });
+
+    describe('order', () => {
+        const day = 24 * 60 * 60 * 1000;
+        const now = 400 * day;
+        // Count halves in worth every 30 days of disuse: Milch 8 → 1 after 90 days, Brot 4 → 2.83
+        // after 15, Käse 2 → 1.95 after 1, Eier 1 today.
+        const shop: Words = {
+            milch: { w: 'Milch', n: 8, t: now - 90 * day },
+            brot: { w: 'Brot', n: 4, t: now - 15 * day },
+            eier: { w: 'Eier', n: 1, t: now },
+            käse: { w: 'Käse', n: 2, t: now - day },
+        };
+
+        it('weighs the count by the time since last use with "frecency"; a tie goes to the newer word', () => {
+            expect(suggest(shop, '', 10, 'frecency', now)).toEqual(['Brot', 'Käse', 'Eier', 'Milch']);
+        });
+
+        it('orders by count with "frequent" and by last use with "recent"', () => {
+            expect(suggest(shop, '', 10, 'frequent', now)).toEqual(['Milch', 'Brot', 'Käse', 'Eier']);
+            expect(suggest(shop, '', 10, 'recent', now)).toEqual(['Eier', 'Käse', 'Brot', 'Milch']);
+        });
+
+        it('breaks a tie of "recent" by count', () => {
+            const same: Words = { a: { w: 'a', n: 1, t: now }, b: { w: 'b', n: 3, t: now } };
+            expect(suggest(same, '', 10, 'recent', now)).toEqual(['b', 'a']);
+        });
+
+        it('uses "frecency" by default and for an unknown order', () => {
+            const frecency = ['Brot', 'Käse', 'Eier', 'Milch'];
+            expect(suggest(shop, '', 10, undefined, now)).toEqual(frecency);
+            expect(suggest(shop, '', 10, 'bogus', now)).toEqual(frecency);
+            expect(suggest(shop, '', 10, '', now)).toEqual(frecency);
+        });
+
+        it('does not boost a word whose last use lies in the future (clock of another device)', () => {
+            const skew: Words = { ahead: { w: 'ahead', n: 1, t: now + 365 * day }, today: { w: 'today', n: 2, t: now } };
+            expect(suggest(skew, '', 10, 'frecency', now)).toEqual(['today', 'ahead']);
+        });
+
+        it('still ranks words unused for decades instead of collapsing them to zero', () => {
+            const old: Words = { a: { w: 'a', n: 2, t: 0 }, b: { w: 'b', n: 5, t: 0 } };
+            expect(suggest(old, '', 10, 'frecency', 100 * 365 * day)).toEqual(['b', 'a']);
+        });
+
+        it('filters by the typed part in every order', () => {
+            for (const order of ['frecency', 'frequent', 'recent']) {
+                expect(suggest(shop, 'b', 10, order, now)).toEqual(['Brot']);
+            }
+        });
     });
 
     it('filters by prefix ignoring case and leaves out the complete word', () => {

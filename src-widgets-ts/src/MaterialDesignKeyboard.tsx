@@ -157,6 +157,7 @@ const attrs: RxWidgetInfo['visAttrs'] = [
         fields: [
             { name: 'keyboardSuggestions', label: 'keyboardSuggestions', type: 'checkbox', default: true },
             { name: 'keyboardSuggestionCount', label: 'keyboardSuggestionCount', type: 'number', default: 3, min: 1, max: 10 },
+            { name: 'keyboardSuggestionOrder', label: 'keyboardSuggestionOrder', type: 'select', options: opt('keyboardSuggestionOrder', ['frecency', 'frequent', 'recent']), default: 'frecency' },
             { name: 'keyboardWordsOid', label: 'keyboardWordsOid', type: 'id' },
         ],
     },
@@ -732,7 +733,7 @@ export default class MaterialDesignKeyboard extends VisWidget {
         if (!b(data.keyboardSuggestions, true) || this.layoutFor(el) === 'number') return null;
         const value = el ? this.currentValue(el) : '';
         const prefix = el ? currentWord(value, this.selection(el)[0] ?? value.length).word : '';
-        const list = el ? suggest(this.readWords(), prefix, n(data.keyboardSuggestionCount, 3)) : [];
+        const list = el ? suggest(this.readWords(), prefix, n(data.keyboardSuggestionCount, 3), s(data.keyboardSuggestionOrder, 'frecency')) : [];
         return (
             <div data-suggestions="" style={{ display: 'flex', flex: 1, gap: look.gap, minHeight: 0 }}>
                 {list.map(word => (

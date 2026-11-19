@@ -191,13 +191,25 @@ export function forget(words: Words, word: string): Words {
     return next;
 }
 
-export function suggest(words: Words, prefix: string, count: number): string[] {
+// Known limit: a fixed half-life; an entry keeps only its count and last use, not every use.
+const HALF_LIFE_MS = 30 * 24 * 60 * 60 * 1000;
+
+/** `frecency` (default): the count halves in worth every 30 days since last use. */
+export function suggest(words: Words, prefix: string, count: number, order = 'frecency', now = Date.now()): string[] {
     const wanted = prefix.toLowerCase();
     const limit = Math.max(1, Math.min(10, Math.trunc(Number.isFinite(count) ? count : 3)));
     const capital = prefix !== '' && prefix.charAt(0) !== prefix.charAt(0).toLowerCase();
+    // In log2, so decades of disuse still rank instead of rounding to zero; a last use in the future
+    // (another device's clock) counts as now.
+    const worth = (entry: WordEntry): number => Math.log2(entry.n) - Math.max(0, now - entry.t) / HALF_LIFE_MS;
+    const compare = order === 'frequent'
+        ? (a: WordEntry, b: WordEntry) => b.n - a.n || b.t - a.t
+        : order === 'recent'
+            ? (a: WordEntry, b: WordEntry) => b.t - a.t || b.n - a.n
+            : (a: WordEntry, b: WordEntry) => worth(b) - worth(a) || b.t - a.t;
     return Object.entries(words)
         .filter(([key]) => key.startsWith(wanted) && key !== wanted)
-        .sort(([, a], [, b]) => b.n - a.n || b.t - a.t)
+        .sort(([, a], [, b]) => compare(a, b))
         .slice(0, limit)
         .map(([, entry]) => (capital ? entry.w.charAt(0).toUpperCase() + entry.w.slice(1) : entry.w));
 }

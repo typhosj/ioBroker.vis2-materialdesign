@@ -58,10 +58,13 @@ The editor UI follows the ioBroker system language, so the screenshots are Germa
 
 **word suggestions**
 
-- **show word suggestions** – a bar above the keys with the most typed words; while a word is
-  started, only words that begin with it. Tap fills the word in and adds a space; a long press
-  removes the word from the list (for learned typos).
+- **show word suggestions** – a bar above the keys with the learned words, already before anything
+  is typed; while a word is started, only words that begin with it. Tap fills the word in and adds
+  a space; a long press removes the word from the list (for learned typos).
 - **number of suggestions** – 1 to 10.
+- **order of suggestions** – `frequent and recent` (default): a word's count loses half its worth
+  for every 30 days it has not been used, so frequent words come first while one used a lot long
+  ago moves down. `most frequent` orders by count alone, `most recent` by last use.
 - **state for the words** – a string state that keeps the list as JSON, shared by every device that uses
   it. Empty keeps the list in this browser only. Words are learned when a field is left or Enter
   commits, never from password fields or the number pad, at most 200 words of at most 40

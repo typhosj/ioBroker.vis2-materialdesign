@@ -968,6 +968,25 @@ describe('word suggestions', () => {
         expect(stored().nichts).toBeUndefined();
     });
 
+    it('shows the words in the chosen order, frequent and recent mixed by default, before anything is typed', () => {
+        const now = Date.now();
+        const day = 24 * 60 * 60 * 1000;
+        window.localStorage.setItem('vis2-materialdesign-keyboard-words', JSON.stringify({
+            milch: { w: 'Milch', n: 8, t: now - 120 * day },
+            brot: { w: 'Brot', n: 4, t: now - 2 * day },
+            eier: { w: 'Eier', n: 1, t: now },
+        }));
+        start(keyboard({ keyboardSuggestions: true, keyboardSuggestionCount: 5 }));
+        focus(field('title'));
+        expect(shown()).toEqual(['Brot', 'Eier', 'Milch']);
+        rx().keyboardSuggestionOrder = 'frequent';
+        rerender();
+        expect(shown()).toEqual(['Milch', 'Brot', 'Eier']);
+        rx().keyboardSuggestionOrder = 'recent';
+        rerender();
+        expect(shown()).toEqual(['Eier', 'Brot', 'Milch']);
+    });
+
     it('writes to the state and keeps two learns before the echo', () => {
         start(keyboard({ keyboardSuggestions: true, keyboardWordsOid: 'x.0.words' }, { 'x.0.words.val': '{"arzt":{"w":"Arzt","n":4,"t":1}}' }));
         typeInto('title', 'Arzt');
