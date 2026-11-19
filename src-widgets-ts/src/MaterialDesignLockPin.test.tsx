@@ -55,6 +55,17 @@ describe('Checkbox / Switch with PIN', () => {
         expect(b.setValue).toHaveBeenCalledTimes(1);
     });
 
+    it('the pad sits in a wrapper that stops click and key events from reaching the toggle', () => {
+        const w = make({ lockPin: '12' });
+        w.click();
+        const wrapper = find(w.tree(), el => el.type === 'span' && !!find(el.props.children as React.ReactNode, isPad))!;
+        for (const name of ['onClick', 'onKeyDown']) {
+            const stopPropagation = vi.fn();
+            (wrapper.props[name] as (e: unknown) => void)({ stopPropagation });
+            expect(stopPropagation).toHaveBeenCalled();
+        }
+    });
+
     it('read-only wins: no pad, no unlock, no vibration', () => {
         const w = make({ lockPin: '12', readOnly: true });
         w.click();
@@ -91,6 +102,17 @@ describe('Icon List with PIN', () => {
         expect(setValue.mock.calls.map(call => call[0])).toEqual(['test.0.v0', 'test.0.v1']);
     });
 
+    it('read-only wins: no pad, no timer, no write', () => {
+        const setValue = vi.fn();
+        const list = new MaterialDesignIconList(fixture<ConstructorParameters<typeof MaterialDesignIconList>[0]>({ context: { setValue } }));
+        list.state = fixture<typeof list.state>({ rxData: { lockPin: '12' }, data: { lockPin: '12' }, values: {} });
+        const api = fixture<{ actionProps: (item: Record<string, unknown>, index: number, current: unknown, data: Record<string, unknown>) => { onClick: () => void } }>(list);
+        api.actionProps({ listType: 'buttonToggle', objectId: 'test.0.v', lockEnabled: true, readOnly: true }, 0, false, { lockPin: '12' }).onClick();
+        expect(setValue).not.toHaveBeenCalled();
+        expect(find(list.renderWidgetBody(fixture<Parameters<typeof list.renderWidgetBody>[0]>({})), isPad)).toBeUndefined();
+        expect(vi.getTimerCount()).toBe(0);
+    });
+
     it('declares lockPin', () => {
         expect(declaresPin(MaterialDesignIconList)).toBe(true);
     });
@@ -110,5 +132,19 @@ describe('Toggle button with PIN', () => {
         (pad.props.onUnlock as (pin: string) => void)('12');
         api.activate(data, false);
         expect(setValue).toHaveBeenCalledWith('test.0.v', true);
+    });
+
+    it('read-only wins: no pad, no timer, no write', () => {
+        const setValue = vi.fn();
+        const Button = createButtonClass({ id: 'test-toggle-ro', name: 'toggle', kind: 'toggle', layout: 'default', label: 'toggle', icon: 'plus' });
+        const button = new Button(fixture<ConstructorParameters<typeof Button>[0]>({ context: { setValue } }));
+        const data = { oid: 'test.0.v', lockEnabled: true, lockPin: '12', readOnly: true };
+        button.state = fixture<typeof button.state>({ rxData: data, data, values: {} });
+        const api = fixture<{ activate: (d: Record<string, unknown>, current: unknown) => void; pushDown: (d: Record<string, unknown>) => void }>(button);
+        api.activate(data, false);
+        api.pushDown({ ...data, pushButton: true });
+        expect(setValue).not.toHaveBeenCalled();
+        expect(find(button.renderWidgetBody(fixture<Parameters<typeof button.renderWidgetBody>[0]>({})), isPad)).toBeUndefined();
+        expect(vi.getTimerCount()).toBe(0);
     });
 });
