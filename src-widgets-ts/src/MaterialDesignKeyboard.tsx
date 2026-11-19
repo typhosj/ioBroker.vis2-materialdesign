@@ -172,6 +172,9 @@ const attrs: RxWidgetInfo['visAttrs'] = [
     },
 ];
 
+/** Running keyboards; a keyboard in a nested view (Dialog View) takes its fields from the outer one. */
+const running = new Set<MaterialDesignKeyboard>();
+
 export default class MaterialDesignKeyboard extends VisWidget {
     static getWidgetInfo(): RxWidgetInfo {
         return {
@@ -221,10 +224,20 @@ export default class MaterialDesignKeyboard extends VisWidget {
         return s(this.data().keyboardFields).split(/[\s,;]+/).filter(Boolean);
     }
 
-    private serves(el: unknown): el is Field {
+    /** Whether the field is in this keyboard's view and widget list, ignoring other keyboards. */
+    private claims(el: unknown): el is Field {
         if (!isServable(el) || !this.scope?.contains(el)) return false;
         const ids = this.fieldIds();
         return !ids.length || ids.some(id => document.getElementById(id)?.contains(el));
+    }
+
+    private serves(el: unknown): el is Field {
+        if (!this.claims(el)) return false;
+        // The innermost keyboard wins, or a field in a Dialog View would open two keyboards.
+        for (const other of running) {
+            if (other !== this && other.scope && other.scope !== this.scope && this.scope!.contains(other.scope) && other.claims(el)) return false;
+        }
+        return true;
     }
 
     private servedFields(): Field[] {
@@ -271,6 +284,7 @@ export default class MaterialDesignKeyboard extends VisWidget {
         this.listening = true;
         trackInput(true);
         this.scope = this.placeholder?.closest('[id^="visview_"]') ?? document.body;
+        running.add(this);
         if (s(this.data().keyboardShowOn, 'touch') !== 'touch' || touchInput()) this.startServing();
         this.observer = new MutationObserver(this.suppress);
         this.observer.observe(this.scope, { childList: true, subtree: true });
@@ -286,6 +300,7 @@ export default class MaterialDesignKeyboard extends VisWidget {
         this.stopSwallow();
         if (!this.listening) return;
         this.listening = false;
+        running.delete(this);
         trackInput(false);
         this.observer?.disconnect();
         this.observer = null;

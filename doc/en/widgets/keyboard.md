@@ -86,4 +86,7 @@ The same keyboards with the dark theme switched on:
 ## Notes
 
 - Fields in other views are not served; place a keyboard there too. Use one keyboard per view.
+- A view shown inside this view (Dialog View, view in widget) belongs to it. When that inner view has
+  a keyboard of its own, that keyboard serves the inner fields and this one leaves them alone, so
+  only one keyboard opens.
 - Two devices learning into the same state at the same moment can lose one count.

@@ -119,6 +119,7 @@ to wait with an upgrade.
 ### **WORK IN PROGRESS**
 
 - (typhosj) Fixed the Enter key of the **On-screen Keyboard** in widgets of other adapters: it now sends `keydown`, `keypress` and `keyup` with key code 13 like a real key, so for example the Bring shopping list adds the typed article instead of ignoring Enter. A cancelled `keydown` suppresses the `keypress`, as in the browser
+- (typhosj) Fixed two **On-screen Keyboards** opening at once when a view with a keyboard shows a Dialog View that has its own keyboard: the keyboard of the inner view serves its fields, the outer one leaves them alone
 
 ### 1.4.0 (2026-11-19)
 

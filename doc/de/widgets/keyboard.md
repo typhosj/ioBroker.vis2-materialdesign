@@ -97,4 +97,7 @@ Dieselben Tastaturen bei eingeschaltetem Dark-Theme:
 ## Hinweise
 
 - Felder in anderen Views werden nicht bedient; dort ebenfalls eine Tastatur platzieren. Pro View genau eine Tastatur verwenden.
+- Eine View, die in dieser View angezeigt wird (Dialog View, View in Widget), gehört zu ihr. Hat
+  diese innere View eine eigene Tastatur, bedient diese die inneren Felder und diese Tastatur lässt
+  sie aus, sodass nur eine Tastatur aufgeht.
 - Lernen zwei Geräte im selben Moment in denselben State, kann ein Zähler verloren gehen.

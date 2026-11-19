@@ -487,6 +487,61 @@ describe('Enter and close', () => {
     });
 });
 
+describe('a keyboard inside a nested view (Dialog View)', () => {
+    const panels = (): number => document.body.querySelectorAll('[aria-label="keyboardAria"]').length;
+    const targetOf = (w: MaterialDesignKeyboard): unknown => fixture<{ target: unknown }>(w).target;
+    let inner: MaterialDesignKeyboard | null = null;
+    const innerView = (): React.ReactNode => (
+        <div id="visview_inner">
+            <input aria-label="inner" />
+            {inner?.renderWidgetBody(renderProps)}
+        </div>
+    );
+    function startBoth(innerData: Record<string, unknown> = {}): MaterialDesignKeyboard {
+        const w = keyboard(innerData);
+        inner = w;
+        start(keyboard(), innerView);
+        act(() => w.componentDidMount());
+        rerender();
+        return w;
+    }
+    afterEach(() => {
+        act(() => inner?.componentWillUnmount());
+        inner = null;
+    });
+
+    it('leaves a field of the inner view to the inner keyboard: one keyboard opens, not two', () => {
+        const w = startBoth();
+        focus(field('inner'));
+        expect(panels()).toBe(1);
+        expect(targetOf(w)).toBe(field('inner'));
+        expect(targetOf(current)).toBeNull();
+    });
+
+    it('still serves its own fields while the inner keyboard runs', () => {
+        const w = startBoth();
+        focus(field('title'));
+        expect(panels()).toBe(1);
+        expect(targetOf(current)).toBe(field('title'));
+        expect(targetOf(w)).toBeNull();
+    });
+
+    it('serves the inner field when the inner keyboard does not list it', () => {
+        startBoth({ keyboardFields: 'nope' });
+        focus(field('inner'));
+        expect(panels()).toBe(1);
+        expect(targetOf(current)).toBe(field('inner'));
+    });
+
+    it('takes the inner field back once the inner keyboard has stopped', () => {
+        const w = startBoth();
+        act(() => w.componentWillUnmount());
+        focus(field('inner'));
+        expect(panels()).toBe(1);
+        expect(targetOf(current)).toBe(field('inner'));
+    });
+});
+
 describe('ghost click after the keyboard hides', () => {
     const clicked = vi.fn();
     const overlay = (): HTMLElement => document.querySelector('[data-testid="overlay"]') as HTMLElement;
