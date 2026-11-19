@@ -357,3 +357,18 @@ describe('read-only fields are bindable', () => {
         expect(field.noBinding).toBe(false);
     });
 });
+
+describe('every lockable widget offers the PIN', () => {
+    const lockable = Object.entries(modules)
+        .map(([file, module]) => ({ file, fields: (module.default?.getWidgetInfo?.()?.visAttrs || []).flatMap(group => (group.fields || []).map(field => field.name)) }))
+        .filter(entry => entry.fields.includes('autoLockAfter'));
+
+    it('finds the lockable widgets', () => {
+        // Buttons (several wrappers), Checkbox, Switch, Icon List, Input, Select, Autocomplete, Slider, Round Slider.
+        expect(lockable.length).toBeGreaterThanOrEqual(9);
+    });
+
+    it.each(lockable.map(entry => [entry.file, entry] as const))('%s declares lockPin', (_file, entry) => {
+        expect(entry.fields).toContain('lockPin');
+    });
+});

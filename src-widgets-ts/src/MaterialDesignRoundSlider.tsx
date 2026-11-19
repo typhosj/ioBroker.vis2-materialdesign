@@ -4,8 +4,10 @@ import type { RxWidgetInfo, VisRxWidgetProps } from '@iobroker/types-vis-2';
 
 import { cleanColor, num, snapToStep } from './MaterialDesignProgress';
 import { fill, withAutoFill } from './deviceFill';
-import { m3ColorExplicit } from './MaterialDesignButtons';
-import { isReadOnly, squarePreview, RenderProps, SliderWriter, VisWidget, createInfo, designStyle, designStyleClasses, setStateValue, sizeCss, sliderKeyValue, stateValue, sanitizeHtml } from './widgetUtils';
+import { m3ColorExplicit, renderIcon } from './MaterialDesignButtons';
+import PinPad from './PinPad';
+import { WidgetLock, lockGroup, lockSeconds, pinOf, type LockOptions } from './widgetLock';
+import { boolValue, isReadOnly, squarePreview, RenderProps, SliderWriter, VisWidget, textValue, createInfo, designStyle, designStyleClasses, setStateValue, sizeCss, sliderKeyValue, stateValue, sanitizeHtml } from './widgetUtils';
 
 export interface RoundSliderData {
     oid?: string;
@@ -14,6 +16,11 @@ export interface RoundSliderData {
     max?: number;
     step?: number;
     readOnly?: boolean;
+    lockEnabled?: boolean;
+    lockPin?: string;
+    autoLockAfter?: number;
+    lockIcon?: string;
+    lockIconColor?: string;
     sendValueOnRelease?: boolean;
     startAngle?: number;
     arcLength?: number;
@@ -109,6 +116,7 @@ const attrs: RxWidgetInfo['visAttrs'] = [
             { name: 'textForValueGreaterThan', label: 'textForValueGreaterThan', type: 'html' },
         ],
     },
+    lockGroup,
 ];
 
 export function range(data: RoundSliderData): { min: number; max: number; step: number } {
@@ -181,9 +189,23 @@ function feedback(data: RoundSliderData): void {
 export default class MaterialDesignRoundSlider extends VisWidget {
     private optimisticValue: number | undefined;
     private readonly writer = new SliderWriter();
+    private readonly lock = new WidgetLock(() => this.forceUpdate());
+    // The tap that unlocks must not move the knob to where the finger landed.
+    private swallow = false;
+
+    private lockOptions(data: RoundSliderData): LockOptions {
+        return {
+            enabled: boolValue(data.lockEnabled),
+            pin: pinOf(data.lockPin, (this.state?.data as Record<string, unknown> | undefined)?.lockPin),
+            seconds: lockSeconds(data.autoLockAfter),
+            readOnly: isReadOnly(data),
+            editMode: !!this.props.editMode,
+        };
+    }
 
     componentWillUnmount(): void {
         this.writer.cancel();
+        this.lock.dispose();
         super.componentWillUnmount();
     }
     private seenStateValue: ioBroker.StateValue | undefined;
@@ -194,7 +216,7 @@ export default class MaterialDesignRoundSlider extends VisWidget {
 
     static getWidgetInfo(): RxWidgetInfo {
         return {
-            ...createInfo('tplVis2-materialdesign-Slider-Round', 'Slider Round', withAutoFill(attrs, autoFillMap), ['color']),
+            ...createInfo('tplVis2-materialdesign-Slider-Round', 'Slider Round', withAutoFill(attrs, autoFillMap), ['color', 'lock']),
             visPrev: squarePreview('F04C5'),
             visDefaultStyle: { width: 100, height: 100 },
         };
@@ -233,6 +255,8 @@ export default class MaterialDesignRoundSlider extends VisWidget {
             this.optimisticValue = undefined;
         }
         const value = current(this.optimisticValue ?? rawState, data);
+        const opts = this.lockOptions(data);
+        const locked = !isReadOnly(data) && this.lock.isLocked(opts);
         const disabled = isReadOnly(data) || working(stateValue(this.state, data['oid-working'] || ''));
         const start = num(data.startAngle, 135);
         const arc = num(data.arcLength, 270);
@@ -272,7 +296,7 @@ export default class MaterialDesignRoundSlider extends VisWidget {
 
         // Non-slider keys are left alone so Tab still moves focus.
         const writeFromKey = (event: React.KeyboardEvent<SVGSVGElement>): void => {
-            if (disabled) return;
+            if (disabled || locked) return;
             const next = sliderKeyValue(event.key, value.raw, min, max, range(data).step);
             if (next === null) return;
             event.preventDefault();
@@ -285,6 +309,11 @@ export default class MaterialDesignRoundSlider extends VisWidget {
 
         return (
             <div className={`materialdesign-widget materialdesign-slider-round${isM3 ? ` ${designStyleClasses(data as Record<string, unknown>, this.isDarkTheme())}` : ''}`} style={{ height: '100%', position: 'relative', width: '100%' }}>
+                {locked ? (
+                    <span data-lock-icon="" style={{ position: 'absolute', right: 2, top: 2, zIndex: 3, pointerEvents: 'none' }}>
+                        {renderIcon(textValue(data.lockIcon, 'lock-outline'), textValue(data.lockIconColor, '#B22222'), 16, true)}
+                    </span>
+                ) : null}
                 <svg
                     aria-label={VisWidget.t('ariaRoundSlider')}
                     aria-readonly={disabled}
@@ -301,26 +330,42 @@ export default class MaterialDesignRoundSlider extends VisWidget {
                         // Before the haptics and the capture, not after: a read-only or
                         // "working"-locked slider used to buzz and click on every touch while
                         // refusing to move.
+                        if (locked) {
+                            this.swallow = true;
+                            this.lock.request(opts);
+                            return;
+                        }
                         if (disabled) {
                             return;
                         }
                         feedback(data);
                         event.currentTarget.setPointerCapture(event.pointerId);
+                        this.lock.hold(true, opts);
                         write(event);
                     }}
                     onPointerMove={event => {
+                        if (this.swallow) return;
                         if (event.currentTarget.hasPointerCapture(event.pointerId)) {
                             write(event);
                         }
                     }}
                     onPointerUp={event => {
                         event.stopPropagation();
+                        if (this.swallow) {
+                            this.swallow = false;
+                            return;
+                        }
                         if (event.currentTarget.hasPointerCapture(event.pointerId)) {
                             event.currentTarget.releasePointerCapture(event.pointerId);
                         }
                         release();
+                        this.lock.hold(false, opts);
                     }}
                     onPointerCancel={event => {
+                        if (this.swallow) {
+                            this.swallow = false;
+                            return;
+                        }
                         if (event.currentTarget.hasPointerCapture(event.pointerId)) {
                             event.currentTarget.releasePointerCapture(event.pointerId);
                         }
@@ -328,6 +373,7 @@ export default class MaterialDesignRoundSlider extends VisWidget {
                         // alone left the throttled write queued, so the value the finger was on when
                         // it was interrupted still landed a moment later.
                         this.writer.cancel();
+                        this.lock.hold(false, opts);
                     }}
                     style={
                         {
@@ -366,6 +412,18 @@ export default class MaterialDesignRoundSlider extends VisWidget {
                             width: '100%',
                         }}
                     />
+                ) : null}
+                {this.lock.padOpen ? (
+                    // The pad is a portal, but its clicks and keys still bubble through the React tree.
+                    <span onClick={event => event.stopPropagation()} onKeyDown={event => event.stopPropagation()}>
+                        <PinPad
+                            dark={this.isDarkTheme()}
+                            m3={isM3}
+                            onCancel={() => this.lock.pinCancelled()}
+                            onUnlock={pin => this.lock.pinAccepted(pin, opts.seconds)}
+                            pin={opts.pin}
+                        />
+                    </span>
                 ) : null}
             </div>
         );
