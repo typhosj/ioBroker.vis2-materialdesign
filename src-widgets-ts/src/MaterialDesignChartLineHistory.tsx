@@ -54,14 +54,20 @@ const TIME_UNITS: Array<[string, number]> = [
   ["day", 86400000], ["hour", 3600000], ["minute", 60000], ["second", 1000],
 ];
 
+// Without its own format the axis must still follow the range: one fixed `HH:mm` labels a 20-year
+// chart with times of day.
+const DEFAULT_TIME_FORMATS: Record<string, string> = {
+  millisecond: "HH:mm:ss", second: "HH:mm:ss", minute: "HH:mm", hour: "HH:mm",
+  day: "L", week: "L", month: "MMM YYYY", quarter: "MMM YYYY", year: "YYYY",
+};
 // vis-materialdesign saved this field as chart.js v2 `displayFormats` JSON, one format per unit.
 export function timeFormatFor(setting: string, step: number): string {
-  if (!setting.startsWith("{")) return setting || "HH:mm";
-  let formats: unknown;
-  try { formats = JSON.parse(setting); } catch { return "HH:mm"; }
+  if (setting && !setting.startsWith("{")) return setting;
   const unit = !(step > 0) ? "minute" : TIME_UNITS.find(([, size]) => step >= size)?.[0] ?? "millisecond";
+  let formats: unknown;
+  try { formats = setting ? JSON.parse(setting) : undefined; } catch { formats = undefined; }
   const format = formats && typeof formats === "object" && !Array.isArray(formats) ? (formats as Record<string, unknown>)[unit] : undefined;
-  return typeof format === "string" && format ? format : "HH:mm";
+  return typeof format === "string" && format ? format : DEFAULT_TIME_FORMATS[unit];
 }
 
 export function rowAxisId(d: Data, i: number): string {

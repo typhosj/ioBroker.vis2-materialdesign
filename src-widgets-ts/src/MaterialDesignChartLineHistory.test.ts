@@ -284,9 +284,31 @@ describe('timeFormatFor', () => {
     const HOUR = 60 * MINUTE;
     const DAY = 24 * HOUR;
 
-    it('keeps a plain format as it is, and the default for an empty one', () => {
+    it('keeps a plain format as it is, whatever the spacing', () => {
         expect(timeFormatFor('DD.MM HH:mm', HOUR)).toBe('DD.MM HH:mm');
-        expect(timeFormatFor('', HOUR)).toBe('HH:mm');
+        expect(timeFormatFor('DD.MM HH:mm', 365 * DAY)).toBe('DD.MM HH:mm');
+        expect(timeFormatFor('[Uhr] HH:mm', DAY)).toBe('[Uhr] HH:mm');
+    });
+
+    // An empty field printed HH:mm on every range, so a 20-year chart read 12:33, 22:20, ...
+    it('follows the tick spacing when the field is empty', () => {
+        expect(timeFormatFor('', 500)).toBe('HH:mm:ss');
+        expect(timeFormatFor('', 10_000)).toBe('HH:mm:ss');
+        expect(timeFormatFor('', 5 * MINUTE)).toBe('HH:mm');
+        expect(timeFormatFor('', 3 * HOUR)).toBe('HH:mm');
+        expect(timeFormatFor('', DAY - 1)).toBe('HH:mm');
+        expect(timeFormatFor('', DAY)).toBe('L');
+        expect(timeFormatFor('', 7 * DAY)).toBe('L');
+        expect(timeFormatFor('', 28 * DAY - 1)).toBe('L');
+        expect(timeFormatFor('', 28 * DAY)).toBe('MMM YYYY');
+        expect(timeFormatFor('', 90 * DAY)).toBe('MMM YYYY');
+        expect(timeFormatFor('', 365 * DAY - 1)).toBe('MMM YYYY');
+        expect(timeFormatFor('', 365 * DAY)).toBe('YYYY');
+        expect(timeFormatFor('', 2 * 365 * DAY)).toBe('YYYY');
+        expect(timeFormatFor('', Number.NaN)).toBe('HH:mm');
+        expect(timeFormatFor('', 0)).toBe('HH:mm');
+        expect(timeFormatFor('', -DAY)).toBe('HH:mm');
+        expect(timeFormatFor('', Number.POSITIVE_INFINITY)).toBe('YYYY');
     });
 
     it('picks the format of the unit the tick spacing falls into', () => {
@@ -305,8 +327,14 @@ describe('timeFormatFor', () => {
         expect(timeFormatFor(OLD_DEFAULT, 0)).toBe('H:mm');
     });
 
-    it('falls back to the default for broken JSON or a unit the map leaves out', () => {
+    it('falls back to the default of the unit for broken JSON or a unit the map leaves out', () => {
         expect(timeFormatFor('{nope', HOUR)).toBe('HH:mm');
-        expect(timeFormatFor('{"minute":"H:mm"}', DAY)).toBe('HH:mm');
+        expect(timeFormatFor('{nope', 365 * DAY)).toBe('YYYY');
+        expect(timeFormatFor('{"minute":"H:mm"}', DAY)).toBe('L');
+        expect(timeFormatFor('{"day":""}', DAY)).toBe('L');
+        expect(timeFormatFor('{"day":5}', DAY)).toBe('L');
+        expect(timeFormatFor('{"year":["YYYY"]}', 365 * DAY)).toBe('YYYY');
+        expect(timeFormatFor('{"year":"YY"}', 365 * DAY)).toBe('YY');
+        expect(timeFormatFor('{}', 30 * DAY)).toBe('MMM YYYY');
     });
 });
