@@ -18,7 +18,7 @@ import {
     resolveHour12,
     todayParts,
 } from './pickerFormat';
-import { squarePreview, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, iconField, legacyInk, legacyInkMuted, legacyOutline, setStateValue, sizeCss, stateValue } from './widgetUtils';
+import { squarePreview, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, iconField, legacyInk, legacyInkMuted, legacyOutline, isReadOnly, setStateValue, sizeCss, stateValue } from './widgetUtils';
 
 interface InputData {
     oid?: string;
@@ -64,6 +64,7 @@ interface InputData {
     inputCounterColor?: string;
     inputCounterFontSize?: number;
     inputCounterFontFamily?: string;
+    readOnly?: boolean;
     clearIconShow?: boolean;
     clearIcon?: string;
     clearIconSize?: number;
@@ -84,7 +85,7 @@ interface InputData {
 
 // Issue #15: picking the datapoint fills what the object's own metadata already says.
 const autoFillMap = {
-    oid: [fill.name('inputLabelText'), fill.unit('inputSuffix'), fill.inputType('inputType')],
+    oid: [fill.name('inputLabelText'), fill.unit('inputSuffix'), fill.inputType('inputType'), fill.readOnly('readOnly')],
 };
 
 const attrs: RxWidgetInfo['visAttrs'] = [
@@ -93,6 +94,7 @@ const attrs: RxWidgetInfo['visAttrs'] = [
         label: 'group_common',
         fields: [
             { name: 'oid', label: 'oid', type: 'id' },
+            { name: 'readOnly', label: 'readOnly', type: 'checkbox', noBinding: false },
             {
                 name: 'inputType',
                 label: 'inputType',
@@ -519,6 +521,7 @@ export default class MaterialDesignInput extends VisWidget {
     renderWidgetBody(props: RenderProps): React.JSX.Element {
         super.renderWidgetBody(props);
         const data = this.state.rxData as InputData;
+        const readOnly = isReadOnly(data);
         const state = stateValue(this.state, data.oid || '');
         if (state !== this.seenStateValue) {
             this.seenStateValue = state;
@@ -789,11 +792,16 @@ export default class MaterialDesignInput extends VisWidget {
                                         </label>
                                     ) : null}
                                     <input
+                                        readOnly={readOnly}
                                         autoFocus={!!data.autoFocus}
                                         // The picker mask has a fixed length; a shorter max length would make every entry invalid.
                                         maxLength={!spec && data.inputMaxLength ? num(data.inputMaxLength, 0) : undefined}
                                         onBlur={event => {
                                             this.focused = false;
+                                            if (readOnly) {
+                                                this.forceUpdate();
+                                                return;
+                                            }
                                             if (spec) {
                                                 this.commitPicker(data, spec, event.target.value);
                                                 return;
@@ -819,7 +827,7 @@ export default class MaterialDesignInput extends VisWidget {
                                             this.forceUpdate();
                                         }}
                                         onKeyDown={event => {
-                                            if (event.key !== 'Enter') {
+                                            if (readOnly || event.key !== 'Enter') {
                                                 return;
                                             }
                                             if (spec) {
@@ -870,7 +878,7 @@ export default class MaterialDesignInput extends VisWidget {
                                             {data.inputSuffix}
                                         </div>
                                     ) : null}
-                                    {data.clearIconShow !== false && value !== '' ? (
+                                    {data.clearIconShow !== false && value !== '' && !readOnly ? (
                                         <button
                                             aria-label={VisWidget.t('ariaClearInput')}
                                             onClick={() => {
@@ -905,7 +913,7 @@ export default class MaterialDesignInput extends VisWidget {
                                             )}
                                         </button>
                                     ) : null}
-                                    {spec ? (
+                                    {spec && !readOnly ? (
                                         <button
                                             aria-haspopup="dialog"
                                             aria-label={spec.kind === 'date' ? VisWidget.t('ariaOpenDatePicker') : VisWidget.t('ariaOpenTimePicker')}

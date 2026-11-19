@@ -7,7 +7,7 @@ import { isComposing, moveHighlight, writeValue } from './autocomplete';
 import { m3ColorExplicit, renderIcon } from './MaterialDesignButtons';
 import { cleanColor, num } from './MaterialDesignProgress';
 import { fill, withAutoFill } from './deviceFill';
-import { squarePreview, RenderProps, VisWidget, createInfo, indexedFields, itemCount, designStyle, designStyleClasses, iconField, legacyInk, legacyInkMuted, legacyOutline, legacySurface, ownCssVariables, setStateValue, sizeCss, stateValue, stringValue } from './widgetUtils';
+import { squarePreview, RenderProps, VisWidget, createInfo, indexedFields, itemCount, designStyle, designStyleClasses, iconField, legacyInk, legacyInkMuted, legacyOutline, legacySurface, ownCssVariables, isReadOnly, setStateValue, sizeCss, stateValue, stringValue } from './widgetUtils';
 
 interface SelectData {
     oid?: string;
@@ -45,6 +45,7 @@ interface SelectData {
     inputCounterColor?: string;
     inputCounterFontSize?: number;
     inputCounterFontFamily?: string;
+    readOnly?: boolean;
     clearIconShow?: boolean;
     clearIcon?: string;
     clearIconSize?: number;
@@ -116,7 +117,7 @@ interface SelectItem {
 
 // Issue #15: picking the datapoint fills what the object's own metadata already says.
 const autoFillMap = {
-    oid: [fill.name('inputLabelText'), fill.stateList('countSelectItems', 'value', 'label')],
+    oid: [fill.name('inputLabelText'), fill.stateList('countSelectItems', 'value', 'label'), fill.readOnly('readOnly')],
 };
 
 const attrs: RxWidgetInfo['visAttrs'] = [
@@ -125,6 +126,7 @@ const attrs: RxWidgetInfo['visAttrs'] = [
         label: 'group_common',
         fields: [
             { name: 'oid', label: 'oid', type: 'id' },
+            { name: 'readOnly', label: 'readOnly', type: 'checkbox', noBinding: false },
         ],
     },
     {
@@ -583,6 +585,7 @@ export default class MaterialDesignSelect extends VisWidget {
     renderWidgetBody(props: RenderProps): React.JSX.Element {
         super.renderWidgetBody(props);
         const data = this.state.rxData as unknown as SelectData;
+        const readOnly = isReadOnly(data);
         if (data.listDataMethod === 'multistatesObject' && data.oid) this.loadObjectStates(data.oid);
         const list = items(data, this.objectStates);
         const state = stateValue(this.state, data.oid || '');
@@ -870,6 +873,7 @@ export default class MaterialDesignSelect extends VisWidget {
                         aria-expanded={this.isAutocomplete ? undefined : this.open}
                         className="v-input v-input--dense v-select theme--light"
                         onClick={() => {
+                            if (readOnly) return;
                             // Opening without focus would leave a menu that no blur ever closes.
                             if (this.isAutocomplete) {
                                 this.inputRef?.focus();
@@ -1017,11 +1021,13 @@ export default class MaterialDesignSelect extends VisWidget {
                                     aria-autocomplete="list"
                                     aria-controls={listId}
                                     aria-expanded={menuShown}
+                                    readOnly={readOnly}
                                     onBlur={() => {
-                                        if (write && this.dirty) this.commit(writeValue(list, this.filterText ?? ''), data.oid || '');
+                                        if (write && this.dirty && !readOnly) this.commit(writeValue(list, this.filterText ?? ''), data.oid || '');
                                         this.closeMenu();
                                     }}
                                     onChange={event => {
+                                        if (readOnly) return;
                                         this.filterText = event.target.value;
                                         this.dirty = true;
                                         this.hoveredValue = undefined;
@@ -1031,10 +1037,11 @@ export default class MaterialDesignSelect extends VisWidget {
                                     }}
                                     onClick={event => {
                                         event.stopPropagation();
+                                        if (readOnly) return;
                                         this.startInput(displayed, write);
                                     }}
-                                    onFocus={() => this.startInput(displayed, write)}
-                                    onKeyDown={event => this.onAutocompleteKey(event, data, { list, visibleList, highlighted, menuShown })}
+                                    onFocus={() => { if (!readOnly) this.startInput(displayed, write); }}
+                                    onKeyDown={event => !readOnly && this.onAutocompleteKey(event, data, { list, visibleList, highlighted, menuShown })}
                                     placeholder={selected?.text || ''}
                                     ref={element => { this.inputRef = element; }}
                                     role="combobox"
@@ -1084,7 +1091,7 @@ export default class MaterialDesignSelect extends VisWidget {
                                 {data.inputSuffix}
                             </span>
                         ) : null}
-                        {data.clearIconShow && current !== undefined && current !== null && current !== '' ? (
+                        {data.clearIconShow && current !== undefined && current !== null && current !== '' && !readOnly ? (
                             <button
                                 aria-label={VisWidget.t('ariaClearInput')}
                                 onClick={event => {
