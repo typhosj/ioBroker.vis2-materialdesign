@@ -573,6 +573,9 @@ export default class MaterialDesignKeyboard extends VisWidget {
     }
 
     private enter(el: Field): void {
+        // Learned first: a widget may empty its field on Enter (Bring adds the article and clears
+        // it), and the blur after it would find nothing.
+        this.learnFrom(el);
         // keyCode/which for legacy widgets (Bring: keypress with which 13). As in the browser, a
         // cancelled keydown suppresses the keypress.
         const init = { key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true, cancelable: true };
@@ -580,10 +583,7 @@ export default class MaterialDesignKeyboard extends VisWidget {
         el.dispatchEvent(new KeyboardEvent('keyup', init));
         el.dispatchEvent(new Event('change', { bubbles: true }));
         const mode = s(this.data().keyboardEnter, 'close');
-        if (mode === 'stay') {
-            this.learnFrom(el);
-            return;
-        }
+        if (mode === 'stay') return;
         if (mode === 'next') {
             const fields = this.servedFields();
             const next = fields[fields.indexOf(el) + 1];

@@ -1427,6 +1427,28 @@ describe('learning only what was typed', () => {
         }
     });
 
+    it('learns the word before a widget empties its field on Enter (Bring shopping list)', () => {
+        for (const mode of ['close', 'stay', 'next']) {
+            window.localStorage.clear();
+            start(keyboard({ keyboardSuggestions: true, keyboardEnter: mode, keyboardFields: 'w1' }));
+            const empty = (event: Event): void => { if ((event as KeyboardEvent).which === 13) field('title').value = ''; };
+            field('title').addEventListener('keypress', empty);
+            typeInto('title', 'Eier');
+            tap('enter');
+            blur(field('title'));
+            expect(stored().eier?.n).toBe(1);
+            field('title').removeEventListener('keypress', empty);
+            act(() => current.componentWillUnmount());
+        }
+    });
+
+    it('learns nothing from Enter in an empty field', () => {
+        start(keyboard({ keyboardSuggestions: true }));
+        focus(field('title'));
+        tap('enter');
+        expect(stored()).toEqual({});
+    });
+
     it('learns nothing from a prefilled field that was left unchanged', () => {
         start(keyboard({ keyboardSuggestions: true }));
         field('title').value = 'Alt';
