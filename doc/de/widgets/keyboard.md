@@ -36,7 +36,9 @@ Die Editor-Oberfläche folgt der ioBroker-Systemsprache; die Screenshots sind de
 - **Enter-Taste** – `übernehmen und schließen`, `zum nächsten Feld` (schließt nach dem letzten)
   oder `nur übernehmen`. Enter übernimmt auch in einem mehrzeiligen Feld und fügt keinen
   Zeilenumbruch ein. `zum nächsten Feld` folgt der Reihenfolge der Felder in der Seite (der
-  Reihenfolge, in der die Widgets angelegt wurden), nicht ihrer Position auf dem Bildschirm.
+  Reihenfolge, in der die Widgets angelegt wurden), nicht ihrer Position auf dem Bildschirm. Enter
+  sendet `keydown`, `keypress` und `keyup` mit dem Tastencode 13, damit Widgets anderer Adapter,
+  die auf Enter warten (zum Beispiel die Bring-Einkaufsliste), wie auf eine echte Taste reagieren.
 - **Pfeiltasten** – fügt die Tasten ← ↑ ↓ → hinzu (auf dem Ziffernblock als fünfte Spalte). ← und →
   bewegen den Cursor; ↑ und ↓ gehen durch die Liste eines Autocomplete-Widgets, in jedem anderen Feld
   springen sie an den Anfang oder das Ende. Gedrückt halten wiederholt die Taste.
@@ -95,4 +97,7 @@ Dieselben Tastaturen bei eingeschaltetem Dark-Theme:
 ## Hinweise
 
 - Felder in anderen Views werden nicht bedient; dort ebenfalls eine Tastatur platzieren. Pro View genau eine Tastatur verwenden.
+- Eine View, die in dieser View angezeigt wird (Dialog View, View in Widget), gehört zu ihr. Hat
+  diese innere View eine eigene Tastatur, bedient diese die inneren Felder und diese Tastatur lässt
+  sie aus, sodass nur eine Tastatur aufgeht.
 - Lernen zwei Geräte im selben Moment in denselben State, kann ein Zähler verloren gehen.

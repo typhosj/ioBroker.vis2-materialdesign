@@ -121,6 +121,8 @@ to wait with an upgrade.
 - (typhosj) Added a **PIN** to every widget with a lock: the PIN pad asks for 1 to 12 digits, and the right PIN unlocks every widget with the same PIN until the lock time ends. It protects against accidental taps and children, not against attackers (Scrounger/ioBroker.vis-materialdesign#111)
 - (typhosj) Added the **lock** to Input, Select, Autocomplete, Slider and Round Slider: a tap unlocks the widget, or asks for the PIN, and it locks again after the lock time (Scrounger/ioBroker.vis-materialdesign#112)
 - (typhosj) **Read only** can be bound to another state on every form widget, and Input, Select and Autocomplete have it now, for example to allow the start time only while automatic mode is on (Scrounger/ioBroker.vis-materialdesign#96)
+- (typhosj) Fixed the Enter key of the **On-screen Keyboard** in widgets of other adapters: it now sends `keydown`, `keypress` and `keyup` with key code 13 like a real key, so for example the Bring shopping list adds the typed article instead of ignoring Enter. A cancelled `keydown` suppresses the `keypress`, as in the browser
+- (typhosj) Fixed two **On-screen Keyboards** opening at once when a view with a keyboard shows a Dialog View that has its own keyboard: the keyboard of the inner view serves its fields, the outer one leaves them alone
 
 ### 1.4.0 (2026-11-19)
 

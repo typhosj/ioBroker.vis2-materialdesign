@@ -447,6 +447,99 @@ describe('Enter and close', () => {
         expect(document.activeElement).toBe(document.body);
         expect(panel()).toBeNull();
     });
+
+    it('sends keydown, keypress and keyup with keyCode and which 13, as a real Enter key does', () => {
+        start(keyboard());
+        const seen: string[] = [];
+        for (const type of ['keydown', 'keypress', 'keyup']) {
+            field('title').addEventListener(type, event => {
+                const e = event as KeyboardEvent;
+                seen.push(`${type}:${e.key}:${e.keyCode}:${e.which}`);
+            });
+        }
+        focus(field('title'));
+        tap('enter');
+        expect(seen).toEqual(['keydown:Enter:13:13', 'keypress:Enter:13:13', 'keyup:Enter:13:13']);
+        expect(document.activeElement).toBe(document.body);
+    });
+
+    it('commits a legacy widget that listens to keypress with which 13 (Bring shopping list)', () => {
+        start(keyboard({ keyboardAutoCapitalize: false }));
+        const saved: string[] = [];
+        field('title').addEventListener('keypress', event => {
+            if (event.which !== 13) return;
+            saved.push(field('title').value);
+        });
+        focus(field('title'));
+        tap('m', 'i', 'l', 'c', 'h');
+        tap('enter');
+        expect(saved).toEqual(['milch']);
+    });
+
+    it('skips keypress when the keydown was cancelled, as the browser does, but still sends keyup', () => {
+        start(keyboard({ keyboardEnter: 'stay' }));
+        const seen: string[] = [];
+        field('title').addEventListener('keydown', event => event.preventDefault());
+        for (const type of ['keypress', 'keyup']) field('title').addEventListener(type, () => seen.push(type));
+        focus(field('title'));
+        tap('enter');
+        expect(seen).toEqual(['keyup']);
+    });
+});
+
+describe('a keyboard inside a nested view (Dialog View)', () => {
+    const panels = (): number => document.body.querySelectorAll('[aria-label="keyboardAria"]').length;
+    const targetOf = (w: MaterialDesignKeyboard): unknown => fixture<{ target: unknown }>(w).target;
+    let inner: MaterialDesignKeyboard | null = null;
+    const innerView = (): React.ReactNode => (
+        <div id="visview_inner">
+            <input aria-label="inner" />
+            {inner?.renderWidgetBody(renderProps)}
+        </div>
+    );
+    function startBoth(innerData: Record<string, unknown> = {}): MaterialDesignKeyboard {
+        const w = keyboard(innerData);
+        inner = w;
+        start(keyboard(), innerView);
+        act(() => w.componentDidMount());
+        rerender();
+        return w;
+    }
+    afterEach(() => {
+        act(() => inner?.componentWillUnmount());
+        inner = null;
+    });
+
+    it('leaves a field of the inner view to the inner keyboard: one keyboard opens, not two', () => {
+        const w = startBoth();
+        focus(field('inner'));
+        expect(panels()).toBe(1);
+        expect(targetOf(w)).toBe(field('inner'));
+        expect(targetOf(current)).toBeNull();
+    });
+
+    it('still serves its own fields while the inner keyboard runs', () => {
+        const w = startBoth();
+        focus(field('title'));
+        expect(panels()).toBe(1);
+        expect(targetOf(current)).toBe(field('title'));
+        expect(targetOf(w)).toBeNull();
+    });
+
+    it('serves the inner field when the inner keyboard does not list it', () => {
+        startBoth({ keyboardFields: 'nope' });
+        focus(field('inner'));
+        expect(panels()).toBe(1);
+        expect(targetOf(current)).toBe(field('inner'));
+    });
+
+    it('takes the inner field back once the inner keyboard has stopped', () => {
+        const w = startBoth();
+        act(() => w.componentWillUnmount());
+        focus(field('inner'));
+        expect(panels()).toBe(1);
+        expect(targetOf(current)).toBe(field('inner'));
+    });
 });
 
 describe('ghost click after the keyboard hides', () => {

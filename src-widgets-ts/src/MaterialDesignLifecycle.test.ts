@@ -131,7 +131,8 @@ describe('interval owners release their timer', () => {
 // the base class cleanup instead. Neither shows up in a render test, and neither is something the
 // five cases above would catch for a widget added next year.
 describe('every widget that starts work can stop it', () => {
-    const sources = import.meta.glob<string>('./MaterialDesign*.tsx', { eager: true, query: '?raw', import: 'default' });
+    // Tests are no widgets: a test that listens for an event would be counted as a widget otherwise.
+    const sources = import.meta.glob<string>(['./MaterialDesign*.tsx', '!./*.test.tsx'], { eager: true, query: '?raw', import: 'default' });
     const code = (text: string): string => text.replace(/^\s*\/\/.*$/gm, '');
     const STARTS_WORK = /\b(?:setTimeout|setInterval|requestAnimationFrame|addEventListener)\s*\(|new (?:Resize|Mutation|Intersection)Observer\b/;
 

@@ -32,7 +32,8 @@ The editor UI follows the ioBroker system language, so the screenshots are Germa
 - **Enter key** – `commit and close`, `next field` (closes after the last one) or `commit only`.
   Enter commits in a multi-line field as well and does not insert a line break. `next field`
   follows the order of the fields in the page (the order the widgets were created in), not their
-  position on the screen.
+  position on the screen. Enter sends `keydown`, `keypress` and `keyup` with key code 13, so widgets
+  of other adapters that wait for Enter (for example the Bring shopping list) react as to a real key.
 - **arrow keys** – adds ← ↑ ↓ → keys (on the number pad a fifth column). ← and → move the cursor;
   ↑ and ↓ move through the list of an Autocomplete widget, in any other field they jump to the start
   or the end. Holding a key repeats it.
@@ -85,4 +86,7 @@ The same keyboards with the dark theme switched on:
 ## Notes
 
 - Fields in other views are not served; place a keyboard there too. Use one keyboard per view.
+- A view shown inside this view (Dialog View, view in widget) belongs to it. When that inner view has
+  a keyboard of its own, that keyboard serves the inner fields and this one leaves them alone, so
+  only one keyboard opens.
 - Two devices learning into the same state at the same moment can lose one count.
