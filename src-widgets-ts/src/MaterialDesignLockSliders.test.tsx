@@ -76,6 +76,18 @@ describe.each([
         expect(s.setValue).toHaveBeenCalled();
     });
 
+    it('a locked press that never gets its pointerup does not break the next drag', () => {
+        const s = make({});
+        s.call('onPointerDown');
+        s.call('onPointerDown');
+        s.call('onPointerMove');
+        s.call('onPointerUp');
+        vi.advanceTimersByTime(500);
+        expect(s.setValue).toHaveBeenCalled();
+        vi.advanceTimersByTime(5000);
+        expect(lockIcon(s.tree())).toBeDefined();
+    });
+
     it('with a PIN the tap opens the pad', () => {
         const s = make({ lockPin: '12' });
         s.call('onPointerDown');

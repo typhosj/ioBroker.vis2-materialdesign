@@ -335,6 +335,8 @@ export default class MaterialDesignRoundSlider extends VisWidget {
                             this.lock.request(opts);
                             return;
                         }
+                        // A locked press released outside the element delivers no pointerup, so the flag may be stale.
+                        this.swallow = false;
                         if (disabled) {
                             return;
                         }
