@@ -4,6 +4,8 @@ import type { RxWidgetInfo, WidgetData } from '@iobroker/types-vis-2';
 
 import { renderIcon } from './MaterialDesignButtons';
 import { fill, withAutoFill } from './deviceFill';
+import PinPad from './PinPad';
+import { WidgetLock, lockPinField, lockSeconds, pinOf, type LockOptions } from './widgetLock';
 import { MAX_DYNAMIC_ITEMS, squarePreview, RenderProps, VisWidget, accessibleText, boundedCount, createInfo, designStyle, indexedFields, designStyleClasses, legacyInk, legacyOutline, legacySurface, iconField, itemCount, parseActionValue, safeWidgetUrl, setStateValue, stateValue, sanitizeHtml, stringValue, boolValue as b, numberValue as n, textValue as s } from './widgetUtils';
 
 type Data = Record<string, unknown> & {
@@ -126,6 +128,7 @@ const attrs: RxWidgetInfo['visAttrs'] = [
         { name: 'lockIconColor', label: 'lockIconColor', type: 'color' },
         { name: 'lockFilterGrayscale', label: 'lockFilterGrayscale', type: 'slider', min: 0, max: 100, step: 1, default: 30 },
         { name: 'lockApplyOnlyOnImage', label: 'lockApplyOnlyOnImage', type: 'checkbox', default: true },
+        lockPinField,
     ] },
     { name: 'listItemData', fields: [
         { name: 'listItemDataMethod', label: 'listItemDataMethod', type: 'select', options: ['inputPerEditor', 'jsonStringObject'], default: 'inputPerEditor' },
@@ -256,8 +259,7 @@ function icon(value: string, color: string, height: number, recolor: boolean): R
 }
 
 export default class MaterialDesignIconList extends VisWidget {
-    private readonly unlocked = new Set<number>();
-    private readonly relockTimers = new Map<number, number>();
+    private readonly locks = new Map<number, WidgetLock>();
     private root: HTMLDivElement | null = null;
     private shownActive: HTMLElement | null = null;
 
@@ -290,8 +292,8 @@ export default class MaterialDesignIconList extends VisWidget {
     }
 
     componentWillUnmount(): void {
-        for (const timer of this.relockTimers.values()) window.clearTimeout(timer);
-        this.relockTimers.clear();
+        for (const lock of this.locks.values()) lock.dispose();
+        this.locks.clear();
         super.componentWillUnmount();
     }
 
@@ -305,18 +307,22 @@ export default class MaterialDesignIconList extends VisWidget {
         }
     }
 
-    private unlock(index: number, data: Data): void {
-        this.unlocked.add(index);
-        window.clearTimeout(this.relockTimers.get(index));
-        this.relockTimers.set(index, window.setTimeout(() => { this.relockTimers.delete(index); this.unlocked.delete(index); this.forceUpdate(); }, Math.min(86_400, Math.max(1, n(data.autoLockAfter, 10))) * 1000));
-        this.forceUpdate();
+    private lockOf(index: number): WidgetLock {
+        let lock = this.locks.get(index);
+        if (!lock) { lock = new WidgetLock(() => this.forceUpdate()); this.locks.set(index, lock); }
+        return lock;
+    }
+
+    private lockOptions(item: Item, data: Data): LockOptions {
+        return { enabled: item.lockEnabled, pin: pinOf(data.lockPin, (this.state?.data as Record<string, unknown> | undefined)?.lockPin), seconds: lockSeconds(data.autoLockAfter), readOnly: item.readOnly, editMode: !!this.props.editMode };
     }
 
     private activate(item: Item, index: number, current: unknown, data: Data): void {
-        if (item.readOnly) return;
+        const lockable = ['buttonToggle', 'buttonState', 'buttonToggleValueTrue', 'buttonToggleValueFalse'].includes(item.listType);
+        const request = lockable ? this.lockOf(index).request(this.lockOptions(item, data)) : item.readOnly ? 'blocked' : 'open';
+        if (request === 'blocked' || request === 'pin') return;
         this.feedback(data, false);
-        const locked = item.lockEnabled && !this.unlocked.has(index);
-        if (['buttonToggle', 'buttonState', 'buttonToggleValueTrue', 'buttonToggleValueFalse'].includes(item.listType) && locked) { this.unlock(index, data); return; }
+        if (request === 'unlocked') return;
         if (item.listType === 'buttonToggle') setStateValue(this.props, item.objectId, !current);
         else if (item.listType === 'buttonState') setStateValue(this.props, item.objectId, parseActionValue(stringValue(item.buttonStateValue)));
         else if (item.listType === 'buttonToggleValueTrue') setStateValue(this.props, item.objectId, parseActionValue(String(String(current) === String(item.buttonToggleValueTrue) ? item.buttonToggleValueFalse : item.buttonToggleValueTrue)));
@@ -372,7 +378,7 @@ export default class MaterialDesignIconList extends VisWidget {
         if (item.listType !== 'text' && current === 'null') return null;
         if (!isVisible(item, stateValue(this.state, item.visibilityOid))) return null;
         const active = isActive(item, current);
-        const locked = item.lockEnabled && !this.unlocked.has(index);
+        const locked = this.lockOf(index).isLocked(this.lockOptions(item, data));
         const full = s(data.buttonLayout, 'round') === 'full' && item.listType !== 'text';
         const card = s(data.listLayout).includes('card');
         const classes = s(data.listLayout, 'standard') === 'standard' ? 'materialdesign-icon-list-item-standard' : `${full ? 'materialdesign-icon-list-item-card-layout-full' : 'materialdesign-icon-list-item-card'}${s(data.listLayout) === 'cardOutlined' ? ' materialdesign-icon-list-item-card--outlined' : ''}`;
@@ -424,7 +430,9 @@ export default class MaterialDesignIconList extends VisWidget {
         const headerHeight = n(data.header_height, 60);
         const header = s(data.headers) ? <div className="materialdesign-widget materialdesign-html-card" style={{ flex: '0 0 auto', position: 'relative' }}><div className="materialdesign-list-header-row" style={{ alignItems: 'center', background: 'transparent', boxSizing: 'border-box', display: 'flex', flexDirection: 'row', justifyContent: s(data.alignment, 'flex-start'), margin: '8px 3px 3px', minHeight: headerHeight, padding: `${n(data.header_padding_top, 6)}px ${n(data.header_padding_right, 16)}px ${n(data.header_padding_bottom, 0)}px ${n(data.header_padding_left, 16)}px`, textAlign: s(data.alignment, 'flex-start').replace('flex-', '') as React.CSSProperties['textAlign'], width: 'calc(100% - 6px)' }}>{icon(s(data.headerImage), m3f(data.headerImageColor, 'var(--md-sys-color-on-surface-variant)', ''), n(data.headerImageHeight, 24), !!data.headerImageColor)}<div className="materialdesign-icon-list-header" dangerouslySetInnerHTML={{ __html: sanitizeHtml(s(data.headers)) }} /></div></div> : null;
         const container = <div className="materialdesign-icon-list-container" style={{ flexWrap: b(data.wrapItems, true) ? 'wrap' : undefined, height: b(data.wrapItems, true) ? 'auto' : undefined }}>{items.map((value, index) => this.renderItem(value, index, data))}</div>;
+        const padLock = [...this.locks.values()].find(lock => lock.padOpen);
+        const pad = padLock ? <PinPad dark={isDark} m3={isM3} onCancel={() => padLock.pinCancelled()} onUnlock={pin => padLock.pinAccepted(pin, lockSeconds(data.autoLockAfter))} pin={pinOf(data.lockPin, (this.state?.data as Record<string, unknown> | undefined)?.lockPin)} /> : null;
         const titleSize = n(data.titleLayout) ? `${n(data.titleLayout)}px` : undefined;
-        return <div ref={element => { this.root = element; }} className={`materialdesign-widget materialdesign-icon-list${isM3 ? ` ${designStyleClasses(data, this.isDarkTheme())}` : ''}`} style={{ ...variables, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden', width: '100%' }}><style>{isM3 ? css + m3Css : css}</style>{header}{b(data.cardUse) ? <div className="materialdesign-html-card mdc-card" style={{ flex: '1 1 auto', margin: '3px 0 3px 3px', minHeight: 0, width: 'calc(100% - 6px)' }}>{data.title !== undefined && data.title !== null ? <div className="materialdesign-html-card card-title-section"><div className={`materialdesign-html-card card-title ${s(data.titleLayout).match(/^(headline|subtitle|body|caption|button|overline)/) ? `mdc-typography--${s(data.titleLayout)}` : ''}`} dangerouslySetInnerHTML={{ __html: sanitizeHtml(s(data.title)) }} style={{ fontSize: titleSize }} /></div> : null}<div className="materialdesign-html-card card-text-section iconlist" style={{ flex: '1 1 auto', margin: n(data.borderDistance), minHeight: 0, overflowX: b(data.showScrollbar, true) ? 'hidden' : undefined, overflowY: b(data.showScrollbar, true) ? 'auto' : undefined }}><div className="materialdesign-html-card">{container}</div></div></div> : <div className="materialdesign-icon-list-scroll" style={{ boxSizing: 'border-box', flex: '0 1 auto', maxHeight: '100%', minHeight: 0, overflowX: 'hidden', overflowY: b(data.showScrollbar, true) ? 'auto' : 'hidden' }}>{container}</div>}</div>;
+        return <div ref={element => { this.root = element; }} className={`materialdesign-widget materialdesign-icon-list${isM3 ? ` ${designStyleClasses(data, this.isDarkTheme())}` : ''}`} style={{ ...variables, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden', width: '100%' }}><style>{isM3 ? css + m3Css : css}</style>{header}{b(data.cardUse) ? <div className="materialdesign-html-card mdc-card" style={{ flex: '1 1 auto', margin: '3px 0 3px 3px', minHeight: 0, width: 'calc(100% - 6px)' }}>{data.title !== undefined && data.title !== null ? <div className="materialdesign-html-card card-title-section"><div className={`materialdesign-html-card card-title ${s(data.titleLayout).match(/^(headline|subtitle|body|caption|button|overline)/) ? `mdc-typography--${s(data.titleLayout)}` : ''}`} dangerouslySetInnerHTML={{ __html: sanitizeHtml(s(data.title)) }} style={{ fontSize: titleSize }} /></div> : null}<div className="materialdesign-html-card card-text-section iconlist" style={{ flex: '1 1 auto', margin: n(data.borderDistance), minHeight: 0, overflowX: b(data.showScrollbar, true) ? 'hidden' : undefined, overflowY: b(data.showScrollbar, true) ? 'auto' : undefined }}><div className="materialdesign-html-card">{container}</div></div></div> : <div className="materialdesign-icon-list-scroll" style={{ boxSizing: 'border-box', flex: '0 1 auto', maxHeight: '100%', minHeight: 0, overflowX: 'hidden', overflowY: b(data.showScrollbar, true) ? 'auto' : 'hidden' }}>{container}</div>}{pad}</div>;
     }
 }

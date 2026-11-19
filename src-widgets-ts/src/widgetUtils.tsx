@@ -50,7 +50,6 @@ export interface PressState {
 export interface WidgetState extends VisRxWidgetState {
     active?: boolean;
     hovered?: boolean;
-    unlocked?: boolean;
 }
 
 export const setColor = '#ffc107';

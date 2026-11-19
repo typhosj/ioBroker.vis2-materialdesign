@@ -3,6 +3,8 @@ import React from 'react';
 import type { RxWidgetInfo, VisRxWidgetProps } from '@iobroker/types-vis-2';
 import { symbolName } from './IconFilePicker';
 import { fill, withAutoFill, type FillMap } from './deviceFill';
+import PinPad from './PinPad';
+import { WidgetLock, lockPinField, lockSeconds, pinOf, type LockOptions } from './widgetLock';
 
 import { isReadOnly, squarePreview, PressState, RenderProps, SliderWriter, VisWidget, createInfo, indexedFields, itemCount, designStyle, designStyleClasses, iconField, numberValue, parseActionValue, safeWidgetUrl, setStateValue, sizeCss, stateValue, sanitizeHtml, stringValue } from './widgetUtils';
 
@@ -58,6 +60,7 @@ interface ButtonData {
     textFontSize?: number;
     textFontFamily?: string;
     lockEnabled?: boolean;
+    lockPin?: string;
     autoLockAfter?: number;
     lockIcon?: string;
     lockIconTop?: number;
@@ -271,6 +274,7 @@ function attrs(def: ButtonDefinition): RxWidgetInfo['visAttrs'] {
                 { name: 'lockIconBackground', label: 'lockIconBackground', type: 'color' },
                 { name: 'lockBackgroundSizeFactor', label: 'lockBackgroundSizeFactor', type: 'number', default: 1 },
                 { name: 'lockFilterGrayscale', label: 'lockFilterGrayscale', type: 'slider', min: 0, max: 100, step: 1, default: 30 },
+                lockPinField,
             ],
         },
     ] as RxWidgetInfo['visAttrs'];
@@ -484,7 +488,7 @@ function execute(def: ButtonDefinition, props: VisRxWidgetProps, data: ButtonDat
 
 export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
     return class MaterialDesignButtonVariant extends VisWidget {
-        private lockTimer: number | undefined;
+        private readonly lock = new WidgetLock(() => this.forceUpdate());
         private readonly actionTimers = new Set<number>();
         private lastTouchAt = 0;
         private lastSliderAt = 0;
@@ -514,9 +518,7 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
         }
 
         componentWillUnmount(): void {
-            if (this.lockTimer) {
-                window.clearTimeout(this.lockTimer);
-            }
+            this.lock.dispose();
             this.actionTimers.forEach(timer => window.clearTimeout(timer));
             this.actionTimers.clear();
             this.sliderWriter.cancel();
@@ -532,33 +534,28 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
             this.actionTimers.add(timer);
         };
 
-        isLocked(data: ButtonData): boolean {
-            return Boolean(data.lockEnabled) && !(this.state as PressState & { unlocked?: boolean }).unlocked;
+        private lockOptions(data: ButtonData): LockOptions {
+            return {
+                enabled: Boolean(data.lockEnabled),
+                pin: pinOf(data.lockPin, (this.state?.data as Record<string, unknown> | undefined)?.lockPin),
+                seconds: lockSeconds(data.autoLockAfter),
+                // `readOnly` only exists on the toggle and slider kinds; isReadOnly reads undefined as false.
+                readOnly: isReadOnly(data),
+                editMode: !!this.props.editMode,
+            };
         }
 
-        unlock(data: ButtonData): void {
-            this.setState({ unlocked: true });
-            if (this.lockTimer) {
-                window.clearTimeout(this.lockTimer);
-            }
-            this.lockTimer = window.setTimeout(
-                () => { this.lockTimer = undefined; this.setState({ unlocked: false }); },
-                Math.min(86_400, Math.max(1, numeric(data.autoLockAfter, 10))) * 1000,
-            );
+        isLocked(data: ButtonData): boolean {
+            return this.lock.isLocked(this.lockOptions(data));
         }
 
         activate(data: ButtonData, current: ioBroker.StateValue | undefined): void {
-            const locked = this.isLocked(data);
-            // A locked button still reacts (unlocking is a real interaction), a read-only one does
-            // nothing — and must not buzz and click either, which it did while the feedback ran ahead
-            // of this check. `readOnly` only exists on the toggle and slider kinds; it is undefined,
-            // and therefore harmless, on the rest.
-            if (isReadOnly(data) && !locked) {
+            const request = this.lock.request(this.lockOptions(data));
+            if (request === 'blocked' || request === 'pin') {
                 return;
             }
             feedback(data);
-            if (locked) {
-                this.unlock(data);
+            if (request === 'unlocked') {
                 return;
             }
             if (def.kind === 'slider' && data.sliderOnly) {
@@ -606,13 +603,16 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
             if (def.kind !== 'toggle' || isReadOnly(data) || !data.pushButton) {
                 return;
             }
-            feedback(data);
-            if (this.isLocked(data)) {
-                this.unlock(data);
-                // The unlocking press wrote nothing, so its release must not write the off value.
+            const request = this.lock.request(this.lockOptions(data));
+            if (request !== 'open') {
+                // The press that unlocks or asks for the PIN wrote nothing, so its release must not write the off value.
                 this.pressed = false;
+                if (request === 'unlocked') {
+                    feedback(data);
+                }
                 return;
             }
+            feedback(data);
             const onValue = data.toggleType === 'value' ? parseActionValue(String(data.valueOn ?? true)) : true;
             setStateValue(this.props, data.oid || '', onValue);
         }
@@ -929,6 +929,15 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
                             </>
                         ) : null}
                     </button>
+                    {this.lock.padOpen ? (
+                        <PinPad
+                            dark={this.isDarkTheme()}
+                            m3={isM3}
+                            onCancel={() => this.lock.pinCancelled()}
+                            onUnlock={pin => this.lock.pinAccepted(pin, lockSeconds(data.autoLockAfter))}
+                            pin={this.lockOptions(data).pin}
+                        />
+                    ) : null}
                 </div>
             );
         }

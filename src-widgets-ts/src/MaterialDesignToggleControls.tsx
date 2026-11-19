@@ -4,6 +4,8 @@ import type { RxWidgetInfo, VisRxWidgetProps } from '@iobroker/types-vis-2';
 
 import { renderIcon, m3ColorExplicit } from './MaterialDesignButtons';
 import { fill, withAutoFill } from './deviceFill';
+import PinPad from './PinPad';
+import { WidgetLock, lockPinField, lockSeconds, pinOf, type LockOptions } from './widgetLock';
 import { boolValue, isReadOnly, squarePreview, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, iconField, m3Switch, parseActionValue, setStateValue, sizeCss, stateValue, stringValue } from './widgetUtils';
 
 export interface ToggleControlData {
@@ -34,6 +36,7 @@ export interface ToggleControlData {
     colorSwitchHover?: string;
     colorSwitchHoverTrue?: string;
     lockEnabled?: boolean;
+    lockPin?: string;
     autoLockAfter?: number;
     lockIcon?: string;
     lockIconTop?: number;
@@ -81,6 +84,7 @@ const lockFields = [
     { name: 'lockIconSize', label: 'lockIconSize', type: 'number' },
     { name: 'lockIconColor', label: 'lockIconColor', type: 'color' },
     { name: 'lockFilterGrayscale', label: 'lockFilterGrayscale', type: 'slider', min: 0, max: 100, step: 1, default: 30 },
+    lockPinField,
 ];
 
 // Issue #15: picking the datapoint fills what the object's own metadata already says.
@@ -180,8 +184,7 @@ function preview(def: ControlDefinition): string {
 
 export function createToggleControlClass(def: ControlDefinition): typeof VisWidget {
     return class MaterialDesignToggleControl extends VisWidget {
-        private unlocked = false;
-        private lockTimer: number | undefined;
+        private readonly lock = new WidgetLock(() => this.forceUpdate());
 
         constructor(props: VisRxWidgetProps) {
             super(props);
@@ -203,23 +206,18 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
         }
 
         componentWillUnmount(): void {
-            if (this.lockTimer) {
-                window.clearTimeout(this.lockTimer);
-            }
+            this.lock.dispose();
             super.componentWillUnmount?.();
         }
 
-        private unlock(data: ToggleControlData): void {
-            this.unlocked = true;
-            if (this.lockTimer) {
-                window.clearTimeout(this.lockTimer);
-            }
-            this.lockTimer = window.setTimeout(() => {
-                this.lockTimer = undefined;
-                this.unlocked = false;
-                this.forceUpdate();
-            }, Math.min(86_400, Math.max(1, asNumber(data.autoLockAfter, 10))) * 1000);
-            this.forceUpdate();
+        private lockOptions(data: ToggleControlData): LockOptions {
+            return {
+                enabled: boolValue(data.lockEnabled),
+                pin: pinOf(data.lockPin, (this.state?.data as Record<string, unknown> | undefined)?.lockPin),
+                seconds: lockSeconds(data.autoLockAfter),
+                readOnly: isReadOnly(data),
+                editMode: !!this.props.editMode,
+            };
         }
 
         renderWidgetBody(props: RenderProps): React.JSX.Element {
@@ -228,7 +226,7 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
             const on = isOn(stateValue(this.state, data.oid || ''), data);
             const isM3 = designStyle(data as Record<string, unknown>) === 'material3';
             const m3 = (explicitValue: unknown, token: string): string => (m3ColorExplicit(explicitValue) ? String(explicitValue) : token);
-            const locked = !!data.lockEnabled && !this.unlocked;
+            const locked = this.lock.isLocked(this.lockOptions(data));
             const label = on ? data.labelTrue || data.labelFalse || '' : data.labelFalse || '';
             const labelPosition = data.labelPosition || 'right';
             const switchMargin = labelPosition === 'off' ? 0 : 10;
@@ -258,15 +256,12 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
                 );
 
             const toggle = (): void => {
-                // Same condition as the cursor below: a locked control still reacts (unlocking is a
-                // real interaction), a read-only one does nothing — and must not buzz and click
-                // either, which it did while the feedback ran ahead of this check.
-                if (isReadOnly(data) && !locked) {
+                const request = this.lock.request(this.lockOptions(data));
+                if (request === 'blocked' || request === 'pin') {
                     return;
                 }
                 feedback(data);
-                if (locked) {
-                    this.unlock(data);
+                if (request === 'unlocked') {
                     return;
                 }
                 writeValue(this.props, data, !on);
@@ -470,7 +465,7 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
                         alignItems: 'center',
                         boxSizing: 'border-box',
                         // vis-2 puts the cursor from "CSS common" on its wrapper; an inline value here hides it.
-                        cursor: userCursor || (isReadOnly(data) && !locked ? 'default' : 'pointer'),
+                        cursor: userCursor || (isReadOnly(data) ? 'default' : 'pointer'),
                         display: 'flex',
                         flexDirection: labelPosition === 'left' ? 'row-reverse' : 'row',
                         height: '100%',
@@ -496,6 +491,18 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
                                 asNumber(data.lockIconSize, 0),
                                 !!data.lockIconColor,
                             )}
+                        </span>
+                    ) : null}
+                    {this.lock.padOpen ? (
+                        // The pad is a portal, but its clicks and keys still bubble through the React tree to the toggle.
+                        <span onClick={event => event.stopPropagation()} onKeyDown={event => event.stopPropagation()}>
+                            <PinPad
+                                dark={this.isDarkTheme()}
+                                m3={isM3}
+                                onCancel={() => this.lock.pinCancelled()}
+                                onUnlock={pin => this.lock.pinAccepted(pin, lockSeconds(data.autoLockAfter))}
+                                pin={this.lockOptions(data).pin}
+                            />
                         </span>
                     ) : null}
                 </div>
