@@ -1,0 +1,1 @@
+import{t as e}from"./MaterialDesignToggleControls-VKgf953q.js";var t=e({id:`tplVis2-materialdesign-Switch`,name:`Switch`,kind:`switch`});export{t as default};
