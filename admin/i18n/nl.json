@@ -1286,5 +1286,6 @@
     "urlTarget": "URL openen in",
     "_blank": "nieuw tabblad",
     "_self": "hetzelfde tabblad",
-    "scrollToActive": "naar het actieve item scrollen"
+    "scrollToActive": "naar het actieve item scrollen",
+    "drawerPosition": "positie van het menu"
 }

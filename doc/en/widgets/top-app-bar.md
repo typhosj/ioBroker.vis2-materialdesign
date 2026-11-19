@@ -61,6 +61,10 @@ submenus into an accordion: when one opens, all others close. **close
 submenus when the menu closes** shows every submenu closed each time the menu
 opens again, instead of as it was left. **list item
 alignment** aligns the entry text, or the icon when only icons are shown.
+**position of the menu** (`left` or `right`) moves the menu button and the drawer
+to the left or right edge together: with `right` the button sits at the right
+end of the bar and the drawer opens from the right, for example when the
+ioBroker app puts its own button over the menu button in the top left corner.
 
 The three groups **navigation bar colors**, **sub menu layout** and **sub menu
 colors** only appear once **show advanced options** is ticked in **Common**.

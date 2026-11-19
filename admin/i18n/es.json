@@ -1286,5 +1286,6 @@
     "urlTarget": "abrir URL en",
     "_blank": "pestaña nueva",
     "_self": "misma pestaña",
-    "scrollToActive": "desplazarse a la entrada activa"
+    "scrollToActive": "desplazarse a la entrada activa",
+    "drawerPosition": "posición del menú"
 }

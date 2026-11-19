@@ -1286,5 +1286,6 @@
     "urlTarget": "otwórz URL w",
     "_blank": "nowej karcie",
     "_self": "tej samej karcie",
-    "scrollToActive": "przewiń do aktywnego elementu"
+    "scrollToActive": "przewiń do aktywnego elementu",
+    "drawerPosition": "położenie menu"
 }

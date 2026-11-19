@@ -59,7 +59,11 @@ und den **Trennlinien Stil** (`standard`, `padded`, `inset`, ebenfalls roh).
 Öffnet sich eines, klappen alle anderen zu. **Untermenüs beim Schließen des
 Menüs zuklappen** zeigt jedes Untermenü beim nächsten Öffnen zugeklappt statt so,
 wie es verlassen wurde. **Listenelementausrichtung** richtet
-den Eintragstext aus, im Modus nur Symbole das Symbol.
+den Eintragstext aus, im Modus nur Symbole das Symbol. **Position des Menüs**
+(`left` oder `right`) legt Menü-Button und Drawer gemeinsam an den linken oder
+rechten Rand: Mit `right` steht der Button rechts neben dem Titel, und der Drawer
+öffnet sich von rechts, etwa wenn die ioBroker-App oben links ihren eigenen
+Button über den Menü-Button legt.
 
 Die drei Gruppen **Navigationsleiste: Farben**, **Untermenü-Layout** und
 **Untermenüfarben** erscheinen erst mit dem Schalter **Erweiterte Optionen

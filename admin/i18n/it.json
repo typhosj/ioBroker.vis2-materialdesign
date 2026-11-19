@@ -1286,5 +1286,6 @@
     "urlTarget": "apri URL in",
     "_blank": "nuova scheda",
     "_self": "stessa scheda",
-    "scrollToActive": "scorri fino alla voce attiva"
+    "scrollToActive": "scorri fino alla voce attiva",
+    "drawerPosition": "posizione del menu"
 }

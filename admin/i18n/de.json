@@ -1286,5 +1286,6 @@
     "urlTarget": "URL öffnen in",
     "_blank": "neuem Tab",
     "_self": "demselben Tab",
-    "scrollToActive": "zum aktiven Eintrag scrollen"
+    "scrollToActive": "zum aktiven Eintrag scrollen",
+    "drawerPosition": "Position des Menüs"
 }

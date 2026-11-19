@@ -400,3 +400,75 @@ describe('top app bar modal menu (upstream-#124 and #123)', () => {
     });
 });
 
+
+// upstream-#193: the ioBroker Android app puts its own button over the top left corner, right on
+// top of the menu button. The menu button and the drawer move to the right together.
+describe('top app bar drawer position', () => {
+    type Style = React.CSSProperties;
+    const render = (rxData: Record<string, unknown>, open = false): React.ReactElement => {
+        const widget = new MaterialDesignTopAppBar(fixture<ConstructorParameters<typeof MaterialDesignTopAppBar>[0]>({ context: {} }));
+        widget.state = fixture<typeof widget.state>({ rxData: { navItemCount: 1, labels0: 'Alpha', ...rxData }, values: {} });
+        (widget as unknown as { open: boolean }).open = open;
+        return widget.renderWidgetBody(fixture<Parameters<MaterialDesignTopAppBar['renderWidgetBody']>[0]>({}));
+    };
+    const style = (tree: React.ReactElement, className: string): Style => collectByClass(tree, className)[0]?.props.style as Style;
+    // Order of the menu button and the title inside the bar.
+    const order = (tree: React.ReactElement): string[] => {
+        const section = collectByClass(tree, 'mdc-top-app-bar__section')[0];
+        return React.Children.toArray(section.props.children as React.ReactNode)
+            .filter(React.isValidElement)
+            .map(child => {
+                const raw = (child as React.ReactElement<Record<string, unknown>>).props.className;
+                const className = typeof raw === 'string' ? raw : '';
+                return className.includes('navigation-icon') ? 'button' : className.includes('title') ? 'title' : className;
+            });
+    };
+
+    it('keeps the menu button and the drawer on the left by default and for unknown values', () => {
+        for (const drawerPosition of [undefined, '', 'left', 'middle', 7]) {
+            const tree = render({ drawerPosition }, true);
+            expect(order(tree)).toEqual(['button', 'title']);
+            expect(style(tree, 'mdc-drawer')).toMatchObject({ left: 0 });
+            expect(style(tree, 'mdc-drawer').right).toBeUndefined();
+            expect(style(tree, 'mdc-top-app-bar')).toMatchObject({ left: 0 });
+            expect(collectByClass(tree, 'mdw-drawer-right')).toHaveLength(0);
+        }
+        expect(style(render({ drawerLayout: 'permanent' }), 'mdc-top-app-bar')).toMatchObject({ left: 256, width: 'calc(100% - 256px)' });
+    });
+
+    it('puts the menu button after the title and opens the drawer from the right edge', () => {
+        const tree = render({ drawerPosition: 'right' }, true);
+        expect(order(tree)).toEqual(['title', 'button']);
+        expect(style(tree, 'mdc-top-app-bar__navigation-icon')).toMatchObject({ marginLeft: 'auto' });
+        expect(style(tree, 'mdc-drawer')).toMatchObject({ right: 0 });
+        expect(style(tree, 'mdc-drawer').left).toBeUndefined();
+        expect(style(tree, 'mdc-top-app-bar')).toMatchObject({ right: 0, width: '100%' });
+        expect(style(tree, 'mdc-top-app-bar').left).toBeUndefined();
+        expect(collectByClass(tree, 'mdc-drawer-scrim')).toHaveLength(1);
+    });
+
+    it('leaves room for a permanent drawer on the right and draws its edge on the left side', () => {
+        const tree = render({ drawerPosition: 'right', drawerLayout: 'permanent', drawerWidth: 300 });
+        expect(style(tree, 'mdc-top-app-bar')).toMatchObject({ right: 300, width: 'calc(100% - 300px)' });
+        expect(style(tree, 'mdc-top-app-bar').left).toBeUndefined();
+        expect(style(tree, 'mdc-drawer')).toMatchObject({ right: 0, width: 300 });
+        const drawer = collectByClass(tree, 'mdc-drawer')[0];
+        expect(String(drawer.props.className).split(' ')).toEqual(expect.arrayContaining(['mdc-drawer--dismissible', 'mdw-drawer-right']));
+        const css = renderToStaticMarkup(tree);
+        expect(css).toContain('.mdc-drawer--dismissible.mdw-drawer-right{border-right:0;border-left:1px solid');
+        expect(collectByClass(tree, 'mdc-top-app-bar__navigation-icon')).toHaveLength(0);
+    });
+
+    it('anchors the lone menu button to the right edge', () => {
+        const tree = render({ drawerPosition: 'right', showOnlyMenuButton: true });
+        expect(order(tree)).toEqual(['button']);
+        expect(style(tree, 'mdc-top-app-bar')).toMatchObject({ right: 0, width: 'auto' });
+        expect(style(tree, 'mdc-top-app-bar').left).toBeUndefined();
+    });
+
+    it('offers the position as a field of the drawer layout', () => {
+        const group = MaterialDesignTopAppBar.getWidgetInfo().visAttrs.find(entry => entry.name === 'drawerLayout');
+        const field = (group?.fields as Array<{ name: string; type?: string; options?: string[]; default?: unknown }>).find(entry => entry.name === 'drawerPosition');
+        expect(field).toMatchObject({ type: 'select', options: ['left', 'right'], default: 'left' });
+    });
+});

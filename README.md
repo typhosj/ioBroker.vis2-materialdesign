@@ -118,6 +118,7 @@ to wait with an upgrade.
 ## Changelog
 ### **WORK IN PROGRESS**
 
+- (typhosj) Added **position of the menu** to the Top App Bar: the menu button and the drawer can move to the right edge together, for example where the ioBroker app puts its own button over the top left corner (Scrounger/ioBroker.vis-materialdesign#193)
 - (typhosj) Added **line style** to the data sets of the Line History chart: a line can be drawn solid, dashed or dotted, and the gaps grow with the line width (Scrounger/ioBroker.vis-materialdesign#218)
 - (typhosj) Added **tooltip text appendix** to the data sets of the Line History chart: each line shows its own unit in the tooltip, for example °C next to %. Left empty, a line keeps the text appendix of the tooltip group (Scrounger/ioBroker.vis-materialdesign#120)
 - (typhosj) Added the time ranges 5, 10 and 20 years to the Line History chart, also as values for **control interval with object**; two years used to be the longest range (Scrounger/ioBroker.vis-materialdesign#210)

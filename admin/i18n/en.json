@@ -1286,5 +1286,6 @@
     "urlTarget": "open URL in",
     "_blank": "new tab",
     "_self": "same tab",
-    "scrollToActive": "scroll to the active entry"
+    "scrollToActive": "scroll to the active entry",
+    "drawerPosition": "position of the menu"
 }

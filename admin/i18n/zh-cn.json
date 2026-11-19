@@ -1286,5 +1286,6 @@
     "urlTarget": "打开 URL 于",
     "_blank": "新标签页",
     "_self": "当前标签页",
-    "scrollToActive": "滚动到活动条目"
+    "scrollToActive": "滚动到活动条目",
+    "drawerPosition": "菜单位置"
 }

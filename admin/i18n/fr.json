@@ -1286,5 +1286,6 @@
     "urlTarget": "ouvrir l'URL dans",
     "_blank": "nouvel onglet",
     "_self": "même onglet",
-    "scrollToActive": "défiler jusqu'à l'entrée active"
+    "scrollToActive": "défiler jusqu'à l'entrée active",
+    "drawerPosition": "position du menu"
 }
