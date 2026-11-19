@@ -1289,5 +1289,9 @@
     "scrollToActive": "przewiń do aktywnego elementu",
     "drawerPosition": "położenie menu",
     "lockPin": "PIN (cyfry, puste = brak)",
-    "lockPinInvalid": "od 1 do 12 cyfr"
+    "lockPinInvalid": "od 1 do 12 cyfr",
+    "pinPadTitle": "Wprowadź PIN",
+    "pinPadNotSetUp": "PIN nie jest ustawiony",
+    "pinPadCancel": "Anuluj",
+    "ariaPinDelete": "Usuń cyfrę"
 }

@@ -3,14 +3,14 @@ import { createPortal } from 'react-dom';
 
 import type { RxWidgetInfo } from '@iobroker/types-vis-2';
 
-import { m3ColorExplicit, renderIcon } from './MaterialDesignButtons';
+import { renderIcon } from './MaterialDesignButtons';
+import { keyLook, type KeyLook as Look } from './keyLook';
 import { applyKey, autoShift, chooseLayout, currentWord, decimalChar, forget, keyMapFor, learn, moveCaret, numberRows, panOffset, parseWords, replaceWord, suggest, textRows, wordsIn, type EditResult, type KeyDef, type KeyMap, type Layout, type Special, type Words } from './keyboard';
-import { createInfo, designStyle, designStyleClasses, legacyInk, legacySurface, ownCssVariables, passWrapperClicks, setStateValue, squarePreview, stateValue, visLocale, VisWidget, boolValue as b, numberValue as n, textValue as s, type RenderProps } from './widgetUtils';
+import { createInfo, designStyle, designStyleClasses, ownCssVariables, passWrapperClicks, setStateValue, squarePreview, stateValue, visLocale, VisWidget, boolValue as b, numberValue as n, textValue as s, type RenderProps } from './widgetUtils';
 
 export type Field = HTMLInputElement | HTMLTextAreaElement;
 type Shift = 'off' | 'once' | 'lock';
 interface Rect { left: number; top: number; width: number; height: number }
-interface Look { background: string; key: string; text: string; special: string; fontSize: number; gap: number; radius: number }
 interface KeyInfo {
     aria: string;
     icon?: string;
@@ -790,16 +790,7 @@ export default class MaterialDesignKeyboard extends VisWidget {
         const data = this.data();
         const isDark = this.isDarkTheme();
         const isM3 = designStyle(data) === 'material3';
-        const m3c = (saved: unknown, token: string, legacy: string): string => (isM3 && !m3ColorExplicit(saved) ? token : s(saved, legacy));
-        const look: Look = {
-            background: m3c(data.keyboardBackground, 'var(--md-sys-color-surface-container-high)', isDark ? '#121212' : '#eceff1'),
-            key: m3c(data.keyboardKeyColor, 'var(--md-sys-color-surface)', legacySurface(isDark)),
-            text: m3c(data.keyboardKeyTextColor, 'var(--md-sys-color-on-surface)', legacyInk(isDark)),
-            special: m3c(data.keyboardSpecialKeyColor, 'var(--md-sys-color-secondary-container)', isDark ? '#3a3a3a' : '#cfd8dc'),
-            fontSize: clampTo(n(data.keyboardFontSize, 18), 8, 64),
-            gap: clampTo(n(data.keyboardKeyGap, 6), 0, 32),
-            radius: clampTo(n(data.keyboardKeyRadius, 8), 0, 64),
-        };
+        const look = keyLook(data, isM3, isDark);
         const arrows = b(data.keyboardArrows, false);
         const pad = this.layoutFor(this.target) === 'number';
         const rows = pad ? numberRows(arrows) : textRows(this.keyMap(), this.symbols, arrows);

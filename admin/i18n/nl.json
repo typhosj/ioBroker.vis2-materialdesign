@@ -1289,5 +1289,9 @@
     "scrollToActive": "naar het actieve item scrollen",
     "drawerPosition": "positie van het menu",
     "lockPin": "PIN (cijfers, leeg = geen)",
-    "lockPinInvalid": "1 tot 12 cijfers"
+    "lockPinInvalid": "1 tot 12 cijfers",
+    "pinPadTitle": "PIN invoeren",
+    "pinPadNotSetUp": "PIN niet ingesteld",
+    "pinPadCancel": "Annuleren",
+    "ariaPinDelete": "Cijfer wissen"
 }

@@ -1289,5 +1289,9 @@
     "scrollToActive": "défiler jusqu'à l'entrée active",
     "drawerPosition": "position du menu",
     "lockPin": "PIN (chiffres, vide = aucun)",
-    "lockPinInvalid": "1 à 12 chiffres"
+    "lockPinInvalid": "1 à 12 chiffres",
+    "pinPadTitle": "Saisir le code PIN",
+    "pinPadNotSetUp": "Code PIN non configuré",
+    "pinPadCancel": "Annuler",
+    "ariaPinDelete": "Effacer le chiffre"
 }

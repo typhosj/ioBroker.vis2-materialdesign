@@ -1289,5 +1289,9 @@
     "scrollToActive": "scroll to the active entry",
     "drawerPosition": "position of the menu",
     "lockPin": "PIN (digits, empty = none)",
-    "lockPinInvalid": "1 to 12 digits"
+    "lockPinInvalid": "1 to 12 digits",
+    "pinPadTitle": "Enter PIN",
+    "pinPadNotSetUp": "PIN not set up",
+    "pinPadCancel": "Cancel",
+    "ariaPinDelete": "Delete digit"
 }

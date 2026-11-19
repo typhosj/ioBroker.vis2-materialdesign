@@ -1289,5 +1289,9 @@
     "scrollToActive": "zum aktiven Eintrag scrollen",
     "drawerPosition": "Position des Menüs",
     "lockPin": "PIN (Ziffern, leer = keine)",
-    "lockPinInvalid": "1 bis 12 Ziffern"
+    "lockPinInvalid": "1 bis 12 Ziffern",
+    "pinPadTitle": "PIN eingeben",
+    "pinPadNotSetUp": "PIN nicht eingerichtet",
+    "pinPadCancel": "Abbrechen",
+    "ariaPinDelete": "Ziffer löschen"
 }

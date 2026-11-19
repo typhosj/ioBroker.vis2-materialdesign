@@ -1289,5 +1289,9 @@
     "scrollToActive": "scorri fino alla voce attiva",
     "drawerPosition": "posizione del menu",
     "lockPin": "PIN (cifre, vuoto = nessuno)",
-    "lockPinInvalid": "da 1 a 12 cifre"
+    "lockPinInvalid": "da 1 a 12 cifre",
+    "pinPadTitle": "Inserisci PIN",
+    "pinPadNotSetUp": "PIN non configurato",
+    "pinPadCancel": "Annulla",
+    "ariaPinDelete": "Cancella cifra"
 }

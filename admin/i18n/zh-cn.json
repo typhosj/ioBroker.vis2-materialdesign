@@ -1289,5 +1289,9 @@
     "scrollToActive": "滚动到活动条目",
     "drawerPosition": "菜单位置",
     "lockPin": "PIN（数字，留空 = 无）",
-    "lockPinInvalid": "1 到 12 位数字"
+    "lockPinInvalid": "1 到 12 位数字",
+    "pinPadTitle": "输入 PIN",
+    "pinPadNotSetUp": "未设置 PIN",
+    "pinPadCancel": "取消",
+    "ariaPinDelete": "删除数字"
 }

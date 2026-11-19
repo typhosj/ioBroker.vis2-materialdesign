@@ -1289,5 +1289,9 @@
     "scrollToActive": "desplazarse a la entrada activa",
     "drawerPosition": "posición del menú",
     "lockPin": "PIN (dígitos, vacío = ninguno)",
-    "lockPinInvalid": "de 1 a 12 dígitos"
+    "lockPinInvalid": "de 1 a 12 dígitos",
+    "pinPadTitle": "Introducir PIN",
+    "pinPadNotSetUp": "PIN no configurado",
+    "pinPadCancel": "Cancelar",
+    "ariaPinDelete": "Borrar dígito"
 }

@@ -1289,5 +1289,9 @@
     "scrollToActive": "прокрутити до активного елемента",
     "drawerPosition": "розташування меню",
     "lockPin": "PIN (цифри, порожньо = без PIN)",
-    "lockPinInvalid": "від 1 до 12 цифр"
+    "lockPinInvalid": "від 1 до 12 цифр",
+    "pinPadTitle": "Введіть PIN",
+    "pinPadNotSetUp": "PIN не налаштовано",
+    "pinPadCancel": "Скасувати",
+    "ariaPinDelete": "Видалити цифру"
 }
