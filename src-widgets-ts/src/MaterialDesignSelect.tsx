@@ -533,6 +533,12 @@ export default class MaterialDesignSelect extends VisWidget {
         this.forceUpdate();
     }
 
+    // Escape and Enter close the menu but leave the field focused; the focus keeps the lock open, no blur follows to release it.
+    private closeInput(data: SelectData): void {
+        this.closeMenu();
+        this.holdIfFocused(this.lockOptions(data));
+    }
+
     private onAutocompleteKey(event: React.KeyboardEvent, data: SelectData, { list, visibleList, highlighted, menuShown }: MenuView): void {
         if (isComposing(event)) return;
         const oid = data.oid || '';
@@ -549,7 +555,7 @@ export default class MaterialDesignSelect extends VisWidget {
             // A dialog around the widget closes on Escape too; the first Escape only cancels the menu
             // or the typed text, the next one reaches the dialog.
             if (menuShown || this.dirty) event.stopPropagation();
-            this.closeMenu();
+            this.closeInput(data);
             return;
         }
         // No preventDefault: the focus moves on, and the blur that follows only closes.
@@ -564,13 +570,13 @@ export default class MaterialDesignSelect extends VisWidget {
         }
         if (data.inputMode === 'write') {
             if (this.dirty) this.commit(writeValue(list, this.filterText ?? ''), oid);
-            this.closeMenu();
+            this.closeInput(data);
             return;
         }
         const ft = this.filterText;
         const match = ft ? list.find(item => item.text.toLowerCase().includes(ft.toLowerCase())) : undefined;
         if (match) this.commit(match.value, oid);
-        this.closeMenu();
+        this.closeInput(data);
     }
 
     componentDidMount(): void {

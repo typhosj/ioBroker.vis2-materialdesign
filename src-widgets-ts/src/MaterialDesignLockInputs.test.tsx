@@ -228,3 +228,25 @@ describe('Select / Autocomplete lock', () => {
         expect(vi.getTimerCount()).toBe(0);
     });
 });
+
+describe('Autocomplete lock after Escape', () => {
+    it('a focused unlocked field stays unlocked after Escape past the lock time; blur locks it', () => {
+        const w = new MaterialDesignAutocomplete(fixture<ConstructorParameters<typeof MaterialDesignAutocomplete>[0]>({ context: { setValue: vi.fn() } }));
+        w.state = fixture<typeof w.state>({ rxData: { lockEnabled: true, autoLockAfter: 3, inputMode: 'write', listDataMethod: 'jsonStringObject', jsonStringObject: '[{"value":1,"text":"One"}]' }, data: {}, values: {} });
+        const field = () => find(w.renderWidgetBody(fixture<Parameters<typeof w.renderWidgetBody>[0]>({})), el => el.type === 'input')!;
+        const el = { focus: () => undefined };
+        (w as unknown as { inputRef: unknown }).inputRef = el;
+        Object.defineProperty(document, 'activeElement', { configurable: true, get: () => el });
+        try {
+            (field().props.onFocus as () => void)();
+            (field().props.onClick as (e: unknown) => void)({ stopPropagation: () => undefined });
+            (field().props.onKeyDown as (e: unknown) => void)({ key: 'Escape', stopPropagation: () => undefined });
+            vi.advanceTimersByTime(5000);
+            expect(field().props.readOnly).toBe(false);
+            (field().props.onBlur as () => void)();
+            expect(field().props.readOnly).toBe(true);
+        } finally {
+            delete (document as unknown as Record<string, unknown>).activeElement;
+        }
+    });
+});
