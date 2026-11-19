@@ -1287,5 +1287,7 @@
     "_blank": "pestaña nueva",
     "_self": "misma pestaña",
     "scrollToActive": "desplazarse a la entrada activa",
-    "drawerPosition": "posición del menú"
+    "drawerPosition": "posición del menú",
+    "lockPin": "PIN (dígitos, vacío = ninguno)",
+    "lockPinInvalid": "de 1 a 12 dígitos"
 }

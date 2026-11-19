@@ -1287,5 +1287,7 @@
     "_blank": "nova aba",
     "_self": "mesma aba",
     "scrollToActive": "rolar até a entrada ativa",
-    "drawerPosition": "posição do menu"
+    "drawerPosition": "posição do menu",
+    "lockPin": "PIN (dígitos, vazio = nenhum)",
+    "lockPinInvalid": "de 1 a 12 dígitos"
 }

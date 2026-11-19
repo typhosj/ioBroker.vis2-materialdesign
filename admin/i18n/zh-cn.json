@@ -1287,5 +1287,7 @@
     "_blank": "新标签页",
     "_self": "当前标签页",
     "scrollToActive": "滚动到活动条目",
-    "drawerPosition": "菜单位置"
+    "drawerPosition": "菜单位置",
+    "lockPin": "PIN（数字，留空 = 无）",
+    "lockPinInvalid": "1 到 12 位数字"
 }

@@ -1287,5 +1287,7 @@
     "_blank": "новой вкладке",
     "_self": "той же вкладке",
     "scrollToActive": "прокрутить к активному элементу",
-    "drawerPosition": "положение меню"
+    "drawerPosition": "положение меню",
+    "lockPin": "PIN (цифры, пусто = без PIN)",
+    "lockPinInvalid": "от 1 до 12 цифр"
 }

@@ -1287,5 +1287,7 @@
     "_blank": "nieuw tabblad",
     "_self": "hetzelfde tabblad",
     "scrollToActive": "naar het actieve item scrollen",
-    "drawerPosition": "positie van het menu"
+    "drawerPosition": "positie van het menu",
+    "lockPin": "PIN (cijfers, leeg = geen)",
+    "lockPinInvalid": "1 tot 12 cijfers"
 }

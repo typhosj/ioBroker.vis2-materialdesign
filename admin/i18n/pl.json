@@ -1287,5 +1287,7 @@
     "_blank": "nowej karcie",
     "_self": "tej samej karcie",
     "scrollToActive": "przewiń do aktywnego elementu",
-    "drawerPosition": "położenie menu"
+    "drawerPosition": "położenie menu",
+    "lockPin": "PIN (cyfry, puste = brak)",
+    "lockPinInvalid": "od 1 do 12 cyfr"
 }

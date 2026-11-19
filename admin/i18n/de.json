@@ -1287,5 +1287,7 @@
     "_blank": "neuem Tab",
     "_self": "demselben Tab",
     "scrollToActive": "zum aktiven Eintrag scrollen",
-    "drawerPosition": "Position des Menüs"
+    "drawerPosition": "Position des Menüs",
+    "lockPin": "PIN (Ziffern, leer = keine)",
+    "lockPinInvalid": "1 bis 12 Ziffern"
 }

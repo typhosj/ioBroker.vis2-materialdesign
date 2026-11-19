@@ -1287,5 +1287,7 @@
     "_blank": "nouvel onglet",
     "_self": "même onglet",
     "scrollToActive": "défiler jusqu'à l'entrée active",
-    "drawerPosition": "position du menu"
+    "drawerPosition": "position du menu",
+    "lockPin": "PIN (chiffres, vide = aucun)",
+    "lockPinInvalid": "1 à 12 chiffres"
 }

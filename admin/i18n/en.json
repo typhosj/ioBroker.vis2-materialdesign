@@ -1287,5 +1287,7 @@
     "_blank": "new tab",
     "_self": "same tab",
     "scrollToActive": "scroll to the active entry",
-    "drawerPosition": "position of the menu"
+    "drawerPosition": "position of the menu",
+    "lockPin": "PIN (digits, empty = none)",
+    "lockPinInvalid": "1 to 12 digits"
 }

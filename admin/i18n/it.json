@@ -1287,5 +1287,7 @@
     "_blank": "nuova scheda",
     "_self": "stessa scheda",
     "scrollToActive": "scorri fino alla voce attiva",
-    "drawerPosition": "posizione del menu"
+    "drawerPosition": "posizione del menu",
+    "lockPin": "PIN (cifre, vuoto = nessuno)",
+    "lockPinInvalid": "da 1 a 12 cifre"
 }
