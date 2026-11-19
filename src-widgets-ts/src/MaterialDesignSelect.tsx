@@ -7,7 +7,9 @@ import { isComposing, moveHighlight, writeValue } from './autocomplete';
 import { m3ColorExplicit, renderIcon } from './MaterialDesignButtons';
 import { cleanColor, num } from './MaterialDesignProgress';
 import { fill, withAutoFill } from './deviceFill';
-import { squarePreview, RenderProps, VisWidget, createInfo, indexedFields, itemCount, designStyle, designStyleClasses, iconField, legacyInk, legacyInkMuted, legacyOutline, legacySurface, ownCssVariables, isReadOnly, setStateValue, sizeCss, stateValue, stringValue } from './widgetUtils';
+import PinPad from './PinPad';
+import { WidgetLock, lockGroup, lockSeconds, pinOf, type LockOptions } from './widgetLock';
+import { boolValue, textValue, squarePreview, RenderProps, VisWidget, createInfo, indexedFields, itemCount, designStyle, designStyleClasses, iconField, legacyInk, legacyInkMuted, legacyOutline, legacySurface, ownCssVariables, isReadOnly, setStateValue, sizeCss, stateValue, stringValue } from './widgetUtils';
 
 interface SelectData {
     oid?: string;
@@ -46,6 +48,11 @@ interface SelectData {
     inputCounterFontSize?: number;
     inputCounterFontFamily?: string;
     readOnly?: boolean;
+    lockEnabled?: boolean;
+    lockPin?: string;
+    autoLockAfter?: number;
+    lockIcon?: string;
+    lockIconColor?: string;
     clearIconShow?: boolean;
     clearIcon?: string;
     clearIconSize?: number;
@@ -332,6 +339,7 @@ const attrs: RxWidgetInfo['visAttrs'] = [
             data => itemCount(data.countSelectItems),
         ),
     },
+    lockGroup,
 ];
 
 function color(value: unknown, fallback: string): string {
@@ -432,6 +440,7 @@ export default class MaterialDesignSelect extends VisWidget {
     private menuRef: HTMLDivElement | null = null;
     // Whether the window and document listeners of the open menu are registered.
     private listening = false;
+    private readonly lock = new WidgetLock(() => this.forceUpdate());
 
     // The menu sits at fixed coordinates in the page body, so it has to follow the field. A view
     // moved by a transform (the keyboard's pan) reports neither scroll nor resize, only transitionend.
@@ -484,7 +493,23 @@ export default class MaterialDesignSelect extends VisWidget {
         this.dirty = false;
         this.hoveredValue = undefined;
         this.forcedOpen = false;
+        this.lock.hold(false, this.lockOptions(this.state.rxData as unknown as SelectData));
         this.forceUpdate();
+    }
+
+    private lockOptions(data: SelectData): LockOptions {
+        return {
+            enabled: boolValue(data.lockEnabled),
+            pin: pinOf(data.lockPin, (this.state?.data as Record<string, unknown> | undefined)?.lockPin),
+            seconds: lockSeconds(data.autoLockAfter),
+            readOnly: isReadOnly(data),
+            editMode: !!this.props.editMode,
+        };
+    }
+
+    // A field focused while still locked got no hold from onFocus, and the unlocking tap fires no new focus event.
+    private holdIfFocused(opts: LockOptions): void {
+        if (this.inputRef && document.activeElement === this.inputRef) this.lock.hold(true, opts);
     }
 
     private commit(value: ioBroker.StateValue, oid: string): void {
@@ -566,13 +591,14 @@ export default class MaterialDesignSelect extends VisWidget {
 
     componentWillUnmount(): void {
         this.open = false;
+        this.lock.dispose();
         this.syncMenuListeners();
         super.componentWillUnmount();
     }
 
     static getWidgetInfo(): RxWidgetInfo {
         return {
-            ...createInfo('tplVis2-materialdesign-Select', 'Select', withAutoFill(attrs, autoFillMap), ['inputLayout', 'inputAppendix', 'inputSubText', 'counter', 'icons', 'selectListLayout']),
+            ...createInfo('tplVis2-materialdesign-Select', 'Select', withAutoFill(attrs, autoFillMap), ['inputLayout', 'inputAppendix', 'inputSubText', 'counter', 'icons', 'selectListLayout', 'lock']),
             visPrev: squarePreview('F1400'),
             visDefaultStyle: { width: 150, height: 38 },
         };
@@ -586,6 +612,9 @@ export default class MaterialDesignSelect extends VisWidget {
         super.renderWidgetBody(props);
         const data = this.state.rxData as unknown as SelectData;
         const readOnly = isReadOnly(data);
+        const opts = this.lockOptions(data);
+        const locked = !readOnly && this.lock.isLocked(opts);
+        const blocked = readOnly || locked;
         if (data.listDataMethod === 'multistatesObject' && data.oid) this.loadObjectStates(data.oid);
         const list = items(data, this.objectStates);
         const state = stateValue(this.state, data.oid || '');
@@ -874,12 +903,25 @@ export default class MaterialDesignSelect extends VisWidget {
                         className="v-input v-input--dense v-select theme--light"
                         onClick={() => {
                             if (readOnly) return;
+                            if (locked) {
+                                if (this.lock.request(opts) !== 'unlocked') return;
+                                if (this.isAutocomplete) {
+                                    this.holdIfFocused(opts);
+                                    window.setTimeout(() => this.inputRef?.focus());
+                                    return;
+                                }
+                                this.open = true;
+                                this.lock.hold(true, opts);
+                                this.forceUpdate();
+                                return;
+                            }
                             // Opening without focus would leave a menu that no blur ever closes.
                             if (this.isAutocomplete) {
                                 this.inputRef?.focus();
                                 return;
                             }
                             this.open = !this.open;
+                            this.lock.hold(this.open, opts);
                             this.forceUpdate();
                         }}
                         onMouseEnter={() => { this.fieldHovered = true; this.forceUpdate(); }}
@@ -1021,13 +1063,13 @@ export default class MaterialDesignSelect extends VisWidget {
                                     aria-autocomplete="list"
                                     aria-controls={listId}
                                     aria-expanded={menuShown}
-                                    readOnly={readOnly}
+                                    readOnly={blocked}
                                     onBlur={() => {
-                                        if (write && this.dirty && !readOnly) this.commit(writeValue(list, this.filterText ?? ''), data.oid || '');
+                                        if (write && this.dirty && !blocked) this.commit(writeValue(list, this.filterText ?? ''), data.oid || '');
                                         this.closeMenu();
                                     }}
                                     onChange={event => {
-                                        if (readOnly) return;
+                                        if (blocked) return;
                                         this.filterText = event.target.value;
                                         this.dirty = true;
                                         this.hoveredValue = undefined;
@@ -1038,10 +1080,22 @@ export default class MaterialDesignSelect extends VisWidget {
                                     onClick={event => {
                                         event.stopPropagation();
                                         if (readOnly) return;
+                                        if (locked) {
+                                            if (this.lock.request(opts) === 'unlocked') {
+                                                this.holdIfFocused(opts);
+                                                window.setTimeout(() => this.inputRef?.focus());
+                                            }
+                                            return;
+                                        }
                                         this.startInput(displayed, write);
                                     }}
-                                    onFocus={() => { if (!readOnly) this.startInput(displayed, write); }}
-                                    onKeyDown={event => !readOnly && this.onAutocompleteKey(event, data, { list, visibleList, highlighted, menuShown })}
+                                    onFocus={() => {
+                                        if (!blocked) {
+                                            this.lock.hold(true, opts);
+                                            this.startInput(displayed, write);
+                                        }
+                                    }}
+                                    onKeyDown={event => !blocked && this.onAutocompleteKey(event, data, { list, visibleList, highlighted, menuShown })}
                                     placeholder={selected?.text || ''}
                                     ref={element => { this.inputRef = element; }}
                                     role="combobox"
@@ -1091,7 +1145,7 @@ export default class MaterialDesignSelect extends VisWidget {
                                 {data.inputSuffix}
                             </span>
                         ) : null}
-                        {data.clearIconShow && current !== undefined && current !== null && current !== '' && !readOnly ? (
+                        {data.clearIconShow && current !== undefined && current !== null && current !== '' && !blocked ? (
                             <button
                                 aria-label={VisWidget.t('ariaClearInput')}
                                 onClick={event => {
@@ -1120,6 +1174,11 @@ export default class MaterialDesignSelect extends VisWidget {
                                     !!data.clearIconColor,
                                 )}
                             </button>
+                        ) : null}
+                        {locked ? (
+                            <span data-lock-icon="" style={{ alignItems: 'center', display: 'flex', flex: '0 0 auto', marginLeft: 4 }}>
+                                {renderIcon(textValue(data.lockIcon, 'lock-outline'), textValue(data.lockIconColor, '#B22222'), 18, true)}
+                            </span>
                         ) : null}
                         <span style={{ flex: '0 0 auto', marginLeft: 6 }}>
                             {renderIcon(
@@ -1172,6 +1231,28 @@ export default class MaterialDesignSelect extends VisWidget {
                     ) : null}
                     {menu && floating ? createPortal(menu, document.body) : menu}
                 </div>
+                {this.lock.padOpen ? (
+                    // The pad is a portal, but its clicks and keys still bubble through the React tree.
+                    <span onClick={event => event.stopPropagation()} onKeyDown={event => event.stopPropagation()}>
+                        <PinPad
+                            dark={isDark}
+                            m3={isM3}
+                            onCancel={() => this.lock.pinCancelled()}
+                            onUnlock={pin => {
+                                this.lock.pinAccepted(pin, opts.seconds);
+                                if (this.isAutocomplete) {
+                                    this.holdIfFocused(opts);
+                                    window.setTimeout(() => this.inputRef?.focus());
+                                    return;
+                                }
+                                this.open = true;
+                                this.lock.hold(true, opts);
+                                this.forceUpdate();
+                            }}
+                            pin={opts.pin}
+                        />
+                    </span>
+                ) : null}
             </div>
         );
     }

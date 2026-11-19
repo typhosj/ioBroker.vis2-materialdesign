@@ -1,7 +1,9 @@
 import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import MaterialDesignAutocomplete from './MaterialDesignAutocomplete';
 import MaterialDesignInput from './MaterialDesignInput';
+import MaterialDesignSelect from './MaterialDesignSelect';
 import { resetPins } from './widgetLock';
 
 function fixture<T>(value: unknown): T { return value as T; }
@@ -112,6 +114,117 @@ describe('Input lock (upstream #112)', () => {
         (w.field().props.onPointerDown as (e: unknown) => void)({ preventDefault: () => undefined });
         vi.advanceTimersByTime(10);
         w.input.componentWillUnmount();
+        expect(vi.getTimerCount()).toBe(0);
+    });
+});
+
+describe('Select / Autocomplete lock', () => {
+    const items = { listDataMethod: 'jsonStringObject', jsonStringObject: '[{"value":1,"text":"One"}]' };
+    const select = (rxData: Record<string, unknown>) => {
+        const w = new MaterialDesignSelect(fixture<ConstructorParameters<typeof MaterialDesignSelect>[0]>({ context: { setValue: vi.fn() } }));
+        w.state = fixture<typeof w.state>({ rxData: { lockEnabled: true, autoLockAfter: 3, ...items, ...rxData }, data: rxData, values: {} });
+        const tree = () => w.renderWidgetBody(fixture<Parameters<typeof w.renderWidgetBody>[0]>({}));
+        const button = () => find(tree(), el => el.type === 'button')!;
+        const isOpen = () => (w as unknown as { open: boolean }).open;
+        return { w, tree, button, isOpen };
+    };
+    const lockIcon = (tree: React.ReactNode) => find(tree, el => el.props['data-lock-icon'] !== undefined);
+    const autocomplete = (rxData: Record<string, unknown>) => {
+        const w = new MaterialDesignAutocomplete(fixture<ConstructorParameters<typeof MaterialDesignAutocomplete>[0]>({ context: { setValue: vi.fn() } }));
+        w.state = fixture<typeof w.state>({ rxData: { lockEnabled: true, autoLockAfter: 3, inputMode: 'write', ...items, ...rxData }, data: rxData, values: {} });
+        const tree = () => w.renderWidgetBody(fixture<Parameters<typeof w.renderWidgetBody>[0]>({}));
+        const field = () => find(tree(), el => el.type === 'input')!;
+        return { w, tree, field };
+    };
+
+    it('a locked Select shows the lock and the first tap unlocks and opens the menu', () => {
+        const s = select({});
+        expect(lockIcon(s.tree())).toBeDefined();
+        (s.button().props.onClick as () => void)();
+        expect(s.isOpen()).toBe(true);
+    });
+
+    it('the menu holds the lock open; closing it relocks after the time', () => {
+        const s = select({});
+        (s.button().props.onClick as () => void)();
+        vi.advanceTimersByTime(5000);
+        expect(lockIcon(s.tree())).toBeUndefined();
+        (s.w as unknown as { closeMenu: () => void }).closeMenu();
+        expect(lockIcon(s.tree())).toBeDefined();
+    });
+
+    it('with a PIN the Select opens the pad, not the menu', () => {
+        const s = select({ lockPin: '12' });
+        (s.button().props.onClick as () => void)();
+        expect(s.isOpen()).toBe(false);
+        expect(find(s.tree(), isPad)).toBeDefined();
+    });
+
+    it('the pad sits in a wrapper that stops click and key events from reaching ancestors', () => {
+        const s = select({ lockPin: '12' });
+        (s.button().props.onClick as () => void)();
+        const wrapper = find(s.tree(), el => el.type === 'span' && !!find(el.props.children as React.ReactNode, isPad))!;
+        for (const name of ['onClick', 'onKeyDown']) {
+            const stopPropagation = vi.fn();
+            (wrapper.props[name] as (e: unknown) => void)({ stopPropagation });
+            expect(stopPropagation).toHaveBeenCalled();
+        }
+    });
+
+    it('read-only wins: no lock icon, a tap opens nothing and asks nothing', () => {
+        const s = select({ readOnly: 'true', lockPin: '12' });
+        expect(lockIcon(s.tree())).toBeUndefined();
+        (s.button().props.onClick as () => void)();
+        expect(s.isOpen()).toBe(false);
+        expect(find(s.tree(), isPad)).toBeUndefined();
+        expect(vi.getTimerCount()).toBe(0);
+    });
+
+    it('a locked Autocomplete is readonly; a tap unlocks and focuses', () => {
+        const a = autocomplete({});
+        expect(a.field().props.readOnly).toBe(true);
+        (a.field().props.onFocus as () => void)();
+        expect((a.w as unknown as { open: boolean }).open).toBe(false);
+        const focus = vi.fn();
+        (a.w as unknown as { inputRef: { focus: () => void } }).inputRef = { focus };
+        (a.field().props.onClick as (e: unknown) => void)({ stopPropagation: () => undefined });
+        expect(a.field().props.readOnly).toBe(false);
+        vi.advanceTimersByTime(10);
+        expect(focus).toHaveBeenCalled();
+    });
+
+    it('a locked Autocomplete ignores keys; read-only shows no lock and a tap does nothing', () => {
+        const a = autocomplete({});
+        const preventDefault = vi.fn();
+        (a.field().props.onKeyDown as (e: unknown) => void)({ key: 'ArrowDown', preventDefault });
+        expect(preventDefault).not.toHaveBeenCalled();
+        const r = autocomplete({ readOnly: 'true' });
+        expect(lockIcon(r.tree())).toBeUndefined();
+        (r.field().props.onClick as (e: unknown) => void)({ stopPropagation: () => undefined });
+        expect(vi.getTimerCount()).toBe(0);
+    });
+
+    it('an Autocomplete focused while locked is held once the tap unlocks it, and relocks on blur', () => {
+        const a = autocomplete({});
+        const el = { focus: () => undefined };
+        (a.w as unknown as { inputRef: unknown }).inputRef = el;
+        Object.defineProperty(document, 'activeElement', { configurable: true, get: () => el });
+        try {
+            (a.field().props.onFocus as () => void)();
+            (a.field().props.onClick as (e: unknown) => void)({ stopPropagation: () => undefined });
+            vi.advanceTimersByTime(5000);
+            expect(a.field().props.readOnly).toBe(false);
+            (a.field().props.onBlur as () => void)();
+            expect(a.field().props.readOnly).toBe(true);
+        } finally {
+            delete (document as unknown as Record<string, unknown>).activeElement;
+        }
+    });
+
+    it('unmounting clears the relock timer', () => {
+        const s = select({});
+        (s.button().props.onClick as () => void)();
+        s.w.componentWillUnmount();
         expect(vi.getTimerCount()).toBe(0);
     });
 });
