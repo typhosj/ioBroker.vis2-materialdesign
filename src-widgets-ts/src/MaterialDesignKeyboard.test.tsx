@@ -447,6 +447,44 @@ describe('Enter and close', () => {
         expect(document.activeElement).toBe(document.body);
         expect(panel()).toBeNull();
     });
+
+    it('sends keydown, keypress and keyup with keyCode and which 13, as a real Enter key does', () => {
+        start(keyboard());
+        const seen: string[] = [];
+        for (const type of ['keydown', 'keypress', 'keyup']) {
+            field('title').addEventListener(type, event => {
+                const e = event as KeyboardEvent;
+                seen.push(`${type}:${e.key}:${e.keyCode}:${e.which}`);
+            });
+        }
+        focus(field('title'));
+        tap('enter');
+        expect(seen).toEqual(['keydown:Enter:13:13', 'keypress:Enter:13:13', 'keyup:Enter:13:13']);
+        expect(document.activeElement).toBe(document.body);
+    });
+
+    it('commits a legacy widget that listens to keypress with which 13 (Bring shopping list)', () => {
+        start(keyboard({ keyboardAutoCapitalize: false }));
+        const saved: string[] = [];
+        field('title').addEventListener('keypress', event => {
+            if (event.which !== 13) return;
+            saved.push(field('title').value);
+        });
+        focus(field('title'));
+        tap('m', 'i', 'l', 'c', 'h');
+        tap('enter');
+        expect(saved).toEqual(['milch']);
+    });
+
+    it('skips keypress when the keydown was cancelled, as the browser does, but still sends keyup', () => {
+        start(keyboard({ keyboardEnter: 'stay' }));
+        const seen: string[] = [];
+        field('title').addEventListener('keydown', event => event.preventDefault());
+        for (const type of ['keypress', 'keyup']) field('title').addEventListener(type, () => seen.push(type));
+        focus(field('title'));
+        tap('enter');
+        expect(seen).toEqual(['keyup']);
+    });
 });
 
 describe('ghost click after the keyboard hides', () => {

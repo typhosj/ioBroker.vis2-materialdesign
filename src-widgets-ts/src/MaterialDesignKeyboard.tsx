@@ -557,7 +557,11 @@ export default class MaterialDesignKeyboard extends VisWidget {
     }
 
     private enter(el: Field): void {
-        el.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', bubbles: true, cancelable: true }));
+        // keyCode/which for legacy widgets (Bring: keypress with which 13). As in the browser, a
+        // cancelled keydown suppresses the keypress.
+        const init = { key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true, cancelable: true };
+        if (el.dispatchEvent(new KeyboardEvent('keydown', init))) el.dispatchEvent(new KeyboardEvent('keypress', { ...init, charCode: 13 }));
+        el.dispatchEvent(new KeyboardEvent('keyup', init));
         el.dispatchEvent(new Event('change', { bubbles: true }));
         const mode = s(this.data().keyboardEnter, 'close');
         if (mode === 'stay') {

@@ -116,6 +116,10 @@ full per-widget option and is not deprecated, so nothing you report is a reason
 to wait with an upgrade.
 
 ## Changelog
+### **WORK IN PROGRESS**
+
+- (typhosj) Fixed the Enter key of the **On-screen Keyboard** in widgets of other adapters: it now sends `keydown`, `keypress` and `keyup` with key code 13 like a real key, so for example the Bring shopping list adds the typed article instead of ignoring Enter. A cancelled `keydown` suppresses the `keypress`, as in the browser
+
 ### 1.4.0 (2026-11-19)
 
 - (typhosj) Added **position of the menu** to the Top App Bar: the menu button and the drawer can move to the right edge together, for example where the ioBroker app puts its own button over the top left corner (Scrounger/ioBroker.vis-materialdesign#193)
