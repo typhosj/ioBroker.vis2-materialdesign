@@ -1306,5 +1306,6 @@
     "showClearAllButton": "Schaltfläche 'Alle löschen' anzeigen",
     "alertsCount": "Meldungen",
     "alertsClearAll": "Alle löschen",
-    "alertsExample": "Beispielmeldung (nur im Editor)"
+    "alertsExample": "Beispielmeldung (nur im Editor)",
+    "openDrawerBySwipe": "Menü durch Wischen vom Bildschirmrand öffnen"
 }

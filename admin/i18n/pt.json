@@ -1306,5 +1306,6 @@
     "showClearAllButton": "mostrar o botão 'Limpar tudo'",
     "alertsCount": "Alertas",
     "alertsClearAll": "Limpar tudo",
-    "alertsExample": "Alerta de exemplo (apenas no editor)"
+    "alertsExample": "Alerta de exemplo (apenas no editor)",
+    "openDrawerBySwipe": "abrir o menu deslizando a partir da borda do ecrã"
 }

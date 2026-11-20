@@ -2,7 +2,7 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 
-import MaterialDesignTopAppBar from './MaterialDesignTopAppBar';
+import MaterialDesignTopAppBar, { swipeAction } from './MaterialDesignTopAppBar';
 
 function fixture<T>(value: unknown): T { return value as T; }
 
@@ -470,5 +470,65 @@ describe('top app bar drawer position', () => {
         const group = MaterialDesignTopAppBar.getWidgetInfo().visAttrs.find(entry => entry.name === 'drawerLayout');
         const field = (group?.fields as Array<{ name: string; type?: string; options?: string[]; default?: unknown }>).find(entry => entry.name === 'drawerPosition');
         expect(field).toMatchObject({ type: 'select', options: ['left', 'right'], default: 'left' });
+    });
+});
+
+describe('swipe opens and closes the drawer (upstream #95)', () => {
+    const W = 1000;
+    it.each([
+        ['open from the left edge', { x: 10, y: 300 }, { x: 120, y: 310 }, false, false, 'open'],
+        ['open from the edge exactly at 24 px', { x: 24, y: 300 }, { x: 100, y: 300 }, false, false, 'open'],
+        ['not from 25 px', { x: 25, y: 300 }, { x: 200, y: 300 }, false, false, null],
+        ['not for a short swipe', { x: 5, y: 300 }, { x: 54, y: 300 }, false, false, null],
+        ['not for a mostly vertical move', { x: 5, y: 300 }, { x: 80, y: 340 }, false, false, null],
+        ['not towards the edge while closed', { x: 20, y: 300 }, { x: -60, y: 300 }, false, false, null],
+        ['open from the right edge for a right drawer', { x: 990, y: 300 }, { x: 880, y: 300 }, true, false, 'open'],
+        ['not from the left edge for a right drawer', { x: 10, y: 300 }, { x: 120, y: 300 }, true, false, null],
+        ['close a left drawer with a swipe to the left anywhere', { x: 500, y: 300 }, { x: 400, y: 300 }, false, true, 'close'],
+        ['keep it open for a swipe inwards', { x: 100, y: 300 }, { x: 300, y: 300 }, false, true, null],
+        ['close a right drawer with a swipe to the right', { x: 600, y: 300 }, { x: 700, y: 310 }, true, true, 'close'],
+    ] as const)('%s', (_name, start, end, right, open, action) => {
+        expect(swipeAction(start, end, W, right, open)).toBe(action);
+    });
+
+    type Swipe = { onTouchStart: (e: unknown) => void; onTouchEnd: (e: unknown) => void; componentDidMount: () => void; componentWillUnmount: () => void };
+    const make = (rxData: Record<string, unknown>, editMode = false) => {
+        const widget = new MaterialDesignTopAppBar(fixture<ConstructorParameters<typeof MaterialDesignTopAppBar>[0]>({ context: { setValue: vi.fn() }, editMode }));
+        widget.state = fixture<typeof widget.state>({ rxData: { drawerLayout: 'modal', navItemCount: 1, ...rxData }, values: {} });
+        widget.forceUpdate = vi.fn();
+        const api = fixture<Swipe>(widget);
+        const swipe = (x1: number, x2: number) => {
+            api.onTouchStart({ touches: [{ clientX: x1, clientY: 300 }] });
+            api.onTouchEnd({ changedTouches: [{ clientX: x2, clientY: 300 }] });
+        };
+        const drawerShown = () => collectByClass(widget.renderWidgetBody(fixture<Parameters<typeof widget.renderWidgetBody>[0]>({})), 'mdc-drawer').length > 0;
+        return { swipe, drawerShown, api };
+    };
+
+    it('opens and closes the modal drawer with the option on', () => {
+        const w = make({ openDrawerBySwipe: true });
+        w.swipe(5, 150);
+        expect(w.drawerShown()).toBe(true);
+        w.swipe(600, 400);
+        expect(w.drawerShown()).toBe(false);
+    });
+
+    it.each([
+        ['the option is off', {}, false],
+        ['the drawer is permanent', { openDrawerBySwipe: true, drawerLayout: 'permanent' }, false],
+        ['the editor is open', { openDrawerBySwipe: true }, true],
+    ])('does nothing when %s', (_name, rxData, editMode) => {
+        const w = make(rxData, editMode);
+        const before = w.drawerShown();
+        w.swipe(5, 150);
+        expect(w.drawerShown()).toBe(before);
+    });
+
+    it('ignores a second finger and a touch end without a start', () => {
+        const w = make({ openDrawerBySwipe: true });
+        w.api.onTouchEnd({ changedTouches: [{ clientX: 150, clientY: 300 }] });
+        w.api.onTouchStart({ touches: [{ clientX: 5, clientY: 300 }, { clientX: 50, clientY: 300 }] });
+        w.api.onTouchEnd({ changedTouches: [{ clientX: 150, clientY: 300 }] });
+        expect(w.drawerShown()).toBe(false);
     });
 });

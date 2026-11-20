@@ -64,6 +64,12 @@ den Eintragstext aus, im Modus nur Symbole das Symbol. **Position des Menüs**
 rechten Rand: Mit `right` steht der Button rechts neben dem Titel, und der Drawer
 öffnet sich von rechts, etwa wenn die ioBroker-App oben links ihren eigenen
 Button über den Menü-Button legt.
+**Menü durch Wischen vom Bildschirmrand öffnen** (Vorgabe aus) öffnet einen
+Drawer, der sich über die Ansicht legt, mit einem Wisch vom Bildschirmrand auf
+seiner Seite (die äußeren 24 px) nach innen und schließt ihn mit einem Wisch
+zurück zu diesem Rand. Ein dauerhafter Drawer und der Editor reagieren nicht
+darauf. Auf Handys mit Gestensteuerung ist derselbe Wisch die System-Geste
+„Zurück“, die Option passt deshalb eher zu Wandtablets im Kiosk-Modus als zu Handys.
 
 Die drei Gruppen **Navigationsleiste: Farben**, **Untermenü-Layout** und
 **Untermenüfarben** erscheinen erst mit dem Schalter **Erweiterte Optionen

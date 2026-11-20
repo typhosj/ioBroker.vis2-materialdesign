@@ -65,6 +65,12 @@ alignment** aligns the entry text, or the icon when only icons are shown.
 to the left or right edge together: with `right` the button sits at the right
 end of the bar and the drawer opens from the right, for example when the
 ioBroker app puts its own button over the menu button in the top left corner.
+**open menu by swiping from the screen edge** (off by default) opens a drawer that
+slides over the view with a swipe from the screen edge on its side (the outer
+24 px) inwards, and closes it with a swipe back towards that edge. A permanent
+drawer ignores it, and so does the editor. On phones with gesture navigation the
+same swipe is the system's "back" gesture, so the option suits wall tablets in
+kiosk mode more than phones.
 
 The three groups **navigation bar colors**, **sub menu layout** and **sub menu
 colors** only appear once **show advanced options** is ticked in **Common**.

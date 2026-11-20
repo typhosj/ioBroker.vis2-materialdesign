@@ -1306,5 +1306,6 @@
     "showClearAllButton": "mostrar el botón 'Borrar todo'",
     "alertsCount": "Avisos",
     "alertsClearAll": "Borrar todo",
-    "alertsExample": "Aviso de ejemplo (solo en el editor)"
+    "alertsExample": "Aviso de ejemplo (solo en el editor)",
+    "openDrawerBySwipe": "abrir el menú deslizando desde el borde de la pantalla"
 }

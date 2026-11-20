@@ -19,10 +19,23 @@ function openUrl(url: unknown, target: unknown): void {
     if (target === '_self') window.location.assign(href);
     else window.open(href, '_blank', 'noopener,noreferrer');
 }
+function isPermanent(data: Data): boolean {
+    return s(data.drawerLayout) === 'permanent' || (s(data.drawerLayout) === 'auto' && typeof window !== 'undefined' && window.innerWidth >= n(data.permanentIfResolutionHigherThan, 800));
+}
+
+const SWIPE_EDGE = 24;
+export function swipeAction(start: { x: number; y: number }, end: { x: number; y: number }, screenWidth: number, right: boolean, open: boolean): 'open' | 'close' | null {
+    const inward = (end.x - start.x) * (right ? -1 : 1);
+    if (Math.abs(inward) < 50 || Math.abs(inward) < 2 * Math.abs(end.y - start.y)) return null;
+    if (open) return inward < 0 ? 'close' : null;
+    const fromEdge = right ? start.x >= screenWidth - SWIPE_EDGE : start.x <= SWIPE_EDGE;
+    return inward > 0 && fromEdge ? 'open' : null;
+}
+
 const attrs: RxWidgetInfo['visAttrs'] = [
     { name: 'common', fields: [{ name: 'oid', label: 'oid', type: 'id' }, { name: 'showIndexNum', label: 'showIndexNum', type: 'checkbox' }, { name: 'navItemCount', label: 'navItemCount', type: 'number', default: 1 }, { name: 'navDefaultValue', label: 'navDefaultValue', type: 'number', default: 0 }, { name: 'navDisableDefaultValue', label: 'navDisableDefaultValue', type: 'checkbox' }, { name: 'selectedItemName_oid', label: 'selectedItemName_oid', type: 'id' }] },
     { name: 'topAppBarLayout', label: 'group_topAppBarLayout', fields: [{ name: 'topAppBarLayout', label: 'topAppBarLayout', type: 'select', options: ['standard', 'dense', 'short'], default: 'standard' }, { name: 'showOnlyMenuButton', label: 'showOnlyMenuButton', type: 'checkbox' }, { name: 'titleTopAppBar', label: 'titleTopAppBar', type: 'html', default: 'Material Design Widgets' }, { name: 'colorTopAppBarTitle', label: 'colorTopAppBarTitle', type: 'color' }, { name: 'colorTopAppBarBackground', label: 'colorTopAppBarBackground', type: 'color' }, { name: 'titleFont', label: 'titleFont', type: 'fontname' }, { name: 'titleFontSize', label: 'titleFontSize', type: 'number' }, { name: 'topAppBarIconColor', label: 'topAppBarIconColor', type: 'color' }, { name: 'showSelectedItemAsTitle', label: 'showSelectedItemAsTitle', type: 'checkbox', default: true }, { name: 'showSelectedItemIconInTitle', label: 'showSelectedItemIconInTitle', type: 'checkbox', default: true }, { name: 'iconTitleHeight', label: 'iconTitleHeight', type: 'dimension' }, { name: 'titleDistanceBetweenTextAndImage', label: 'distanceBetweenTextAndImage', type: 'number' }, { name: 'titleIconPosition', label: 'iconPosition', type: 'select', options: ['left', 'right'], default: 'left' }, { name: 'topAppBarZ_index', label: 'topAppBarZ_index', type: 'number', default: 998 }, { name: 'vibrateTopAppBarOnMobilDevices', label: 'vibrateTopAppBarOnMobilDevices', type: 'number', default: 50 }] },
-    { name: 'drawerLayout', label: 'group_drawerLayout', fields: [{ name: 'drawerLayout', label: 'drawerLayout', type: 'select', options: ['modal', 'permanent', 'auto'], default: 'modal' }, { name: 'drawerPosition', label: 'drawerPosition', type: 'select', options: ['left', 'right'], default: 'left' }, { name: 'permanentIfResolutionHigherThan', label: 'permanentIfResolutionHigherThan', type: 'number', default: 800 }, { name: 'listItemDividerStyle', label: 'listItemDividerStyle', type: 'select', options: ['standard', 'padded', 'inset'], default: 'standard' }, { name: 'drawerWidth', label: 'drawerWidth', type: 'number' }, { name: 'z_index', label: 'z_index', type: 'number', default: 1000 }, { name: 'showHeader', label: 'showHeader', type: 'checkbox', default: true }, { name: 'headerLabel', label: 'headerLabel', type: 'html' }, { name: 'showLabels', label: 'showLabels', type: 'checkbox', default: true }, { name: 'collapseOtherSubMenus', label: 'collapseOtherSubMenus', type: 'checkbox' }, { name: 'collapseSubMenusOnClose', label: 'collapseSubMenusOnClose', type: 'checkbox' }, { name: 'drawerIconHeight', label: 'drawerIconHeight', type: 'number' }, { name: 'listItemAlignment', label: 'listItemAlignment', type: 'select', options: ['left', 'center', 'right'], default: 'left' }, { name: 'listItemTextFont', label: 'listItemTextFont', type: 'fontname' }, { name: 'listItemHeaderFont', label: 'listItemHeaderFont', type: 'fontname' }, { name: 'listItemTextSize', label: 'listItemTextSize', type: 'text' }, { name: 'vibrateDrawerOnMobilDevices', label: 'vibrateDrawerOnMobilDevices', type: 'number' }] },
+    { name: 'drawerLayout', label: 'group_drawerLayout', fields: [{ name: 'drawerLayout', label: 'drawerLayout', type: 'select', options: ['modal', 'permanent', 'auto'], default: 'modal' }, { name: 'drawerPosition', label: 'drawerPosition', type: 'select', options: ['left', 'right'], default: 'left' }, { name: 'openDrawerBySwipe', label: 'openDrawerBySwipe', type: 'checkbox' }, { name: 'permanentIfResolutionHigherThan', label: 'permanentIfResolutionHigherThan', type: 'number', default: 800 }, { name: 'listItemDividerStyle', label: 'listItemDividerStyle', type: 'select', options: ['standard', 'padded', 'inset'], default: 'standard' }, { name: 'drawerWidth', label: 'drawerWidth', type: 'number' }, { name: 'z_index', label: 'z_index', type: 'number', default: 1000 }, { name: 'showHeader', label: 'showHeader', type: 'checkbox', default: true }, { name: 'headerLabel', label: 'headerLabel', type: 'html' }, { name: 'showLabels', label: 'showLabels', type: 'checkbox', default: true }, { name: 'collapseOtherSubMenus', label: 'collapseOtherSubMenus', type: 'checkbox' }, { name: 'collapseSubMenusOnClose', label: 'collapseSubMenusOnClose', type: 'checkbox' }, { name: 'drawerIconHeight', label: 'drawerIconHeight', type: 'number' }, { name: 'listItemAlignment', label: 'listItemAlignment', type: 'select', options: ['left', 'center', 'right'], default: 'left' }, { name: 'listItemTextFont', label: 'listItemTextFont', type: 'fontname' }, { name: 'listItemHeaderFont', label: 'listItemHeaderFont', type: 'fontname' }, { name: 'listItemTextSize', label: 'listItemTextSize', type: 'text' }, { name: 'vibrateDrawerOnMobilDevices', label: 'vibrateDrawerOnMobilDevices', type: 'number' }] },
     { name: 'drawerColors', label: 'group_drawerColors', fields: ['colorDrawerBackground', 'colorDrawerItemBackground', 'colorDrawerHeaderBackground', 'colorDrawerHeaderText', 'iconDrawerColor', 'iconDrawerColorSelected', 'subIconDrawerColor', 'subIconDrawerColorSelected', 'colorListItemHover', 'colorListItemSelected', 'colorListItemText', 'colorListItemTextSelected', 'colorListItemHeaders', 'colorListItemDivider', 'colorSubItemToggleIcon'].map(name => ({ name, label: name, type: 'color' as const })) },
     { name: 'drawerSubItemsLayout', label: 'group_drawerSubItemsLayout', fields: [{ name: 'listSubItemDividerStyle', label: 'listSubItemDividerStyle', type: 'select', options: ['standard', 'padded', 'inset'], default: 'standard' }, { name: 'colorListSubItemDivider', label: 'colorListSubItemDivider', type: 'color' }, { name: 'drawerSubItemIconHeight', label: 'drawerSubItemIconHeight', type: 'number' }, { name: 'listSubItemAlignment', label: 'listSubItemAlignment', type: 'select', options: ['left', 'center', 'right'], default: 'left' }, { name: 'listItemSubTextFont', label: 'listItemSubTextFont', type: 'fontname' }, { name: 'listSubItemTextSize', label: 'listSubItemTextSize', type: 'text' }, { name: 'showSubItemsLabels', label: 'showSubItemsLabels', type: 'checkbox', default: true }] },
     { name: 'drawerSubItemsColors', label: 'group_drawerSubItemsColors', fields: ['colorDrawerSubBackground', 'colorDrawerSubItemBackground', 'colorListSubItemHover', 'colorListSubItemSelected', 'colorListSubItemText', 'colorListSubItemTextSelected'].map(name => ({ name, label: name, type: 'color' as const })) },
@@ -48,6 +61,30 @@ const barM3Css = '.materialdesign-topAppBar-with-Drawer.mdw-style-material3 .mdc
 
 export default class MaterialDesignTopAppBar extends VisWidget {
     private open = false; private expanded = new Set<number>(); private lastSelected = -1;
+    private swipeStart: { x: number; y: number; open: boolean } | null = null;
+    private readonly onTouchStart = (event: TouchEvent): void => {
+        this.swipeStart = event.touches.length === 1 ? { x: event.touches[0].clientX, y: event.touches[0].clientY, open: this.open } : null;
+    };
+    private readonly onTouchEnd = (event: TouchEvent): void => {
+        const start = this.swipeStart;
+        this.swipeStart = null;
+        const data = this.state.rxData as unknown as Data;
+        const touch = event.changedTouches[0];
+        if (!start || !touch || !b(data.openDrawerBySwipe) || this.props.editMode || isPermanent(data) || start.open !== this.open) return;
+        const action = swipeAction(start, { x: touch.clientX, y: touch.clientY }, window.innerWidth, s(data.drawerPosition) === 'right', this.open);
+        if (action === 'open') { this.open = true; this.forceUpdate(); } else if (action === 'close') this.closeDrawer(data);
+    };
+    componentDidMount(): void {
+        super.componentDidMount();
+        document.addEventListener('touchstart', this.onTouchStart, { passive: true });
+        document.addEventListener('touchend', this.onTouchEnd, { passive: true });
+    }
+    componentWillUnmount(): void {
+        document.removeEventListener('touchstart', this.onTouchStart);
+        document.removeEventListener('touchend', this.onTouchEnd);
+        super.componentWillUnmount?.();
+    }
+    private closeDrawer(data: Data): void { this.open = false; if (b(data.collapseSubMenusOnClose)) this.expanded.clear(); this.forceUpdate(); }
     static getWidgetInfo(): RxWidgetInfo { return { ...createInfo('tplVis2-materialdesign-TopAppBar-Navigation', 'Top App Bar', attrs, ['drawerColors', 'drawerSubItemsLayout', 'drawerSubItemsColors']), visPrev: squarePreview('F06FC'), visDefaultStyle: { width: 400, height: 270 } }; }
     getWidgetInfo(): RxWidgetInfo { return MaterialDesignTopAppBar.getWidgetInfo(); }
     renderWidgetBody(props: RenderProps): React.JSX.Element {
@@ -65,8 +102,8 @@ export default class MaterialDesignTopAppBar extends VisWidget {
         const m3Icon = (color: string): string => isM3 && color === '#44739e' ? 'var(--md-sys-color-primary)' : color;
         const accordion = b(data.collapseOtherSubMenus);
         const collapseOnClose = b(data.collapseSubMenusOnClose);
-        const closeDrawer = (): void => { this.open = false; if (collapseOnClose) this.expanded.clear(); this.forceUpdate(); };
-        const list = items(data); const current = stateValue(this.state, s(data.oid)); const selected = current === undefined && !b(data.navDisableDefaultValue) ? n(data.navDefaultValue) : n(current); const permanent = s(data.drawerLayout) === 'permanent' || (s(data.drawerLayout) === 'auto' && typeof window !== 'undefined' && window.innerWidth >= n(data.permanentIfResolutionHigherThan, 800)); const visible = permanent || this.open; const flat: Entry[] = []; let index = 0; list.forEach(item => { flat.push({ item, index: index++ }); item.subMenus?.forEach(sub => flat.push({ item: sub, index: index++, parent: item })); }); const chosen = flat.find(entry => entry.index === selected);
+        const closeDrawer = (): void => this.closeDrawer(data);
+        const list = items(data); const current = stateValue(this.state, s(data.oid)); const selected = current === undefined && !b(data.navDisableDefaultValue) ? n(data.navDefaultValue) : n(current); const permanent = isPermanent(data); const visible = permanent || this.open; const flat: Entry[] = []; let index = 0; list.forEach(item => { flat.push({ item, index: index++ }); item.subMenus?.forEach(sub => flat.push({ item: sub, index: index++, parent: item })); }); const chosen = flat.find(entry => entry.index === selected);
         // Only auto-open on an actual selection change; otherwise a manual collapse is overridden on every
         // re-render.
         // Except for a closed menu that collapses on close: the selection that closed it comes back

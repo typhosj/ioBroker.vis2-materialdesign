@@ -1306,5 +1306,6 @@
     "showClearAllButton": "afficher le bouton 'Tout effacer'",
     "alertsCount": "Alertes",
     "alertsClearAll": "Tout effacer",
-    "alertsExample": "Alerte d'exemple (éditeur uniquement)"
+    "alertsExample": "Alerte d'exemple (éditeur uniquement)",
+    "openDrawerBySwipe": "ouvrir le menu en glissant depuis le bord de l'écran"
 }

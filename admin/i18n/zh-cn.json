@@ -1306,5 +1306,6 @@
     "showClearAllButton": "显示'全部清除'按钮",
     "alertsCount": "提醒",
     "alertsClearAll": "全部清除",
-    "alertsExample": "示例提醒（仅限编辑器）"
+    "alertsExample": "示例提醒（仅限编辑器）",
+    "openDrawerBySwipe": "从屏幕边缘滑动打开菜单"
 }

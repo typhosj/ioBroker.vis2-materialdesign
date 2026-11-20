@@ -1306,5 +1306,6 @@
     "showClearAllButton": "pokaż przycisk 'Wyczyść wszystko'",
     "alertsCount": "Komunikaty",
     "alertsClearAll": "Wyczyść wszystko",
-    "alertsExample": "Przykładowy komunikat (tylko w edytorze)"
+    "alertsExample": "Przykładowy komunikat (tylko w edytorze)",
+    "openDrawerBySwipe": "otwieraj menu przesunięciem od krawędzi ekranu"
 }

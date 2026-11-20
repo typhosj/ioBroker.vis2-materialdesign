@@ -1306,5 +1306,6 @@
     "showClearAllButton": "show 'clear all' button",
     "alertsCount": "Alerts",
     "alertsClearAll": "Clear all",
-    "alertsExample": "Example alert (editor only)"
+    "alertsExample": "Example alert (editor only)",
+    "openDrawerBySwipe": "open menu by swiping from the screen edge"
 }

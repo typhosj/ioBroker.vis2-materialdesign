@@ -1306,5 +1306,6 @@
     "showClearAllButton": "knop 'Alles wissen' tonen",
     "alertsCount": "Meldingen",
     "alertsClearAll": "Alles wissen",
-    "alertsExample": "Voorbeeldmelding (alleen in de editor)"
+    "alertsExample": "Voorbeeldmelding (alleen in de editor)",
+    "openDrawerBySwipe": "menu openen door vanaf de schermrand te vegen"
 }
