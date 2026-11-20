@@ -194,8 +194,13 @@ export function forget(words: Words, word: string): Words {
 // Known limit: a fixed half-life; an entry keeps only its count and last use, not every use.
 const HALF_LIFE_MS = 30 * 24 * 60 * 60 * 1000;
 
-/** `frecency` (default): the count halves in worth every 30 days since last use. */
-export function suggest(words: Words, prefix: string, count: number, order = 'frecency', now = Date.now()): string[] {
+export type SuggestionOrder = 'frecency' | 'frequent' | 'recent';
+
+export function suggestionOrder(value: unknown): SuggestionOrder {
+    return value === 'frequent' || value === 'recent' ? value : 'frecency';
+}
+
+export function suggest(words: Words, prefix: string, count: number, order: SuggestionOrder = 'frecency', now = Date.now()): string[] {
     const wanted = prefix.toLowerCase();
     const limit = Math.max(1, Math.min(10, Math.trunc(Number.isFinite(count) ? count : 3)));
     const capital = prefix !== '' && prefix.charAt(0) !== prefix.charAt(0).toLowerCase();

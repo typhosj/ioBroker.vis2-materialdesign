@@ -4,8 +4,8 @@ import { createPortal } from 'react-dom';
 import type { RxWidgetInfo } from '@iobroker/types-vis-2';
 
 import { renderIcon } from './MaterialDesignButtons';
-import { keyLook, type KeyLook as Look } from './keyLook';
-import { applyKey, autoShift, chooseLayout, currentWord, decimalChar, forget, keyMapFor, learn, moveCaret, numberRows, panOffset, parseWords, replaceWord, suggest, textRows, wordsIn, type EditResult, type KeyDef, type KeyMap, type Layout, type Special, type Words } from './keyboard';
+import { clampTo, keyLook, type KeyLook as Look } from './keyLook';
+import { applyKey, autoShift, chooseLayout, currentWord, decimalChar, forget, keyMapFor, learn, moveCaret, numberRows, panOffset, parseWords, replaceWord, suggest, suggestionOrder, textRows, wordsIn, type EditResult, type KeyDef, type KeyMap, type Layout, type Special, type Words } from './keyboard';
 import { createInfo, designStyle, designStyleClasses, ownCssVariables, passWrapperClicks, setStateValue, squarePreview, stateValue, visLocale, VisWidget, boolValue as b, numberValue as n, textValue as s, type RenderProps } from './widgetUtils';
 
 export type Field = HTMLInputElement | HTMLTextAreaElement;
@@ -42,8 +42,6 @@ const KEYS: Record<Special, KeyInfo> = {
     up: { aria: 'ariaKeyUp', icon: 'arrow-up', arrow: { key: 'ArrowUp', move: 'start' } },
     down: { aria: 'ariaKeyDown', icon: 'arrow-down', arrow: { key: 'ArrowDown', move: 'end' } },
 };
-
-const clampTo = (value: number, min: number, max: number): number => Math.min(max, Math.max(min, value));
 
 export function isServable(el: unknown): el is Field {
     if (el instanceof HTMLTextAreaElement) return !el.readOnly && !el.disabled;
@@ -173,7 +171,6 @@ const attrs: RxWidgetInfo['visAttrs'] = [
     },
 ];
 
-/** Running keyboards; a keyboard in a nested view (Dialog View) takes its fields from the outer one. */
 const running = new Set<MaterialDesignKeyboard>();
 
 export default class MaterialDesignKeyboard extends VisWidget {
@@ -225,7 +222,7 @@ export default class MaterialDesignKeyboard extends VisWidget {
         return s(this.data().keyboardFields).split(/[\s,;]+/).filter(Boolean);
     }
 
-    /** Whether the field is in this keyboard's view and widget list, ignoring other keyboards. */
+    // claims() ignores keyboards in nested views; decide with serves(), or a field in a Dialog View opens two keyboards.
     private claims(el: unknown): el is Field {
         if (!isServable(el) || !this.scope?.contains(el)) return false;
         const ids = this.fieldIds();
@@ -733,7 +730,7 @@ export default class MaterialDesignKeyboard extends VisWidget {
         if (!b(data.keyboardSuggestions, true) || this.layoutFor(el) === 'number') return null;
         const value = el ? this.currentValue(el) : '';
         const prefix = el ? currentWord(value, this.selection(el)[0] ?? value.length).word : '';
-        const list = el ? suggest(this.readWords(), prefix, n(data.keyboardSuggestionCount, 3), s(data.keyboardSuggestionOrder, 'frecency')) : [];
+        const list = el ? suggest(this.readWords(), prefix, n(data.keyboardSuggestionCount, 3), suggestionOrder(data.keyboardSuggestionOrder)) : [];
         return (
             <div data-suggestions="" style={{ display: 'flex', flex: 1, gap: look.gap, minHeight: 0 }}>
                 {list.map(word => (

@@ -17,6 +17,7 @@ import {
     parseWords,
     replaceWord,
     suggest,
+    suggestionOrder,
     textRows,
     wordsIn,
     type Words,
@@ -344,8 +345,9 @@ describe('suggest', () => {
         it('uses "frecency" by default and for an unknown order', () => {
             const frecency = ['Brot', 'Käse', 'Eier', 'Milch'];
             expect(suggest(shop, '', 10, undefined, now)).toEqual(frecency);
-            expect(suggest(shop, '', 10, 'bogus', now)).toEqual(frecency);
-            expect(suggest(shop, '', 10, '', now)).toEqual(frecency);
+            for (const value of ['bogus', '', undefined, null, 1, 'Frequent']) expect(suggest(shop, '', 10, suggestionOrder(value), now)).toEqual(frecency);
+            expect(suggestionOrder('frequent')).toBe('frequent');
+            expect(suggestionOrder('recent')).toBe('recent');
         });
 
         it('does not boost a word whose last use lies in the future (clock of another device)', () => {
@@ -359,7 +361,7 @@ describe('suggest', () => {
         });
 
         it('filters by the typed part in every order', () => {
-            for (const order of ['frecency', 'frequent', 'recent']) {
+            for (const order of ['frecency', 'frequent', 'recent'] as const) {
                 expect(suggest(shop, 'b', 10, order, now)).toEqual(['Brot']);
             }
         });

@@ -3,7 +3,7 @@ import { legacyInk, legacySurface, numberValue as n, textValue as s } from './wi
 
 export interface KeyLook { background: string; key: string; text: string; special: string; fontSize: number; gap: number; radius: number }
 
-const clampTo = (value: number, min: number, max: number): number => Math.min(max, Math.max(min, value));
+export const clampTo = (value: number, min: number, max: number): number => Math.min(max, Math.max(min, value));
 
 export function keyLook(data: Record<string, unknown>, isM3: boolean, isDark: boolean): KeyLook {
     const m3c = (saved: unknown, token: string, legacy: string): string => (isM3 && !m3ColorExplicit(saved) ? token : s(saved, legacy));
