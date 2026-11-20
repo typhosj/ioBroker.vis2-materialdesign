@@ -491,12 +491,14 @@ describe('swipe opens and closes the drawer (upstream #95)', () => {
         expect(swipeAction(start, end, W, right, open)).toBe(action);
     });
 
-    type Swipe = { onTouchStart: (e: unknown) => void; onTouchEnd: (e: unknown) => void; componentDidMount: () => void; componentWillUnmount: () => void };
-    const make = (rxData: Record<string, unknown>, editMode = false) => {
+    type Swipe = { onTouchStart: (e: unknown) => void; onTouchEnd: (e: unknown) => void; componentDidMount: () => void; componentWillUnmount: () => void; root: unknown };
+    const make = (rxData: Record<string, unknown>, editMode = false, rects = 1) => {
         const widget = new MaterialDesignTopAppBar(fixture<ConstructorParameters<typeof MaterialDesignTopAppBar>[0]>({ context: { setValue: vi.fn() }, editMode }));
         widget.state = fixture<typeof widget.state>({ rxData: { drawerLayout: 'modal', navItemCount: 1, ...rxData }, values: {} });
         widget.forceUpdate = vi.fn();
         const api = fixture<Swipe>(widget);
+        // A widget inside a hidden view (display: none) has no client rects.
+        api.root = { getClientRects: () => Array.from({ length: rects }, () => ({})) };
         const swipe = (x1: number, x2: number) => {
             api.onTouchStart({ touches: [{ clientX: x1, clientY: 300 }] });
             api.onTouchEnd({ changedTouches: [{ clientX: x2, clientY: 300 }] });
@@ -522,6 +524,15 @@ describe('swipe opens and closes the drawer (upstream #95)', () => {
         const before = w.drawerShown();
         w.swipe(5, 150);
         expect(w.drawerShown()).toBe(before);
+    });
+
+    it('leaves the drawer of a bar in a view that is mounted but not shown closed', () => {
+        const hidden = make({ openDrawerBySwipe: true }, false, 0);
+        hidden.swipe(5, 150);
+        expect(hidden.drawerShown()).toBe(false);
+        hidden.api.root = null;
+        hidden.swipe(5, 150);
+        expect(hidden.drawerShown()).toBe(false);
     });
 
     it('ignores a second finger and a touch end without a start', () => {
@@ -604,6 +615,18 @@ describe('top app bar submenus over several levels (fork #32)', () => {
         expect(padding('Licht')).toBe('0 8px 0 40px');
     });
 
+    // The numbers of 1.4.0, which drew a string or number entry as "Menu Item" and counted it.
+    it('keeps the numbers of a one-level menu that holds entries which are no objects', () => {
+        const p = make({ navDefaultValue: 3 }, ['x', { text: 'A', subMenus: [5, { text: 'A2' }] }, { text: 'B' }]);
+        for (const label of ['[0] Menu Item', '[1] A', '[2] Menu SubItem', '[3] A2', '[4] B']) expect(p.html()).toContain(label);
+    });
+
+    it('gives the submenu list of every level the submenu background', () => {
+        const backgrounds = (rxData: Record<string, unknown>): unknown[] => collectByClass(make({ navDefaultValue: 3, ...rxData }).render(), 'mdc-sub-list').map(list => (list.props.style as React.CSSProperties).background);
+        expect(backgrounds({ colorDrawerSubBackground: 'rgba(0,0,0,.1)' })).toEqual(['rgba(0,0,0,.1)', 'rgba(0,0,0,.1)', 'rgba(0,0,0,.1)']);
+        expect(backgrounds({})).toEqual([undefined, undefined, undefined]);
+    });
+
     it('colors submenu icons from the nearest parent that sets a submenu icon color', () => {
         const p = make({ navDefaultValue: 3, subIconDrawerColor: 'blue' });
         const color = (icon: string): unknown => (collectByClass(p.render(), `mdi-${icon}`)[0].props.style as React.CSSProperties).color;
@@ -611,12 +634,13 @@ describe('top app bar submenus over several levels (fork #32)', () => {
         expect(color('fridge')).toBe('green');
     });
 
-    it('ignores malformed entries and stops after ten submenu levels', () => {
+    it('draws malformed entries as plain entries with their number and stops after ten submenu levels', () => {
         const broken = make({}, [null, 7, [], { text: 'A', subMenus: 'x' }, { text: 'B', subMenus: [null, { text: 'B1' }] }]);
-        expect(broken.html()).toContain('[0] A');
+        for (const label of ['[0] Menu Item', '[1] Menu Item', '[2] Menu Item', '[3] A']) expect(broken.html()).toContain(label);
         expect(collectByClass(broken.row('A'), 'mdi-menu-down')).toHaveLength(0);
         broken.click('B');
-        expect(broken.html()).toContain('[2] B1');
+        expect(broken.html()).toContain('[5] Menu SubItem');
+        expect(broken.html()).toContain('[6] B1');
 
         let deep: Record<string, unknown> = { text: 'L15' };
         for (let level = 14; level >= 0; level--) deep = { text: `L${level}`, subMenus: [deep] };

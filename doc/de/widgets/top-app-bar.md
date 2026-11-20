@@ -79,7 +79,10 @@ der Drawer-Kopfzeile. **Symbolfarbe aktiv** und **Farbe des aktiven
 Untermenüsymbols** färben das Symbol des gewählten Eintrags; für ein Untermenü
 gilt ohne eigene Angabe **Symbolfarbe aktiv**. **Untermenü-Layout** und
 **Untermenüfarben** gelten für die Untereinträge, darunter **Untermenü
-Textausrichtung** und die Farbe der Untermenü-Trennlinie.
+Textausrichtung** und die Farbe der Untermenü-Trennlinie. Der **Hintergrund** in
+**Untermenüfarben** liegt unter der Untermenüliste jeder Ebene; eine
+halbtransparente Farbe wird deshalb mit jeder Ebene etwas kräftiger, was die
+Ebenen voneinander abhebt.
 
 Die Menüeinträge stammen aus den Daten- und Eintragsgruppen:
 

@@ -79,7 +79,9 @@ drawer header text. **active icon color** and **active submenu icon color**
 color the icon of the selected entry; a submenu entry without its own value
 uses **active icon color**. **sub menu layout** and **sub menu colors** apply to
 the submenu entries, including **submenu text alignment** and the color of the
-submenu divider.
+submenu divider. The **background** in **sub menu colors** lies under the
+submenu list of every level; a semi-transparent color therefore grows a little
+stronger with every level, which sets the levels apart.
 
 Menu entries come from the data and item groups:
 
