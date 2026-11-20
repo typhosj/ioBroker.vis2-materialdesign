@@ -48,14 +48,14 @@ export const lockGroup = {
 } as RxWidgetInfo['visAttrs'][number];
 
 const pinUntil = new Map<string, number>();
-const pinTimers = new Map<string, ReturnType<typeof setTimeout>>();
+const pinTimers = new Map<string, number>();
 const listeners = new Set<() => void>();
 const notify = (): void => { for (const listener of [...listeners]) listener(); };
 
 export function unlockPin(pin: string, seconds: number): void {
     pinUntil.set(pin, Date.now() + seconds * 1000);
-    clearTimeout(pinTimers.get(pin));
-    pinTimers.set(pin, setTimeout(() => { pinTimers.delete(pin); pinUntil.delete(pin); notify(); }, seconds * 1000));
+    window.clearTimeout(pinTimers.get(pin));
+    pinTimers.set(pin, window.setTimeout(() => { pinTimers.delete(pin); pinUntil.delete(pin); notify(); }, seconds * 1000));
     notify();
 }
 
@@ -69,7 +69,7 @@ export function subscribePins(listener: () => void): () => void {
 }
 
 export function resetPins(): void {
-    for (const timer of pinTimers.values()) clearTimeout(timer);
+    for (const timer of pinTimers.values()) window.clearTimeout(timer);
     pinTimers.clear();
     pinUntil.clear();
     listeners.clear();
@@ -79,7 +79,7 @@ export class WidgetLock {
     padOpen = false;
     private unlocked = false;
     private holding = false;
-    private timer: ReturnType<typeof setTimeout> | undefined;
+    private timer: number | undefined;
     private readonly unsubscribe: () => void;
 
     constructor(private readonly onChange: () => void) {
@@ -106,8 +106,8 @@ export class WidgetLock {
 
     unlock(seconds: number): void {
         this.unlocked = true;
-        clearTimeout(this.timer);
-        this.timer = setTimeout(() => { this.timer = undefined; this.unlocked = false; this.onChange(); }, seconds * 1000);
+        window.clearTimeout(this.timer);
+        this.timer = window.setTimeout(() => { this.timer = undefined; this.unlocked = false; this.onChange(); }, seconds * 1000);
         this.onChange();
     }
 
@@ -133,7 +133,7 @@ export class WidgetLock {
     }
 
     dispose(): void {
-        clearTimeout(this.timer);
+        window.clearTimeout(this.timer);
         this.timer = undefined;
         this.unsubscribe();
     }
