@@ -779,7 +779,7 @@
     "padding_left": "opvulling links",
     "padding_right": "opvulling rechts",
     "padding_top": "vulling top",
-    "permanentIfResolutionHigherThan": "layout 'auto': layout automatisch wijzigen bij resolutie hoger dan",
+    "permanentIfResolutionHigherThan": "lay-out 'auto' / 'horizontal': omschakelen vanaf een breedte van",
     "Please select only one Widget!": "Selecteer slechts één widget!",
     "pointColor": "punt kleur",
     "pointHoverColor": "wijs hover kleur",
@@ -1311,5 +1311,7 @@
     "subMenuMode": "submenu's openen",
     "subMenuMode_inline": "onder hun item",
     "subMenuMode_slide": "in plaats van de lijst",
-    "ariaSubMenuBack": "Terug"
+    "ariaSubMenuBack": "Terug",
+    "navMore": "Meer",
+    "ariaNavigation": "Navigatie"
 }

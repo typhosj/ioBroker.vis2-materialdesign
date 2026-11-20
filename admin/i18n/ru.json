@@ -779,7 +779,7 @@
     "padding_left": "отступ слева",
     "padding_right": "отступ справа",
     "padding_top": "мягкий верх",
-    "permanentIfResolutionHigherThan": "макет 'auto': автоматическое изменение макета при разрешении выше, чем",
+    "permanentIfResolutionHigherThan": "макет 'auto' / 'horizontal': переключать при ширине от",
     "Please select only one Widget!": "Пожалуйста, выберите только один виджет!",
     "pointColor": "цвет точки",
     "pointHoverColor": "цвет при наведении",
@@ -1311,5 +1311,7 @@
     "subMenuMode": "открывать подменю",
     "subMenuMode_inline": "под своим пунктом",
     "subMenuMode_slide": "вместо списка",
-    "ariaSubMenuBack": "Назад"
+    "ariaSubMenuBack": "Назад",
+    "navMore": "Ещё",
+    "ariaNavigation": "Навигация"
 }

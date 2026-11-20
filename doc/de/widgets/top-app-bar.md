@@ -37,7 +37,8 @@ Eintrag. Nicht aufgeführte Einstellungen sind selbsterklärend.
   bleibt nur der Menü-Button; der Rest der Breite lässt Klicks zu den Widgets
   darunter durch. Ohne eigene Symbolfarbe nimmt der Button die Textfarbe der
   Seite statt der Titelfarbe. Ein permanenter Drawer hat keinen Menü-Button,
-  dann entfällt der Balken ganz.
+  dann entfällt der Balken ganz. Beim Layout `horizontal` wirkt die Option nur
+  unterhalb der Umschaltbreite, in der Leiste mit den Einträgen nicht.
 - **Titel** – fester Titel, Vorgabe „Material Design Widgets“. Ein geleertes
   Feld bleibt leer.
 - **Titel des ausgewählten Navigationsleistenelements anzeigen** (Vorgabe an)
@@ -51,8 +52,8 @@ Eintrag. Nicht aufgeführte Einstellungen sind selbsterklärend.
 <img src="../../media/vis2_top_app_bar_editor_3.png" width="340" alt="Top App Bar Navigationsleiste: Layout und Farben">
 
 Die Gruppe **Navigationsleiste: Layout** bestimmt das **Layout** des Drawers
-(`modal`, `permanent` oder `auto` — `auto` bleibt bis zur unter **Layout 'auto':
-automatische Änderung des Layouts bei Auflösung größer** gesetzten Breite modal,
+(`modal`, `permanent`, `auto` oder `horizontal` — `auto` bleibt bis zur unter
+**Layout 'auto' / 'horizontal': umschalten ab Breite** gesetzten Breite modal,
 Vorgabe 800 px), **Breite**, **Zeilenüberschrift anzeigen** samt **Kopfzeile
 Text**, **Beschriftungen für Listenelemente anzeigen** (aus heißt: nur Symbole)
 und den **Trennlinien Stil** (`standard`, `padded`, `inset`, ebenfalls roh).
@@ -78,6 +79,25 @@ seiner Seite (die äußeren 24 px) nach innen und schließt ihn mit einem Wisch
 zurück zu diesem Rand. Ein dauerhafter Drawer und der Editor reagieren nicht
 darauf. Auf Handys mit Gestensteuerung ist derselbe Wisch die System-Geste
 „Zurück“, die Option passt deshalb eher zu Wandtablets im Kiosk-Modus als zu Handys.
+
+<img src="../../media/vis2_top_app_bar_horizontal.png" alt="Top App Bar mit dem Layout horizontal und geöffneter Liste unter Haus">
+
+Mit dem Layout `horizontal` stehen die Einträge der obersten Ebene nebeneinander
+in der Leiste, direkt nach dem Titel, und es gibt keinen Menü-Button. Ein Eintrag
+mit Untermenü trägt ein ▾ und öffnet beim Antippen eine Liste darunter, die über
+der Seite schwebt. Tiefere Ebenen zeigt die Liste so, wie **Untermenüs öffnen** es
+vorgibt. Ein Klick daneben, Escape, ein zweiter Klick auf den Eintrag oder Scrollen
+schließt sie. Die Liste öffnet nur zur Laufzeit, im Editor nicht. Was nicht in die
+Leiste passt, wandert in **Mehr ▾** am Ende. Der gewählte Eintrag, bei einem
+Untereintrag sein Eintrag in der Leiste, ist hinterlegt, und **Mehr**, wenn dieser
+Eintrag darin liegt. Die Symbole in der Leiste nehmen die Textfarbe des Balkens.
+Der Titel nimmt höchstens die halbe Leiste ein.
+
+Unterhalb der Breite unter **Layout 'auto' / 'horizontal': umschalten ab Breite**
+(Vorgabe 800 px) zeigt die Leiste wie bei `modal` den Menü-Button und den Drawer.
+Die Höhe der Leiste reicht für das Widget deshalb nur, wenn die Ansicht nie
+schmaler als diese Breite wird oder die Breite auf 0 steht. Sonst bleibt das
+Widget so hoch wie der Drawer; der leere Rest lässt Klicks weiter durch.
 
 Die drei Gruppen **Navigationsleiste: Farben**, **Untermenü-Layout** und
 **Untermenüfarben** erscheinen erst mit dem Schalter **Erweiterte Optionen
@@ -150,4 +170,5 @@ eingebetteten Ansicht je Index.
 Der übliche Aufbau: die Top App Bar und darunter das Advanced View in Widget 8,
 beide auf derselben Ansicht, beide mit derselben Objekt-ID. Das Widget muss so
 hoch sein wie der Drawer, den es aufklappen soll — der leere Rest seines Rahmens
-lässt Klicks zu den darunterliegenden Widgets durch.
+lässt Klicks zu den darunterliegenden Widgets durch. Beim Layout `horizontal`
+reicht die Höhe der Leiste nur unter der oben genannten Bedingung.

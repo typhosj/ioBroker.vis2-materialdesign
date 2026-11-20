@@ -779,7 +779,7 @@
     "padding_left": "relleno a la izquierda",
     "padding_right": "relleno derecho",
     "padding_top": "acolchado superior",
-    "permanentIfResolutionHigherThan": "layout 'auto': cambio automático de diseño en una resolución superior a",
+    "permanentIfResolutionHigherThan": "diseño 'auto' / 'horizontal': cambiar a partir de un ancho de",
     "Please select only one Widget!": "¡Seleccione solo un widget!",
     "pointColor": "color de punto",
     "pointHoverColor": "color de desplazamiento del punto",
@@ -1311,5 +1311,7 @@
     "subMenuMode": "abrir los submenús",
     "subMenuMode_inline": "debajo de su entrada",
     "subMenuMode_slide": "en lugar de la lista",
-    "ariaSubMenuBack": "Atrás"
+    "ariaSubMenuBack": "Atrás",
+    "navMore": "Más",
+    "ariaNavigation": "Navegación"
 }

@@ -779,7 +779,7 @@
     "padding_left": "margines wewnętrzny z lewej",
     "padding_right": "wyściełanie w prawo",
     "padding_top": "wyściełany top",
-    "permanentIfResolutionHigherThan": "układ 'auto': automatyczna zmiana układu przy rozdzielczości wyższej niż",
+    "permanentIfResolutionHigherThan": "układ 'auto' / 'horizontal': przełącz od szerokości",
     "Please select only one Widget!": "Wybierz tylko jeden widżet!",
     "pointColor": "kolor punktu",
     "pointHoverColor": "punkt najechania kolorem",
@@ -1311,5 +1311,7 @@
     "subMenuMode": "otwieraj podmenu",
     "subMenuMode_inline": "pod swoim elementem",
     "subMenuMode_slide": "zamiast listy",
-    "ariaSubMenuBack": "Wstecz"
+    "ariaSubMenuBack": "Wstecz",
+    "navMore": "Więcej",
+    "ariaNavigation": "Nawigacja"
 }

@@ -779,7 +779,7 @@
     "padding_left": "imbottitura sinistra",
     "padding_right": "imbottitura destra",
     "padding_top": "imbottitura superiore",
-    "permanentIfResolutionHigherThan": "layout 'auto': modifica automatica del layout alla risoluzione maggiore di",
+    "permanentIfResolutionHigherThan": "layout 'auto' / 'horizontal': cambia a partire da una larghezza di",
     "Please select only one Widget!": "Seleziona un solo widget!",
     "pointColor": "punto di colore",
     "pointHoverColor": "colore al passaggio del mouse",
@@ -1311,5 +1311,7 @@
     "subMenuMode": "apri i sottomenu",
     "subMenuMode_inline": "sotto la loro voce",
     "subMenuMode_slide": "al posto dell'elenco",
-    "ariaSubMenuBack": "Indietro"
+    "ariaSubMenuBack": "Indietro",
+    "navMore": "Altro",
+    "ariaNavigation": "Navigazione"
 }

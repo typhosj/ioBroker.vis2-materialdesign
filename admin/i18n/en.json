@@ -779,7 +779,7 @@
     "padding_left": "padding left",
     "padding_right": "padding right",
     "padding_top": "padding top",
-    "permanentIfResolutionHigherThan": "layout 'auto': layout auto change on resoltuion higher than",
+    "permanentIfResolutionHigherThan": "layout 'auto' / 'horizontal': switch at a width of at least",
     "Please select only one Widget!": "Please select only one Widget!",
     "pointColor": "point color",
     "pointHoverColor": "point hover color ",
@@ -1311,5 +1311,7 @@
     "subMenuMode": "open submenus",
     "subMenuMode_inline": "below their entry",
     "subMenuMode_slide": "in place of the list",
-    "ariaSubMenuBack": "Back"
+    "ariaSubMenuBack": "Back",
+    "navMore": "More",
+    "ariaNavigation": "Navigation"
 }

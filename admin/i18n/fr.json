@@ -779,7 +779,7 @@
     "padding_left": "rembourrage à gauche",
     "padding_right": "rembourrage droit",
     "padding_top": "haut de rembourrage",
-    "permanentIfResolutionHigherThan": "layout 'auto': layout auto change sur résolution supérieure à",
+    "permanentIfResolutionHigherThan": "mise en page 'auto' / 'horizontal' : basculer à partir d'une largeur de",
     "Please select only one Widget!": "Veuillez sélectionner un seul widget!",
     "pointColor": "couleur du point",
     "pointHoverColor": "point de vol stationnaire couleur",
@@ -1311,5 +1311,7 @@
     "subMenuMode": "ouvrir les sous-menus",
     "subMenuMode_inline": "sous leur entrée",
     "subMenuMode_slide": "à la place de la liste",
-    "ariaSubMenuBack": "Retour"
+    "ariaSubMenuBack": "Retour",
+    "navMore": "Plus",
+    "ariaNavigation": "Navigation"
 }

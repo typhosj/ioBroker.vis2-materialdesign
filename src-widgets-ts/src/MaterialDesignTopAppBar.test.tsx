@@ -1,17 +1,27 @@
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import MaterialDesignTopAppBar, { swipeAction } from './MaterialDesignTopAppBar';
+import MaterialDesignTopAppBar, { dropdownPlace, fitCount, swipeAction } from './MaterialDesignTopAppBar';
 
 function fixture<T>(value: unknown): T { return value as T; }
 
+const isPortal = (node: unknown): node is { children: React.ReactNode; containerInfo: unknown } => typeof node === 'object' && node !== null && 'containerInfo' in node;
+
 function collectByClass(node: React.ReactNode, className: string): Array<React.ReactElement<Record<string, unknown>>> {
     if (Array.isArray(node)) return node.flatMap(child => collectByClass(child, className));
+    if (isPortal(node)) return collectByClass(node.children, className);
     if (!React.isValidElement(node)) return [];
     const element = node as React.ReactElement<Record<string, unknown>>;
     const own = typeof element.props.className === 'string' && element.props.className.split(' ').includes(className) ? [element] : [];
     return [...own, ...collectByClass(element.props.children as React.ReactNode, className)];
+}
+
+function findPortals(node: React.ReactNode): Array<{ children: React.ReactNode; containerInfo: unknown }> {
+    if (Array.isArray(node)) return node.flatMap(findPortals);
+    if (isPortal(node)) return [node, ...findPortals(node.children)];
+    if (!React.isValidElement(node)) return [];
+    return findPortals((node.props as { children?: React.ReactNode }).children);
 }
 
 // React 18 keeps `ref` out of `props`; reading it there warns and yields undefined.
@@ -778,5 +788,722 @@ describe('top app bar submenus over several levels (fork #32)', () => {
             expect(field('collapseOtherSubMenus').hidden?.({ subMenuMode: 'slide' })).toBe(true);
             expect(field('collapseOtherSubMenus').hidden?.({})).toBe(false);
         });
+    });
+});
+
+describe('horizontal navigation helpers (upstream #60)', () => {
+    it.each([
+        ['all fit without More', [100, 100, 100], 80, 300, 3],
+        ['the rest goes into More', [100, 100, 100], 80, 299, 2],
+        ['More counts against the room', [100, 100, 100], 120, 299, 1],
+        ['exactly fitting beside More', [100, 100, 100], 99, 299, 2],
+        ['only More when no entry fits beside it', [200, 100], 150, 299, 0],
+        ['no room', [100], 80, 0, 0],
+        ['negative room', [100], 80, -5, 0],
+        ['an empty bar', [], 80, 0, 0],
+        ['an empty bar with negative room', [], 80, -1, 0],
+    ] as const)('fitCount: %s', (_name, widths, more, available, expected) => {
+        expect(fitCount([...widths], more, available)).toBe(expected);
+    });
+
+    it.each([
+        ['inside the window', 100, 1280, 800, { left: 100, top: 64, maxHeight: 728 }],
+        ['pushed back from the right edge', 1200, 1280, 800, { left: 1016, top: 64, maxHeight: 728 }],
+        ['kept off the left edge', -20, 1280, 800, { left: 8, top: 64, maxHeight: 728 }],
+        ['a window narrower than the dropdown', 100, 200, 800, { left: 8, top: 64, maxHeight: 728 }],
+        ['a window too low for one row', 100, 1280, 100, { left: 100, top: 64, maxHeight: 48 }],
+    ] as const)('dropdownPlace: %s', (_name, left, viewWidth, viewHeight, expected) => {
+        expect(dropdownPlace(left, 64, 256, viewWidth, viewHeight)).toEqual(expected);
+    });
+});
+
+describe('top app bar horizontal navigation (upstream #60)', () => {
+    const menu = [
+        { text: 'Home', icon: 'home' },
+        { text: 'Haus', header: 'Gebäude', subMenus: [
+            { text: 'EG', menuId: 'eg', subMenus: [{ text: 'Wohnzimmer' }, { text: 'Küche' }] },
+            { text: 'OG' },
+        ] },
+        { text: 'Web', url: 'https://example.org/' },
+        { text: 'Garten', divider: true },
+    ];
+    // Depth first: Home 0, Haus 1, EG 2, Wohnzimmer 3, Küche 4, OG 5, Web 6, Garten 7.
+    type Api = { root: unknown; dropdownEl: unknown; fit: number; menu: unknown; open: boolean; onPointerDown: (event: unknown) => void; onScroll: (event: unknown) => void; onWindowResize: () => void; onTouchStart: (event: unknown) => void; onTouchEnd: (event: unknown) => void; measure: () => void; componentDidMount: () => void; componentWillUnmount: () => void };
+    const viewport = (width: number, height = 800): void => {
+        Object.defineProperty(window, 'innerWidth', { configurable: true, value: width });
+        Object.defineProperty(window, 'innerHeight', { configurable: true, value: height });
+    };
+    afterEach(() => { viewport(1024, 768); vi.restoreAllMocks(); vi.unstubAllGlobals(); vi.useRealTimers(); });
+    const make = (rxData: Record<string, unknown> = {}, { editMode = false, width = 1280, items = menu } = {}) => {
+        viewport(width);
+        const setValue = vi.fn();
+        // componentDidMount subscribes states through the socket.
+        const socket = { subscribeState: vi.fn().mockResolvedValue(undefined), unsubscribeState: vi.fn() };
+        const widget = new MaterialDesignTopAppBar(fixture<ConstructorParameters<typeof MaterialDesignTopAppBar>[0]>({ context: { setValue, socket }, editMode, id: 'w000001' }));
+        widget.state = fixture<typeof widget.state>({ rxData: { drawerLayout: 'horizontal', oid: 'test.0.page', drawerItemsDataMethod: 'jsonStringObject', drawerItemsJsonString: JSON.stringify(items), ...rxData }, values: {} });
+        widget.forceUpdate = vi.fn();
+        const api = fixture<Api>(widget);
+        const render = (): React.ReactElement<Record<string, unknown>> => widget.renderWidgetBody(fixture<Parameters<MaterialDesignTopAppBar['renderWidgetBody']>[0]>({})) as React.ReactElement<Record<string, unknown>>;
+        const text = (element: React.ReactElement | undefined): string => (element ? renderToStaticMarkup(element).replace(/<[^>]*>/g, '') : '');
+        const bar = () => collectByClass(collectByClass(render(), 'mdw-bar-entries')[0], 'mdw-bar-entry');
+        const labels = (): string[] => bar().map(text);
+        const entry = (label: string) => { const found = bar().find(element => text(element) === label); if (!found) throw new Error(`no bar entry ${label}`); return found; };
+        const press = (label: string): void => (entry(label).props.onClick as () => void)();
+        const dropdown = () => collectByClass(render(), 'mdw-dropdown')[0];
+        const rows = (): string[] => collectByClass(dropdown(), 'mdc-list-item').map(text);
+        const row = (label: string) => { const found = collectByClass(dropdown(), 'mdc-list-item').find(element => text(element) === label); if (!found) throw new Error(`no row ${label}`); return found; };
+        const click = (label: string): void => (row(label).props.onClick as () => void)();
+        const key = (element: React.ReactElement<Record<string, unknown>> | undefined, name: string): void => (element!.props.onKeyDown as (event: unknown) => void)({ key: name, preventDefault: vi.fn() });
+        const select = (index: number): void => { widget.state = fixture<typeof widget.state>({ ...widget.state, values: { 'test.0.page.val': index } }); };
+        return { widget, api, setValue, render, bar, labels, entry, press, dropdown, rows, row, click, key, select, text };
+    };
+
+    it('shows the top-level entries in the bar instead of a menu button and a drawer', () => {
+        const p = make();
+        expect(p.labels()).toEqual(['Home', 'Haus', 'Web', 'Garten']);
+        expect(collectByClass(p.render(), 'mdc-top-app-bar__navigation-icon')).toHaveLength(0);
+        expect(collectByClass(p.render(), 'mdc-drawer')).toHaveLength(0);
+        expect(collectByClass(p.entry('Haus'), 'mdi-menu-down')).toHaveLength(1);
+        expect(collectByClass(p.entry('Home'), 'mdi-menu-down')).toHaveLength(0);
+    });
+
+    it('skips empty editor entries but keeps their numbers', () => {
+        const p = make({ drawerItemsDataMethod: 'inputPerEditor', navItemCount: 3, labels0: 'A', labels2: 'C' });
+        expect(p.labels()).toEqual(['A', 'C']);
+        p.press('C');
+        expect(p.setValue).toHaveBeenCalledWith('test.0.page', 2);
+    });
+
+    it('writes the index and the path of a leaf entry and opens a URL entry through the filter', () => {
+        const open = vi.spyOn(window, 'open').mockReturnValue(null);
+        const p = make({ selectedItemName_oid: 'test.0.name' });
+        p.press('Home');
+        expect(p.setValue).toHaveBeenCalledWith('test.0.page', 0);
+        expect(p.setValue).toHaveBeenCalledWith('test.0.name', 'Home');
+        p.press('Web');
+        expect(open).toHaveBeenCalledWith('https://example.org/', '_blank', 'noopener,noreferrer');
+        expect(p.setValue).not.toHaveBeenCalledWith('test.0.page', 6);
+        const evil = make({}, { items: [{ text: 'X', url: 'javascript:alert(1)' }] });
+        open.mockClear();
+        evil.press('X');
+        expect(open).not.toHaveBeenCalled();
+    });
+
+    it('marks the top-level entry that holds the selection with a background', () => {
+        const active = (rxData: Record<string, unknown>): string[] => make(rxData).bar().filter(element => String(element.props.className).includes('mdw-bar-entry--active')).map(element => renderToStaticMarkup(element).replace(/<[^>]*>/g, ''));
+        expect(active({ navDefaultValue: 3 })).toEqual(['Haus']);
+        expect(active({ navDefaultValue: 0 })).toEqual(['Home']);
+        expect(active({ navDefaultValue: 99 })).toEqual([]);
+        expect(active({ navDisableDefaultValue: true })).toEqual([]);
+    });
+
+    it.each([
+        ['at the default 800 px', {}, 800, true],
+        ['below the default', {}, 799, false],
+        ['with an empty width field', { permanentIfResolutionHigherThan: '' }, 799, false],
+        ['with a text in the width field', { permanentIfResolutionHigherThan: 'abc' }, 800, true],
+        ['with 0 on a phone', { permanentIfResolutionHigherThan: 0 }, 360, true],
+        ['below an own width', { permanentIfResolutionHigherThan: 1000 }, 999, false],
+    ])('shows the bar or falls back to the modal drawer %s', (_name, rxData, width, barShown) => {
+        const p = make(rxData, { width });
+        expect(collectByClass(p.render(), 'mdw-bar-entries').length > 0).toBe(barShown);
+        expect(collectByClass(p.render(), 'mdc-top-app-bar__navigation-icon').length > 0).toBe(!barShown);
+    });
+
+    it('keeps an unknown layout value modal', () => {
+        const p = make({ drawerLayout: 'sideways' });
+        expect(collectByClass(p.render(), 'mdw-bar-entries')).toHaveLength(0);
+        expect(collectByClass(p.render(), 'mdc-top-app-bar__navigation-icon')).toHaveLength(1);
+    });
+
+    it('closes an open drawer when the window grows into the bar and does not reopen it', () => {
+        const p = make({}, { width: 500 });
+        (collectByClass(p.render(), 'mdc-top-app-bar__navigation-icon')[0].props.onClick as () => void)();
+        expect(collectByClass(p.render(), 'mdc-drawer')).toHaveLength(1);
+        viewport(1280);
+        expect(collectByClass(p.render(), 'mdc-drawer')).toHaveLength(0);
+        viewport(500);
+        expect(collectByClass(p.render(), 'mdc-drawer')).toHaveLength(0);
+    });
+
+    it('re-renders once per animation frame when the window is resized', () => {
+        let frame: FrameRequestCallback | undefined;
+        vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => { frame = callback; return 1; });
+        vi.stubGlobal('cancelAnimationFrame', vi.fn());
+        const p = make();
+        p.api.componentDidMount();
+        window.dispatchEvent(new Event('resize'));
+        window.dispatchEvent(new Event('resize'));
+        expect(p.widget.forceUpdate).not.toHaveBeenCalled();
+        frame!(0);
+        expect(p.widget.forceUpdate).toHaveBeenCalledTimes(1);
+        p.api.componentWillUnmount();
+        frame = undefined;
+        window.dispatchEvent(new Event('resize'));
+        expect(frame).toBeUndefined();
+    });
+
+    it('ignores the swipe in the bar', () => {
+        const p = make({ openDrawerBySwipe: true });
+        p.api.root = { getClientRects: () => [{}] };
+        p.api.onTouchStart({ touches: [{ clientX: 5, clientY: 300 }] });
+        p.api.onTouchEnd({ changedTouches: [{ clientX: 150, clientY: 300 }] });
+        expect(p.api.open).toBe(false);
+    });
+
+    it('ignores the menu-button-only option in the bar and caps the title at half the bar', () => {
+        const p = make({ showOnlyMenuButton: true, titleTopAppBar: 'Zuhause', showSelectedItemAsTitle: false });
+        const title = collectByClass(p.render(), 'mdc-top-app-bar__title')[0];
+        expect(renderToStaticMarkup(title)).toContain('Zuhause');
+        expect((title.props.style as React.CSSProperties).maxWidth).toBe('50%');
+        expect(p.labels()).toEqual(['Home', 'Haus', 'Web', 'Garten']);
+    });
+
+    it('names the bar for screen readers and marks entries with a submenu as disclosure buttons', () => {
+        const p = make();
+        expect(collectByClass(p.render(), 'mdw-bar-entries')[0].props['aria-label']).toBe('ariaNavigation');
+        const haus = p.entry('Haus').props;
+        // The disclosure pattern has no aria-haspopup: it would announce an arrow-key menu that is not there.
+        expect([haus['aria-haspopup'], haus['aria-expanded'], haus['aria-controls']]).toEqual([undefined, false, 'mdw-nav-w000001']);
+        const home = p.entry('Home').props;
+        expect([home['aria-haspopup'], home['aria-expanded'], home['aria-controls']]).toEqual([undefined, undefined, undefined]);
+        expect(p.entry('Home').type).toBe('button');
+    });
+
+    it('shows only icons with a tooltip when labels are off', () => {
+        const p = make({ showLabels: false });
+        const home = p.bar()[0];
+        expect(collectByClass(home, 'mdi-home')).toHaveLength(1);
+        expect([home.props['aria-label'], home.props.title]).toEqual(['Home', 'Home']);
+        expect(renderToStaticMarkup(home)).not.toContain('>Home<');
+    });
+
+    it('prefixes the index in the bar when the index option is on', () => {
+        expect(make({ showIndexNum: true }).labels()).toEqual(['[0] Home', '[1] Haus', '[6] Web', '[7] Garten']);
+    });
+
+    // The bar entry sits inside the section padding: its bottom is 56, the bar's bottom 64.
+    const anchorAt = (p: ReturnType<typeof make>, left: number): void => {
+        p.api.root = { querySelector: (selector: string) => ({ getBoundingClientRect: () => (selector === '.mdc-top-app-bar' ? { left: 0, bottom: 64 } : { left, bottom: 56 }) }), contains: () => false };
+    };
+
+    it('opens the submenu of a bar entry in a dropdown over the page', () => {
+        const p = make();
+        anchorAt(p, 1200);
+        p.press('Haus');
+        expect(p.rows()).toEqual(['EG', 'OG']);
+        expect(p.entry('Haus').props['aria-expanded']).toBe(true);
+        const portals = findPortals(p.render());
+        expect(portals).toHaveLength(1);
+        expect(portals[0].containerInfo).toBe(document.body);
+        const outer = collectByClass(p.render(), 'materialdesign-topAppBar-with-Drawer').find(element => collectByClass(element, 'mdw-dropdown').length && !collectByClass(element, 'mdw-bar-entries').length)!;
+        expect(outer.props.style).toMatchObject({ left: 1016, top: 64, position: 'fixed', zIndex: 1000, width: 256 });
+        expect((p.dropdown().props.style as React.CSSProperties).maxHeight).toBe(728);
+        expect(p.dropdown().props.id).toBe('mdw-nav-w000001');
+    });
+
+    it('draws the dropdown inside the widget box in the editor', () => {
+        const p = make({}, { editMode: true });
+        anchorAt(p, 100);
+        p.press('Haus');
+        expect(p.rows()).toEqual(['EG', 'OG']);
+        expect(findPortals(p.render())).toHaveLength(0);
+    });
+
+    it('carries the Material 3 classes into the portalled dropdown', () => {
+        const p = make({ designStyle: 'material3' });
+        anchorAt(p, 100);
+        p.press('Haus');
+        const outer = findPortals(p.render())[0].children as React.ReactElement<Record<string, unknown>>;
+        expect(String(outer.props.className)).toContain('mdw-style-material3');
+    });
+
+    it('closes the dropdown with a second press and when a leaf in the bar is chosen', () => {
+        const p = make();
+        p.press('Haus');
+        p.press('Haus');
+        expect(p.dropdown()).toBeUndefined();
+        p.press('Haus');
+        p.press('Home');
+        expect(p.dropdown()).toBeUndefined();
+        expect(p.setValue).toHaveBeenCalledWith('test.0.page', 0);
+    });
+
+    it('writes the index of an entry that also writes on toggle and keeps its dropdown open', () => {
+        const p = make({}, { items: [{ text: 'Haus', setValueOnMenuToggleClick: true, subMenus: [{ text: 'EG' }] }, { text: 'Garten' }] as unknown as typeof menu });
+        p.press('Haus');
+        expect(p.setValue).toHaveBeenCalledWith('test.0.page', 0);
+        p.select(0);
+        expect(p.rows()).toEqual(['EG']);
+    });
+
+    it('unfolds deeper levels inside the dropdown and writes index and path', () => {
+        const p = make({ selectedItemName_oid: 'test.0.name' });
+        p.press('Haus');
+        p.click('EG');
+        expect(p.rows()).toEqual(['EG', 'Wohnzimmer', 'Küche', 'OG']);
+        p.click('Wohnzimmer');
+        expect(p.setValue).toHaveBeenCalledWith('test.0.page', 3);
+        expect(p.setValue).toHaveBeenCalledWith('test.0.name', 'Haus.eg.Wohnzimmer');
+        expect(p.dropdown()).toBeUndefined();
+    });
+
+    it('steps through levels in place inside the dropdown, with the bar entry as the floor', () => {
+        const p = make({ subMenuMode: 'slide' });
+        const back = () => collectByClass(p.dropdown(), 'mdw-submenu-back')[0];
+        p.press('Haus');
+        expect(p.rows()).toEqual(['EG', 'OG']);
+        expect(back()).toBeUndefined();
+        p.click('EG');
+        expect(p.rows()).toEqual(['Wohnzimmer', 'Küche']);
+        expect(renderToStaticMarkup(back())).toContain('EG');
+        (back().props.onClick as () => void)();
+        expect(p.rows()).toEqual(['EG', 'OG']);
+        expect(back()).toBeUndefined();
+        p.key(p.row('OG'), 'Escape');
+        expect(p.dropdown()).toBeUndefined();
+    });
+
+    it('opens on the level or with the path of the selected entry', () => {
+        const slide = make({ subMenuMode: 'slide', navDefaultValue: 3 });
+        slide.press('Haus');
+        expect(slide.rows()).toEqual(['Wohnzimmer', 'Küche']);
+        const inline = make({ navDefaultValue: 3 });
+        inline.press('Haus');
+        expect(inline.rows()).toEqual(['EG', 'Wohnzimmer', 'Küche', 'OG']);
+    });
+
+    it('closes on a pointer down outside and on a page scroll, not inside the dropdown or on the bar', () => {
+        const p = make();
+        const dropdown = document.createElement('div');
+        const row = dropdown.appendChild(document.createElement('span'));
+        const barEntry = document.createElement('button');
+        p.api.dropdownEl = dropdown;
+        p.api.root = { contains: (node: Node) => node === barEntry, querySelector: () => null };
+        p.api.menu = 1;
+        p.api.onPointerDown({ target: row });
+        p.api.onPointerDown({ target: barEntry });
+        expect(p.api.menu).toBe(1);
+        p.api.onPointerDown({ target: document.body });
+        expect(p.api.menu).toBeNull();
+        p.api.menu = 1;
+        p.api.onScroll({ target: row });
+        expect(p.api.menu).toBe(1);
+        p.api.onScroll({ target: document });
+        expect(p.api.menu).toBeNull();
+    });
+
+    it('closes on a window resize', () => {
+        vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => { callback(0); return 0; });
+        const p = make();
+        p.press('Haus');
+        p.api.onWindowResize();
+        expect(p.api.menu).toBeNull();
+    });
+
+    it('shows every submenu closed after the dropdown closed, if switched on', () => {
+        const run = (collapseSubMenusOnClose: boolean): string[] => {
+            const p = make({ collapseSubMenusOnClose });
+            p.press('Haus');
+            p.click('EG');
+            p.press('Haus');
+            p.press('Haus');
+            return p.rows();
+        };
+        expect(run(true)).toEqual(['EG', 'OG']);
+        expect(run(false)).toEqual(['EG', 'Wohnzimmer', 'Küche', 'OG']);
+    });
+
+    it('moves focus into the dropdown with the down arrow and back to the bar with Escape', () => {
+        vi.useFakeTimers();
+        const p = make();
+        const focused: string[] = [];
+        const host = { querySelector: (selector: string) => ({ focus: () => focused.push(selector), getBoundingClientRect: () => ({ left: 100, bottom: 64 }) }), contains: () => false };
+        p.api.root = host;
+        p.key(p.entry('Haus'), 'ArrowDown');
+        vi.runAllTimers();
+        expect(p.rows()).toEqual(['EG', 'OG']);
+        expect(focused.at(-1)).toBe('#mdw-nav-w000001 .mdw-submenu-back, #mdw-nav-w000001 .mdc-list-item');
+        p.key(p.row('OG'), 'Escape');
+        vi.runAllTimers();
+        expect(p.dropdown()).toBeUndefined();
+        expect(focused.at(-1)).toBe('[data-bar-index="1"]');
+    });
+
+    it('puts every dropdown row in the tab order but keeps the roving index in the drawer', () => {
+        const p = make();
+        p.press('Haus');
+        expect(collectByClass(p.dropdown(), 'mdc-list-item').map(element => element.props.tabIndex)).toEqual([0, 0]);
+        const drawer = make({}, { width: 500 });
+        (collectByClass(drawer.render(), 'mdc-top-app-bar__navigation-icon')[0].props.onClick as () => void)();
+        expect(collectByClass(collectByClass(drawer.render(), 'mdc-drawer')[0], 'mdc-list-item').map(element => element.props.tabIndex)).toEqual([0, -1, -1, -1]);
+    });
+
+    it('moves the entries that do not fit into More and lists them there with header and divider', () => {
+        const p = make();
+        p.api.fit = 1;
+        expect(p.labels()).toEqual(['Home', 'navMore']);
+        p.press('navMore');
+        const html = renderToStaticMarkup(p.dropdown());
+        expect(p.rows()).toEqual(['Haus', 'Web', 'Garten']);
+        expect(html).toContain('Gebäude');
+        expect(collectByClass(p.dropdown(), 'mdc-list-divider')).toHaveLength(1);
+        expect(p.entry('navMore').props['aria-expanded']).toBe(true);
+        expect(p.entry('navMore').props['aria-haspopup']).toBeUndefined();
+    });
+
+    it('shows only More when no entry fits and no More when all fit', () => {
+        const p = make();
+        p.api.fit = 0;
+        expect(p.labels()).toEqual(['navMore']);
+        p.api.fit = 4;
+        expect(p.labels()).toEqual(['Home', 'Haus', 'Web', 'Garten']);
+    });
+
+    it('marks More when the selection sits in an entry inside it', () => {
+        const p = make({ navDefaultValue: 3 });
+        p.api.fit = 1;
+        expect(p.bar().filter(element => String(element.props.className).includes('mdw-bar-entry--active')).map(p.text)).toEqual(['navMore']);
+    });
+
+    it('steps into a submenu in place inside More, with the More list as the floor', () => {
+        const p = make({ subMenuMode: 'slide' });
+        p.api.fit = 1;
+        p.press('navMore');
+        p.click('Haus');
+        expect(p.rows()).toEqual(['EG', 'OG']);
+        (collectByClass(p.dropdown(), 'mdw-submenu-back')[0].props.onClick as () => void)();
+        expect(p.rows()).toEqual(['Haus', 'Web', 'Garten']);
+        expect(collectByClass(p.dropdown(), 'mdw-submenu-back')).toHaveLength(0);
+    });
+
+    // offsetWidth and clientWidth round to whole pixels, the layout does not.
+    const box = (width: number) => ({ offsetWidth: Math.round(width), clientWidth: Math.floor(width), getBoundingClientRect: () => ({ width }) });
+
+    it('measures the hidden copy and re-renders only when the count changes', () => {
+        const p = make();
+        const probe = { querySelectorAll: () => [box(100), box(100), box(100), box(100)], querySelector: () => box(80) };
+        let room = 300;
+        p.api.root = { querySelector: (selector: string) => (selector === '.mdw-bar-probe' ? probe : box(room)) };
+        p.api.measure();
+        expect(p.api.fit).toBe(2);
+        expect(p.widget.forceUpdate).toHaveBeenCalledTimes(1);
+        p.api.measure();
+        expect(p.widget.forceUpdate).toHaveBeenCalledTimes(1);
+        room = 400;
+        p.api.measure();
+        expect(p.api.fit).toBe(4);
+        p.api.root = { querySelector: () => null };
+        p.api.measure();
+        expect(p.api.fit).toBe(4);
+    });
+
+    it('renders the hidden copy with every entry and More, out of the accessibility tree', () => {
+        const p = make();
+        p.api.fit = 1;
+        const probe = collectByClass(p.render(), 'mdw-bar-probe')[0];
+        expect(probe.props['aria-hidden']).toBe('true');
+        const copies = collectByClass(probe, 'mdw-bar-entry');
+        expect(copies).toHaveLength(5);
+        expect(copies.every(copy => copy.props.tabIndex === -1 && copy.props.onClick === undefined)).toBe(true);
+    });
+
+    it('measures again when the widget box changes size and stops on unmount', () => {
+        const observe = vi.fn();
+        const disconnect = vi.fn();
+        let changed: (() => void) | undefined;
+        vi.stubGlobal('ResizeObserver', class { constructor(callback: () => void) { changed = callback; } observe = observe; disconnect = disconnect; });
+        const p = make();
+        const root = { querySelector: () => null };
+        p.api.root = root;
+        const measure = vi.spyOn(p.api, 'measure');
+        p.api.componentDidMount();
+        expect(observe).toHaveBeenCalledWith(root);
+        measure.mockClear();
+        changed!();
+        expect(measure).toHaveBeenCalledTimes(1);
+        p.api.componentWillUnmount();
+        expect(disconnect).toHaveBeenCalled();
+    });
+
+    it('mounts without a ResizeObserver', () => {
+        vi.stubGlobal('ResizeObserver', undefined);
+        const p = make();
+        p.api.root = { querySelector: () => null };
+        expect(() => { p.api.componentDidMount(); p.api.componentWillUnmount(); }).not.toThrow();
+    });
+
+    it('offers horizontal as a layout and shows the switch width only for auto and horizontal', () => {
+        const fields = (MaterialDesignTopAppBar.getWidgetInfo().visAttrs.find(group => group.name === 'drawerLayout')!.fields) as Array<{ name: string; options?: unknown[]; hidden?: (data: Record<string, unknown>) => boolean }>;
+        expect(fields.find(field => field.name === 'drawerLayout')!.options).toEqual(['modal', 'permanent', 'auto', 'horizontal']);
+        const hidden = fields.find(field => field.name === 'permanentIfResolutionHigherThan')!.hidden!;
+        expect([{}, { drawerLayout: 'modal' }, { drawerLayout: 'permanent' }, { drawerLayout: 'auto' }, { drawerLayout: 'horizontal' }].map(hidden)).toEqual([true, true, true, false, false]);
+    });
+
+    it('has the More label and the navigation name in every language', () => {
+        const dictionaries = import.meta.glob<Record<string, string>>('../../admin/i18n/*.json', { eager: true, import: 'default' });
+        expect(Object.keys(dictionaries)).toHaveLength(11);
+        for (const [file, words] of Object.entries(dictionaries)) {
+            for (const key of ['navMore', 'ariaNavigation', 'permanentIfResolutionHigherThan']) expect(words[key], `${file} ${key}`).toBeTruthy();
+            expect(words.permanentIfResolutionHigherThan, file).toContain('horizontal');
+        }
+    });
+
+    const drawerRows = (p: ReturnType<typeof make>): string[] => collectByClass(collectByClass(p.render(), 'mdc-drawer')[0], 'mdc-list-item').map(p.text);
+    const openDrawer = (p: ReturnType<typeof make>): void => (collectByClass(p.render(), 'mdc-top-app-bar__navigation-icon')[0].props.onClick as () => void)();
+    const event = (rest: Record<string, unknown>) => ({ preventDefault: vi.fn(), shiftKey: false, ...rest });
+    const focusSpy = (p: ReturnType<typeof make>, rows: unknown[] = []) => {
+        const focused: string[] = [];
+        const target = (selector: string) => ({ focus: () => focused.push(selector), getBoundingClientRect: () => ({ left: 100, bottom: 64 }) });
+        p.api.root = { querySelector: target, contains: (node: unknown) => node === 'bar' };
+        p.api.dropdownEl = { querySelector: target, querySelectorAll: () => rows, contains: (node: unknown) => node === 'row' || rows.includes(node) };
+        return focused;
+    };
+
+    it('opens the drawer on the first level after a dropdown closed and the window narrowed', () => {
+        const p = make({ subMenuMode: 'slide' });
+        p.press('Haus');
+        p.press('Haus');
+        viewport(500);
+        openDrawer(p);
+        expect(drawerRows(p)).toEqual(['Home', 'Haus', 'Web', 'Garten']);
+        expect(collectByClass(p.render(), 'mdw-submenu-back')).toHaveLength(0);
+    });
+
+    it('closes the submenus of the drawer when the window grows into the bar, if switched on', () => {
+        const run = (collapseSubMenusOnClose: boolean): string[] => {
+            const p = make({ subMenuMode: 'slide', collapseSubMenusOnClose }, { width: 500 });
+            openDrawer(p);
+            (collectByClass(collectByClass(p.render(), 'mdc-drawer')[0], 'mdc-list-item').find(element => p.text(element) === 'Haus')!.props.onClick as () => void)();
+            viewport(1280);
+            p.render();
+            viewport(500);
+            openDrawer(p);
+            return drawerRows(p);
+        };
+        expect(run(true)).toEqual(['Home', 'Haus', 'Web', 'Garten']);
+        expect(run(false)).toEqual(['EG', 'OG']);
+    });
+
+    it('closes the dropdown with Escape on the focused bar entry and keeps the focus there', () => {
+        vi.useFakeTimers();
+        const p = make();
+        const focused = focusSpy(p);
+        const nav = () => collectByClass(p.render(), 'mdw-bar-entries')[0];
+        const idle = event({ key: 'Escape' });
+        (nav().props.onKeyDown as (e: unknown) => void)(idle);
+        expect(idle.preventDefault).not.toHaveBeenCalled();
+        p.press('Haus');
+        (nav().props.onKeyDown as (e: unknown) => void)(event({ key: 'Escape' }));
+        vi.runAllTimers();
+        expect(p.dropdown()).toBeUndefined();
+        expect(focused.at(-1)).toBe('[data-bar-index="1"]');
+    });
+
+    it('moves Tab from the open bar entry into the dropdown and Shift+Tab from its first row back', () => {
+        vi.useFakeTimers();
+        const p = make();
+        const first = { name: 'first' };
+        const last = { name: 'last' };
+        const focused = focusSpy(p, [first, last]);
+        p.press('Haus');
+        const tab = event({ key: 'Tab' });
+        (p.entry('Haus').props.onKeyDown as (e: unknown) => void)(tab);
+        vi.runAllTimers();
+        expect(tab.preventDefault).toHaveBeenCalled();
+        expect(focused.at(-1)).toBe('#mdw-nav-w000001 .mdw-submenu-back, #mdw-nav-w000001 .mdc-list-item');
+        const back = event({ key: 'Tab', shiftKey: true, target: first });
+        (p.dropdown().props.onKeyDown as (e: unknown) => void)(back);
+        vi.runAllTimers();
+        expect(back.preventDefault).toHaveBeenCalled();
+        expect(focused.at(-1)).toBe('[data-bar-index="1"]');
+        expect(p.dropdown()).toBeDefined();
+        const inside = event({ key: 'Tab', shiftKey: true, target: last });
+        (p.dropdown().props.onKeyDown as (e: unknown) => void)(inside);
+        expect(inside.preventDefault).not.toHaveBeenCalled();
+    });
+
+    it('closes the dropdown on Tab from its last row and moves on to the next bar entry', () => {
+        vi.useFakeTimers();
+        const p = make();
+        const last = { name: 'last' };
+        const focused = focusSpy(p, [{ name: 'first' }, last]);
+        p.press('Haus');
+        const tab = event({ key: 'Tab', target: last });
+        (p.dropdown().props.onKeyDown as (e: unknown) => void)(tab);
+        vi.runAllTimers();
+        expect(tab.preventDefault).toHaveBeenCalled();
+        expect(p.dropdown()).toBeUndefined();
+        expect(focused.at(-1)).toBe('[data-bar-index="6"]');
+    });
+
+    it('puts the focus back on the open bar entry on Tab from the last row when no entry follows', () => {
+        vi.useFakeTimers();
+        const p = make();
+        const last = { name: 'last' };
+        const focused = focusSpy(p, [{ name: 'first' }, last]);
+        p.api.fit = 1;
+        p.press('navMore');
+        focused.length = 0;
+        const end = event({ key: 'Tab', target: last });
+        (p.dropdown().props.onKeyDown as (e: unknown) => void)(end);
+        expect(focused).toEqual(['[data-bar-index="more"]']);
+        expect(end.preventDefault).not.toHaveBeenCalled();
+        expect(p.dropdown()).toBeUndefined();
+    });
+
+    it('closes the dropdown when the focus leaves it and the bar, not when it stays inside', () => {
+        const p = make();
+        focusSpy(p);
+        p.press('Haus');
+        const blur = (relatedTarget: unknown): void => (p.dropdown().props.onBlur as (e: unknown) => void)({ relatedTarget });
+        blur('row');
+        blur('bar');
+        // Clicking empty space moves the focus to no element; the pointer-down rule closes then.
+        blur(null);
+        expect(p.api.menu).toBe(1);
+        blur(document.body);
+        expect(p.api.menu).toBeNull();
+    });
+
+    it('lets the dropdown start at the bottom of the bar, not of the entry', () => {
+        const p = make();
+        anchorAt(p, 300);
+        p.press('Haus');
+        const outer = findPortals(p.render())[0].children as React.ReactElement<Record<string, unknown>>;
+        expect(outer.props.style).toMatchObject({ left: 300, top: 64 });
+    });
+
+    it('keeps the active background when the pointer hovers the active entry, and hover only for pointers that hover', () => {
+        const p = make();
+        const css = String((React.Children.toArray(p.render().props.children as React.ReactNode) as Array<React.ReactElement<{ children: string }>>).find(child => child.type === 'style')!.props.children);
+        expect(css).toContain('@media (hover:hover){.materialdesign-topAppBar-with-Drawer .mdw-bar-entry:hover::before{opacity:.08}}');
+        expect(css).toContain('.materialdesign-topAppBar-with-Drawer .mdw-bar-entry--active::before,.materialdesign-topAppBar-with-Drawer .mdw-bar-entry--active:hover::before{opacity:.16}');
+    });
+
+    it('keeps a gap between the title and the first entry, as a margin outside the measured room', () => {
+        const style = collectByClass(make().render(), 'mdw-bar-entries')[0].props.style as React.CSSProperties;
+        expect(style.marginLeft).toBe(8);
+        expect(style.padding ?? style.paddingLeft).toBeUndefined();
+    });
+
+    it('cuts a long title with an ellipsis in the bar and leaves the other layouts as they were', () => {
+        const parts = (p: ReturnType<typeof make>) => {
+            const title = collectByClass(p.render(), 'mdc-top-app-bar__title')[0];
+            return { title, text: (React.Children.toArray(title.props.children as React.ReactNode) as Array<React.ReactElement<Record<string, unknown>>>).at(-1)! };
+        };
+        const bar = parts(make({ navDefaultValue: 0 }));
+        expect(bar.text.props.style).toEqual({ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' });
+        const modal = parts(make({ navDefaultValue: 0 }, { width: 500 }));
+        expect(modal.text.props.style).toBeUndefined();
+        expect((modal.title.props.style as React.CSSProperties).flex).toBeUndefined();
+        expect((bar.title.props.style as React.CSSProperties).flex).toBeUndefined();
+    });
+
+    it('keeps the label of an entry without an icon when labels are off', () => {
+        const p = make({ showLabels: false });
+        const haus = p.entry('Haus');
+        expect([haus.props['aria-label'], haus.props.title]).toEqual([undefined, undefined]);
+        expect(p.bar()[0].props['aria-label']).toBe('Home');
+    });
+
+    it('closes the submenus when one dropdown replaces another, if switched on', () => {
+        const items = [{ text: 'A', subMenus: [{ text: 'A1', subMenus: [{ text: 'A1x' }] }] }, { text: 'B', subMenus: [{ text: 'B1' }] }] as unknown as typeof menu;
+        const run = (collapseSubMenusOnClose: boolean): string[] => {
+            const p = make({ collapseSubMenusOnClose }, { items });
+            p.press('A');
+            p.click('A1');
+            p.press('B');
+            p.press('A');
+            return p.rows();
+        };
+        expect(run(true)).toEqual(['A1']);
+        expect(run(false)).toEqual(['A1', 'A1x']);
+    });
+
+    it('opens on the first level of the entry, not on the level of the selection, when submenus close on close', () => {
+        const p = make({ subMenuMode: 'slide', collapseSubMenusOnClose: true, navDefaultValue: 3 });
+        p.press('Haus');
+        expect(p.rows()).toEqual(['EG', 'OG']);
+    });
+
+    it('closes a dropdown whose entry is gone or has no submenu any more after a data change', () => {
+        const change = (next: unknown[]): ReturnType<typeof make> => {
+            const p = make();
+            p.press('Haus');
+            p.widget.state = fixture<typeof p.widget.state>({ ...p.widget.state, rxData: { ...p.widget.state.rxData, drawerItemsJsonString: JSON.stringify(next) } });
+            return p;
+        };
+        const gone = change([{ text: 'Home' }]);
+        expect(gone.dropdown()).toBeUndefined();
+        expect(gone.api.menu).toBeNull();
+        const leaf = change([{ text: 'Home' }, { text: 'Garten' }]);
+        expect(leaf.dropdown()).toBeUndefined();
+        const more = make();
+        more.api.fit = 1;
+        more.press('navMore');
+        more.api.fit = 4;
+        expect(more.dropdown()).toBeUndefined();
+        expect(more.api.menu).toBeNull();
+    });
+
+    it('measures again once the web fonts have loaded', async () => {
+        let loaded!: () => void;
+        Object.defineProperty(document, 'fonts', { configurable: true, value: { ready: new Promise<void>(resolve => { loaded = resolve; }) } });
+        try {
+            const p = make();
+            p.api.root = { querySelector: () => null };
+            const measure = vi.spyOn(p.api, 'measure');
+            p.api.componentDidMount();
+            expect(measure).toHaveBeenCalledTimes(1);
+            loaded();
+            await Promise.resolve();
+            await Promise.resolve();
+            expect(measure).toHaveBeenCalledTimes(2);
+            p.api.componentWillUnmount();
+        } finally {
+            delete (document as { fonts?: unknown }).fonts;
+        }
+    });
+
+    it('measures with fractional widths, so a last entry that would overflow by a fraction goes into More', () => {
+        const p = make();
+        const probe = { querySelectorAll: () => [box(100.4), box(100.4)], querySelector: () => box(80) };
+        p.api.root = { querySelector: (selector: string) => (selector === '.mdw-bar-probe' ? probe : box(200.6)) };
+        p.api.measure();
+        expect(p.api.fit).toBe(1);
+    });
+
+    it('keeps a scroll inside the dropdown from scrolling the page behind it', () => {
+        const p = make();
+        p.press('Haus');
+        expect((p.dropdown().props.style as React.CSSProperties).overscrollBehavior).toBe('contain');
+    });
+
+    it('gives the portalled dropdown the ink of its surface, so headers do not take the page colour', () => {
+        const p = make();
+        p.api.fit = 1;
+        p.press('navMore');
+        const ink = (collectByClass(p.dropdown(), 'mdc-list-item')[0].props.style as React.CSSProperties).color;
+        expect(ink).toBeTruthy();
+        expect((p.dropdown().props.style as React.CSSProperties).color).toBe(ink);
+        const drawer = make({}, { width: 500 });
+        openDrawer(drawer);
+        expect((collectByClass(drawer.render(), 'mdc-drawer')[0].props.style as React.CSSProperties).color).toBeUndefined();
+    });
+
+    it('vibrates when a bar entry opens its dropdown, as a drawer entry does', () => {
+        const vibrate = vi.fn();
+        Object.defineProperty(navigator, 'vibrate', { configurable: true, value: vibrate });
+        try {
+            const p = make({ vibrateDrawerOnMobilDevices: 30 });
+            p.press('Haus');
+            expect(vibrate).toHaveBeenCalledWith(30);
+            vibrate.mockClear();
+            p.press('Haus');
+            expect(vibrate).not.toHaveBeenCalled();
+        } finally {
+            delete (navigator as { vibrate?: unknown }).vibrate;
+        }
     });
 });

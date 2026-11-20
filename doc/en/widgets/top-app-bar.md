@@ -38,7 +38,8 @@ ioBroker system language, so the screenshots are German.
   leaves only the menu button; the rest of the width lets clicks through to the
   widgets below. Without an icon color of its own the button takes the text
   color of the page, not the title color. A permanent drawer has no menu
-  button, so the bar is gone entirely then.
+  button, so the bar is gone entirely then. With the layout `horizontal` the
+  option only works below the switch width, not in the bar with the entries.
 - **title** – fixed title, "Material Design Widgets" by default. A cleared field
   stays empty.
 - **show title of selected navigation bar item** (on by default) replaces it
@@ -52,8 +53,8 @@ ioBroker system language, so the screenshots are German.
 <img src="../../media/vis2_top_app_bar_editor_3.png" width="340" alt="Top app bar navigation bar layout and color options">
 
 The **navigation bar layout** group sets the drawer **layout** (`modal`,
-`permanent` or `auto` — `auto` stays modal up to the width in **layout 'auto':
-layout auto change on resoltuion higher than**, 800 px by default), its
+`permanent`, `auto` or `horizontal` — `auto` stays modal up to the width in
+**layout 'auto' / 'horizontal': switch at a width of at least**, 800 px by default), its
 **width**, **show row heading** with **header text**, **show list items labels**
 (off means icons only) and the **divider style** (`standard`, `padded`, `inset`,
 untranslated as well). **open submenus** decides where a submenu appears:
@@ -77,6 +78,24 @@ slides over the view with a swipe from the screen edge on its side (the outer
 drawer ignores it, and so does the editor. On phones with gesture navigation the
 same swipe is the system's "back" gesture, so the option suits wall tablets in
 kiosk mode more than phones.
+
+<img src="../../media/vis2_top_app_bar_horizontal.png" alt="Top app bar with the layout horizontal and the list under Haus open">
+
+With the layout `horizontal` the top-level entries stand side by side in the bar,
+right after the title, and there is no menu button. An entry with a submenu shows
+a ▾ and opens a list below it that floats over the page. Deeper levels show in
+that list the way **open submenus** sets it. A click elsewhere, Escape, a second
+click on the entry or scrolling closes it. The list opens at runtime only, not in
+the editor. Entries that do not fit into the bar move into **More ▾** at its end.
+The selected entry, or for a submenu entry its entry in the bar, is highlighted,
+and **More** when that entry sits inside it. Icons in the bar take the bar's text
+color. The title takes at most half of the bar.
+
+Below the width in **layout 'auto' / 'horizontal': switch at a width of at least**
+(800 px by default) the bar shows the menu button and the drawer as with `modal`.
+The height of the bar is therefore enough for the widget only if the view never
+gets narrower than that width, or the width is set to 0. Otherwise keep the widget
+as tall as the drawer; the empty rest still lets clicks through.
 
 The three groups **navigation bar colors**, **sub menu layout** and **sub menu
 colors** only appear once **show advanced options** is ticked in **Common**.
@@ -144,4 +163,5 @@ with one embedded view per index.
 The usual setup: the top app bar and, below it, the Advanced View in Widget 8 —
 both on the same view, both with the same object id. The bar widget has to be as
 tall as the drawer it opens; the empty rest of its box lets clicks through to the
-widgets underneath.
+widgets underneath. With the layout `horizontal` the height of the bar is enough
+only under the condition given above.

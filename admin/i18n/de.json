@@ -779,7 +779,7 @@
     "padding_left": "Abstand links",
     "padding_right": "Abstand rechts",
     "padding_top": "Abstand oben",
-    "permanentIfResolutionHigherThan": "Layout 'auto': automatische Änderung des Layouts bei Auflösung größer",
+    "permanentIfResolutionHigherThan": "Layout 'auto' / 'horizontal': umschalten ab Breite",
     "Please select only one Widget!": "Bitte nur ein Widget auswählen!",
     "pointColor": "Punktfarbe",
     "pointHoverColor": "Punkt selektiert / hover Farbe",
@@ -1311,5 +1311,7 @@
     "subMenuMode": "Untermenüs öffnen",
     "subMenuMode_inline": "unter ihrem Eintrag",
     "subMenuMode_slide": "anstelle der Liste",
-    "ariaSubMenuBack": "Zurück"
+    "ariaSubMenuBack": "Zurück",
+    "navMore": "Mehr",
+    "ariaNavigation": "Navigation"
 }

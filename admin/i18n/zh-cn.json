@@ -779,7 +779,7 @@
     "padding_left": "向左填充",
     "padding_right": "向右填充",
     "padding_top": "垫顶",
-    "permanentIfResolutionHigherThan": "布局“自动”：分辨率高于分辨率时布局自动更改",
+    "permanentIfResolutionHigherThan": "布局 'auto' / 'horizontal'：从此宽度起切换",
     "Please select only one Widget!": "请仅选择一个小部件！",
     "pointColor": "点色",
     "pointHoverColor": "点悬停颜色",
@@ -1311,5 +1311,7 @@
     "subMenuMode": "子菜单打开方式",
     "subMenuMode_inline": "在其条目下方",
     "subMenuMode_slide": "替换列表",
-    "ariaSubMenuBack": "返回"
+    "ariaSubMenuBack": "返回",
+    "navMore": "更多",
+    "ariaNavigation": "导航"
 }

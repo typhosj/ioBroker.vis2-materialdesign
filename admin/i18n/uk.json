@@ -779,7 +779,7 @@
     "padding_left": "Внутрішній відступ ліворуч",
     "padding_right": "Внутрішній відступ праворуч",
     "padding_top": "Внутрішній відступ верх",
-    "permanentIfResolutionHigherThan": "макет 'авто': макет авто change on resoltuion higher than",
+    "permanentIfResolutionHigherThan": "макет 'auto' / 'horizontal': перемикати від ширини",
     "Please select only one Widget!": "Виберіть лише один віджет!",
     "pointColor": "POINT колір",
     "pointHoverColor": "POINT HOVER колір",
@@ -1311,5 +1311,7 @@
     "subMenuMode": "відкривати підменю",
     "subMenuMode_inline": "під своїм пунктом",
     "subMenuMode_slide": "замість списку",
-    "ariaSubMenuBack": "Назад"
+    "ariaSubMenuBack": "Назад",
+    "navMore": "Ще",
+    "ariaNavigation": "Навігація"
 }
