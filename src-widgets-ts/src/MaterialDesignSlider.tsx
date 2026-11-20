@@ -318,7 +318,7 @@ export default class MaterialDesignSlider extends VisWidget {
         }
         const { min, max, step } = range(data);
         const value = sliderValue(this.optimisticValue ?? stateValue(this.state, data.oid || ''), data).raw;
-        const next = sliderKeyValue(event.key, value, min, max, step);
+        const next = sliderKeyValue(event.key, value, min, max, step, !!data.reverseSlider);
         if (next === null) {
             return;
         }

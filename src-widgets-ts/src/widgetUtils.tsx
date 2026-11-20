@@ -695,11 +695,12 @@ export function m3Switch(options: {
 }
 
 // Returns null when the key is not a slider key or the value would not change; the caller then
-// leaves the event alone.
-export function sliderKeyValue(key: string, value: number, min: number, max: number, step: number): number | null {
+// leaves the event alone. `flipped` swaps the arrow keys for a track drawn from the right or from the
+// top, so an arrow moves the fill the way it points.
+export function sliderKeyValue(key: string, value: number, min: number, max: number, step: number, flipped = false): number | null {
     const unit = Number.isFinite(step) && step > 0 ? step : 1;
-    const target = key === 'ArrowRight' || key === 'ArrowUp' ? value + unit
-        : key === 'ArrowLeft' || key === 'ArrowDown' ? value - unit
+    const arrow = key === 'ArrowRight' || key === 'ArrowUp' ? 1 : key === 'ArrowLeft' || key === 'ArrowDown' ? -1 : 0;
+    const target = arrow ? value + (flipped ? -arrow : arrow) * unit
             : key === 'PageUp' ? value + unit * 10
                 : key === 'PageDown' ? value - unit * 10
                     : key === 'Home' ? min

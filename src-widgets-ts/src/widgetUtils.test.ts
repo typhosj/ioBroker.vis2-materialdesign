@@ -478,6 +478,18 @@ describe('widget utilities', () => {
         expect(sliderKeyValue('ArrowRight', 12, 2, 100, 5)).toBe(12 + 5);
         expect(sliderKeyValue('ArrowRight', 50, 0, 100, 0)).toBe(51);
     });
+
+    it('swaps only the arrow keys on a flipped track', () => {
+        expect(sliderKeyValue('ArrowRight', 50, 0, 100, 5, true)).toBe(45);
+        expect(sliderKeyValue('ArrowUp', 50, 0, 100, 5, true)).toBe(45);
+        expect(sliderKeyValue('ArrowLeft', 50, 0, 100, 5, true)).toBe(55);
+        expect(sliderKeyValue('ArrowDown', 50, 0, 100, 5, true)).toBe(55);
+        expect(sliderKeyValue('PageUp', 50, 0, 100, 1, true)).toBe(60);
+        expect(sliderKeyValue('Home', 50, 10, 100, 5, true)).toBe(10);
+        expect(sliderKeyValue('End', 50, 10, 90, 5, true)).toBe(90);
+        expect(sliderKeyValue('ArrowRight', 0, 0, 100, 5, true)).toBeNull();
+        expect(sliderKeyValue('ArrowLeft', 100, 0, 100, 5, true)).toBeNull();
+    });
 });
 
 // vis-2 strips up to two trailing digits before it looks a data key up in the widget's attribute

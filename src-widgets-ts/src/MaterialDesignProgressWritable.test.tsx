@@ -1,7 +1,7 @@
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
-import MaterialDesignProgress, { progressPointerValue, type ProgressData } from './MaterialDesignProgress';
+import MaterialDesignProgress, { progressKeysFlipped, progressPointerValue, type ProgressData } from './MaterialDesignProgress';
 
 function fixture<T>(value: unknown): T { return value as T; }
 type El = React.ReactElement<Record<string, unknown>>;
@@ -34,7 +34,7 @@ describe('writable Progress (upstream #160)', () => {
         const pointer = (x: number, y = 0) => ({ clientX: x, clientY: y, pointerId: 1, currentTarget: { getBoundingClientRect: () => ({ left: 100, top: 50, width: 200, height: 20 }), setPointerCapture: vi.fn() } });
         const call = (name: string, event: unknown) => (bar().props[name] as (e: unknown) => void)(event);
         const fill = () => (find(widget.renderWidgetBody(fixture<Parameters<typeof widget.renderWidgetBody>[0]>({})), el => String(el.props.className).includes('v-progress-linear__determinate'))!.props.style as { width: string }).width;
-        return { setValue, bar, pointer, call, fill };
+        return { setValue, bar, pointer, call, fill, widget };
     };
 
     it('stays a plain progress bar without the option', () => {
@@ -86,5 +86,37 @@ describe('writable Progress (upstream #160)', () => {
         p.call('onKeyDown', { key: 'a', preventDefault });
         expect(p.setValue.mock.calls).toEqual([['test.0.level', 22], ['test.0.level', 22]]);
         expect(preventDefault).toHaveBeenCalledTimes(2);
+    });
+
+    it('a release redraws the stored value, also when no state change follows', () => {
+        const p = make({ progressWritable: true });
+        p.call('onPointerDown', p.pointer(250));
+        const redraws = vi.mocked(p.widget.forceUpdate).mock.calls.length;
+        p.call('onPointerUp', p.pointer(250));
+        expect(vi.mocked(p.widget.forceUpdate).mock.calls.length).toBe(redraws + 1);
+        expect(p.fill()).toBe('20%');
+    });
+
+    it.each([[{}, 'horizontal'], [{ progressRotate: 'yesRotate' }, 'vertical'], [{ progressRotate: 'noRotate' }, 'horizontal']])('%j announces the orientation %s', (rxData, orientation) => {
+        expect(make({ progressWritable: true, ...rxData }).bar().props['aria-orientation']).toBe(orientation);
+    });
+
+    it('arrow keys move the fill the way they point on a reversed bar', () => {
+        const p = make({ progressWritable: true, reverse: true, step: 5 });
+        p.call('onKeyDown', { key: 'ArrowRight', preventDefault: vi.fn() });
+        p.call('onKeyDown', { key: 'ArrowLeft', preventDefault: vi.fn() });
+        p.call('onKeyDown', { key: 'PageUp', preventDefault: vi.fn() });
+        expect(p.setValue.mock.calls).toEqual([['test.0.level', 15], ['test.0.level', 25], ['test.0.level', 70]]);
+    });
+});
+
+describe('progressKeysFlipped', () => {
+    it.each([
+        [{}, false], [{ reverse: true }, true], [{ invertValue: true }, true], [{ reverse: true, invertValue: true }, false],
+        [{ progressRotate: 'yesRotate' }, true], [{ progressRotate: 'yesRotate', reverse: true }, false],
+        [{ progressRotate: 'yesRotate', invertValue: true }, false], [{ progressRotate: 'yesRotate', reverse: true, invertValue: true }, true],
+        [{ progressRotate: 'noRotate', reverse: true }, true],
+    ])('%j -> %s', (data, flipped) => {
+        expect(progressKeysFlipped(data as ProgressData)).toBe(flipped);
     });
 });

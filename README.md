@@ -133,6 +133,7 @@ to wait with an upgrade.
 - (typhosj) **Read only** can be bound to another state on every form widget, and Input, Select and Autocomplete have it now, for example to allow the start time only while automatic mode is on (Scrounger/ioBroker.vis-materialdesign#96)
 - (typhosj) Fixed the Enter key of the **On-screen Keyboard** in widgets of other adapters: it now sends `keydown`, `keypress` and `keyup` with key code 13 like a real key, so for example the Bring shopping list adds the typed article instead of ignoring Enter. A cancelled `keydown` suppresses the `keypress`, as in the browser. The keyboard learns the word before it sends Enter, so a widget that empties its field on Enter, as Bring does, no longer leaves the word unlearned
 - (typhosj) Fixed **Line History** after a data row without object ID: the datasets below it took their settings (legend text, color, line, value labels, y-axis, tooltip unit) from the row above their own
+- (typhosj) Fixed the arrow keys of a reversed **Slider**: they moved the thumb against the direction they point
 - (typhosj) Fixed two **On-screen Keyboards** opening at once when a view with a keyboard shows a Dialog View that has its own keyboard: the keyboard of the inner view serves its fields, the outer one leaves them alone
 - (typhosj) Fixed the adapter settings page staying blank when the language of the browser differs from the ioBroker system language: the translation of the widget label "prefix" was read as an instruction to put a prefix in front of every word, and the page crashed
 

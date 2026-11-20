@@ -168,7 +168,12 @@ export function progressState(value: ioBroker.StateValue | undefined, data: Prog
     return { percent: data.invertValue ? 100 - percent : percent, raw, color, label };
 }
 
-// `fraction` runs from the start edge of the bar as drawn, so a reversed or inverted bar maps it back.
+// The rotated bar turns clockwise, so its fill grows downwards, against ArrowUp. Reverse and invert
+// each turn the direction once more.
+export function progressKeysFlipped(data: ProgressData): boolean {
+    return (data.progressRotate === 'yesRotate') !== !!data.reverse !== !!data.invertValue;
+}
+
 export function progressPointerValue(fraction: number, data: ProgressData): number {
     const min = num(data.min, 0);
     const max = num(data.max, 100);
@@ -223,6 +228,7 @@ export default class MaterialDesignProgress extends VisWidget {
         const interaction: React.HTMLAttributes<HTMLDivElement> = writable
             ? {
                   role: 'slider',
+                  'aria-orientation': data.progressRotate === 'yesRotate' ? 'vertical' : 'horizontal',
                   tabIndex: 0,
                   onPointerDown: event => {
                       event.currentTarget.setPointerCapture?.(event.pointerId);
@@ -238,13 +244,15 @@ export default class MaterialDesignProgress extends VisWidget {
                       if (this.dragValue === undefined) return;
                       write(this.dragValue);
                       this.dragValue = undefined;
+                      // A write the state never echoes (read-only target, rejected) would leave the drag drawn.
+                      this.forceUpdate();
                   },
                   onPointerCancel: () => {
                       this.dragValue = undefined;
                       this.forceUpdate();
                   },
                   onKeyDown: event => {
-                      const next = sliderKeyValue(event.key, progress.raw, num(data.min, 0), num(data.max, 100), num(data.step, 1));
+                      const next = sliderKeyValue(event.key, progress.raw, num(data.min, 0), num(data.max, 100), num(data.step, 1), progressKeysFlipped(data));
                       if (next === null) return;
                       event.preventDefault();
                       write(next);

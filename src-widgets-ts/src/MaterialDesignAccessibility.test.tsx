@@ -105,6 +105,14 @@ describe('widget accessibility', () => {
         expect(props.context.setValue).toHaveBeenCalledWith('test.0.dimmer', 45);
     });
 
+    it('moves a reversed slider the way the arrow key points', () => {
+        const widget = new MaterialDesignSlider(fixture<ConstructorParameters<typeof MaterialDesignSlider>[0]>(props));
+        setData(widget, { oid: 'test.0.dimmer', min: 0, max: 100, step: 5, reverseSlider: true }, { 'test.0.dimmer.val': 40 });
+        const tree = widget.renderWidgetBody(fixture<Parameters<MaterialDesignSlider['renderWidgetBody']>[0]>(props));
+        (findByClass(tree, 'v-slider__thumb-container')?.props.onKeyDown as (event: unknown) => void)({ key: 'ArrowRight', preventDefault: vi.fn(), stopPropagation: vi.fn() });
+        expect(props.context.setValue).toHaveBeenLastCalledWith('test.0.dimmer', 35);
+    });
+
     // A read-only slider looked exactly like an operable one; only the M3 buttons next to it dimmed.
     it.each([
         ['read-only', { readOnly: true }, {}, '0.38'],
