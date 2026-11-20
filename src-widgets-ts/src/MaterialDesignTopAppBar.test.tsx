@@ -834,12 +834,12 @@ describe('top app bar horizontal navigation (upstream #60)', () => {
         Object.defineProperty(window, 'innerHeight', { configurable: true, value: height });
     };
     afterEach(() => { viewport(1024, 768); vi.restoreAllMocks(); vi.unstubAllGlobals(); vi.useRealTimers(); });
-    const make = (rxData: Record<string, unknown> = {}, { editMode = false, width = 1280, items = menu } = {}) => {
+    const make = (rxData: Record<string, unknown> = {}, { editMode = false, width = 1280, items = menu, id = 'w000001' } = {}) => {
         viewport(width);
         const setValue = vi.fn();
         // componentDidMount subscribes states through the socket.
         const socket = { subscribeState: vi.fn().mockResolvedValue(undefined), unsubscribeState: vi.fn() };
-        const widget = new MaterialDesignTopAppBar(fixture<ConstructorParameters<typeof MaterialDesignTopAppBar>[0]>({ context: { setValue, socket }, editMode, id: 'w000001' }));
+        const widget = new MaterialDesignTopAppBar(fixture<ConstructorParameters<typeof MaterialDesignTopAppBar>[0]>({ context: { setValue, socket }, editMode, id }));
         widget.state = fixture<typeof widget.state>({ rxData: { drawerLayout: 'horizontal', oid: 'test.0.page', drawerItemsDataMethod: 'jsonStringObject', drawerItemsJsonString: JSON.stringify(items), ...rxData }, values: {} });
         widget.forceUpdate = vi.fn();
         const api = fixture<Api>(widget);
@@ -1364,6 +1364,38 @@ describe('top app bar horizontal navigation (upstream #60)', () => {
         expect(p.api.menu).toBe(1);
         blur(document.body);
         expect(p.api.menu).toBeNull();
+    });
+
+    it('closes the dropdown when the focus leaves the bar entry for the page, not for the dropdown or the bar', () => {
+        const p = make();
+        focusSpy(p);
+        p.press('Haus');
+        const nav = (): React.ReactElement<Record<string, unknown>> => collectByClass(p.render(), 'mdw-bar-entries')[0];
+        const blur = (relatedTarget: unknown): void => (nav().props.onBlur as (e: unknown) => void)({ relatedTarget });
+        blur('row');
+        blur('bar');
+        blur(null);
+        expect(p.api.menu).toBe(1);
+        // Shift+Tab out of the first bar entry.
+        blur(document.body);
+        expect(p.api.menu).toBeNull();
+    });
+
+    it.each([
+        ['spaces and quotes', 'w0 "1\'', 'mdw-nav-w01'],
+        ['selector characters', 'w#2.x]', 'mdw-nav-w2x'],
+    ])('keeps only safe characters of a widget id with %s in the dropdown id', (_name, id, expected) => {
+        const p = make({}, { id });
+        p.press('Haus');
+        expect(p.dropdown().props.id).toBe(expected);
+        expect(p.entry('Haus').props['aria-controls']).toBe(expected);
+    });
+
+    it.each([['empty', ''], ['without one safe character', '#." ']])('gives every widget its own dropdown id when the widget id is %s', (_name, id) => {
+        const ids = [make({}, { id }), make({}, { id })].map(p => { p.press('Haus'); return String(p.dropdown().props.id); });
+        expect(ids[0]).toMatch(/^mdw-nav-u\d+$/);
+        expect(ids[1]).toMatch(/^mdw-nav-u\d+$/);
+        expect(ids[0]).not.toBe(ids[1]);
     });
 
     it('lets the dropdown start at the bottom of the bar, not of the entry', () => {

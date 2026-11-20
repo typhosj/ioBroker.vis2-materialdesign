@@ -7,7 +7,10 @@ import { MAX_DYNAMIC_ITEMS, passWrapperClicks, squarePreview, RenderProps, VisWi
 type Item = { menuId?: string; text?: string; header?: string; divider?: boolean; icon?: string; iconColor?: string; subMenuIconColor?: string; setValueOnMenuToggleClick?: boolean; subMenus?: Item[]; empty?: boolean; url?: string; urlTarget?: string };
 type Data = Record<string, unknown> & { oid?: string; navItemCount?: number; drawerItemsDataMethod?: string; drawerItemsJsonString?: string };
 type Entry = { item: Item; index: number; depth: number; parent?: Entry; children: Entry[] };
+type BarKey = number | 'more';
 const MAX_SUBMENU_DEPTH = 10;
+let widgetCount = 0;
+const plain = (html: string): string => html.replace(/<[^>]*>/g, '').trim();
 const px = (v: unknown): string | undefined => { const text = s(v); return text ? (Number.isFinite(Number(text)) ? `${text}px` : text) : undefined; };
 // An entry that is no object still takes its number, as a plain "Menu Item": saved views switch on
 // those numbers, and the one-level drawer numbered such entries too.
@@ -104,11 +107,11 @@ const barEntryCss = '.materialdesign-topAppBar-with-Drawer .mdw-bar-entry{positi
 
 export default class MaterialDesignTopAppBar extends VisWidget {
     private open = false; private expanded = new Set<number>(); private lastSelected = -1;
-    // The entry whose submenu fills the drawer when submenus open in place of the list; null is the first level.
     private drill: number | null = null; private slideMove: '' | 'forward' | 'back' = '';
     private swipeStart: { x: number; y: number; open: boolean } | null = null;
     private root: HTMLElement | null = null;
-    private menu: number | 'more' | null = null; private fit = Number.POSITIVE_INFINITY;
+    private menu: BarKey | null = null; private fit = Number.POSITIVE_INFINITY;
+    private readonly uid = ++widgetCount;
     private dropdownEl: HTMLElement | null = null; private frame = 0;
     private readonly onWindowResize = (): void => {
         if (this.frame) return;
@@ -116,7 +119,8 @@ export default class MaterialDesignTopAppBar extends VisWidget {
     };
     // `drill` equal to the open entry is only the floor of its dropdown; left behind, the drawer below
     // the switch width would open on that entry's level.
-    private clearMenu(): void { const collapse = b((this.state.rxData as unknown as Data).collapseSubMenusOnClose); if (collapse) this.expanded.clear(); if (collapse || this.drill === this.menu) this.drill = null; this.menu = null; this.slideMove = ''; }
+    private clearMenu(): void { this.collapseIfConfigured(this.state.rxData as unknown as Data); if (this.drill === this.menu) this.drill = null; this.menu = null; this.slideMove = ''; }
+    private collapseIfConfigured(data: Data): void { if (b(data.collapseSubMenusOnClose)) { this.expanded.clear(); this.drill = null; } }
     private dismissMenu(): void { this.clearMenu(); this.forceUpdate(); }
     private readonly onTouchStart = (event: TouchEvent): void => {
         this.swipeStart = event.touches.length === 1 ? { x: event.touches[0].clientX, y: event.touches[0].clientY, open: this.open } : null;
@@ -178,7 +182,7 @@ export default class MaterialDesignTopAppBar extends VisWidget {
         this.observer?.disconnect(); this.observer = null;
         super.componentWillUnmount?.();
     }
-    private closeDrawer(data: Data): void { this.open = false; if (b(data.collapseSubMenusOnClose)) { this.expanded.clear(); this.drill = null; } this.slideMove = ''; this.forceUpdate(); }
+    private closeDrawer(data: Data): void { this.open = false; this.collapseIfConfigured(data); this.slideMove = ''; this.forceUpdate(); }
     static getWidgetInfo(): RxWidgetInfo { return { ...createInfo('tplVis2-materialdesign-TopAppBar-Navigation', 'Top App Bar', attrs, ['drawerColors', 'drawerSubItemsLayout', 'drawerSubItemsColors']), visPrev: squarePreview('F06FC'), visDefaultStyle: { width: 400, height: 270 } }; }
     getWidgetInfo(): RxWidgetInfo { return MaterialDesignTopAppBar.getWidgetInfo(); }
     renderWidgetBody(props: RenderProps): React.JSX.Element {
@@ -197,7 +201,16 @@ export default class MaterialDesignTopAppBar extends VisWidget {
         const accordion = b(data.collapseOtherSubMenus);
         const collapseOnClose = b(data.collapseSubMenusOnClose);
         const closeDrawer = (): void => this.closeDrawer(data);
-        const list = items(data); const current = stateValue(this.state, s(data.oid)); const selected = current === undefined && !b(data.navDisableDefaultValue) ? n(data.navDefaultValue) : n(current); const permanent = isPermanent(data); const bar = isHorizontal(data); if (bar && this.open) { this.open = false; if (collapseOnClose) { this.expanded.clear(); this.drill = null; } } if (!bar && this.menu !== null) this.clearMenu(); const visible = permanent || this.open; const flat = flatten(list); const chosen = flat.find(entry => entry.index === selected);
+        const list = items(data);
+        const current = stateValue(this.state, s(data.oid));
+        const selected = current === undefined && !b(data.navDisableDefaultValue) ? n(data.navDefaultValue) : n(current);
+        const permanent = isPermanent(data);
+        const bar = isHorizontal(data);
+        if (bar && this.open) { this.open = false; this.collapseIfConfigured(data); }
+        if (!bar && this.menu !== null) this.clearMenu();
+        const visible = permanent || this.open;
+        const flat = flatten(list);
+        const chosen = flat.find(entry => entry.index === selected);
         // Only auto-open on an actual selection change; otherwise a manual collapse is overridden on every
         // re-render.
         // Except for a closed menu that collapses on close: the selection that closed it comes back
@@ -214,16 +227,18 @@ export default class MaterialDesignTopAppBar extends VisWidget {
         const overflow = bar ? topEntries.slice(shown.length) : [];
         if (typeof this.menu === 'number' ? !shown.some(entry => entry.index === this.menu && entry.children.length) : this.menu === 'more' && !overflow.length) this.clearMenu();
         const top = (entry: Entry): Entry => ancestors(entry)[0] ?? entry;
-        const activeKey = chosen && (current !== undefined || !b(data.navDisableDefaultValue)) ? (overflow.includes(top(chosen)) ? 'more' : top(chosen).index) : null;
+        const keyOf = (entry: Entry): BarKey => (overflow.includes(top(entry)) ? 'more' : top(entry).index);
+        const activeKey = chosen && (current !== undefined || !b(data.navDisableDefaultValue)) ? keyOf(chosen) : null;
         const floor = bar && typeof this.menu === 'number' ? this.menu : null;
-        const inMenu = (entry: Entry): boolean => (this.menu === 'more' ? overflow.includes(top(entry)) : top(entry).index === this.menu);
+        const inMenu = (entry: Entry): boolean => keyOf(entry) === this.menu;
+        const vibrate = (): void => { if (n(data.vibrateDrawerOnMobilDevices) > 0) navigator.vibrate?.(n(data.vibrateDrawerOnMobilDevices)); };
         const drilled = slide && this.drill !== null ? flat[this.drill] : undefined;
         const level = drilled?.children.length && (!bar || (this.drill !== floor && inMenu(drilled))) ? drilled : undefined;
         const focusLater = (selector: string): void => { setTimeout(() => (this.dropdownEl?.querySelector<HTMLElement>(selector) ?? this.root?.querySelector<HTMLElement>(selector))?.focus(), 0); };
         const stepBack = (): void => { if (!level) return; this.drill = level.parent?.index ?? null; this.slideMove = 'back'; focusLater(`[data-index="${level.index}"]`); this.forceUpdate(); };
         const closeMenu = (refocus: boolean): void => { const key = this.menu; this.dismissMenu(); if (refocus && key !== null) focusLater(`[data-bar-index="${key}"]`); };
         // A cleared title is saved as "" and must stay empty; only a title never set gets the default.
-        const title = b(data.showSelectedItemAsTitle, true) && chosen ? chosen.item.text : data.titleTopAppBar == null ? 'Material Design Widgets' : s(data.titleTopAppBar); const select = (entry: Entry): void => { if (n(data.vibrateDrawerOnMobilDevices) > 0) navigator.vibrate?.(n(data.vibrateDrawerOnMobilDevices)); if (entry.children.length) { if (slide) { this.drill = entry.index; this.slideMove = 'forward'; focusLater('.mdw-submenu-back'); /* Its index coming back from the state must not throw the user out to the level holding it. */ if (entry.item.setValueOnMenuToggleClick) this.lastSelected = entry.index; } else if (this.expanded.has(entry.index)) this.expanded.delete(entry.index); else { if (accordion) { this.expanded.clear(); ancestors(entry).forEach(open => this.expanded.add(open.index)); } this.expanded.add(entry.index); } if (entry.item.setValueOnMenuToggleClick) setStateValue(this.props, s(data.oid), entry.index); this.forceUpdate(); return; } if (entry.item.url) { openUrl(entry.item.url, entry.item.urlTarget); if (bar) closeMenu(false); else if (!permanent) closeDrawer(); return; } setStateValue(this.props, s(data.oid), entry.index); if (s(data.selectedItemName_oid)) setStateValue(this.props, s(data.selectedItemName_oid), [...ancestors(entry), entry].map(step => s(step.item.menuId, step.item.text)).join('.')); if (bar) closeMenu(false); else if (!permanent) closeDrawer(); window.scrollTo?.({ top: 0, left: 0 }); };
+        const title = b(data.showSelectedItemAsTitle, true) && chosen ? chosen.item.text : data.titleTopAppBar == null ? 'Material Design Widgets' : s(data.titleTopAppBar); const select = (entry: Entry): void => { vibrate(); if (entry.children.length) { if (slide) { this.drill = entry.index; this.slideMove = 'forward'; focusLater('.mdw-submenu-back'); /* Its index coming back from the state must not throw the user out to the level holding it. */ if (entry.item.setValueOnMenuToggleClick) this.lastSelected = entry.index; } else if (this.expanded.has(entry.index)) this.expanded.delete(entry.index); else { if (accordion) { this.expanded.clear(); ancestors(entry).forEach(open => this.expanded.add(open.index)); } this.expanded.add(entry.index); } if (entry.item.setValueOnMenuToggleClick) setStateValue(this.props, s(data.oid), entry.index); this.forceUpdate(); return; } if (entry.item.url) { openUrl(entry.item.url, entry.item.urlTarget); if (bar) closeMenu(false); else if (!permanent) closeDrawer(); return; } setStateValue(this.props, s(data.oid), entry.index); if (s(data.selectedItemName_oid)) setStateValue(this.props, s(data.selectedItemName_oid), [...ancestors(entry), entry].map(step => s(step.item.menuId, step.item.text)).join('.')); if (bar) closeMenu(false); else if (!permanent) closeDrawer(); window.scrollTo?.({ top: 0, left: 0 }); };
         const iconColor = (entry: Entry): string => {
             const inherited = ancestors(entry).map(step => s(step.item.subMenuIconColor)).reverse().find(Boolean);
             const base = s(entry.item.iconColor) || (entry.parent ? inherited || s(data.subIconDrawerColor) : s(data.iconDrawerColor));
@@ -239,7 +254,7 @@ export default class MaterialDesignTopAppBar extends VisWidget {
         };
         const subList = (entry: Entry): React.JSX.Element | null => (!entry.children.length || !this.expanded.has(entry.index) ? null : <nav className="mdc-list mdc-sub-list" style={{ background: s(data.colorDrawerSubBackground) || undefined, display: 'block' }}>{entry.children.map(child => <React.Fragment key={`sub${child.index}`}>{itemNode(child)}{dividerNode(child)}{subList(child)}</React.Fragment>)}</nav>);
         const backText = level ? s(level.item.text, level.parent ? 'Menu SubItem' : 'Menu Item') : '';
-        const backRow = level ? <div className="mdw-submenu-back" role="button" tabIndex={0} aria-label={`${VisWidget.t('ariaSubMenuBack')}: ${backText.replace(/<[^>]*>/g, '').trim()}`} onClick={stepBack} onKeyDown={event => { if (['Enter', ' ', 'ArrowLeft', 'Escape'].includes(event.key)) { event.preventDefault(); stepBack(); } }} style={{ alignItems: 'center', borderBottom: `1px solid ${m3f(data.colorListSubItemDivider, 'var(--md-sys-color-outline-variant)', 'rgba(0,0,0,.12)')}`, boxSizing: 'border-box', color: s(data.colorListSubItemText) || drawerInk, cursor: 'pointer', display: 'flex', fontFamily: s(data.listItemSubTextFont) || undefined, fontSize: px(data.listSubItemTextSize), fontWeight: 500, gap: 16, minHeight: 48, padding: '0 16px' }}>{renderIcon('arrow-left', m3f(data.colorSubItemToggleIcon, 'var(--md-sys-color-on-surface-variant)', '#44739e'), 20, true)}<span dangerouslySetInnerHTML={{ __html: sanitizeHtml(backText) }} /></div> : null;
+        const backRow = level ? <div className="mdw-submenu-back" role="button" tabIndex={0} aria-label={`${VisWidget.t('ariaSubMenuBack')}: ${plain(backText)}`} onClick={stepBack} onKeyDown={event => { if (['Enter', ' ', 'ArrowLeft', 'Escape'].includes(event.key)) { event.preventDefault(); stepBack(); } }} style={{ alignItems: 'center', borderBottom: `1px solid ${m3f(data.colorListSubItemDivider, 'var(--md-sys-color-outline-variant)', 'rgba(0,0,0,.12)')}`, boxSizing: 'border-box', color: s(data.colorListSubItemText) || drawerInk, cursor: 'pointer', display: 'flex', fontFamily: s(data.listItemSubTextFont) || undefined, fontSize: px(data.listSubItemTextSize), fontWeight: 500, gap: 16, minHeight: 48, padding: '0 16px' }}>{renderIcon('arrow-left', m3f(data.colorSubItemToggleIcon, 'var(--md-sys-color-on-surface-variant)', '#44739e'), 20, true)}<span dangerouslySetInnerHTML={{ __html: sanitizeHtml(backText) }} /></div> : null;
         const hoverCss = [
             s(data.colorListItemHover) && `.materialdesign-topAppBar-with-Drawer .mdc-list-item:not(.isSubItem):hover{background:${s(data.colorListItemHover)}}`,
             s(data.colorListSubItemHover) && `.materialdesign-topAppBar-with-Drawer .mdc-list-item.isSubItem:hover{background:${s(data.colorListSubItemHover)}}`,
@@ -254,11 +269,11 @@ export default class MaterialDesignTopAppBar extends VisWidget {
         const edge = (offset: number): React.CSSProperties => (right ? { right: offset } : { left: offset });
         const toggleDrawer = (): void => { if (this.open) closeDrawer(); else { this.open = true; this.forceUpdate(); } if (n(data.vibrateTopAppBarOnMobilDevices) > 0) navigator.vibrate?.(n(data.vibrateTopAppBarOnMobilDevices)); };
         const menuButton = !permanent && !bar ? <button aria-label={VisWidget.t('ariaOpenMenu')} className="mdc-icon-button mdc-top-app-bar__navigation-icon" onClick={toggleDrawer} style={{ alignItems: 'center', background: 'transparent', border: 0, color: menuIconColor, display: 'inline-flex', height: 48, justifyContent: 'center', marginLeft: right ? 'auto' : undefined, padding: 12, width: 48 }}>{renderIcon('menu', menuIconColor, 24, true)}</button> : null;
-        const plain = (html: string): string => html.replace(/<[^>]*>/g, '').trim();
         const labelOf = (entry: Entry): string => `${b(data.showIndexNum) ? `[${entry.index}] ` : ''}${s(entry.item.text, 'Menu Item')}`;
-        const dropdownId = `mdw-nav-${String(this.props.id ?? '').replace(/[^\w-]/g, '')}`;
+        // The id goes into querySelector unescaped, and an empty one would be shared by every widget.
+        const dropdownId = `mdw-nav-${String(this.props.id ?? '').replace(/[^\w-]/g, '') || `u${this.uid}`}`;
         const firstRow = `#${dropdownId} .mdw-submenu-back, #${dropdownId} .mdc-list-item`;
-        const barKeys: Array<number | 'more'> = [...shown.map(entry => entry.index), ...(overflow.length ? ['more' as const] : [])];
+        const barKeys: BarKey[] = [...shown.map(entry => entry.index), ...(overflow.length ? ['more' as const] : [])];
         // The portal puts the dropdown at the end of the body; Tab and Shift+Tab are led as if it
         // followed its bar entry.
         const dropdownKeyDown = (event: React.KeyboardEvent): void => {
@@ -273,28 +288,28 @@ export default class MaterialDesignTopAppBar extends VisWidget {
         };
         // No related target is a click on something that takes no focus, a header inside the dropdown
         // too; outside clicks are closed by the pointer-down rule.
-        const dropdownBlur = (event: React.FocusEvent): void => {
+        const focusLeave = (event: React.FocusEvent): void => {
             const next = event.relatedTarget;
             if (this.menu === null || !next || this.dropdownEl?.contains(next) || this.root?.contains(next)) return;
             this.dismissMenu();
         };
-        const openMenu = (key: number | 'more'): void => {
-            const inside = chosen && (key === 'more' ? overflow.includes(top(chosen)) : top(chosen).index === key);
-            if (this.menu !== null && collapseOnClose) this.expanded.clear();
+        const openMenu = (key: BarKey): void => {
+            const inside = chosen && keyOf(chosen) === key;
+            if (this.menu !== null) this.collapseIfConfigured(data);
             this.menu = key;
             this.drill = inside && chosen.parent && !collapseOnClose ? chosen.parent.index : key === 'more' ? null : key;
             this.slideMove = '';
             this.forceUpdate();
         };
-        const barClick = (key: number | 'more'): void => {
+        const barClick = (key: BarKey): void => {
             if (this.menu === key) { closeMenu(false); return; }
             const entry = key === 'more' ? undefined : flat[key];
             if (entry && !entry.children.length) { select(entry); return; }
-            if (n(data.vibrateDrawerOnMobilDevices) > 0) navigator.vibrate?.(n(data.vibrateDrawerOnMobilDevices));
+            vibrate();
             openMenu(key);
             if (entry?.item.setValueOnMenuToggleClick) { this.lastSelected = entry.index; setStateValue(this.props, s(data.oid), entry.index); }
         };
-        const barButton = (key: number | 'more', label: string, icon: string, hasMenu: boolean, probe: boolean): React.JSX.Element => {
+        const barButton = (key: BarKey, label: string, icon: string, hasMenu: boolean, probe: boolean): React.JSX.Element => {
             const labels = key === 'more' || b(data.showLabels, true) || !icon;
             const disclosure = !probe && hasMenu;
             return <button key={`${probe ? 'probe' : 'bar'}${key}`} type="button" className={`mdw-bar-entry${!probe && activeKey === key ? ' mdw-bar-entry--active' : ''}`} data-bar-index={probe ? undefined : key} data-probe={probe && key !== 'more' ? '' : undefined} data-probe-more={probe && key === 'more' ? '' : undefined} tabIndex={probe ? -1 : undefined} aria-expanded={disclosure ? this.menu === key : undefined} aria-controls={disclosure ? dropdownId : undefined} aria-label={labels ? undefined : plain(label)} title={labels ? undefined : plain(label)} onClick={probe ? undefined : () => barClick(key)} onKeyDown={disclosure ? event => { if (event.key === 'ArrowDown') { event.preventDefault(); if (this.menu !== key) barClick(key); focusLater(firstRow); } else if (event.key === 'Tab' && !event.shiftKey && this.menu === key) { event.preventDefault(); focusLater(firstRow); } } : undefined} style={{ fontFamily: s(data.listItemTextFont) || undefined, fontSize: px(data.listItemTextSize) ?? '.875rem' }}>{icon ? renderIcon(icon, 'currentColor', n(data.drawerIconHeight, 24), true) : null}{labels ? <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(label) }} /> : null}{hasMenu ? renderIcon('menu-down', 'currentColor', 20, true) : null}</button>;
@@ -309,10 +324,10 @@ export default class MaterialDesignTopAppBar extends VisWidget {
             const barBottom = this.root?.querySelector<HTMLElement>('.mdc-top-app-bar')?.getBoundingClientRect().bottom;
             const spot = anchor && !this.props.editMode ? dropdownPlace(anchor.left, barBottom ?? anchor.bottom, dropdownWidth, window.innerWidth, window.innerHeight) : undefined;
             const entries = this.menu === 'more' ? overflow : flat[this.menu]?.children ?? [];
-            const panel = <div className={`materialdesign-widget materialdesign-topAppBar-with-Drawer${isM3 ? ` ${designStyleClasses(data, this.isDarkTheme())}` : ''}`} style={{ ...(spot ? { ...ownCssVariables(this.refService?.current), left: spot.left, position: 'fixed' as const, top: spot.top } : { left: 0, position: 'absolute' as const, top: barHeight }), pointerEvents: 'auto', width: dropdownWidth, zIndex: n(data.z_index, 1000) }}><div id={dropdownId} ref={element => { this.dropdownEl = element; }} className="mdc-drawer mdw-dropdown" onKeyDown={dropdownKeyDown} onBlur={dropdownBlur} style={{ background: drawerSurface, borderRadius: 4, boxShadow: '0 5px 5px -3px rgba(0,0,0,.2),0 8px 10px 1px rgba(0,0,0,.14),0 3px 14px 2px rgba(0,0,0,.12)', color: drawerInk, maxHeight: spot?.maxHeight, overflowY: 'auto', overscrollBehavior: 'contain' }}>{listNav(entries)}</div></div>;
+            const panel = <div className={`materialdesign-widget materialdesign-topAppBar-with-Drawer${isM3 ? ` ${designStyleClasses(data, this.isDarkTheme())}` : ''}`} style={{ ...(spot ? { ...ownCssVariables(this.refService?.current), left: spot.left, position: 'fixed' as const, top: spot.top } : { left: 0, position: 'absolute' as const, top: barHeight }), pointerEvents: 'auto', width: dropdownWidth, zIndex: n(data.z_index, 1000) }}><div id={dropdownId} ref={element => { this.dropdownEl = element; }} className="mdc-drawer mdw-dropdown" onKeyDown={dropdownKeyDown} onBlur={focusLeave} style={{ background: drawerSurface, borderRadius: 4, boxShadow: '0 5px 5px -3px rgba(0,0,0,.2),0 8px 10px 1px rgba(0,0,0,.14),0 3px 14px 2px rgba(0,0,0,.12)', color: drawerInk, maxHeight: spot?.maxHeight, overflowY: 'auto', overscrollBehavior: 'contain' }}>{listNav(entries)}</div></div>;
             // Known limit: in the editor the box clips the dropdown and the vis-2 edit overlay blocks the pointer; it is not portalled there so it never floats over the editor UI.
             dropdown = spot ? createPortal(panel, document.body) : panel;
         }
-        return <div className={`materialdesign-widget materialdesign-topAppBar-with-Drawer${isM3 ? ` ${designStyleClasses(data, this.isDarkTheme())}` : ''}`} ref={element => { this.root = element; liftWidgetLayer(element, (visible && !permanent) || (bar && this.menu !== null && !!this.props.editMode) ? n(data.z_index, 1000) : null); passWrapperClicks(element, this.props.editMode); }} style={{ '--materialdesign-color-drawer-accent': legacyAccent(this.isDarkTheme()), height: '100%', overflow: 'hidden', pointerEvents: 'none', position: 'relative', width: '100%' } as React.CSSProperties}><style>{barCss + hoverCss + (isM3 ? barM3Css : '') + (slide ? slideCss : '') + (bar ? barEntryCss : '')}</style>{onlyButton && permanent ? null : <header className={`mdc-top-app-bar mdc-top-app-bar--${layout}`} style={{ background: onlyButton ? 'transparent' : m3f(data.colorTopAppBarBackground, 'var(--md-sys-color-primary)', '#44739e'), boxShadow: onlyButton ? 'none' : undefined, color: m3f(data.colorTopAppBarTitle, 'var(--md-sys-color-on-primary)', '#fff'), fontFamily: s(data.titleFont), fontSize: isM3 && !s(data.titleFontSize) ? undefined : sizeCss(data.titleFontSize, 20), height: barHeight, ...edge(permanent ? drawerWidth : 0), padding: 0, pointerEvents: 'auto', position: 'absolute', top: 0, width: onlyButton ? 'auto' : permanent ? `calc(100% - ${drawerWidth}px)` : '100%', zIndex: n(data.topAppBarZ_index, 998) }}><div className="mdc-top-app-bar__row" style={{ height: barHeight }}><section className="mdc-top-app-bar__section mdc-top-app-bar__section--align-start">{right ? null : menuButton}{onlyButton ? null : <span className="mdc-top-app-bar__title" style={{ alignItems: 'center', display: 'flex', flexDirection: s(data.titleIconPosition) === 'right' ? 'row-reverse' : 'row', gap: n(data.titleDistanceBetweenTextAndImage) > 0 ? n(data.titleDistanceBetweenTextAndImage) : undefined, maxWidth: bar ? '50%' : undefined }}>{b(data.showSelectedItemIconInTitle, true) && chosen?.item.icon ? renderIcon(chosen.item.icon, m3f(data.colorTopAppBarTitle, 'var(--md-sys-color-on-primary)', '#fff'), n(data.iconTitleHeight, 30), true) : null}<span style={bar ? { minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } : undefined} dangerouslySetInnerHTML={{ __html: sanitizeHtml(s(title)) }} /></span>}{bar ? <nav className="mdw-bar-entries" aria-label={VisWidget.t('ariaNavigation')} onKeyDown={event => { if (event.key === 'Escape' && this.menu !== null) { event.preventDefault(); closeMenu(true); } }} style={{ display: 'flex', flex: '1 1 0%', height: '100%', marginLeft: 8, minWidth: 0, overflow: 'hidden' }}>{shown.map(entry => barButton(entry.index, labelOf(entry), s(entry.item.icon), entry.children.length > 0, false))}{overflow.length ? barButton('more', VisWidget.t('navMore'), '', true, false) : null}</nav> : null}{bar ? <div className="mdw-bar-probe" aria-hidden="true" style={{ display: 'flex', height: 0, overflow: 'hidden', position: 'absolute', visibility: 'hidden', width: 'max-content' }}>{topEntries.map(entry => barButton(entry.index, labelOf(entry), s(entry.item.icon), entry.children.length > 0, true))}{barButton('more', VisWidget.t('navMore'), '', true, true)}</div> : null}{right ? menuButton : null}</section></div></header>}{visible ? <><aside className={`mdc-drawer${permanent ? ' mdc-drawer--dismissible mdc-drawer--open' : ' mdc-drawer--modal mdc-drawer--open'}${right ? ' mdw-drawer-right' : ''}`} style={{ background: drawerSurface, height: '100%', ...edge(0), pointerEvents: 'auto', position: 'absolute', top: 0, width: drawerWidth, zIndex: n(data.z_index, 1000) }}>{b(data.showHeader, true) ? <div className="mdc-drawer__header" style={{ background: m3f(data.colorDrawerHeaderBackground, 'var(--md-sys-color-primary)', '#44739e'), color: m3f(data.colorDrawerHeaderText, 'var(--md-sys-color-on-primary)', '#fff'), padding: 16 }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(s(data.headerLabel)) }} /> : null}<div className="mdc-drawer__content" style={{ height: `calc(100% - ${b(data.showHeader, true) ? 64 : 0}px)`, overflowY: 'auto' }}>{listNav(topEntries)}</div></aside>{!permanent ? <div className="mdc-drawer-scrim" onClick={closeDrawer} style={{ background: 'rgba(0,0,0,.32)', inset: 0, pointerEvents: 'auto', position: 'absolute', zIndex: n(data.z_index, 1000) - 1 }} /> : null}</> : null}{dropdown}</div>;
+        return <div className={`materialdesign-widget materialdesign-topAppBar-with-Drawer${isM3 ? ` ${designStyleClasses(data, this.isDarkTheme())}` : ''}`} ref={element => { this.root = element; liftWidgetLayer(element, (visible && !permanent) || (bar && this.menu !== null && !!this.props.editMode) ? n(data.z_index, 1000) : null); passWrapperClicks(element, this.props.editMode); }} style={{ '--materialdesign-color-drawer-accent': legacyAccent(this.isDarkTheme()), height: '100%', overflow: 'hidden', pointerEvents: 'none', position: 'relative', width: '100%' } as React.CSSProperties}><style>{barCss + hoverCss + (isM3 ? barM3Css : '') + (slide ? slideCss : '') + (bar ? barEntryCss : '')}</style>{onlyButton && permanent ? null : <header className={`mdc-top-app-bar mdc-top-app-bar--${layout}`} style={{ background: onlyButton ? 'transparent' : m3f(data.colorTopAppBarBackground, 'var(--md-sys-color-primary)', '#44739e'), boxShadow: onlyButton ? 'none' : undefined, color: m3f(data.colorTopAppBarTitle, 'var(--md-sys-color-on-primary)', '#fff'), fontFamily: s(data.titleFont), fontSize: isM3 && !s(data.titleFontSize) ? undefined : sizeCss(data.titleFontSize, 20), height: barHeight, ...edge(permanent ? drawerWidth : 0), padding: 0, pointerEvents: 'auto', position: 'absolute', top: 0, width: onlyButton ? 'auto' : permanent ? `calc(100% - ${drawerWidth}px)` : '100%', zIndex: n(data.topAppBarZ_index, 998) }}><div className="mdc-top-app-bar__row" style={{ height: barHeight }}><section className="mdc-top-app-bar__section mdc-top-app-bar__section--align-start">{right ? null : menuButton}{onlyButton ? null : <span className="mdc-top-app-bar__title" style={{ alignItems: 'center', display: 'flex', flexDirection: s(data.titleIconPosition) === 'right' ? 'row-reverse' : 'row', gap: n(data.titleDistanceBetweenTextAndImage) > 0 ? n(data.titleDistanceBetweenTextAndImage) : undefined, maxWidth: bar ? '50%' : undefined }}>{b(data.showSelectedItemIconInTitle, true) && chosen?.item.icon ? renderIcon(chosen.item.icon, m3f(data.colorTopAppBarTitle, 'var(--md-sys-color-on-primary)', '#fff'), n(data.iconTitleHeight, 30), true) : null}<span style={bar ? { minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } : undefined} dangerouslySetInnerHTML={{ __html: sanitizeHtml(s(title)) }} /></span>}{bar ? <nav className="mdw-bar-entries" aria-label={VisWidget.t('ariaNavigation')} onKeyDown={event => { if (event.key === 'Escape' && this.menu !== null) { event.preventDefault(); closeMenu(true); } }} onBlur={focusLeave} style={{ display: 'flex', flex: '1 1 0%', height: '100%', marginLeft: 8, minWidth: 0, overflow: 'hidden' }}>{shown.map(entry => barButton(entry.index, labelOf(entry), s(entry.item.icon), entry.children.length > 0, false))}{overflow.length ? barButton('more', VisWidget.t('navMore'), '', true, false) : null}</nav> : null}{bar ? <div className="mdw-bar-probe" aria-hidden="true" style={{ display: 'flex', height: 0, overflow: 'hidden', position: 'absolute', visibility: 'hidden', width: 'max-content' }}>{topEntries.map(entry => barButton(entry.index, labelOf(entry), s(entry.item.icon), entry.children.length > 0, true))}{barButton('more', VisWidget.t('navMore'), '', true, true)}</div> : null}{right ? menuButton : null}</section></div></header>}{visible ? <><aside className={`mdc-drawer${permanent ? ' mdc-drawer--dismissible mdc-drawer--open' : ' mdc-drawer--modal mdc-drawer--open'}${right ? ' mdw-drawer-right' : ''}`} style={{ background: drawerSurface, height: '100%', ...edge(0), pointerEvents: 'auto', position: 'absolute', top: 0, width: drawerWidth, zIndex: n(data.z_index, 1000) }}>{b(data.showHeader, true) ? <div className="mdc-drawer__header" style={{ background: m3f(data.colorDrawerHeaderBackground, 'var(--md-sys-color-primary)', '#44739e'), color: m3f(data.colorDrawerHeaderText, 'var(--md-sys-color-on-primary)', '#fff'), padding: 16 }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(s(data.headerLabel)) }} /> : null}<div className="mdc-drawer__content" style={{ height: `calc(100% - ${b(data.showHeader, true) ? 64 : 0}px)`, overflowY: 'auto' }}>{listNav(topEntries)}</div></aside>{!permanent ? <div className="mdc-drawer-scrim" onClick={closeDrawer} style={{ background: 'rgba(0,0,0,.32)', inset: 0, pointerEvents: 'auto', position: 'absolute', zIndex: n(data.z_index, 1000) - 1 }} /> : null}</> : null}{dropdown}</div>;
     }
 }

@@ -63,7 +63,7 @@ Liste** ersetzt die Liste durch das Untermenü, das von der Seite hereingleitet
 und auch auf dem Handy keinen zusätzlichen Platz braucht. Eine Zeile mit Pfeil und
 dem Namen des Elterneintrags oben führt eine Ebene zurück, ebenso die
 Pfeil-links-Taste und Escape. Der Drawer öffnet auf der Ebene des gewählten
-Eintrags. Nummern und Pfad im zweiten Datenpunkt bleiben in beiden Modi gleich.
+Eintrags, außer **Untermenüs beim Schließen des Menüs zuklappen** ist an. Nummern und Pfad im zweiten Datenpunkt bleiben in beiden Modi gleich.
 **Andere Untermenüs beim Öffnen zuklappen** macht die Untermenüs zum Akkordeon:
 Öffnet sich eines, klappen alle anderen zu, nur der Weg zu ihm bleibt offen. **Untermenüs beim Schließen des
 Menüs zuklappen** zeigt jedes Untermenü beim nächsten Öffnen zugeklappt statt so,
