@@ -396,3 +396,35 @@ describe('line history hiding the first data set', () => {
         widget.componentWillUnmount();
     });
 });
+
+describe('line history bars per dataset (upstream #233)', () => {
+    const two = [[{ ts: 1000, val: 1 }, { ts: 2000, val: 3 }], [{ ts: 1000, val: 2 }, { ts: 2000, val: 4 }]];
+
+    it.each([['bar', 'bar'], ['line', undefined], ['', undefined], [undefined, undefined], ['pie', undefined]])('chartType %j -> dataset type %j', async (chartType, type) => {
+        const widget = await loaded({ dataCount: 2, oid: 'a', oid1: 'b', chartType1: chartType }, two);
+        const config = configOf(widget);
+        expect(config.data.datasets[0].type).toBeUndefined();
+        expect(config.data.datasets[1].type).toBe(type);
+        expect(config.options.scales.x.offset).toBe(type === 'bar' ? true : undefined);
+        widget.componentWillUnmount();
+    });
+
+    it('fills a bar solid in the dataset colour, or in the fill colour when one is set', async () => {
+        const widget = await loaded({ dataCount: 2, oid: 'a', oid1: 'b', chartType: 'bar', dataColor: '#00aa00', chartType1: 'bar', dataColor1: '#0000ff', fillColor1: '#ff000080' }, two);
+        const [first, second] = configOf(widget).data.datasets;
+        expect(first).toMatchObject({ type: 'bar', backgroundColor: '#00aa00', borderWidth: 0 });
+        expect(second).toMatchObject({ type: 'bar', backgroundColor: '#ff000080' });
+        expect(first.fill).toBeUndefined();
+        widget.componentWillUnmount();
+    });
+
+    it('keeps the bar on its own y-axis and drops the axis offset while the bar is hidden', async () => {
+        const widget = await loaded({ dataCount: 2, oid: 'a', oid1: 'b', chartType1: 'bar', commonYAxis1: 1, visibilityOid1: 'test.0.mode', visibilityConditionValue1: 'auto' }, two);
+        widget.state = fixture<typeof widget.state>({ ...widget.state, values: { 'test.0.mode.val': 'auto' } });
+        expect(configOf(widget).data.datasets[1].yAxisID).toBe('yAxis_id_1');
+        expect(configOf(widget).options.scales.x.offset).toBe(true);
+        widget.state = fixture<typeof widget.state>({ ...widget.state, values: { 'test.0.mode.val': 'manual' } });
+        expect(configOf(widget).options.scales.x.offset).toBeUndefined();
+        widget.componentWillUnmount();
+    });
+});

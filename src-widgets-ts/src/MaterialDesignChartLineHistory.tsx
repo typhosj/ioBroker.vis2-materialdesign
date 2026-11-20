@@ -162,6 +162,7 @@ const attrs: RxWidgetInfo["visAttrs"] = [
       num("maxDataPoints"),
       num("minTimeInterval"),
       num("multiply"),
+      { name: "chartType", label: "chartType", type: "select", options: ["line", "bar"], default: "line" },
       {
         name: "lineSpanGaps",
         label: "lineSpanGaps",
@@ -384,6 +385,7 @@ export default class MaterialDesignChartLineHistory extends ChartWidget {
     // Axes come from the configured data rows, not the loaded series — an empty history range would
     // otherwise leave chart.js on a default axis that ignores show/position.
     const on = (v: unknown): number | undefined => (v === undefined || v === null || v === "" || !Number.isFinite(Number(v)) ? undefined : Number(v));
+    const isBar = (i: number): boolean => s(item(d, "chartType", i), "line") === "bar";
     const shown = (i: number): boolean => { const oid = s(item(d, "visibilityOid", i)); return !oid || visibleBy(item(d, "visibilityCondition", i), item(d, "visibilityConditionValue", i), stateValue(this.state, oid)); };
     const rowIdx = Array.from({ length: itemCount(d.dataCount) }, (_v, i) => i).filter(shown);
     const yAxisIdOf = (i: number) => rowAxisId(d, i);
@@ -416,6 +418,8 @@ export default class MaterialDesignChartLineHistory extends ChartWidget {
       labelFontSize: n(d.xAxisValueFontSize),
       gridDisplay: b(d.xAxisShowGridLines, true),
       gridColor: s(d.xAxisGridLinesColor, isM3 ? m3.grid : ""),
+      // Without the offset the first and the last bar are cut in half at the edges of the time axis.
+      offset: this.series.some((_series, i) => isBar(i) && shown(i)) || undefined,
       tickCallback: (value, _index, ticks) => fmtTime(value, timeFormatFor(timeFmt, Math.abs(Number(ticks?.[1]?.value) - Number(ticks?.[0]?.value)))),
     });
     const scales: Record<string, unknown> = { x: xAxis, ...Object.fromEntries(yEntries) };
@@ -437,7 +441,12 @@ export default class MaterialDesignChartLineHistory extends ChartWidget {
           x: entry.points.map(point => point.ts),
           colors: [s(item(d, "dataColor", i)) || undefined],
           valueLabels: { fields, align: "top" as const, anchor: "end" as const },
-          extra: ([color]: string[]) => ({
+          extra: ([color]: string[]) => (isBar(i) ? {
+            type: "bar",
+            backgroundColor: s(item(d, "fillColor", i)) || color,
+            borderWidth: 0,
+            yAxisID: yAxisIdOf(i),
+          } : {
             backgroundColor: b(item(d, "useFillColor", i)) ? s(item(d, "fillColor", i), `${color}33`) : "transparent",
             fill: b(item(d, "useFillColor", i)),
             borderWidth: n(item(d, "lineThikness", i), 2),
