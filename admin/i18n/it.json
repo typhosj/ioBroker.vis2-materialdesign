@@ -1300,5 +1300,6 @@
     "ariaPinDelete": "Cancella cifra",
     "repeatOnHold": "ripeti finché premuto",
     "repeatDelay": "ripeti dopo [ms]",
-    "repeatInterval": "ripeti ogni [ms]"
+    "repeatInterval": "ripeti ogni [ms]",
+    "progressWritable": "modifica il valore toccando e trascinando"
 }

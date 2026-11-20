@@ -1300,5 +1300,6 @@
     "ariaPinDelete": "Borrar dígito",
     "repeatOnHold": "repetir mientras se mantiene pulsado",
     "repeatDelay": "repetir después de [ms]",
-    "repeatInterval": "repetir cada [ms]"
+    "repeatInterval": "repetir cada [ms]",
+    "progressWritable": "cambiar el valor tocando y arrastrando"
 }

@@ -1300,5 +1300,6 @@
     "ariaPinDelete": "Delete digit",
     "repeatOnHold": "repeat while held",
     "repeatDelay": "repeat after [ms]",
-    "repeatInterval": "repeat every [ms]"
+    "repeatInterval": "repeat every [ms]",
+    "progressWritable": "change value by tap and drag"
 }

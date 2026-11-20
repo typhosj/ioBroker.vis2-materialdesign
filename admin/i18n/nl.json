@@ -1300,5 +1300,6 @@
     "ariaPinDelete": "Cijfer wissen",
     "repeatOnHold": "herhalen zolang ingedrukt",
     "repeatDelay": "herhalen na [ms]",
-    "repeatInterval": "herhalen elke [ms]"
+    "repeatInterval": "herhalen elke [ms]",
+    "progressWritable": "waarde wijzigen door tikken en slepen"
 }

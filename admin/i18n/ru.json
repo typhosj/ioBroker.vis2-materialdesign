@@ -1300,5 +1300,6 @@
     "ariaPinDelete": "Удалить цифру",
     "repeatOnHold": "повторять при удержании",
     "repeatDelay": "повторять через [мс]",
-    "repeatInterval": "повторять каждые [мс]"
+    "repeatInterval": "повторять каждые [мс]",
+    "progressWritable": "изменять значение касанием и перетаскиванием"
 }

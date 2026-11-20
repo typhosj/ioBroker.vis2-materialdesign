@@ -23,6 +23,7 @@ the ioBroker system language, so the screenshots are German.
 - **Reverse** – fills from the opposite side.
 - **invert value** – fills the bar to the remaining percentage; the label keeps
   showing the reached one.
+- **change value by tap and drag** – turns the bar into a slider with the same look: a tap or a drag on the bar sets the value, written once on release, in steps of **steps** (default 1) between minimum and maximum. Arrow keys, Page Up/Down, Home and End work too. Reverse, invert value and the rotated bar are taken into account. In the editor, with an indeterminate bar or without object id the bar stays read-only.
 
 **layout**
 

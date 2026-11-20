@@ -3,13 +3,15 @@ import React from 'react';
 import type { RxWidgetInfo, RxWidgetInfoAttributesField, VisRxWidgetProps } from '@iobroker/types-vis-2';
 
 import { fill, withAutoFill } from './deviceFill';
-import { squarePreview, BaseRxData, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, legacyInk, numberValue, sizeCss, stateValue, sanitizeHtml } from './widgetUtils';
+import { squarePreview, BaseRxData, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, legacyInk, numberValue, setStateValue, sizeCss, sliderKeyValue, stateValue, sanitizeHtml } from './widgetUtils';
 
 export interface ProgressData extends BaseRxData {
     min?: number;
     max?: number;
     reverse?: boolean;
     invertValue?: boolean;
+    progressWritable?: boolean;
+    step?: number;
     progressRounded?: boolean;
     progressIndeterminate?: boolean;
     progressRotate?: 'noRotate' | 'yesRotate';
@@ -82,6 +84,8 @@ export const linearAttrs: RxWidgetInfo['visAttrs'] = [
             ...commonFields,
             { name: 'reverse', label: 'reverse', type: 'checkbox' },
             { name: 'invertValue', label: 'invertValue', type: 'checkbox' },
+            { name: 'progressWritable', label: 'progressWritable', type: 'checkbox' },
+            { name: 'step', label: 'step', type: 'number', default: 1 },
         ],
     },
     {
@@ -164,7 +168,22 @@ export function progressState(value: ioBroker.StateValue | undefined, data: Prog
     return { percent: data.invertValue ? 100 - percent : percent, raw, color, label };
 }
 
+// `fraction` runs from the start edge of the bar as drawn, so a reversed or inverted bar maps it back.
+export function progressPointerValue(fraction: number, data: ProgressData): number {
+    const min = num(data.min, 0);
+    const max = num(data.max, 100);
+    let along = Math.min(1, Math.max(0, Number.isFinite(fraction) ? fraction : 0));
+    if (data.reverse) along = 1 - along;
+    if (data.invertValue) along = 1 - along;
+    const step = num(data.step, 1);
+    const unit = step > 0 ? step : 1;
+    const value = min + Math.round((along * (max - min)) / unit) * unit;
+    return Math.round(Math.min(Math.max(min, max), Math.max(Math.min(min, max), value)) * 1e6) / 1e6;
+}
+
 export default class MaterialDesignProgress extends VisWidget {
+    private dragValue: number | undefined;
+
     constructor(props: VisRxWidgetProps) {
         super(props);
     }
@@ -185,8 +204,8 @@ export default class MaterialDesignProgress extends VisWidget {
         super.renderWidgetBody(props);
         const data = this.state.rxData as ProgressData;
         const isM3 = designStyle(data as unknown as Record<string, unknown>) === 'material3';
-        const value = stateValue(this.state, data.oid);
-        const progress = progressState(value, data, isM3);
+        const stored = stateValue(this.state, data.oid);
+        const progress = progressState(this.dragValue ?? stored, data, isM3);
         const background = cleanColor(data.colorProgressBackground, isM3 ? 'var(--md-sys-color-surface-container-high)' : 'rgba(161, 161, 161, 0.26)');
         const striped = data.progressStriped;
         const stripeColor = cleanColor(data.progressStripedColor, 'rgba(255, 255, 255, 0.25)');
@@ -194,23 +213,63 @@ export default class MaterialDesignProgress extends VisWidget {
         const indeterminate = !!data.progressIndeterminate;
         const displayedPercent = indeterminate ? 100 : progress.percent;
         const reverse = data.reverse && !indeterminate;
+        const writable = !!data.progressWritable && !indeterminate && !this.props.editMode && !!data.oid;
+        const pointerValue = (event: React.PointerEvent<HTMLDivElement>): number => {
+            const box = event.currentTarget.getBoundingClientRect();
+            const fraction = data.progressRotate === 'yesRotate' ? (event.clientY - box.top) / box.height : (event.clientX - box.left) / box.width;
+            return progressPointerValue(fraction, data);
+        };
+        const write = (next: number): void => { setStateValue(this.props, data.oid || '', next); };
+        const interaction: React.HTMLAttributes<HTMLDivElement> = writable
+            ? {
+                  role: 'slider',
+                  tabIndex: 0,
+                  onPointerDown: event => {
+                      event.currentTarget.setPointerCapture?.(event.pointerId);
+                      this.dragValue = pointerValue(event);
+                      this.forceUpdate();
+                  },
+                  onPointerMove: event => {
+                      if (this.dragValue === undefined) return;
+                      this.dragValue = pointerValue(event);
+                      this.forceUpdate();
+                  },
+                  onPointerUp: () => {
+                      if (this.dragValue === undefined) return;
+                      write(this.dragValue);
+                      this.dragValue = undefined;
+                  },
+                  onPointerCancel: () => {
+                      this.dragValue = undefined;
+                      this.forceUpdate();
+                  },
+                  onKeyDown: event => {
+                      const next = sliderKeyValue(event.key, progress.raw, num(data.min, 0), num(data.max, 100), num(data.step, 1));
+                      if (next === null) return;
+                      event.preventDefault();
+                      write(next);
+                  },
+              }
+            : { role: 'progressbar' };
 
         return (
             <div className={`materialdesign-widget materialdesign-progress${isM3 ? ` ${designStyleClasses(data as unknown as Record<string, unknown>, this.isDarkTheme())}` : ''}`} style={{ height: '100%', padding: 0, width: '100%' }}>
                 <div className="materialdesign-vuetify-progress" style={{ alignItems: 'center', display: 'flex', height: '100%', justifyContent: 'center', width: '100%' }}>
                     <div
-                        aria-valuemax={100}
-                        aria-valuemin={0}
-                        aria-valuenow={displayedPercent}
+                        {...interaction}
+                        aria-valuemax={writable ? num(data.max, 100) : 100}
+                        aria-valuemin={writable ? num(data.min, 0) : 0}
+                        aria-valuenow={writable ? progress.raw : displayedPercent}
                         className={`v-progress-linear${data.progressRounded !== false ? ' v-progress-linear--rounded' : ''} theme--light`}
-                        role="progressbar"
                         style={{
                             background,
                             borderRadius: data.progressRounded !== false ? 4 : 0,
+                            cursor: writable ? 'pointer' : undefined,
                             height: '100%',
                             overflow: 'hidden',
                             position: 'relative',
                             transform: data.progressRotate === 'yesRotate' ? 'rotate(90deg)' : undefined,
+                            touchAction: writable ? 'none' : undefined,
                             width: '100%',
                         }}
                     >

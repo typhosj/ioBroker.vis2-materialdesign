@@ -1300,5 +1300,6 @@
     "ariaPinDelete": "Ziffer löschen",
     "repeatOnHold": "wiederholen solange gedrückt",
     "repeatDelay": "wiederholen nach [ms]",
-    "repeatInterval": "wiederholen alle [ms]"
+    "repeatInterval": "wiederholen alle [ms]",
+    "progressWritable": "Wert per Tippen und Ziehen ändern"
 }
