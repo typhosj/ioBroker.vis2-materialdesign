@@ -21,7 +21,7 @@ ioBroker system language, so the screenshots are German.
 - **Object ID** – receives the index of the selected entry.
 - **Object Id for selected menu item id or name** – optional second state; it
   receives the entry's **menu item id**, falling back to its label. For a
-  submenu entry it holds `parent.child`.
+  submenu entry it holds the whole path, such as `ground.living.light`.
 - **show index of navigation items** – prefixes every drawer label with its
   index as `[0]`, `[1]` … Handy while wiring the embedded views, switch it off
   afterwards.
@@ -57,7 +57,7 @@ layout auto change on resoltuion higher than**, 800 px by default), its
 **width**, **show row heading** with **header text**, **show list items labels**
 (off means icons only) and the **divider style** (`standard`, `padded`, `inset`,
 untranslated as well). **close other submenus when one opens** turns the
-submenus into an accordion: when one opens, all others close. **close
+submenus into an accordion: when one opens, all others close, only the path to it stays open. **close
 submenus when the menu closes** shows every submenu closed each time the menu
 opens again, instead of as it was left. **list item
 alignment** aligns the entry text, or the icon when only icons are shown.
@@ -90,13 +90,15 @@ Menu entries come from the data and item groups:
   disappears and **JSON Sting for navigation items** holds an array of
   `{ "text", "menuId", "icon", "iconColor", "subMenuIconColor", "header",
   "divider", "subMenus", "url", "urlTarget" }`. `subMenuIconColor` colors the icons
-  of this entry's submenu entries.
+  of all submenu entries below, until a deeper entry sets its own.
 - **menu item id** – the value the second object id receives for this entry. The
   index in the first object id does not depend on it.
 - **label / header / divider** – entry text, a section heading above the entry
   and a separator below it.
 - **icon** with its colors and **submenus** – the latter a JSON array in the
-  same format as above, one level deep. A submenu entry gets its icon from
+  same format as above. A submenu entry can have `"subMenus"` of its own
+  (building → ground floor → living room, up to ten levels); every level from the
+  second on is indented one step further. A submenu entry gets its icon from
   `"icon"` (color `"iconColor"`, otherwise the entry's **sub menu icon color**)
   and a separator below it from `"divider": true`, for example
   `[{ "text": "Living room", "icon": "sofa", "divider": true }, { "text": "Kitchen", "icon": "fridge" }]`.
@@ -126,7 +128,8 @@ The same widgets with the dark theme switched on:
 
 The top app bar does not navigate by itself. It only writes the index of the
 selected entry into its **object id** (entry 0 → `0`, entry 1 → `1`, submenus
-count in the same order). A second widget reading that same object id performs
+count in order: an entry, then all its submenu entries with theirs, then the
+next entry). A second widget reading that same object id performs
 the view change: [Advanced View in Widget](html-widgets.md), the `8` variant,
 with one embedded view per index.
 

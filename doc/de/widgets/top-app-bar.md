@@ -20,7 +20,8 @@ Eintrag. Nicht aufgeführte Einstellungen sind selbsterklärend.
 - **Objekt-ID** – erhält den Index des gewählten Eintrags.
 - **Objekt-ID für ausgewählte Menüelement-ID oder Name** – optionaler zweiter
   State; er erhält die **Menüpunkt-ID** des Eintrags, ersatzweise dessen
-  Beschriftung. Bei einem Untermenü steht dort `Eltern.Kind`.
+  Beschriftung. Bei einem Untereintrag steht dort der ganze Pfad, etwa
+  `EG.Wohnzimmer.Licht`.
 - **Index der Navigationselemente anzeigen** – stellt jeder Beschriftung im
   Drawer ihren Index als `[0]`, `[1]` … voran. Praktisch beim Verdrahten der
   eingebetteten Ansichten, danach wieder abschalten.
@@ -56,7 +57,7 @@ Vorgabe 800 px), **Breite**, **Zeilenüberschrift anzeigen** samt **Kopfzeile
 Text**, **Beschriftungen für Listenelemente anzeigen** (aus heißt: nur Symbole)
 und den **Trennlinien Stil** (`standard`, `padded`, `inset`, ebenfalls roh).
 **Andere Untermenüs beim Öffnen zuklappen** macht die Untermenüs zum Akkordeon:
-Öffnet sich eines, klappen alle anderen zu. **Untermenüs beim Schließen des
+Öffnet sich eines, klappen alle anderen zu, nur der Weg zu ihm bleibt offen. **Untermenüs beim Schließen des
 Menüs zuklappen** zeigt jedes Untermenü beim nächsten Öffnen zugeklappt statt so,
 wie es verlassen wurde. **Listenelementausrichtung** richtet
 den Eintragstext aus, im Modus nur Symbole das Symbol. **Position des Menüs**
@@ -90,13 +91,16 @@ Die Menüeinträge stammen aus den Daten- und Eintragsgruppen:
   Navigationselemente** hält ein Array aus `{ "text", "menuId", "icon",
   "iconColor", "subMenuIconColor", "header", "divider", "subMenus", "url",
   "urlTarget" }`.
-  `subMenuIconColor` färbt die Symbole der Untereinträge dieses Eintrags.
+  `subMenuIconColor` färbt die Symbole aller Untereinträge darunter, bis ein
+  tieferer Eintrag eine eigene Farbe setzt.
 - **Menüpunkt-ID** – der Wert, den die zweite Objekt-ID für diesen Eintrag
   bekommt. Der Index in der ersten Objekt-ID hängt nicht daran.
 - **Beschriftung / Überschrift / Trennlinie** – Eintragstext, ein Abschnittskopf
   über dem Eintrag und eine Trennlinie darunter.
 - **Bild** samt Farben und **Untermenüs** – letzteres ein JSON-Array im selben
-  Format wie oben, eine Ebene tief. Ein Untereintrag bekommt sein Symbol mit
+  Format wie oben. Ein Untereintrag kann selbst wieder `"subMenus"` haben
+  (Gebäude → EG → Wohnzimmer, bis zu zehn Ebenen); jede Ebene ab der zweiten
+  rückt ein Stück weiter ein. Ein Untereintrag bekommt sein Symbol mit
   `"icon"` (Farbe `"iconColor"`, sonst **Farbe des Untermenüsymbols** des
   Eintrags) und mit `"divider": true` eine Trennlinie darunter, zum Beispiel
   `[{ "text": "Wohnzimmer", "icon": "sofa", "divider": true }, { "text": "Küche", "icon": "fridge" }]`.
@@ -127,7 +131,8 @@ Dieselben Widgets bei eingeschaltetem Dark-Theme:
 
 Die Top App Bar navigiert nicht selbst. Sie schreibt nur den Index des gewählten
 Eintrags in ihre **Objekt-ID** (Eintrag 0 → `0`, Eintrag 1 → `1`, Untermenüs
-zählen in derselben Reihenfolge mit). Den Wechsel der Ansicht übernimmt ein
+zählen der Reihe nach mit: erst ein Eintrag, dann alle seine Untereinträge mit
+deren Untereinträgen, dann der nächste Eintrag). Den Wechsel der Ansicht übernimmt ein
 zweites Widget, das dieselbe Objekt-ID liest:
 [Advanced View in Widget](html-widgets.md) in der `8`-Variante, mit einer
 eingebetteten Ansicht je Index.

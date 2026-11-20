@@ -532,3 +532,98 @@ describe('swipe opens and closes the drawer (upstream #95)', () => {
         expect(w.drawerShown()).toBe(false);
     });
 });
+
+describe('top app bar submenus over several levels (fork #32)', () => {
+    const tree = [
+        { text: 'Haus', subMenuIconColor: 'green', subMenus: [
+            { text: 'EG', menuId: 'eg', subMenus: [{ text: 'Wohnzimmer', subMenuIconColor: 'red', subMenus: [{ text: 'Licht', icon: 'lightbulb' }] }, { text: 'Küche', icon: 'fridge' }] },
+            { text: 'OG', subMenus: [{ text: 'Bad' }] },
+        ] },
+        { text: 'Garten' },
+    ];
+    // Depth first: Haus 0, EG 1, Wohnzimmer 2, Licht 3, Küche 4, OG 5, Bad 6, Garten 7.
+    const make = (rxData: Record<string, unknown> = {}, items: unknown = tree) => {
+        const setValue = vi.fn();
+        const widget = new MaterialDesignTopAppBar(fixture<ConstructorParameters<typeof MaterialDesignTopAppBar>[0]>({ context: { setValue } }));
+        widget.state = fixture<typeof widget.state>({ rxData: { drawerLayout: 'permanent', oid: 'test.0.page', drawerItemsDataMethod: 'jsonStringObject', drawerItemsJsonString: JSON.stringify(items), showIndexNum: true, ...rxData }, values: {} });
+        widget.forceUpdate = vi.fn();
+        const render = (): React.ReactElement<Record<string, unknown>> => collectByClass(widget.renderWidgetBody(fixture<Parameters<MaterialDesignTopAppBar['renderWidgetBody']>[0]>({})), 'mdc-drawer')[0];
+        const row = (text: string) => collectByClass(render(), 'mdc-list-item').find(element => renderToStaticMarkup(element).includes(`${text}<`));
+        const click = (text: string): void => { const found = row(text); if (!found) throw new Error(`no row ${text}`); (found.props.onClick as () => void)(); };
+        const html = (): string => renderToStaticMarkup(render());
+        return { setValue, render, row, click, html };
+    };
+
+    it('numbers the entries depth first and opens the path to the selected entry', () => {
+        const p = make({ navDefaultValue: 3 });
+        const html = p.html();
+        for (const label of ['[0] Haus', '[1] EG', '[2] Wohnzimmer', '[3] Licht', '[4] Küche', '[5] OG', '[7] Garten']) expect(html).toContain(label);
+        expect(html).not.toContain('Bad');
+    });
+
+    it('writes the index and the whole path of the selected entry', () => {
+        const p = make({ selectedItemName_oid: 'test.0.name' });
+        p.click('Haus');
+        p.click('EG');
+        p.click('Wohnzimmer');
+        p.click('Licht');
+        expect(p.setValue).toHaveBeenCalledWith('test.0.page', 3);
+        expect(p.setValue).toHaveBeenCalledWith('test.0.name', 'Haus.eg.Wohnzimmer.Licht');
+        p.click('Garten');
+        expect(p.setValue).toHaveBeenCalledWith('test.0.name', 'Garten');
+    });
+
+    it('closes the other branches of a level but keeps the open path, if switched on', () => {
+        const run = (collapseOtherSubMenus: boolean): string => {
+            const p = make({ collapseOtherSubMenus, navDefaultValue: 3 });
+            p.click('OG');
+            return p.html();
+        };
+        expect(run(true)).toContain('Bad');
+        expect(run(true)).toContain('EG');
+        expect(run(true)).not.toContain('Wohnzimmer');
+        expect(run(false)).toContain('Bad');
+        expect(run(false)).toContain('Licht');
+    });
+
+    it('collapses one level without closing its parents', () => {
+        const p = make({ navDefaultValue: 3 });
+        p.click('Wohnzimmer');
+        const html = p.html();
+        expect(html).not.toContain('Licht');
+        expect(html).toContain('Küche');
+        expect(html).toContain('OG');
+    });
+
+    it('indents every level below the first one step further', () => {
+        const p = make({ navDefaultValue: 3 });
+        const padding = (text: string): unknown => (p.row(text)!.props.style as React.CSSProperties).padding;
+        expect(padding('Haus')).toBe('0 8px');
+        expect(padding('EG')).toBe('0 8px');
+        expect(padding('Wohnzimmer')).toBe('0 8px 0 24px');
+        expect(padding('Licht')).toBe('0 8px 0 40px');
+    });
+
+    it('colors submenu icons from the nearest parent that sets a submenu icon color', () => {
+        const p = make({ navDefaultValue: 3, subIconDrawerColor: 'blue' });
+        const color = (icon: string): unknown => (collectByClass(p.render(), `mdi-${icon}`)[0].props.style as React.CSSProperties).color;
+        expect(color('lightbulb')).toBe('red');
+        expect(color('fridge')).toBe('green');
+    });
+
+    it('ignores malformed entries and stops after ten submenu levels', () => {
+        const broken = make({}, [null, 7, [], { text: 'A', subMenus: 'x' }, { text: 'B', subMenus: [null, { text: 'B1' }] }]);
+        expect(broken.html()).toContain('[0] A');
+        expect(collectByClass(broken.row('A'), 'mdi-menu-down')).toHaveLength(0);
+        broken.click('B');
+        expect(broken.html()).toContain('[2] B1');
+
+        let deep: Record<string, unknown> = { text: 'L15' };
+        for (let level = 14; level >= 0; level--) deep = { text: `L${level}`, subMenus: [deep] };
+        const p = make({ navDefaultValue: 10 }, [deep]);
+        const html = p.html();
+        expect(html).toContain('[10] L10');
+        expect(html).not.toContain('L11');
+        expect(collectByClass(p.row('L10'), 'mdi-menu-down')).toHaveLength(0);
+    });
+});
