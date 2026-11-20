@@ -1301,5 +1301,10 @@
     "repeatOnHold": "repetir mientras se mantiene pulsado",
     "repeatDelay": "repetir después de [ms]",
     "repeatInterval": "repetir cada [ms]",
-    "progressWritable": "cambiar el valor tocando y arrastrando"
+    "progressWritable": "cambiar el valor tocando y arrastrando",
+    "showAlertCount": "mostrar el número de avisos",
+    "showClearAllButton": "mostrar el botón 'Borrar todo'",
+    "alertsCount": "Avisos",
+    "alertsClearAll": "Borrar todo",
+    "alertsExample": "Aviso de ejemplo (solo en el editor)"
 }

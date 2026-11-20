@@ -1,3 +1,4 @@
+import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -59,6 +60,7 @@ describe('closing an alert', () => {
 
         const buttons: Array<{ onClick: () => void }> = [];
         const walk = (node: unknown): void => {
+            if (Array.isArray(node)) { node.forEach(walk); return; }
             const element = node as { type?: unknown; props?: { children?: unknown; onClick?: () => void } };
             if (!element || typeof element !== 'object') return;
             if (element.type === 'button' && element.props?.onClick) buttons.push({ onClick: element.props.onClick });
@@ -109,5 +111,68 @@ describe('alert accessibility and scoping', () => {
 
     it('emits no style block at all without a breakpoint', () => {
         expect(render({ oid: 'a.0.alerts' }, { 'a.0.alerts.val': two })).not.toContain('<style>');
+    });
+});
+
+describe('alert count, clear all and editor examples (upstream #50)', () => {
+    type El = React.ReactElement<Record<string, unknown>>;
+    const find = (node: React.ReactNode, test: (el: El) => boolean): El | undefined => {
+        if (Array.isArray(node)) return node.map(child => find(child, test)).find(Boolean);
+        if (!React.isValidElement(node)) return undefined;
+        const el = node as El;
+        return test(el) ? el : find(el.props.children as React.ReactNode, test);
+    };
+    const make = (rxData: Record<string, unknown>, value: unknown, editMode = false) => {
+        const setValue = vi.fn();
+        const alerts = new MaterialDesignAlerts(fixture<ConstructorParameters<typeof MaterialDesignAlerts>[0]>({ id: 'w1', context: { setValue }, editMode }));
+        alerts.state = fixture<typeof alerts.state>({ rxData: { oid: 'a.0.alerts', ...rxData }, values: { 'a.0.alerts.val': value } });
+        const tree = () => alerts.renderWidgetBody(fixture<Parameters<MaterialDesignAlerts['renderWidgetBody']>[0]>({}));
+        const html = () => renderToStaticMarkup(tree());
+        const clearAll = () => find(tree(), el => String(el.props.className).includes('materialdesign-alerts-clear-all'));
+        return { setValue, html, clearAll, tree };
+    };
+    const three = JSON.stringify([{ text: 'a' }, { text: 'b' }, { text: 'c' }]);
+
+    it('shows neither count nor button without the options', () => {
+        const html = make({}, three).html();
+        expect(html).not.toContain('materialdesign-alerts-header');
+    });
+
+    it('counts all alerts, also those beyond showMaxAlerts', () => {
+        const html = make({ showAlertCount: true, showMaxAlerts: 1 }, three).html();
+        expect(html).toMatch(/materialdesign-alerts-count">[^<]*: 3</);
+        expect(html).not.toContain('materialdesign-alerts-clear-all');
+    });
+
+    it('clear all writes an empty list', () => {
+        const w = make({ showClearAllButton: true }, three);
+        (w.clearAll()!.props.onClick as () => void)();
+        expect(w.setValue).toHaveBeenCalledExactlyOnceWith('a.0.alerts', '[]');
+    });
+
+    it.each([['empty state', ''], ['empty list', '[]'], ['broken JSON', '{{']])('no header for an %s outside the editor', (_name, value) => {
+        const w = make({ showAlertCount: true, showClearAllButton: true }, value);
+        expect(w.html()).not.toContain('materialdesign-alerts-header');
+    });
+
+    it('a broken JSON string is never cleared', () => {
+        const w = make({ showClearAllButton: true }, '{{');
+        expect(w.clearAll()).toBeUndefined();
+    });
+
+    it('the editor shows two examples for an empty list, and neither close nor clear all writes', () => {
+        const w = make({ showAlertCount: true, showClearAllButton: true }, '[]', true);
+        const html = w.html();
+        expect(html.match(/class="v-alert /g)).toHaveLength(2);
+        expect(html).toMatch(/materialdesign-alerts-count">[^<]*: 2</);
+        (w.clearAll()!.props.onClick as () => void)();
+        const close = find(w.tree(), el => String(el.props.className).includes('v-alert-materialdesign-icon-button'))!;
+        (close.props.onClick as () => void)();
+        expect(w.setValue).not.toHaveBeenCalled();
+    });
+
+    it('the editor shows the real alerts when there are some', () => {
+        const html = make({}, three, true).html();
+        expect(html.match(/class="v-alert /g)).toHaveLength(3);
     });
 });

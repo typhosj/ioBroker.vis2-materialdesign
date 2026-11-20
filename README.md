@@ -123,6 +123,7 @@ to wait with an upgrade.
 - (typhosj) Added **repeat while held** to State and Addition buttons: holding the button repeats its command after a delay at an interval, and an Addition counts on without waiting for the state to answer (Scrounger/ioBroker.vis-materialdesign#57)
 - (typhosj) Added **change value by tap and drag** to Progress, so the bar works as a slider with the look of the progress bar (Scrounger/ioBroker.vis-materialdesign#160)
 - (typhosj) Added a **visibility condition** per dataset to Line History: a dataset is hidden while its condition does not hold, and the other lines keep their colors (Scrounger/ioBroker.vis-materialdesign#84)
+- (typhosj) Added the **number of alerts** and a **clear all** button to Alerts; in the editor an empty list shows two example alerts (Scrounger/ioBroker.vis-materialdesign#50)
 - (typhosj) Added a **PIN** to every widget with a lock: the PIN pad asks for 1 to 12 digits, and the right PIN unlocks every widget with the same PIN until the lock time ends. It protects against accidental taps and children, not against attackers (Scrounger/ioBroker.vis-materialdesign#111)
 - (typhosj) Added the **lock** to Input, Select, Autocomplete, Slider and Round Slider: a tap unlocks the widget, or asks for the PIN, and it locks again after the lock time (Scrounger/ioBroker.vis-materialdesign#112)
 - (typhosj) Changed the lock of Buttons, Checkbox, Switch and Icon List: read only now wins over it. A read-only widget shows no lock icon, and a tap no longer unlocks it

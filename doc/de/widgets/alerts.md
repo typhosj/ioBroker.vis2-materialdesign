@@ -22,6 +22,10 @@ aufgeführte Einstellungen sind selbsterklärend.
   Vorgabe 3. Leer oder `0` zeigt alle Meldungen der Warteschlange (maximal 100).
 - **ausblenden unter Bildschirmbreite [px]** – blendet das Widget unterhalb dieser Breite aus.
   Die Regel gilt nur für dieses Widget, mehrere Alerts-Widgets einer Ansicht können also unterschiedliche Breiten verwenden.
+- **Anzahl der Meldungen anzeigen** – eine Zeile über den Meldungen mit der Anzahl aller Meldungen im State, auch der über *zeige max. Alerts* hinaus.
+- **Schaltfläche 'Alle löschen' anzeigen** – eine Schaltfläche in derselben Zeile, die den State leert (`[]`). Ein State ohne gültiges JSON wird nie gelöscht.
+
+Im Editor zeigt eine leere Liste zwei Beispielmeldungen, damit sich Layout und Farben einstellen lassen. Sie werden nie in den State geschrieben.
 
 **Layout**
 

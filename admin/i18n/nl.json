@@ -1301,5 +1301,10 @@
     "repeatOnHold": "herhalen zolang ingedrukt",
     "repeatDelay": "herhalen na [ms]",
     "repeatInterval": "herhalen elke [ms]",
-    "progressWritable": "waarde wijzigen door tikken en slepen"
+    "progressWritable": "waarde wijzigen door tikken en slepen",
+    "showAlertCount": "aantal meldingen tonen",
+    "showClearAllButton": "knop 'Alles wissen' tonen",
+    "alertsCount": "Meldingen",
+    "alertsClearAll": "Alles wissen",
+    "alertsExample": "Voorbeeldmelding (alleen in de editor)"
 }

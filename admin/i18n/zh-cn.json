@@ -1301,5 +1301,10 @@
     "repeatOnHold": "按住时重复",
     "repeatDelay": "重复延迟[毫秒]",
     "repeatInterval": "重复间隔[毫秒]",
-    "progressWritable": "通过点击和拖动更改数值"
+    "progressWritable": "通过点击和拖动更改数值",
+    "showAlertCount": "显示提醒数量",
+    "showClearAllButton": "显示'全部清除'按钮",
+    "alertsCount": "提醒",
+    "alertsClearAll": "全部清除",
+    "alertsExample": "示例提醒（仅限编辑器）"
 }

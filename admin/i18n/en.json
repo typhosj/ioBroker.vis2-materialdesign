@@ -1301,5 +1301,10 @@
     "repeatOnHold": "repeat while held",
     "repeatDelay": "repeat after [ms]",
     "repeatInterval": "repeat every [ms]",
-    "progressWritable": "change value by tap and drag"
+    "progressWritable": "change value by tap and drag",
+    "showAlertCount": "show number of alerts",
+    "showClearAllButton": "show 'clear all' button",
+    "alertsCount": "Alerts",
+    "alertsClearAll": "Clear all",
+    "alertsExample": "Example alert (editor only)"
 }

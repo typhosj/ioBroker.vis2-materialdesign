@@ -1301,5 +1301,10 @@
     "repeatOnHold": "ripeti finché premuto",
     "repeatDelay": "ripeti dopo [ms]",
     "repeatInterval": "ripeti ogni [ms]",
-    "progressWritable": "modifica il valore toccando e trascinando"
+    "progressWritable": "modifica il valore toccando e trascinando",
+    "showAlertCount": "mostra il numero di avvisi",
+    "showClearAllButton": "mostra il pulsante 'Cancella tutto'",
+    "alertsCount": "Avvisi",
+    "alertsClearAll": "Cancella tutto",
+    "alertsExample": "Avviso di esempio (solo nell'editor)"
 }

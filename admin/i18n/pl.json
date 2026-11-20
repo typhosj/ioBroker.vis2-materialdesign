@@ -1301,5 +1301,10 @@
     "repeatOnHold": "powtarzaj podczas przytrzymania",
     "repeatDelay": "powtarzaj po [ms]",
     "repeatInterval": "powtarzaj co [ms]",
-    "progressWritable": "zmiana wartości dotknięciem i przeciągnięciem"
+    "progressWritable": "zmiana wartości dotknięciem i przeciągnięciem",
+    "showAlertCount": "pokaż liczbę komunikatów",
+    "showClearAllButton": "pokaż przycisk 'Wyczyść wszystko'",
+    "alertsCount": "Komunikaty",
+    "alertsClearAll": "Wyczyść wszystko",
+    "alertsExample": "Przykładowy komunikat (tylko w edytorze)"
 }

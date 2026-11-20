@@ -1301,5 +1301,10 @@
     "repeatOnHold": "répéter tant que maintenu",
     "repeatDelay": "répéter après [ms]",
     "repeatInterval": "répéter toutes les [ms]",
-    "progressWritable": "modifier la valeur en touchant et en glissant"
+    "progressWritable": "modifier la valeur en touchant et en glissant",
+    "showAlertCount": "afficher le nombre d'alertes",
+    "showClearAllButton": "afficher le bouton 'Tout effacer'",
+    "alertsCount": "Alertes",
+    "alertsClearAll": "Tout effacer",
+    "alertsExample": "Alerte d'exemple (éditeur uniquement)"
 }

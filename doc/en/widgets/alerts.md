@@ -23,6 +23,10 @@ language, so the screenshots are German.
   `0` shows every alert in the queue (100 at most).
 - **hide below screen width [px]** – hides the widget below this screen width.
   The rule applies to this widget only, so several alerts widgets in one view can use different widths.
+- **show number of alerts** – a line above the alerts with the number of all alerts in the state, also those beyond *show max alerts*.
+- **show 'clear all' button** – a button in the same line that empties the state (`[]`). A state that is no valid JSON is never cleared.
+
+In the editor an empty list shows two example alerts, so layout and colors can be set up. They are never written to the state.
 
 **layout**
 
