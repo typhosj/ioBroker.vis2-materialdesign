@@ -1297,5 +1297,8 @@
     "pinPadTitle": "Введите PIN",
     "pinPadNotSetUp": "PIN не настроен",
     "pinPadCancel": "Отмена",
-    "ariaPinDelete": "Удалить цифру"
+    "ariaPinDelete": "Удалить цифру",
+    "repeatOnHold": "повторять при удержании",
+    "repeatDelay": "повторять через [мс]",
+    "repeatInterval": "повторять каждые [мс]"
 }

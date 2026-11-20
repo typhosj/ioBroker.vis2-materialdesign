@@ -25,6 +25,7 @@ listed below are self-explanatory.
 - **Link** – URL and *open in new window*.
 - **State** – object id and the value written on click.
 - **Addition** – *value* is the step, a plain number to count up and a `-` prefix to count down. *Min/Max* clamps the result: `0;100` sets both ends, a single number bounds the direction of the step – with a step of `5`, `50` is the maximum; with a step of `-1`, `5` is the minimum. Empty means unbounded.
+- **repeat while held** (State and Addition) – holding the button repeats its command: the first repeat after *repeat after [ms]* (default 500), then every *repeat every [ms]* (default 200, at least 50). A short press acts once, as without the option; the release after a repeat adds nothing. An Addition counts on from its own last write, so a hold of two seconds with step `1` really adds up, also before the state answers. A locked button does not repeat; the press only unlocks it.
 - **Toggle** – *type of toggle* (`boolean`, or `value` with its own *value for on* /
   *value for off*), *push button* (write on press and release) and *Read only*
   (shows the state, writes nothing). With `value`, *state if value unequal to 'on'

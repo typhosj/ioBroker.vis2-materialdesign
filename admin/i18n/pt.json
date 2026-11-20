@@ -1297,5 +1297,8 @@
     "pinPadTitle": "Introduzir PIN",
     "pinPadNotSetUp": "PIN não configurado",
     "pinPadCancel": "Cancelar",
-    "ariaPinDelete": "Apagar dígito"
+    "ariaPinDelete": "Apagar dígito",
+    "repeatOnHold": "repetir enquanto pressionado",
+    "repeatDelay": "repetir após [ms]",
+    "repeatInterval": "repetir a cada [ms]"
 }

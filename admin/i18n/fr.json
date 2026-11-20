@@ -1297,5 +1297,8 @@
     "pinPadTitle": "Saisir le code PIN",
     "pinPadNotSetUp": "Code PIN non configuré",
     "pinPadCancel": "Annuler",
-    "ariaPinDelete": "Effacer le chiffre"
+    "ariaPinDelete": "Effacer le chiffre",
+    "repeatOnHold": "répéter tant que maintenu",
+    "repeatDelay": "répéter après [ms]",
+    "repeatInterval": "répéter toutes les [ms]"
 }

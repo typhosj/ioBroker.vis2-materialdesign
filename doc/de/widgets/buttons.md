@@ -24,6 +24,7 @@ Variante im Widget-Set **Material Design** wählen, markieren und den Reiter
 - **Link** – URL und *in neuem Fenster öffnen*.
 - **State** – Objekt-ID und der beim Klick geschriebene Wert.
 - **Addition** – *Wert* ist die Schrittweite, als Zahl ohne Vorzeichen für aufwärts und mit `-` für abwärts. *Min/Max* begrenzt das Ergebnis: `0;100` setzt beide Enden, eine einzelne Zahl begrenzt die Richtung der Schrittweite – bei `5` als Schritt ist `50` das Maximum, bei `-1` als Schritt ist `5` das Minimum. Leer heißt unbegrenzt.
+- **wiederholen solange gedrückt** (State und Addition) – Gedrückthalten wiederholt den Befehl: die erste Wiederholung nach *wiederholen nach [ms]* (Vorgabe 500), danach alle *wiederholen alle [ms]* (Vorgabe 200, mindestens 50). Ein kurzer Druck wirkt einmal, wie ohne die Option; das Loslassen nach einer Wiederholung schreibt nichts zusätzlich. Eine Addition zählt von ihrem eigenen letzten Schreiben weiter, zwei Sekunden Halten mit Schritt `1` zählen also wirklich hoch, auch bevor der State antwortet. Ein verriegelter Button wiederholt nicht; der Druck entsperrt ihn nur.
 - **Toggle** – *Art der Umschaltung* (`boolean` oder `value` mit eigenem *Wert für
   ein* / *Wert für aus*), *Taster* (bei Drücken und Loslassen schreiben) und *Nur
   lesen* (zeigt den Zustand, schreibt nichts). Bei `value` entscheidet *Zustand,

@@ -1297,5 +1297,8 @@
     "pinPadTitle": "输入 PIN",
     "pinPadNotSetUp": "未设置 PIN",
     "pinPadCancel": "取消",
-    "ariaPinDelete": "删除数字"
+    "ariaPinDelete": "删除数字",
+    "repeatOnHold": "按住时重复",
+    "repeatDelay": "重复延迟[毫秒]",
+    "repeatInterval": "重复间隔[毫秒]"
 }

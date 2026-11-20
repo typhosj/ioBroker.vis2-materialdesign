@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { readFileSync, statSync } from 'node:fs';
 
 import { symbolName } from './IconFilePicker';
-import { createButtonClass, m3ColorExplicit, renderIcon } from './MaterialDesignButtons';
+import { createButtonClass, m3ColorExplicit, renderIcon, repeatTiming } from './MaterialDesignButtons';
 
 function fixture<T>(value: unknown): T { return value as T; }
 
@@ -286,5 +286,85 @@ describe('navigation button active presentation (upstream #11)', () => {
         expect(inactive).toContain('>Seite<');
         expect(inactive).not.toContain('#7c0409');
         expect(inactive).toContain('mdi-lightbulb-outline');
+    });
+});
+
+describe('repeat while held (upstream #57)', () => {
+    type Press = { press: (d: Record<string, unknown>) => void; release: (d: Record<string, unknown>, current: unknown) => void; cancelPress: (d: Record<string, unknown>) => void; componentWillUnmount: () => void };
+    const held = (kind: 'state' | 'addition', rxData: Record<string, unknown>, value: unknown = 0, editMode = false) => {
+        vi.useFakeTimers();
+        const setValue = vi.fn();
+        const Button = createButtonClass(definition(kind));
+        const button = new Button(fixture<ConstructorParameters<typeof Button>[0]>({ context: { setValue }, editMode }));
+        const data = { oid: 'test.0.v', repeatOnHold: true, ...rxData };
+        button.state = fixture<typeof button.state>({ rxData: data, data, values: { 'test.0.v.val': value } });
+        return { setValue, data, api: fixture<Press>(button) };
+    };
+
+    it('a short press acts once, as without the option', () => {
+        const { setValue, data, api } = held('state', { value: 'up' });
+        api.press(data);
+        vi.advanceTimersByTime(499);
+        api.release(data, 0);
+        vi.advanceTimersByTime(5000);
+        expect(setValue.mock.calls).toEqual([['test.0.v', 'up']]);
+    });
+
+    it('holding repeats after the delay at the interval, and the release adds nothing', () => {
+        const { setValue, data, api } = held('state', { value: 'up', repeatDelay: 500, repeatInterval: 200 });
+        api.press(data);
+        vi.advanceTimersByTime(500);
+        expect(setValue).toHaveBeenCalledTimes(1);
+        vi.advanceTimersByTime(600);
+        expect(setValue).toHaveBeenCalledTimes(4);
+        api.release(data, 0);
+        vi.advanceTimersByTime(5000);
+        expect(setValue).toHaveBeenCalledTimes(4);
+    });
+
+    it('an addition counts on from its own writes and stops at the limit', () => {
+        const { setValue, data, api } = held('addition', { value: 2, minmax: '0;7', repeatDelay: 0, repeatInterval: 100 }, 1);
+        api.press(data);
+        vi.advanceTimersByTime(450);
+        api.release(data, 1);
+        expect(setValue.mock.calls.map(call => call[1])).toEqual([3, 5, 7, 7, 7]);
+    });
+
+    it.each([['cancelPress'], ['componentWillUnmount']] as const)('%s stops the repeat', method => {
+        const { setValue, data, api } = held('state', { value: 1, repeatDelay: 100, repeatInterval: 100 });
+        api.press(data);
+        vi.advanceTimersByTime(150);
+        if (method === 'cancelPress') api.cancelPress(data); else api.componentWillUnmount();
+        vi.advanceTimersByTime(5000);
+        expect(setValue).toHaveBeenCalledTimes(1);
+    });
+
+    it.each([
+        ['option off', { repeatOnHold: false }, false],
+        ['locked', { lockEnabled: true }, false],
+        ['editor', {}, true],
+    ])('does not repeat when %s', (_name, extra, editMode) => {
+        const { setValue, data, api } = held('state', { value: 1, ...extra }, 0, editMode);
+        api.press(data);
+        vi.advanceTimersByTime(5000);
+        expect(setValue).not.toHaveBeenCalled();
+    });
+
+    it.each([
+        [{}, 500, 200],
+        [{ repeatDelay: '', repeatInterval: '' }, 500, 200],
+        [{ repeatDelay: 'abc', repeatInterval: Number.NaN }, 500, 200],
+        [{ repeatDelay: -5, repeatInterval: 0 }, 0, 50],
+        [{ repeatDelay: 99_999, repeatInterval: 99_999 }, 10_000, 10_000],
+        [{ repeatDelay: '250', repeatInterval: '75' }, 250, 75],
+    ])('timing %j -> delay %d, interval %d', (data, delay, interval) => {
+        expect(repeatTiming(data as Record<string, never>)).toEqual({ delay, interval });
+    });
+
+    it('offers the option only on State and Addition buttons', () => {
+        const names = (kind: Parameters<typeof definition>[0]) => fixture<{ getWidgetInfo: () => { visAttrs: Array<{ fields: Array<{ name: string }> }> } }>(createButtonClass(definition(kind))).getWidgetInfo().visAttrs.flatMap(group => group.fields).map(field => field.name);
+        expect(names('state')).toEqual(expect.arrayContaining(['repeatOnHold', 'repeatDelay', 'repeatInterval']));
+        expect(names('addition')).toContain('repeatOnHold');
+        for (const kind of ['navigation', 'multiState', 'toggle'] as const) expect(names(kind)).not.toContain('repeatOnHold');
     });
 });

@@ -20,6 +20,9 @@ interface ButtonData extends LockData {
     valueOff?: string;
     valueOn?: string;
     pushButton?: boolean;
+    repeatOnHold?: boolean;
+    repeatDelay?: number;
+    repeatInterval?: number;
     countOids?: number;
     minmax?: string;
     buttontext?: string;
@@ -123,6 +126,9 @@ const actionFields = {
     state: [
         { name: 'oid', label: 'oid', type: 'id' },
         { name: 'value', label: 'value', type: 'text' },
+        { name: 'repeatOnHold', label: 'repeatOnHold', type: 'checkbox' },
+        { name: 'repeatDelay', label: 'repeatDelay', type: 'number', default: 500 },
+        { name: 'repeatInterval', label: 'repeatInterval', type: 'number', default: 200 },
     ],
     multiState: [
         { name: 'countOids', label: 'countOids', type: 'number', default: 1 },
@@ -131,6 +137,9 @@ const actionFields = {
         { name: 'oid', label: 'oid', type: 'id' },
         { name: 'value', label: 'value', type: 'number' },
         { name: 'minmax', label: 'minmax', type: 'text' },
+        { name: 'repeatOnHold', label: 'repeatOnHold', type: 'checkbox' },
+        { name: 'repeatDelay', label: 'repeatDelay', type: 'number', default: 500 },
+        { name: 'repeatInterval', label: 'repeatInterval', type: 'number', default: 200 },
     ],
     toggle: [
         { name: 'oid', label: 'oid', type: 'id' },
@@ -432,6 +441,15 @@ function writeMultiState(props: VisRxWidgetProps, data: ButtonData, schedule: (c
     }
 }
 
+export function nextAddition(data: Pick<ButtonData, 'value' | 'minmax'>, current: unknown): number {
+    const step = numeric(data.value, 0);
+    return clampByMinMax(numeric(current, 0) + step, data.minmax, step);
+}
+
+export function repeatTiming(data: Pick<ButtonData, 'repeatDelay' | 'repeatInterval'>): { delay: number; interval: number } {
+    return { delay: Math.min(10_000, Math.max(0, numeric(data.repeatDelay, 500))), interval: Math.min(10_000, Math.max(50, numeric(data.repeatInterval, 200))) };
+}
+
 function feedback(data: ButtonData): void {
     const vibrate = numeric(data.vibrateOnMobilDevices, 0);
     if (vibrate > 0 && navigator.vibrate) {
@@ -468,8 +486,7 @@ function execute(def: ButtonDefinition, props: VisRxWidgetProps, data: ButtonDat
     } else if (def.kind === 'multiState') {
         writeMultiState(props, data, schedule);
     } else if (def.kind === 'addition') {
-        const step = numeric(data.value, 0);
-        setStateValue(props, data.oid || '', clampByMinMax(numeric(current, 0) + step, data.minmax, step));
+        setStateValue(props, data.oid || '', nextAddition(data, current));
     } else if ((def.kind === 'toggle' || def.kind === 'slider') && !isReadOnly(data)) {
         const onValue = def.kind === 'slider' ? numeric(data.valueOn, 100) : data.toggleType === 'value' ? parseActionValue(String(data.valueOn ?? true)) : true;
         const offValue = def.kind === 'slider' ? numeric(data.valueOff, 0) : data.toggleType === 'value' ? parseActionValue(String(data.valueOff ?? false)) : false;
@@ -489,6 +506,8 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
         private readonly sliderWriter = new SliderWriter();
         private sliderPending: number | undefined;
         private pressed = false;
+        private repeatTimer = 0;
+        private repeated = false;
 
         constructor(props: VisRxWidgetProps) {
             super(props);
@@ -515,6 +534,7 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
             this.lock.dispose();
             this.actionTimers.forEach(timer => window.clearTimeout(timer));
             this.actionTimers.clear();
+            this.stopRepeat();
             this.sliderWriter.cancel();
             super.componentWillUnmount?.();
         }
@@ -561,10 +581,12 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
             }
             this.pressed = true;
             this.pushDown(data);
+            this.startRepeat(data);
         }
 
         release(data: ButtonData, current: ioBroker.StateValue | undefined): void {
-            if (!this.takePress()) {
+            const repeated = this.stopRepeat();
+            if (!this.takePress() || repeated) {
                 return;
             }
             if (data.pushButton) {
@@ -575,9 +597,37 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
         }
 
         cancelPress(data: ButtonData): void {
+            this.stopRepeat();
             if (this.takePress() && data.pushButton) {
                 this.pushUp(data);
             }
+        }
+
+        // An addition counts on from its own last write: the state echo arrives later than the next repeat.
+        private startRepeat(data: ButtonData): void {
+            if (!data.repeatOnHold || (def.kind !== 'state' && def.kind !== 'addition') || this.props.editMode || this.isLocked(data)) {
+                return;
+            }
+            const { delay, interval } = repeatTiming(data);
+            let current = stateValue(this.state, data.oid || '');
+            const tick = (): void => {
+                this.repeated = true;
+                feedback(data);
+                execute(def, this.props, data, current, this.schedule);
+                if (def.kind === 'addition') {
+                    current = nextAddition(data, current);
+                }
+                this.repeatTimer = window.setTimeout(tick, interval);
+            };
+            this.repeatTimer = window.setTimeout(tick, delay);
+        }
+
+        private stopRepeat(): boolean {
+            window.clearTimeout(this.repeatTimer);
+            this.repeatTimer = 0;
+            const repeated = this.repeated;
+            this.repeated = false;
+            return repeated;
         }
 
         private takePress(): boolean {

@@ -1297,5 +1297,8 @@
     "pinPadTitle": "Enter PIN",
     "pinPadNotSetUp": "PIN not set up",
     "pinPadCancel": "Cancel",
-    "ariaPinDelete": "Delete digit"
+    "ariaPinDelete": "Delete digit",
+    "repeatOnHold": "repeat while held",
+    "repeatDelay": "repeat after [ms]",
+    "repeatInterval": "repeat every [ms]"
 }
