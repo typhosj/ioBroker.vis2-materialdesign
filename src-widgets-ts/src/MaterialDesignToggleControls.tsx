@@ -479,6 +479,7 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
                     {labelElement}
                     {locked ? (
                         <span
+                            data-lock-icon=""
                             style={{
                                 left: `${asNumber(data.lockIconLeft, 5)}%`,
                                 position: 'absolute',

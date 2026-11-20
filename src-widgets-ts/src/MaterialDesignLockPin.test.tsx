@@ -148,3 +148,26 @@ describe('Toggle button with PIN', () => {
         expect(vi.getTimerCount()).toBe(0);
     });
 });
+describe('read-only hides the lock icon on every widget with a lock', () => {
+    const hasLockIcon = (tree: React.ReactNode) => find(tree, el => el.props['data-lock-icon'] !== undefined) !== undefined;
+
+    it.each([[true, false], ['true', false], ['1', false], ['false', true], [undefined, true]])('Switch, readOnly %j -> icon %s', (readOnly, icon) => {
+        const Control = createToggleControlClass({ id: 'test', name: 'Test', kind: 'switch' });
+        const control = new Control(fixture<ConstructorParameters<typeof Control>[0]>({ context: { setValue: vi.fn() } }));
+        control.state = fixture<typeof control.state>({ rxData: { oid: 'test.0.v', lockEnabled: true, readOnly }, data: {}, values: {} });
+        expect(hasLockIcon(control.renderWidgetBody(fixture<Parameters<typeof control.renderWidgetBody>[0]>({})))).toBe(icon);
+    });
+
+    it.each([[true, false], ['true', false], ['false', true], [undefined, true]])('Toggle button, readOnly %j -> icon %s', (readOnly, icon) => {
+        const Button = createButtonClass({ id: 'test-toggle-icon', name: 'toggle', kind: 'toggle', layout: 'default', label: 'toggle', icon: 'plus' });
+        const button = new Button(fixture<ConstructorParameters<typeof Button>[0]>({ context: { setValue: vi.fn() } }));
+        button.state = fixture<typeof button.state>({ rxData: { oid: 'test.0.v', lockEnabled: true, readOnly }, data: {}, values: {} });
+        expect(hasLockIcon(button.renderWidgetBody(fixture<Parameters<typeof button.renderWidgetBody>[0]>({})))).toBe(icon);
+    });
+
+    it.each([[true, false], [false, true]])('Icon List entry, readOnly %j -> icon %s', (readOnly, icon) => {
+        const list = new MaterialDesignIconList(fixture<ConstructorParameters<typeof MaterialDesignIconList>[0]>({ context: { setValue: vi.fn() } }));
+        list.state = fixture<typeof list.state>({ rxData: { listItemDataMethod: 'inputPerEditor', countListItems: 1, listType0: 'buttonToggle', oid0: 'test.0.v', listImage0: 'lightbulb', lockEnabled0: true, readOnly0: readOnly }, data: {}, values: {} });
+        expect(hasLockIcon(list.renderWidgetBody(fixture<Parameters<typeof list.renderWidgetBody>[0]>({})))).toBe(icon);
+    });
+});

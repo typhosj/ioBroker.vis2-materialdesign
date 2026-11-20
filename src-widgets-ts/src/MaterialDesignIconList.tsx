@@ -347,7 +347,7 @@ export default class MaterialDesignIconList extends VisWidget {
     private renderLock(data: Data, locked: boolean): React.JSX.Element | null {
         if (!locked) return null;
         const size = n(data.lockIconSize, 0);
-        return <span className="materialdesign-lock-icon" style={{ color: s(data.lockIconColor, '#B22222'), fontSize: size || undefined, height: size || undefined, left: `${n(data.lockIconLeft, 5)}%`, position: 'absolute', top: `${n(data.lockIconTop, 5)}%`, width: size || undefined }}>{renderIcon(s(data.lockIcon, 'lock-outline'), s(data.lockIconColor, '#B22222'), size || 16, !!data.lockIconColor)}</span>;
+        return <span className="materialdesign-lock-icon" data-lock-icon="" style={{ color: s(data.lockIconColor, '#B22222'), fontSize: size || undefined, height: size || undefined, left: `${n(data.lockIconLeft, 5)}%`, position: 'absolute', top: `${n(data.lockIconTop, 5)}%`, width: size || undefined }}>{renderIcon(s(data.lockIcon, 'lock-outline'), s(data.lockIconColor, '#B22222'), size || 16, !!data.lockIconColor)}</span>;
     }
 
     private renderButtonIcon(item: Item, index: number, data: Data, active: boolean, locked: boolean, current: unknown): React.JSX.Element {

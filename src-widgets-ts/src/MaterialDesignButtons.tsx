@@ -836,6 +836,7 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
                         </span>
                         {locked ? (
                             <span
+                                data-lock-icon=""
                                 style={{
                                     position: 'absolute',
                                     left: `${numeric(data.lockIconLeft, isIcon ? 55 : 5)}%`,

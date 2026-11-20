@@ -108,6 +108,14 @@ describe('WidgetLock', () => {
         expect(vi.getTimerCount()).toBe(0);
     });
 
+    it('read-only hides the lock without opening it, and a hold during read-only opens nothing', () => {
+        const lock = new WidgetLock(vi.fn());
+        expect(lock.isLocked(opts({ readOnly: true }))).toBe(false);
+        lock.hold(true, opts({ readOnly: true }));
+        expect(lock.isLocked(opts())).toBe(true);
+        expect(lock.isLocked(opts({ readOnly: false, enabled: false }))).toBe(false);
+    });
+
     it('with a PIN the tap opens the pad; in the editor it is blocked', () => {
         const lock = new WidgetLock(vi.fn());
         expect(lock.request(opts({ pin: PIN, editMode: true }))).toBe('blocked');

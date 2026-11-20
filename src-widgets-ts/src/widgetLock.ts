@@ -86,14 +86,19 @@ export class WidgetLock {
         this.unsubscribe = subscribePins(onChange);
     }
 
-    isLocked(o: LockState): boolean {
+    // Read only wins: a read-only widget shows no lock, while the lock itself keeps its state.
+    isLocked(o: LockState & Pick<LockOptions, 'readOnly'>): boolean {
+        return !o.readOnly && this.closed(o);
+    }
+
+    private closed(o: LockState): boolean {
         if (!o.enabled || this.unlocked || this.holding) return false;
         return !(o.pin.kind === 'pin' && pinUnlocked(o.pin.pin));
     }
 
     request(o: LockOptions): LockRequest {
         if (o.readOnly) return 'blocked';
-        if (!this.isLocked(o)) return 'open';
+        if (!this.closed(o)) return 'open';
         if (o.pin.kind === 'none') {
             this.unlock(o.seconds);
             return 'unlocked';
@@ -124,7 +129,7 @@ export class WidgetLock {
     // An input that started while unlocked (focus, open menu, drag) is never cut off by the relock.
     hold(open: boolean, o: LockState): void {
         if (open) {
-            if (!this.isLocked(o)) this.holding = true;
+            if (!this.closed(o)) this.holding = true;
             return;
         }
         if (!this.holding) return;
