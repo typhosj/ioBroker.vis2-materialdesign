@@ -25,7 +25,7 @@ aufgeführte Einstellungen sind selbsterklärend.
 - **Anzahl der Meldungen anzeigen** – eine Zeile über den Meldungen mit der Anzahl aller Meldungen im State, auch der über *zeige max. Alerts* hinaus.
 - **Schaltfläche 'Alle löschen' anzeigen** – eine Schaltfläche in derselben Zeile, die den State leert (`[]`). Ein State ohne gültiges JSON wird nie gelöscht.
 
-Im Editor zeigt eine leere Liste zwei Beispielmeldungen, damit sich Layout und Farben einstellen lassen. Sie werden nie in den State geschrieben.
+Im Editor zeigt eine leere Liste zwei Beispielmeldungen, damit sich Layout und Farben einstellen lassen. Der Editor schreibt nie in den State: Schließen und „Alle löschen“ tun dort nichts, auch bei echten Meldungen.
 
 **Layout**
 

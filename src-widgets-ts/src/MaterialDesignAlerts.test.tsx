@@ -175,4 +175,13 @@ describe('alert count, clear all and editor examples (upstream #50)', () => {
         const html = make({}, three, true).html();
         expect(html.match(/class="v-alert /g)).toHaveLength(3);
     });
+
+    it('the editor writes nothing for real alerts either, on close or on clear all', () => {
+        const w = make({ showClearAllButton: true }, three, true);
+        (w.clearAll()!.props.onClick as () => void)();
+        const close = find(w.tree(), el => String(el.props.className).includes('v-alert-materialdesign-icon-button'))!;
+        (close.props.onClick as () => void)();
+        expect(w.setValue).not.toHaveBeenCalled();
+        expect(w.html().match(/class="v-alert /g)).toHaveLength(3);
+    });
 });

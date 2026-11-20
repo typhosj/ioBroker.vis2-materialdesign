@@ -26,7 +26,7 @@ language, so the screenshots are German.
 - **show number of alerts** – a line above the alerts with the number of all alerts in the state, also those beyond *show max alerts*.
 - **show 'clear all' button** – a button in the same line that empties the state (`[]`). A state that is no valid JSON is never cleared.
 
-In the editor an empty list shows two example alerts, so layout and colors can be set up. They are never written to the state.
+In the editor an empty list shows two example alerts, so layout and colors can be set up. The editor never writes the state: closing an alert and clear all do nothing there, also for real alerts.
 
 **layout**
 
