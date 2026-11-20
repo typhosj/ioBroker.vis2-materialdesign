@@ -37,6 +37,7 @@ describe('line history loading', () => {
         await vi.waitFor(() => expect(inspection.series).toHaveLength(1));
         expect(inspection.series[0]).toEqual({
             oid: 'test.0.value',
+            row: 0,
             points: [{ ts: 100, val: 20 }, { ts: 200, val: null }, { ts: 300, val: null }],
         });
         expect(getHistory).toHaveBeenCalledWith('test.0.value', expect.objectContaining({
@@ -393,6 +394,39 @@ describe('line history hiding the first data set', () => {
         expect(config.data.datasets[0].hidden).toBe(true);
         expect((config.options.scales as Record<string, { display?: unknown }>).yAxis_id_1.display).not.toBe(false);
         expect((config.options.scales as Record<string, { display?: unknown }>).yAxis_id_0.display).toBe(false);
+        widget.componentWillUnmount();
+    });
+});
+
+describe('line history with a data row that has no object id', () => {
+    // Row 1 is empty and loads no series, so the second dataset belongs to row 2.
+    const rx = {
+        dataCount: 3, oid: 'a', oid1: '', oid2: 'c',
+        legendText: 'A', legendText1: 'B', legendText2: 'C',
+        dataColor1: '#111111', dataColor2: '#222222',
+        chartType1: 'bar', chartType2: 'line',
+        tooltipAppendText1: ' x', tooltipAppendText2: ' W',
+        commonYAxis2: 2, visibilityOid2: 'test.0.mode', visibilityConditionValue2: 'auto',
+    };
+
+    it('reads label, colour, type, axis, visibility and tooltip unit from the row of the series', async () => {
+        const widget = await loaded(rx, [[{ ts: 1, val: 1 }], [{ ts: 1, val: 2 }]]);
+        widget.state = fixture<typeof widget.state>({ ...widget.state, values: { 'test.0.mode.val': 'manual' } });
+        const config = configOf(widget);
+        const second = config.data.datasets[1];
+        expect(second).toMatchObject({ label: 'C', borderColor: '#222222', yAxisID: 'yAxis_id_2', hidden: true });
+        expect(second.type).toBeUndefined();
+        expect(config.data.datasets[0].hidden).toBeUndefined();
+        expect(config.options.scales.x.offset).toBeUndefined();
+        const label = (config.options.plugins.tooltip.callbacks as { label: (item: object) => string }).label;
+        expect(label({ datasetIndex: 1, dataIndex: 0 })).toMatch(/ W$/);
+        widget.componentWillUnmount();
+    });
+
+    it('shows the series again once the condition of its own row holds', async () => {
+        const widget = await loaded(rx, [[{ ts: 1, val: 1 }], [{ ts: 1, val: 2 }]]);
+        widget.state = fixture<typeof widget.state>({ ...widget.state, values: { 'test.0.mode.val': 'auto' } });
+        expect(configOf(widget).data.datasets[1].hidden).toBeUndefined();
         widget.componentWillUnmount();
     });
 });

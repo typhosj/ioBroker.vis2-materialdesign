@@ -6,7 +6,7 @@ import { chartAxis, m3ChartColors } from "./chartAxis";
 
 type Data = Record<string, unknown>;
 type Point = { ts: number; val: number | null };
-type Series = { oid: string; points: Point[]; error?: string };
+type Series = { oid: string; row: number; points: Point[]; error?: string };
 type Socket = {
   getHistory(
     id: string,
@@ -361,6 +361,7 @@ export default class MaterialDesignChartLineHistory extends ChartWidget {
             } as ioBroker.GetHistoryOptions & { timeout: number });
             return {
               oid,
+              row: i,
               points: values.map((v) => ({
                 ts: Number(v.ts),
                 val:
@@ -370,7 +371,7 @@ export default class MaterialDesignChartLineHistory extends ChartWidget {
               })),
             };
           } catch (error) {
-            return { oid, points: [], error: String(error) };
+            return { oid, row: i, points: [], error: String(error) };
           }
         },
       ),
@@ -419,18 +420,20 @@ export default class MaterialDesignChartLineHistory extends ChartWidget {
       gridDisplay: b(d.xAxisShowGridLines, true),
       gridColor: s(d.xAxisGridLinesColor, isM3 ? m3.grid : ""),
       // Without the offset the first and the last bar are cut in half at the edges of the time axis.
-      offset: this.series.some((_series, i) => isBar(i) && shown(i)) || undefined,
+      offset: this.series.some(({ row }) => isBar(row) && shown(row)) || undefined,
       tickCallback: (value, _index, ticks) => fmtTime(value, timeFormatFor(timeFmt, Math.abs(Number(ticks?.[1]?.value) - Number(ticks?.[0]?.value)))),
     });
     const scales: Record<string, unknown> = { x: xAxis, ...Object.fromEntries(yEntries) };
-    // chart.js v4 hard-crashes (vScale undefined) if a dataset references a y-axis id with no scale;
-    // series indices can diverge from configured rows (sparse oids).
-    this.series.forEach((_series, i) => { const id = yAxisIdOf(i); if (!(id in scales)) scales[id] = { axis: "y", type: "linear", position: "left", display: shown(i) }; });
+    // chart.js v4 hard-crashes (vScale undefined) if a dataset references a y-axis id with no scale,
+    // and yEntries leaves out the axis of a hidden row.
+    this.series.forEach(({ row }) => { const id = yAxisIdOf(row); if (!(id in scales)) scales[id] = { axis: "y", type: "linear", position: "left", display: shown(row) }; });
     const series = this.series.map(entry => ({ ...entry, points: entry.points.filter(point => point.val !== null) }));
     return {
       type: "line",
       colorBy: "dataset",
-      datasets: series.map((entry, i) => {
+      // A row without object id loads no series, so a dataset index is not a row index.
+      datasets: series.map(entry => {
+        const i = entry.row;
         // Value labels are per series here, so they ride on the dataset.
         const fields: Data = { designStyle: d.designStyle };
         for (const key of ["showValues", "valuesSteps", "valuesMinDecimals", "valuesMaxDecimals", "valuesAppendText", "valuesFontColor", "valuesFontFamily", "valuesFontSize", "valuesBackgroundColor", "valuesBorderColor", "valuesBorderWidth", "valuesBorderRadius"]) fields[key] = item(d, key, i);
@@ -464,7 +467,7 @@ export default class MaterialDesignChartLineHistory extends ChartWidget {
       valueLabel: (point, _number, fallback) => ({ ...fallback, color: fallback.color || point.color }),
       tooltip: {
         title: point => fmtTime(point.x, timeFmt || "lll"),
-        label: (point, number) => `${point.datasetLabel ? `${point.datasetLabel}: ` : ""}${number}${s(item(d, "tooltipAppendText", point.datasetIndex), s(d.tooltipBodyAppend))}`,
+        label: (point, number) => `${point.datasetLabel ? `${point.datasetLabel}: ` : ""}${number}${s(item(d, "tooltipAppendText", series[point.datasetIndex]?.row ?? point.datasetIndex), s(d.tooltipBodyAppend))}`,
       },
     };
   }
