@@ -90,6 +90,21 @@ export function isReadOnly(data: { readOnly?: unknown }): boolean {
     return boolValue(data.readOnly);
 }
 
+export function visibleBy(condition: unknown, expected: unknown, value: unknown): boolean {
+    switch (condition) {
+        case '!=': return String(value) !== String(expected);
+        case '<=': return numberValue(value) <= numberValue(expected);
+        case '>=': return numberValue(value) >= numberValue(expected);
+        case '<': return numberValue(value) < numberValue(expected);
+        case '>': return numberValue(value) > numberValue(expected);
+        case 'consist': return String(value).includes(String(expected));
+        case 'not consist': return !String(value).includes(String(expected));
+        case 'exist': return value !== undefined && value !== null;
+        case 'not exist': return value === undefined || value === null;
+        default: return String(value) === String(expected);
+    }
+}
+
 // How many indexed rows a "count" option asks for. VIS 1 stored the LAST INDEX in these options, so
 // its "number of data sets = 3" drew four — the label promised one thing and the loop `i <= count`
 // did another. Here the number means the number of rows, and the editor hides the row at index

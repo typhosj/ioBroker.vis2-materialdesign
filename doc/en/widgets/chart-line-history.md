@@ -46,6 +46,7 @@ text, the Object ID is displayed.
 | Maximum data points | limits returned point count; default 50 for `minmax`, otherwise 100 |
 | Minimum time interval | query step in seconds; empty or `0` lets the history instance decide |
 | Multiply | converts every valid value before display, for example `0.001` from W to kW |
+| Object ID / condition / value for visibility | hide the dataset while the condition does not hold, for example a heating line while `0_userdata.0.mode` is not `auto`. Accepted are `==` (default), `!=`, `<`, `<=`, `>`, `>=`, `consist`, `not consist`, `exist` and `not exist`. Without an object id the dataset stays visible. A hidden dataset leaves the legend and its own y-axis; the other lines keep their colors |
 
 Non-numeric and `null` values are omitted. The chart remains empty when no
 history instance is selected or the history API is unavailable. For timeouts,

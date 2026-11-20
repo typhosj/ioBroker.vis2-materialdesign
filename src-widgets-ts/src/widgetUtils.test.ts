@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { VisRxWidgetProps, VisRxWidgetState, WidgetData } from '@iobroker/types-vis-2';
 import { pickerValueName } from './IconFilePicker';
-import { boolValue, numberValue, textValue, DEFAULT_DARK_THEME_OID, M3_FONT_OID, M3_SCHEME_OID, M3_TOKEN_ROLES, MAX_DYNAMIC_ITEMS, VisWidget, accessibleText, applyM3SeedVariables, applyThemeVariables, resolveThemeVars, boundedCount, createInfo, itemCount, darkThemeOid, designStyle, resolveDarkTheme, designStyleClasses, editorDialogPalette, formatDurationTokens, formatMoment, humanizeDuration, iconFieldDataKey, m3SeedOids, parseActionValue, parseM3Scheme, safeWidgetUrl, sanitizeHtml, setProjectDesignStyle, setStateValue, SliderWriter, sliderKeyValue, stateValue, stringValue } from './widgetUtils';
+import { boolValue, numberValue, textValue, DEFAULT_DARK_THEME_OID, M3_FONT_OID, M3_SCHEME_OID, M3_TOKEN_ROLES, MAX_DYNAMIC_ITEMS, VisWidget, accessibleText, applyM3SeedVariables, applyThemeVariables, resolveThemeVars, boundedCount, createInfo, itemCount, darkThemeOid, designStyle, resolveDarkTheme, designStyleClasses, editorDialogPalette, formatDurationTokens, formatMoment, humanizeDuration, iconFieldDataKey, m3SeedOids, parseActionValue, parseM3Scheme, safeWidgetUrl, sanitizeHtml, setProjectDesignStyle, setStateValue, SliderWriter, sliderKeyValue, stateValue, stringValue, visibleBy } from './widgetUtils';
 
 function fixture<T>(value: unknown): T { return value as T; }
 
@@ -776,5 +776,17 @@ describe('resolveThemeVars', () => {
     it('returns the data unchanged when there is nothing to resolve', () => {
         expect(resolveThemeVars(null, values)).toEqual({});
         expect(resolveThemeVars({ a: 'b' }, undefined)).toEqual({ a: 'b' });
+    });
+});
+
+describe('visibleBy', () => {
+    it.each([
+        ['==', 'auto', 'auto', true], ['==', 'auto', 'Auto', false], [undefined, '1', 1, true], ['', '1', '2', false], ['bogus', 'a', 'a', true],
+        ['!=', 'auto', 'manual', true], ['!=', 1, '1', false],
+        ['<=', 5, 5, true], ['<=', 5, 6, false], ['>=', 5, 4, false], ['<', 5, 4.9, true], ['>', 5, '5.1', true], ['>', 5, 'abc', false], ['<', '', -1, true],
+        ['consist', 'au', 'automatik', true], ['consist', 'x', null, false], ['not consist', 'x', 'abc', true],
+        ['exist', '', 0, true], ['exist', '', null, false], ['exist', '', undefined, false], ['not exist', '', undefined, true], ['not exist', '', '', false],
+    ])('%j %j against %j -> %s', (condition, expected, value, result) => {
+        expect(visibleBy(condition, expected, value)).toBe(result);
     });
 });

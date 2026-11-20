@@ -46,6 +46,7 @@ Zeitreihe. Ohne eigenen Legendentext wird die Objekt-ID angezeigt.
 | Maximale Datenpunkte | begrenzt die zurückgelieferte Punktzahl; Standard 50 bei `minmax`, sonst 100 |
 | Minimaler Zeitabstand | Abfrageschritt in Sekunden; leer oder `0` lässt die History-Instanz wählen |
 | Multiplikator | rechnet jeden gültigen Wert vor der Darstellung um, etwa `0.001` von W in kW |
+| Objekt ID / Bedingung / Wert für die Sichtbarkeit | blenden den Datensatz aus, solange die Bedingung nicht zutrifft, etwa eine Heizungslinie, solange `0_userdata.0.modus` nicht `auto` ist. Erlaubt sind `==` (Vorgabe), `!=`, `<`, `<=`, `>`, `>=`, `consist`, `not consist`, `exist` und `not exist`. Ohne Objekt-ID bleibt der Datensatz sichtbar. Ein ausgeblendeter Datensatz verschwindet aus der Legende samt eigener Y-Achse; die übrigen Linien behalten ihre Farben |
 
 Nicht numerische und `null`-Werte werden ausgelassen. Bei einer fehlenden
 History-Instanz oder nicht erreichbarer History-API bleibt das Diagramm leer.

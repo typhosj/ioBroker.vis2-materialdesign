@@ -164,6 +164,7 @@ export type ChartDataset = {
   x?: number[];
   colors: Array<string | undefined>;
   valueLabels?: ValueLabelSetup;
+  hidden?: boolean;
   extra?: (resolved: string[]) => Record<string, unknown>;
 };
 export type ChartSpec = {
@@ -354,6 +355,7 @@ export function chartConfig(spec: ChartSpec, data: Record<string, unknown>, cont
           data: dataset.x ? dataset.values.map((y, i) => ({ x: dataset.x?.[i], y })) : dataset.values,
           backgroundColor: color,
           ...(spec.colorBy === "dataset" ? { borderColor: color } : {}),
+          ...(dataset.hidden ? { hidden: true } : {}),
           ...(dataset.valueLabels ? { datalabels: valueLabels(dataset.valueLabels) } : {}),
           ...dataset.extra?.(resolved[d]),
         };
@@ -376,7 +378,7 @@ export function chartConfig(spec: ChartSpec, data: Record<string, unknown>, cont
     },
     legend: spec.colorBy === "item"
       ? (spec.labels ?? []).map((label, i) => ({ label, color: resolved[0]?.[i] ?? "" }))
-      : spec.datasets.map((dataset, d) => ({ label: dataset.label, color: resolved[d][0] })),
+      : spec.datasets.flatMap((dataset, d) => (dataset.hidden ? [] : [{ label: dataset.label, color: resolved[d][0] }])),
   };
 }
 

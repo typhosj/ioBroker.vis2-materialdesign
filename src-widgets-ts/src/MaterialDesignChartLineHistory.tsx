@@ -1,4 +1,4 @@
-import { squarePreview, indexedFields, itemCount, createInfo, designStyle, formatMoment, visLocale, stateValue, boolValue as b, numberValue as n, textValue as s } from "./widgetUtils";
+import { squarePreview, indexedFields, itemCount, createInfo, designStyle, formatMoment, visLocale, stateValue, visibleBy, boolValue as b, numberValue as n, textValue as s } from "./widgetUtils";
 import type { RxWidgetInfo, VisRxWidgetState } from "@iobroker/types-vis-2";
 import { colorSchemes } from "./MaterialDesignColorScheme";
 import { ChartWidget, cardGroup, legendGroup, tooltipGroup, type ChartSpec } from "./MaterialDesignChartCanvas";
@@ -73,9 +73,8 @@ export function timeFormatFor(setting: string, step: number): string {
 export function rowAxisId(d: Data, i: number): string {
   return `yAxis_id_${n(item(d, "commonYAxis", i), 0)}`;
 }
-// Relies on rowIdx being the identity sequence [0..n-1], so findIndex can be compared against i.
 export function distinctAxisRows(rowIdx: number[], d: Data): number[] {
-  return rowIdx.filter(i => rowIdx.findIndex(j => rowAxisId(d, j) === rowAxisId(d, i)) === i);
+  return rowIdx.filter((i, k) => rowIdx.findIndex(j => rowAxisId(d, j) === rowAxisId(d, i)) === k);
 }
 const color = (name: string) => ({ name, label: name, type: "color" as const });
 const num = (name: string) => ({ name, label: name, type: "number" as const });
@@ -150,6 +149,9 @@ const attrs: RxWidgetInfo["visAttrs"] = [
     label: "group_oids",
     ...rows([
       { name: "oid", label: "oid", type: "id" },
+      { name: "visibilityOid", label: "visibilityOid", type: "id" },
+      { name: "visibilityCondition", label: "visibilityCondition", type: "text", default: "==" },
+      { name: "visibilityConditionValue", label: "visibilityConditionValue", type: "text" },
       {
         name: "aggregate",
         label: "aggregate",
@@ -382,7 +384,8 @@ export default class MaterialDesignChartLineHistory extends ChartWidget {
     // Axes come from the configured data rows, not the loaded series — an empty history range would
     // otherwise leave chart.js on a default axis that ignores show/position.
     const on = (v: unknown): number | undefined => (v === undefined || v === null || v === "" || !Number.isFinite(Number(v)) ? undefined : Number(v));
-    const rowIdx = Array.from({ length: itemCount(d.dataCount) }, (_v, i) => i);
+    const shown = (i: number): boolean => { const oid = s(item(d, "visibilityOid", i)); return !oid || visibleBy(item(d, "visibilityCondition", i), item(d, "visibilityConditionValue", i), stateValue(this.state, oid)); };
+    const rowIdx = Array.from({ length: itemCount(d.dataCount) }, (_v, i) => i).filter(shown);
     const yAxisIdOf = (i: number) => rowAxisId(d, i);
     const yEntries = distinctAxisRows(rowIdx, d)
       .map((i): [string, Record<string, unknown>] => [yAxisIdOf(i), chartAxis({
@@ -418,7 +421,7 @@ export default class MaterialDesignChartLineHistory extends ChartWidget {
     const scales: Record<string, unknown> = { x: xAxis, ...Object.fromEntries(yEntries) };
     // chart.js v4 hard-crashes (vScale undefined) if a dataset references a y-axis id with no scale;
     // series indices can diverge from configured rows (sparse oids).
-    this.series.forEach((_series, i) => { const id = yAxisIdOf(i); if (!(id in scales)) scales[id] = { axis: "y", type: "linear", position: "left" }; });
+    this.series.forEach((_series, i) => { const id = yAxisIdOf(i); if (!(id in scales)) scales[id] = { axis: "y", type: "linear", position: "left", display: shown(i) }; });
     const series = this.series.map(entry => ({ ...entry, points: entry.points.filter(point => point.val !== null) }));
     return {
       type: "line",
@@ -429,6 +432,7 @@ export default class MaterialDesignChartLineHistory extends ChartWidget {
         for (const key of ["showValues", "valuesSteps", "valuesMinDecimals", "valuesMaxDecimals", "valuesAppendText", "valuesFontColor", "valuesFontFamily", "valuesFontSize", "valuesBackgroundColor", "valuesBorderColor", "valuesBorderWidth", "valuesBorderRadius"]) fields[key] = item(d, key, i);
         return {
           label: s(item(d, "legendText", i), entry.oid),
+          hidden: !shown(i),
           values: entry.points.map(point => point.val),
           x: entry.points.map(point => point.ts),
           colors: [s(item(d, "dataColor", i)) || undefined],

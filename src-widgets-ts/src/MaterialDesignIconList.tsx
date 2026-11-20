@@ -6,7 +6,7 @@ import { renderIcon } from './MaterialDesignButtons';
 import { fill, withAutoFill } from './deviceFill';
 import PinPad from './PinPad';
 import { WidgetLock, lockOptionsOf, lockPinField, lockSeconds, type LockData, type LockOptions } from './widgetLock';
-import { MAX_DYNAMIC_ITEMS, squarePreview, RenderProps, VisWidget, accessibleText, boundedCount, createInfo, designStyle, indexedFields, designStyleClasses, legacyInk, legacyOutline, legacySurface, iconField, itemCount, parseActionValue, safeWidgetUrl, setStateValue, stateValue, sanitizeHtml, stringValue, boolValue as b, numberValue as n, textValue as s } from './widgetUtils';
+import { MAX_DYNAMIC_ITEMS, squarePreview, RenderProps, VisWidget, accessibleText, boundedCount, createInfo, designStyle, indexedFields, designStyleClasses, legacyInk, legacyOutline, legacySurface, iconField, itemCount, parseActionValue, safeWidgetUrl, setStateValue, stateValue, sanitizeHtml, stringValue, visibleBy, boolValue as b, numberValue as n, textValue as s } from './widgetUtils';
 
 type Data = Record<string, unknown> & LockData & {
     listItemDataMethod?: string;
@@ -237,20 +237,7 @@ function isActive(item: Item, value: unknown): boolean {
 }
 
 function isVisible(item: Item, value: unknown): boolean {
-    if (!item.visibilityOid) return true;
-    const expected = item.visibilityConditionValue;
-    switch (item.visibilityCondition) {
-        case '!=': return String(value) !== String(expected);
-        case '<=': return n(value) <= n(expected);
-        case '>=': return n(value) >= n(expected);
-        case '<': return n(value) < n(expected);
-        case '>': return n(value) > n(expected);
-        case 'consist': return String(value).includes(String(expected));
-        case 'not consist': return !String(value).includes(String(expected));
-        case 'exist': return value !== undefined && value !== null;
-        case 'not exist': return value === undefined || value === null;
-        default: return String(value) === String(expected);
-    }
+    return !item.visibilityOid || visibleBy(item.visibilityCondition, item.visibilityConditionValue, value);
 }
 
 function icon(value: string, color: string, height: number, recolor: boolean): React.JSX.Element | null {

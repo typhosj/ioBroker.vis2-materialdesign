@@ -273,6 +273,12 @@ describe('distinctAxisRows', () => {
     it('collapses rows with no explicit commonYAxis onto the shared default axis', () => {
         expect(distinctAxisRows([0, 1, 2], {})).toEqual([0]);
     });
+    it('works on a row list with gaps, as left after hiding rows', () => {
+        const d = { commonYAxis0: 0, commonYAxis1: 1, commonYAxis2: 1, commonYAxis3: 0 };
+        expect(distinctAxisRows([1, 2, 3], d)).toEqual([1, 3]);
+        expect(distinctAxisRows([2], d)).toEqual([2]);
+        expect(distinctAxisRows([], d)).toEqual([]);
+    });
 });
 
 // vis-materialdesign stored xAxisTimeFormats as chart.js v2 `displayFormats` JSON (one format per
@@ -336,5 +342,57 @@ describe('timeFormatFor', () => {
         expect(timeFormatFor('{"year":["YYYY"]}', 365 * DAY)).toBe('YYYY');
         expect(timeFormatFor('{"year":"YY"}', 365 * DAY)).toBe('YY');
         expect(timeFormatFor('{}', 30 * DAY)).toBe('MMM YYYY');
+    });
+});
+describe('line history data set visibility (upstream #84)', () => {
+    const rx = { dataCount: 2, oid: 'a', oid1: 'b', legendText: 'Innen', legendText1: 'Pumpe', yAxisPosition1: 'right', visibilityOid1: 'test.0.mode', visibilityCondition1: '==', visibilityConditionValue1: 'auto', commonYAxis1: 1, colorScheme: 'turbo', tooltipAppendText: ' °C', tooltipAppendText1: ' W' };
+    const withMode = (widget: MaterialDesignChartLineHistory, mode: unknown) => {
+        widget.state = fixture<typeof widget.state>({ ...widget.state, values: { 'test.0.mode.val': mode } });
+        return configOf(widget);
+    };
+
+    it.each([['auto', false], ['manual', true], [undefined, true], ['', true], [0, true]])('mode %j -> second data set hidden %s', async (mode, hidden) => {
+        const widget = await loaded(rx, [[{ ts: 1, val: 1 }], [{ ts: 1, val: 2 }]]);
+        const config = withMode(widget, mode);
+        expect(config.data.datasets[0].hidden).toBeUndefined();
+        expect(config.data.datasets[1].hidden === true).toBe(hidden);
+        expect(config.legend.map(entry => entry.label)).toEqual(hidden ? ['Innen'] : ['Innen', 'Pumpe']);
+        widget.componentWillUnmount();
+    });
+
+    it('keeps colours and tooltips of the other data sets where they were, and drops the axis of the hidden one', async () => {
+        const widget = await loaded(rx, [[{ ts: 1, val: 1 }], [{ ts: 1, val: 2 }]]);
+        const visible = withMode(widget, 'auto');
+        const hidden = withMode(widget, 'manual');
+        expect(hidden.data.datasets[0].borderColor).toBe(visible.data.datasets[0].borderColor);
+        expect(hidden.data.datasets[1].borderColor).toBe(visible.data.datasets[1].borderColor);
+        expect((hidden.options.scales as Record<string, { display?: unknown }>).yAxis_id_1.display).toBe(false);
+        expect((visible.options.scales as Record<string, { display?: unknown }>).yAxis_id_1.display).not.toBe(false);
+        const label = (hidden.options.plugins.tooltip.callbacks as { label: (item: object) => string }).label;
+        expect(label({ datasetIndex: 1, dataIndex: 0 })).toMatch(/ W$/);
+        widget.componentWillUnmount();
+    });
+
+    it('shows a data set without visibility object id whatever the state says', async () => {
+        const widget = await loaded({ ...rx, visibilityOid1: '' }, [[{ ts: 1, val: 1 }], [{ ts: 1, val: 2 }]]);
+        expect(withMode(widget, 'manual').data.datasets[1].hidden).toBeUndefined();
+        widget.componentWillUnmount();
+    });
+
+    it('declares the three visibility fields per data set', () => {
+        const fields = MaterialDesignChartLineHistory.getWidgetInfo().visAttrs.flatMap(group => group.fields).map(field => field.name);
+        expect(fields).toEqual(expect.arrayContaining(['visibilityOid', 'visibilityCondition', 'visibilityConditionValue']));
+    });
+});
+
+describe('line history hiding the first data set', () => {
+    it('keeps the axis of the second data set when the first is hidden', async () => {
+        const widget = await loaded({ dataCount: 2, oid: 'a', oid1: 'b', commonYAxis1: 1, visibilityOid: 'test.0.mode', visibilityConditionValue: 'auto' }, [[{ ts: 1, val: 1 }], [{ ts: 1, val: 2 }]]);
+        widget.state = fixture<typeof widget.state>({ ...widget.state, values: { 'test.0.mode.val': 'manual' } });
+        const config = configOf(widget);
+        expect(config.data.datasets[0].hidden).toBe(true);
+        expect((config.options.scales as Record<string, { display?: unknown }>).yAxis_id_1.display).not.toBe(false);
+        expect((config.options.scales as Record<string, { display?: unknown }>).yAxis_id_0.display).toBe(false);
+        widget.componentWillUnmount();
     });
 });
