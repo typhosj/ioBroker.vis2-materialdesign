@@ -1,12 +1,15 @@
 import type { RxWidgetInfo, RxWidgetInfoAttributesFieldText } from '@iobroker/types-vis-2';
 
 import { looksLikeBinding } from './deviceFill';
-import { iconField } from './widgetUtils';
+import { renderIcon } from './MaterialDesignButtons';
+import { boolValue, iconField, isReadOnly, textValue } from './widgetUtils';
 
 export type Pin = { kind: 'none' } | { kind: 'pin'; pin: string } | { kind: 'invalid' };
 export type LockRequest = 'open' | 'unlocked' | 'pin' | 'blocked';
 export interface LockOptions { enabled: boolean; pin: Pin; seconds: number; readOnly?: boolean; editMode?: boolean }
+export interface LockData { lockEnabled?: boolean; lockPin?: string; autoLockAfter?: number; lockIcon?: string; lockIconColor?: string; readOnly?: boolean }
 type LockState = Pick<LockOptions, 'enabled' | 'pin'>;
+type LockInput = Partial<Record<keyof LockData, unknown>>;
 
 const DIGITS = /^\d{1,12}$/;
 
@@ -32,8 +35,9 @@ export function pinFieldError(data: Record<string, unknown>): string | false {
     return DIGITS.test(text) ? false : 'lockPinInvalid';
 }
 
-// vis-2 shows a string returned by `error` as the field's helper text (translated).
-export const lockPinField: RxWidgetInfoAttributesFieldText = { name: 'lockPin', label: 'lockPin', type: 'text', error: pinFieldError as unknown as NonNullable<RxWidgetInfoAttributesFieldText['error']> };
+// The types declare `error` as a boolean predicate, but vis-2 shows a returned string as the field's
+// translated helper text; a boolean would lose the message.
+export const lockPinField = { name: 'lockPin', label: 'lockPin', type: 'text', error: pinFieldError } as RxWidgetInfoAttributesFieldText;
 
 export const lockGroup = {
     name: 'lock',
@@ -46,6 +50,21 @@ export const lockGroup = {
         { name: 'lockIconColor', label: 'lockIconColor', type: 'color' },
     ],
 } as RxWidgetInfo['visAttrs'][number];
+
+// `saved` is the unresolved widget data: only there a bound PIN still looks like a binding.
+export function lockOptionsOf(data: LockInput, saved: unknown, editMode: boolean): LockOptions {
+    return {
+        enabled: boolValue(data.lockEnabled),
+        pin: pinOf(data.lockPin, (saved as LockInput | undefined)?.lockPin),
+        seconds: lockSeconds(data.autoLockAfter),
+        readOnly: isReadOnly(data),
+        editMode,
+    };
+}
+
+export function lockIcon(data: LockInput, size: number): ReturnType<typeof renderIcon> {
+    return renderIcon(textValue(data.lockIcon, 'lock-outline'), textValue(data.lockIconColor, '#B22222'), size, true);
+}
 
 const pinUntil = new Map<string, number>();
 const pinTimers = new Map<string, number>();
@@ -77,6 +96,7 @@ export function resetPins(): void {
 
 export class WidgetLock {
     padOpen = false;
+    refocusing = false;
     private unlocked = false;
     private holding = false;
     private timer: number | undefined;
@@ -135,6 +155,24 @@ export class WidgetLock {
         if (!this.holding) return;
         this.holding = false;
         this.onChange();
+    }
+
+    // The unlocking tap on a field that already has the focus fires no focus event: no hold from
+    // onFocus, and the On-screen Keyboard would not open. Blur and focus it again; the widget's blur
+    // handler must return early while `refocusing` is set, or it commits and releases the hold.
+    focusAfterUnlock(field: () => HTMLElement | null, o: LockState): void {
+        const element = field();
+        if (element && document.activeElement === element) this.hold(true, o);
+        window.setTimeout(() => {
+            const target = field();
+            if (!target) return;
+            if (document.activeElement === target) {
+                this.refocusing = true;
+                target.blur();
+                this.refocusing = false;
+            }
+            target.focus();
+        });
     }
 
     dispose(): void {

@@ -4,14 +4,14 @@ import type { RxWidgetInfo, VisRxWidgetProps } from '@iobroker/types-vis-2';
 import { symbolName } from './IconFilePicker';
 import { fill, withAutoFill, type FillMap } from './deviceFill';
 import PinPad from './PinPad';
-import { WidgetLock, lockPinField, lockSeconds, pinOf, type LockOptions } from './widgetLock';
+import { WidgetLock, lockOptionsOf, lockPinField, lockSeconds, type LockData, type LockOptions } from './widgetLock';
 
 import { isReadOnly, squarePreview, PressState, RenderProps, SliderWriter, VisWidget, createInfo, indexedFields, itemCount, designStyle, designStyleClasses, iconField, numberValue, parseActionValue, safeWidgetUrl, setStateValue, sizeCss, stateValue, sanitizeHtml, stringValue } from './widgetUtils';
 
 type ButtonKind = 'navigation' | 'link' | 'state' | 'multiState' | 'addition' | 'toggle' | 'slider';
 type ButtonLayout = 'default' | 'vertical' | 'icon';
 
-interface ButtonData {
+interface ButtonData extends LockData {
     oid?: string;
     nav_view?: string;
     href?: string;
@@ -19,7 +19,6 @@ interface ButtonData {
     value?: string;
     valueOff?: string;
     valueOn?: string;
-    readOnly?: boolean;
     pushButton?: boolean;
     countOids?: number;
     minmax?: string;
@@ -59,14 +58,9 @@ interface ButtonData {
     distanceBetweenTextAndImage?: number;
     textFontSize?: number;
     textFontFamily?: string;
-    lockEnabled?: boolean;
-    lockPin?: string;
-    autoLockAfter?: number;
-    lockIcon?: string;
     lockIconTop?: number;
     lockIconLeft?: number;
     lockIconSize?: number;
-    lockIconColor?: string;
     lockIconBackground?: string;
     lockBackgroundSizeFactor?: number;
     lockFilterGrayscale?: number;
@@ -535,14 +529,7 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
         };
 
         private lockOptions(data: ButtonData): LockOptions {
-            return {
-                enabled: Boolean(data.lockEnabled),
-                pin: pinOf(data.lockPin, (this.state?.data as Record<string, unknown> | undefined)?.lockPin),
-                seconds: lockSeconds(data.autoLockAfter),
-                // `readOnly` only exists on the toggle and slider kinds; isReadOnly reads undefined as false.
-                readOnly: isReadOnly(data),
-                editMode: !!this.props.editMode,
-            };
+            return lockOptionsOf(data, this.state?.data, !!this.props.editMode);
         }
 
         isLocked(data: ButtonData): boolean {

@@ -5,12 +5,11 @@ import type { RxWidgetInfo, VisRxWidgetProps } from '@iobroker/types-vis-2';
 import { renderIcon, m3ColorExplicit } from './MaterialDesignButtons';
 import { fill, withAutoFill } from './deviceFill';
 import PinPad from './PinPad';
-import { WidgetLock, lockPinField, lockSeconds, pinOf, type LockOptions } from './widgetLock';
+import { WidgetLock, lockOptionsOf, lockPinField, lockSeconds, type LockData, type LockOptions } from './widgetLock';
 import { boolValue, isReadOnly, squarePreview, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, iconField, m3Switch, parseActionValue, setStateValue, sizeCss, stateValue, stringValue } from './widgetUtils';
 
-export interface ToggleControlData {
+export interface ToggleControlData extends LockData {
     oid?: string;
-    readOnly?: boolean;
     toggleType?: 'boolean' | 'value';
     valueOff?: string;
     valueOn?: string;
@@ -35,14 +34,9 @@ export interface ToggleControlData {
     colorSwitchTrue?: string;
     colorSwitchHover?: string;
     colorSwitchHoverTrue?: string;
-    lockEnabled?: boolean;
-    lockPin?: string;
-    autoLockAfter?: number;
-    lockIcon?: string;
     lockIconTop?: number;
     lockIconLeft?: number;
     lockIconSize?: number;
-    lockIconColor?: string;
     lockFilterGrayscale?: number;
 }
 
@@ -211,13 +205,7 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
         }
 
         private lockOptions(data: ToggleControlData): LockOptions {
-            return {
-                enabled: boolValue(data.lockEnabled),
-                pin: pinOf(data.lockPin, (this.state?.data as Record<string, unknown> | undefined)?.lockPin),
-                seconds: lockSeconds(data.autoLockAfter),
-                readOnly: isReadOnly(data),
-                editMode: !!this.props.editMode,
-            };
+            return lockOptionsOf(data, this.state?.data, !!this.props.editMode);
         }
 
         renderWidgetBody(props: RenderProps): React.JSX.Element {
@@ -495,16 +483,13 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
                         </span>
                     ) : null}
                     {this.lock.padOpen ? (
-                        // The pad is a portal, but its clicks and keys still bubble through the React tree to the toggle.
-                        <span onClick={event => event.stopPropagation()} onKeyDown={event => event.stopPropagation()}>
-                            <PinPad
-                                dark={this.isDarkTheme()}
-                                m3={isM3}
-                                onCancel={() => this.lock.pinCancelled()}
-                                onUnlock={pin => this.lock.pinAccepted(pin, lockSeconds(data.autoLockAfter))}
-                                pin={this.lockOptions(data).pin}
-                            />
-                        </span>
+                        <PinPad
+                            dark={this.isDarkTheme()}
+                            m3={isM3}
+                            onCancel={() => this.lock.pinCancelled()}
+                            onUnlock={pin => this.lock.pinAccepted(pin, lockSeconds(data.autoLockAfter))}
+                            pin={this.lockOptions(data).pin}
+                        />
                     ) : null}
                 </div>
             );

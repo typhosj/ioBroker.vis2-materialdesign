@@ -25,6 +25,18 @@ const show = (pin: Parameters<typeof PinPad>[0]['pin']) => {
 };
 
 describe('PinPad', () => {
+    it('keeps its clicks and keys from bubbling through the React tree to the widget that opened it', () => {
+        const onClick = vi.fn();
+        const onKeyDown = vi.fn();
+        act(() => root.render(<div onClick={onClick} onKeyDown={onKeyDown}><PinPad dark={false} m3 onCancel={vi.fn()} onUnlock={vi.fn()} pin={{ kind: 'pin', pin: '12' }} /></div>));
+        const key = document.querySelector<HTMLButtonElement>('[data-pin-key="5"]')!;
+        act(() => { key.click(); });
+        act(() => { key.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'Tab' })); });
+        act(() => { key.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: '1' })); });
+        expect(onClick).not.toHaveBeenCalled();
+        expect(onKeyDown).not.toHaveBeenCalled();
+    });
+
     it('shows a 4x3 grid and no input element', () => {
         show({ kind: 'pin', pin: '12' });
         const labels = [...document.querySelectorAll<HTMLButtonElement>('[data-pin-key]')].map(button => button.dataset.pinKey);

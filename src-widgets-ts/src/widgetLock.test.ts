@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { WidgetLock, lockSeconds, pinFieldError, pinOf, pinUnlocked, resetPins, subscribePins, unlockPin, type Pin } from './widgetLock';
+import { WidgetLock, lockOptionsOf, lockSeconds, pinFieldError, pinOf, pinUnlocked, resetPins, subscribePins, unlockPin, type Pin } from './widgetLock';
 
 const NONE: Pin = { kind: 'none' };
 const PIN: Pin = { kind: 'pin', pin: '1234' };
@@ -116,6 +116,29 @@ describe('WidgetLock', () => {
         expect(lock.isLocked(opts({ readOnly: false, enabled: false }))).toBe(false);
     });
 
+    it('focusAfterUnlock holds a focused field and blurs and focuses it again with refocusing set', () => {
+        const lock = new WidgetLock(vi.fn());
+        const field = document.createElement('input');
+        document.body.appendChild(field);
+        field.focus();
+        const seen: boolean[] = [];
+        field.addEventListener('blur', () => seen.push(lock.refocusing));
+        lock.focusAfterUnlock(() => field, opts({ enabled: false }));
+        expect(lock.isLocked(opts())).toBe(false);
+        vi.runAllTimers();
+        expect(seen).toEqual([true]);
+        expect(lock.refocusing).toBe(false);
+        expect(document.activeElement).toBe(field);
+        field.remove();
+    });
+
+    it('focusAfterUnlock leaves an unfocused field unheld and survives a missing field', () => {
+        const lock = new WidgetLock(vi.fn());
+        lock.focusAfterUnlock(() => null, opts());
+        vi.runAllTimers();
+        expect(lock.isLocked(opts())).toBe(true);
+    });
+
     it('with a PIN the tap opens the pad; in the editor it is blocked', () => {
         const lock = new WidgetLock(vi.fn());
         expect(lock.request(opts({ pin: PIN, editMode: true }))).toBe('blocked');
@@ -177,5 +200,22 @@ describe('WidgetLock', () => {
         onChange.mockClear();
         unlockPin('1234', 3);
         expect(onChange).not.toHaveBeenCalled();
+    });
+});
+
+describe('lockOptionsOf', () => {
+    it.each([
+        [{ lockEnabled: true }, true],
+        [{ lockEnabled: 'true' }, true],
+        [{ lockEnabled: 'false' }, false],
+        [{ lockEnabled: undefined }, false],
+    ])('%j -> enabled %s', (data, enabled) => {
+        expect(lockOptionsOf(data, data, false).enabled).toBe(enabled);
+    });
+
+    it('reads the binding from the saved data and the values from the resolved data', () => {
+        expect(lockOptionsOf({ lockPin: '' }, { lockPin: '{0_userdata.0.pin}' }, false).pin).toEqual({ kind: 'invalid' });
+        expect(lockOptionsOf({ lockPin: '4711' }, { lockPin: '{0_userdata.0.pin}' }, true)).toEqual({ enabled: false, pin: { kind: 'pin', pin: '4711' }, seconds: 10, readOnly: false, editMode: true });
+        expect(lockOptionsOf({ autoLockAfter: -3, readOnly: 'true' }, undefined, false)).toMatchObject({ pin: NONE, seconds: 1, readOnly: true });
     });
 });

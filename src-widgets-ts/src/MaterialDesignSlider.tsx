@@ -4,10 +4,10 @@ import type { RxWidgetInfo, VisRxWidgetProps } from '@iobroker/types-vis-2';
 
 import { cleanColor, num, snapToStep } from './MaterialDesignProgress';
 import { fill, withAutoFill } from './deviceFill';
-import { m3ColorExplicit, renderIcon } from './MaterialDesignButtons';
+import { m3ColorExplicit } from './MaterialDesignButtons';
 import PinPad from './PinPad';
-import { WidgetLock, lockGroup, lockSeconds, pinOf, type LockOptions } from './widgetLock';
-import { boolValue, isReadOnly, squarePreview, RenderProps, SliderWriter, VisWidget, boundedCount, textValue, createInfo, designStyle, designStyleClasses, setStateValue, sizeCss, sliderKeyValue, stateValue, sanitizeHtml } from './widgetUtils';
+import { WidgetLock, lockGroup, lockIcon, lockOptionsOf, type LockData, type LockOptions } from './widgetLock';
+import { isReadOnly, squarePreview, RenderProps, SliderWriter, VisWidget, boundedCount, createInfo, designStyle, designStyleClasses, setStateValue, sizeCss, sliderKeyValue, stateValue, sanitizeHtml } from './widgetUtils';
 
 // The old widget got track/thumb geometry from ambient legacy Vuetify CSS, which is gone.
 const SLIDER_CSS = `
@@ -35,18 +35,12 @@ const SLIDER_CSS = `
 .materialdesign-vuetifySlider .v-slider--disabled{opacity:.38}
 `;
 
-export interface SliderData {
+export interface SliderData extends LockData {
     oid?: string;
     'oid-working'?: string;
     orientation?: 'horizontal' | 'vertical';
     reverseSlider?: boolean;
     knobSize?: 'knobSmall' | 'knobMedium' | 'knobBig';
-    readOnly?: boolean;
-    lockEnabled?: boolean;
-    lockPin?: string;
-    autoLockAfter?: number;
-    lockIcon?: string;
-    lockIconColor?: string;
     sendValueOnRelease?: boolean;
     min?: number;
     max?: number;
@@ -280,13 +274,7 @@ export default class MaterialDesignSlider extends VisWidget {
     private swallow = false;
 
     private lockOptions(data: SliderData): LockOptions {
-        return {
-            enabled: boolValue(data.lockEnabled),
-            pin: pinOf(data.lockPin, (this.state?.data as Record<string, unknown> | undefined)?.lockPin),
-            seconds: lockSeconds(data.autoLockAfter),
-            readOnly: isReadOnly(data),
-            editMode: !!this.props.editMode,
-        };
+        return lockOptionsOf(data, this.state?.data, !!this.props.editMode);
     }
 
     componentWillUnmount(): void {
@@ -369,7 +357,7 @@ export default class MaterialDesignSlider extends VisWidget {
         const thumb = isM3 && !m3ColorExplicit(data.colorThumb) ? 'var(--md-sys-color-primary)' : cleanColor(data.colorThumb, before);
         const after = isM3 && !m3ColorExplicit(data.colorAfterThumb) ? 'var(--md-sys-color-surface-container-high)' : cleanColor(data.colorAfterThumb, 'rgba(161, 161, 161, 0.26)');
         const opts = this.lockOptions(data);
-        const locked = !isReadOnly(data) && this.lock.isLocked(opts);
+        const locked = this.lock.isLocked(opts);
         const disabled = isReadOnly(data) || isWorking(stateValue(this.state, data['oid-working'] || ''));
         const showThumbLabel = data.showThumbLabel === 'yes' || data.showThumbLabel === 'always';
         // A saved project can hold a non-string here, and `.split` on it threw — which blanks the whole
@@ -386,7 +374,7 @@ export default class MaterialDesignSlider extends VisWidget {
                 <style>{SLIDER_CSS}</style>
                 {locked ? (
                     <span data-lock-icon="" style={{ position: 'absolute', right: 2, top: 2, zIndex: 3, pointerEvents: 'none' }}>
-                        {renderIcon(textValue(data.lockIcon, 'lock-outline'), textValue(data.lockIconColor, '#B22222'), 16, true)}
+                        {lockIcon(data, 16)}
                     </span>
                 ) : null}
                 <div className="materialdesign-vuetifySlider" style={{ height: '100%', width: '100%' }}>
@@ -552,16 +540,13 @@ export default class MaterialDesignSlider extends VisWidget {
                     </div>
                 </div>
                 {this.lock.padOpen ? (
-                    // The pad is a portal, but its clicks and keys still bubble through the React tree.
-                    <span onClick={event => event.stopPropagation()} onKeyDown={event => event.stopPropagation()}>
-                        <PinPad
-                            dark={this.isDarkTheme()}
-                            m3={isM3}
-                            onCancel={() => this.lock.pinCancelled()}
-                            onUnlock={pin => this.lock.pinAccepted(pin, opts.seconds)}
-                            pin={opts.pin}
-                        />
-                    </span>
+                    <PinPad
+                        dark={this.isDarkTheme()}
+                        m3={isM3}
+                        onCancel={() => this.lock.pinCancelled()}
+                        onUnlock={pin => this.lock.pinAccepted(pin, opts.seconds)}
+                        pin={opts.pin}
+                    />
                 ) : null}
             </div>
         );

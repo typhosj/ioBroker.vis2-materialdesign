@@ -19,10 +19,10 @@ import {
     todayParts,
 } from './pickerFormat';
 import PinPad from './PinPad';
-import { WidgetLock, lockGroup, lockSeconds, pinOf, type LockOptions } from './widgetLock';
-import { boolValue, textValue, squarePreview, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, iconField, legacyInk, legacyInkMuted, legacyOutline, isReadOnly, setStateValue, sizeCss, stateValue } from './widgetUtils';
+import { WidgetLock, lockGroup, lockIcon, lockOptionsOf, type LockData, type LockOptions } from './widgetLock';
+import { squarePreview, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, iconField, legacyInk, legacyInkMuted, legacyOutline, isReadOnly, setStateValue, sizeCss, stateValue } from './widgetUtils';
 
-interface InputData {
+interface InputData extends LockData {
     oid?: string;
     inputType?: 'text' | 'number' | 'date' | 'time' | 'mask';
     inputMask?: string;
@@ -66,7 +66,6 @@ interface InputData {
     inputCounterColor?: string;
     inputCounterFontSize?: number;
     inputCounterFontFamily?: string;
-    readOnly?: boolean;
     clearIconShow?: boolean;
     clearIcon?: string;
     clearIconSize?: number;
@@ -83,11 +82,6 @@ interface InputData {
     appendOuterIcon?: string;
     appendOuterIconSize?: number;
     appendOuterIconColor?: string;
-    lockEnabled?: boolean;
-    lockPin?: string;
-    autoLockAfter?: number;
-    lockIcon?: string;
-    lockIconColor?: string;
 }
 
 // Issue #15: picking the datapoint fills what the object's own metadata already says.
@@ -484,36 +478,8 @@ export default class MaterialDesignInput extends VisWidget {
         super.componentWillUnmount?.();
     }
 
-    // A field focused while still locked got no hold from onFocus, and the unlocking tap fires no new focus event.
-    private holdIfFocused(opts: LockOptions): void {
-        if (document.activeElement === this.inputRef.current) this.lock.hold(true, opts);
-    }
-
-    // The unlocking tap on a field that is already focused fires no focus event, so the On-screen Keyboard would not open: blur and focus it again.
-    // refocusing keeps that blur from committing or releasing the hold.
-    private refocusing = false;
-
-    private refocus(): void {
-        window.setTimeout(() => {
-            const field = this.inputRef.current;
-            if (!field) return;
-            if (document.activeElement === field) {
-                this.refocusing = true;
-                field.blur();
-                this.refocusing = false;
-            }
-            field.focus();
-        });
-    }
-
     private lockOptions(data: InputData): LockOptions {
-        return {
-            enabled: boolValue(data.lockEnabled),
-            pin: pinOf(data.lockPin, (this.state?.data as Record<string, unknown> | undefined)?.lockPin),
-            seconds: lockSeconds(data.autoLockAfter),
-            readOnly: isReadOnly(data),
-            editMode: !!this.props.editMode,
-        };
+        return lockOptionsOf(data, this.state?.data, !!this.props.editMode);
     }
 
     static getWidgetInfo(): RxWidgetInfo {
@@ -571,7 +537,7 @@ export default class MaterialDesignInput extends VisWidget {
         const data = this.state.rxData as InputData;
         const readOnly = isReadOnly(data);
         const opts = this.lockOptions(data);
-        const locked = !readOnly && this.lock.isLocked(opts);
+        const locked = this.lock.isLocked(opts);
         const blocked = readOnly || locked;
         const state = stateValue(this.state, data.oid || '');
         if (state !== this.seenStateValue) {
@@ -850,15 +816,14 @@ export default class MaterialDesignInput extends VisWidget {
                                             // The tap that unlocks must not also place the caret in a still-readonly field.
                                             event.preventDefault();
                                             if (this.lock.request(opts) === 'unlocked') {
-                                                this.holdIfFocused(opts);
-                                                this.refocus();
+                                                this.lock.focusAfterUnlock(() => this.inputRef.current, opts);
                                             }
                                         }}
                                         autoFocus={!!data.autoFocus}
                                         // The picker mask has a fixed length; a shorter max length would make every entry invalid.
                                         maxLength={!spec && data.inputMaxLength ? num(data.inputMaxLength, 0) : undefined}
                                         onBlur={event => {
-                                            if (this.refocusing) return;
+                                            if (this.lock.refocusing) return;
                                             this.focused = false;
                                             if (blocked) {
                                                 this.lock.hold(false, opts);
@@ -945,7 +910,7 @@ export default class MaterialDesignInput extends VisWidget {
                                     ) : null}
                                     {locked ? (
                                         <span data-lock-icon="" style={{ alignItems: 'center', display: 'flex', flex: '0 0 auto', marginLeft: 4 }}>
-                                            {renderIcon(textValue(data.lockIcon, 'lock-outline'), textValue(data.lockIconColor, '#B22222'), 18, true)}
+                                            {lockIcon(data, 18)}
                                         </span>
                                     ) : null}
                                     {data.clearIconShow !== false && value !== '' && !blocked ? (
@@ -1110,20 +1075,16 @@ export default class MaterialDesignInput extends VisWidget {
                     />
                 ) : null}
                 {this.lock.padOpen ? (
-                    // The pad is a portal, but its clicks and keys still bubble through the React tree.
-                    <span onClick={event => event.stopPropagation()} onKeyDown={event => event.stopPropagation()}>
-                        <PinPad
-                            dark={this.isDarkTheme()}
-                            m3={isM3}
-                            onCancel={() => this.lock.pinCancelled()}
-                            onUnlock={pin => {
-                                this.lock.pinAccepted(pin, opts.seconds);
-                                this.holdIfFocused(opts);
-                                this.refocus();
-                            }}
-                            pin={opts.pin}
-                        />
-                    </span>
+                    <PinPad
+                        dark={this.isDarkTheme()}
+                        m3={isM3}
+                        onCancel={() => this.lock.pinCancelled()}
+                        onUnlock={pin => {
+                            this.lock.pinAccepted(pin, opts.seconds);
+                            this.lock.focusAfterUnlock(() => this.inputRef.current, opts);
+                        }}
+                        pin={opts.pin}
+                    />
                 ) : null}
             </div>
         );

@@ -66,17 +66,6 @@ describe('Input lock (upstream #112)', () => {
         expect(w.field().props.readOnly).toBe(true);
     });
 
-    it('the pad sits in a wrapper that stops click and key events from reaching ancestors', () => {
-        const w = make({ lockPin: '12' });
-        (w.field().props.onPointerDown as (e: unknown) => void)({ preventDefault: () => undefined });
-        const wrapper = find(w.tree(), el => el.type === 'span' && !!find(el.props.children as React.ReactNode, isPad))!;
-        for (const name of ['onClick', 'onKeyDown']) {
-            const stopPropagation = vi.fn();
-            (wrapper.props[name] as (e: unknown) => void)({ stopPropagation });
-            expect(stopPropagation).toHaveBeenCalled();
-        }
-    });
-
     it('read-only wins over the lock', () => {
         const w = make({ readOnly: 'true' });
         (w.field().props.onPointerDown as (e: unknown) => void)({ preventDefault: () => undefined });
@@ -196,17 +185,6 @@ describe('Select / Autocomplete lock', () => {
         (s.button().props.onClick as () => void)();
         expect(s.isOpen()).toBe(false);
         expect(find(s.tree(), isPad)).toBeDefined();
-    });
-
-    it('the pad sits in a wrapper that stops click and key events from reaching ancestors', () => {
-        const s = select({ lockPin: '12' });
-        (s.button().props.onClick as () => void)();
-        const wrapper = find(s.tree(), el => el.type === 'span' && !!find(el.props.children as React.ReactNode, isPad))!;
-        for (const name of ['onClick', 'onKeyDown']) {
-            const stopPropagation = vi.fn();
-            (wrapper.props[name] as (e: unknown) => void)({ stopPropagation });
-            expect(stopPropagation).toHaveBeenCalled();
-        }
     });
 
     it('read-only wins: no lock icon, a tap opens nothing and asks nothing', () => {

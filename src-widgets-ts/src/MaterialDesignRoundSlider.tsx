@@ -4,23 +4,17 @@ import type { RxWidgetInfo, VisRxWidgetProps } from '@iobroker/types-vis-2';
 
 import { cleanColor, num, snapToStep } from './MaterialDesignProgress';
 import { fill, withAutoFill } from './deviceFill';
-import { m3ColorExplicit, renderIcon } from './MaterialDesignButtons';
+import { m3ColorExplicit } from './MaterialDesignButtons';
 import PinPad from './PinPad';
-import { WidgetLock, lockGroup, lockSeconds, pinOf, type LockOptions } from './widgetLock';
-import { boolValue, isReadOnly, squarePreview, RenderProps, SliderWriter, VisWidget, textValue, createInfo, designStyle, designStyleClasses, setStateValue, sizeCss, sliderKeyValue, stateValue, sanitizeHtml } from './widgetUtils';
+import { WidgetLock, lockGroup, lockIcon, lockOptionsOf, type LockData, type LockOptions } from './widgetLock';
+import { isReadOnly, squarePreview, RenderProps, SliderWriter, VisWidget, createInfo, designStyle, designStyleClasses, setStateValue, sizeCss, sliderKeyValue, stateValue, sanitizeHtml } from './widgetUtils';
 
-export interface RoundSliderData {
+export interface RoundSliderData extends LockData {
     oid?: string;
     'oid-working'?: string;
     min?: number;
     max?: number;
     step?: number;
-    readOnly?: boolean;
-    lockEnabled?: boolean;
-    lockPin?: string;
-    autoLockAfter?: number;
-    lockIcon?: string;
-    lockIconColor?: string;
     sendValueOnRelease?: boolean;
     startAngle?: number;
     arcLength?: number;
@@ -194,13 +188,7 @@ export default class MaterialDesignRoundSlider extends VisWidget {
     private swallow = false;
 
     private lockOptions(data: RoundSliderData): LockOptions {
-        return {
-            enabled: boolValue(data.lockEnabled),
-            pin: pinOf(data.lockPin, (this.state?.data as Record<string, unknown> | undefined)?.lockPin),
-            seconds: lockSeconds(data.autoLockAfter),
-            readOnly: isReadOnly(data),
-            editMode: !!this.props.editMode,
-        };
+        return lockOptionsOf(data, this.state?.data, !!this.props.editMode);
     }
 
     componentWillUnmount(): void {
@@ -256,7 +244,7 @@ export default class MaterialDesignRoundSlider extends VisWidget {
         }
         const value = current(this.optimisticValue ?? rawState, data);
         const opts = this.lockOptions(data);
-        const locked = !isReadOnly(data) && this.lock.isLocked(opts);
+        const locked = this.lock.isLocked(opts);
         const disabled = isReadOnly(data) || working(stateValue(this.state, data['oid-working'] || ''));
         const start = num(data.startAngle, 135);
         const arc = num(data.arcLength, 270);
@@ -311,7 +299,7 @@ export default class MaterialDesignRoundSlider extends VisWidget {
             <div className={`materialdesign-widget materialdesign-slider-round${isM3 ? ` ${designStyleClasses(data as Record<string, unknown>, this.isDarkTheme())}` : ''}`} style={{ height: '100%', position: 'relative', width: '100%' }}>
                 {locked ? (
                     <span data-lock-icon="" style={{ position: 'absolute', right: 2, top: 2, zIndex: 3, pointerEvents: 'none' }}>
-                        {renderIcon(textValue(data.lockIcon, 'lock-outline'), textValue(data.lockIconColor, '#B22222'), 16, true)}
+                        {lockIcon(data, 16)}
                     </span>
                 ) : null}
                 <svg
@@ -416,16 +404,13 @@ export default class MaterialDesignRoundSlider extends VisWidget {
                     />
                 ) : null}
                 {this.lock.padOpen ? (
-                    // The pad is a portal, but its clicks and keys still bubble through the React tree.
-                    <span onClick={event => event.stopPropagation()} onKeyDown={event => event.stopPropagation()}>
-                        <PinPad
-                            dark={this.isDarkTheme()}
-                            m3={isM3}
-                            onCancel={() => this.lock.pinCancelled()}
-                            onUnlock={pin => this.lock.pinAccepted(pin, opts.seconds)}
-                            pin={opts.pin}
-                        />
-                    </span>
+                    <PinPad
+                        dark={this.isDarkTheme()}
+                        m3={isM3}
+                        onCancel={() => this.lock.pinCancelled()}
+                        onUnlock={pin => this.lock.pinAccepted(pin, opts.seconds)}
+                        pin={opts.pin}
+                    />
                 ) : null}
             </div>
         );

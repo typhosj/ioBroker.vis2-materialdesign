@@ -39,8 +39,11 @@ export default function PinPad({ pin, m3, dark, onUnlock, onCancel }: PinPadProp
     };
 
     return createPortal(
+        // A portal still bubbles its clicks and keys through the React tree to the widget that opened it.
         <div
             className={`materialdesign-widget${m3 ? ' mdw-style-material3' : ''}${dark ? ' mdw-dark' : ''} mdw-pin-scrim`}
+            onClick={event => event.stopPropagation()}
+            onKeyDown={event => event.stopPropagation()}
             style={{ alignItems: 'center', background: 'rgba(0, 0, 0, 0.32)', display: 'flex', inset: 0, justifyContent: 'center', position: 'fixed', zIndex: 10000 }}
         >
             <style>{SHAKE}</style>
@@ -53,9 +56,7 @@ export default function PinPad({ pin, m3, dark, onUnlock, onCancel }: PinPadProp
                     else if (event.key === 'Backspace') remove();
                     else if (event.key === 'Escape') onCancel();
                     else return;
-                    // Stop here, or a surrounding vis dialog reacts to the same key.
                     event.preventDefault();
-                    event.stopPropagation();
                 }}
                 ref={dialogRef}
                 role="dialog"

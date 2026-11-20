@@ -55,17 +55,6 @@ describe('Checkbox / Switch with PIN', () => {
         expect(b.setValue).toHaveBeenCalledTimes(1);
     });
 
-    it('the pad sits in a wrapper that stops click and key events from reaching the toggle', () => {
-        const w = make({ lockPin: '12' });
-        w.click();
-        const wrapper = find(w.tree(), el => el.type === 'span' && !!find(el.props.children as React.ReactNode, isPad))!;
-        for (const name of ['onClick', 'onKeyDown']) {
-            const stopPropagation = vi.fn();
-            (wrapper.props[name] as (e: unknown) => void)({ stopPropagation });
-            expect(stopPropagation).toHaveBeenCalled();
-        }
-    });
-
     it('read-only wins: no pad, no unlock, no vibration', () => {
         const w = make({ lockPin: '12', readOnly: true });
         w.click();
@@ -148,6 +137,7 @@ describe('Toggle button with PIN', () => {
         expect(vi.getTimerCount()).toBe(0);
     });
 });
+
 describe('read-only hides the lock icon on every widget with a lock', () => {
     const hasLockIcon = (tree: React.ReactNode) => find(tree, el => el.props['data-lock-icon'] !== undefined) !== undefined;
 

@@ -8,10 +8,10 @@ import { m3ColorExplicit, renderIcon } from './MaterialDesignButtons';
 import { cleanColor, num } from './MaterialDesignProgress';
 import { fill, withAutoFill } from './deviceFill';
 import PinPad from './PinPad';
-import { WidgetLock, lockGroup, lockSeconds, pinOf, type LockOptions } from './widgetLock';
-import { boolValue, textValue, squarePreview, RenderProps, VisWidget, createInfo, indexedFields, itemCount, designStyle, designStyleClasses, iconField, legacyInk, legacyInkMuted, legacyOutline, legacySurface, ownCssVariables, isReadOnly, setStateValue, sizeCss, stateValue, stringValue } from './widgetUtils';
+import { WidgetLock, lockGroup, lockIcon, lockOptionsOf, type LockData, type LockOptions } from './widgetLock';
+import { squarePreview, RenderProps, VisWidget, createInfo, indexedFields, itemCount, designStyle, designStyleClasses, iconField, legacyInk, legacyInkMuted, legacyOutline, legacySurface, ownCssVariables, isReadOnly, setStateValue, sizeCss, stateValue, stringValue } from './widgetUtils';
 
-interface SelectData {
+interface SelectData extends LockData {
     oid?: string;
     inputMode?: 'write' | 'select';
     autocompleteMinChars?: number;
@@ -47,12 +47,6 @@ interface SelectData {
     inputCounterColor?: string;
     inputCounterFontSize?: number;
     inputCounterFontFamily?: string;
-    readOnly?: boolean;
-    lockEnabled?: boolean;
-    lockPin?: string;
-    autoLockAfter?: number;
-    lockIcon?: string;
-    lockIconColor?: string;
     clearIconShow?: boolean;
     clearIcon?: string;
     clearIconSize?: number;
@@ -498,35 +492,7 @@ export default class MaterialDesignSelect extends VisWidget {
     }
 
     private lockOptions(data: SelectData): LockOptions {
-        return {
-            enabled: boolValue(data.lockEnabled),
-            pin: pinOf(data.lockPin, (this.state?.data as Record<string, unknown> | undefined)?.lockPin),
-            seconds: lockSeconds(data.autoLockAfter),
-            readOnly: isReadOnly(data),
-            editMode: !!this.props.editMode,
-        };
-    }
-
-    // A field focused while still locked got no hold from onFocus, and the unlocking tap fires no new focus event.
-    private holdIfFocused(opts: LockOptions): void {
-        if (this.inputRef && document.activeElement === this.inputRef) this.lock.hold(true, opts);
-    }
-
-    // The unlocking tap on a field that is already focused fires no focus event, so the On-screen Keyboard would not open: blur and focus it again.
-    // refocusing keeps that blur from committing or closing.
-    private refocusing = false;
-
-    private refocus(): void {
-        window.setTimeout(() => {
-            const field = this.inputRef;
-            if (!field) return;
-            if (document.activeElement === field) {
-                this.refocusing = true;
-                field.blur();
-                this.refocusing = false;
-            }
-            field.focus();
-        });
+        return lockOptionsOf(data, this.state?.data, !!this.props.editMode);
     }
 
     private commit(value: ioBroker.StateValue, oid: string): void {
@@ -635,7 +601,7 @@ export default class MaterialDesignSelect extends VisWidget {
         const data = this.state.rxData as unknown as SelectData;
         const readOnly = isReadOnly(data);
         const opts = this.lockOptions(data);
-        const locked = !readOnly && this.lock.isLocked(opts);
+        const locked = this.lock.isLocked(opts);
         const blocked = readOnly || locked;
         if (data.listDataMethod === 'multistatesObject' && data.oid) this.loadObjectStates(data.oid);
         const list = items(data, this.objectStates);
@@ -928,8 +894,7 @@ export default class MaterialDesignSelect extends VisWidget {
                             if (locked) {
                                 if (this.lock.request(opts) !== 'unlocked') return;
                                 if (this.isAutocomplete) {
-                                    this.holdIfFocused(opts);
-                                    this.refocus();
+                                    this.lock.focusAfterUnlock(() => this.inputRef, opts);
                                     return;
                                 }
                                 this.open = true;
@@ -1087,7 +1052,7 @@ export default class MaterialDesignSelect extends VisWidget {
                                     aria-expanded={menuShown}
                                     readOnly={blocked}
                                     onBlur={() => {
-                                        if (this.refocusing) return;
+                                        if (this.lock.refocusing) return;
                                         if (write && this.dirty && !blocked) this.commit(writeValue(list, this.filterText ?? ''), data.oid || '');
                                         this.closeMenu();
                                     }}
@@ -1105,8 +1070,7 @@ export default class MaterialDesignSelect extends VisWidget {
                                         // The tap that unlocks must not focus the still-readonly field: the focus follows once it is writable.
                                         event.preventDefault();
                                         if (this.lock.request(opts) === 'unlocked') {
-                                            this.holdIfFocused(opts);
-                                            this.refocus();
+                                            this.lock.focusAfterUnlock(() => this.inputRef, opts);
                                         }
                                     }}
                                     onClick={event => {
@@ -1114,8 +1078,7 @@ export default class MaterialDesignSelect extends VisWidget {
                                         if (readOnly) return;
                                         if (locked) {
                                             if (this.lock.request(opts) === 'unlocked') {
-                                                this.holdIfFocused(opts);
-                                                this.refocus();
+                                                this.lock.focusAfterUnlock(() => this.inputRef, opts);
                                             }
                                             return;
                                         }
@@ -1211,7 +1174,7 @@ export default class MaterialDesignSelect extends VisWidget {
                         ) : null}
                         {locked ? (
                             <span data-lock-icon="" style={{ alignItems: 'center', display: 'flex', flex: '0 0 auto', marginLeft: 4 }}>
-                                {renderIcon(textValue(data.lockIcon, 'lock-outline'), textValue(data.lockIconColor, '#B22222'), 18, true)}
+                                {lockIcon(data, 18)}
                             </span>
                         ) : null}
                         <span style={{ flex: '0 0 auto', marginLeft: 6 }}>
@@ -1266,26 +1229,22 @@ export default class MaterialDesignSelect extends VisWidget {
                     {menu && floating ? createPortal(menu, document.body) : menu}
                 </div>
                 {this.lock.padOpen ? (
-                    // The pad is a portal, but its clicks and keys still bubble through the React tree.
-                    <span onClick={event => event.stopPropagation()} onKeyDown={event => event.stopPropagation()}>
-                        <PinPad
-                            dark={isDark}
-                            m3={isM3}
-                            onCancel={() => this.lock.pinCancelled()}
-                            onUnlock={pin => {
-                                this.lock.pinAccepted(pin, opts.seconds);
-                                if (this.isAutocomplete) {
-                                    this.holdIfFocused(opts);
-                                    this.refocus();
-                                    return;
-                                }
-                                this.open = true;
-                                this.lock.hold(true, opts);
-                                this.forceUpdate();
-                            }}
-                            pin={opts.pin}
-                        />
-                    </span>
+                    <PinPad
+                        dark={isDark}
+                        m3={isM3}
+                        onCancel={() => this.lock.pinCancelled()}
+                        onUnlock={pin => {
+                            this.lock.pinAccepted(pin, opts.seconds);
+                            if (this.isAutocomplete) {
+                                this.lock.focusAfterUnlock(() => this.inputRef, opts);
+                                return;
+                            }
+                            this.open = true;
+                            this.lock.hold(true, opts);
+                            this.forceUpdate();
+                        }}
+                        pin={opts.pin}
+                    />
                 ) : null}
             </div>
         );

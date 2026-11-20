@@ -94,17 +94,6 @@ describe.each([
         expect(find(s.tree(), isPad)).toBeDefined();
     });
 
-    it('the pad sits in a wrapper that stops click and key events from reaching ancestors', () => {
-        const s = make({ lockPin: '12' });
-        s.call('onPointerDown');
-        const wrapper = find(s.tree(), el => el.type === 'span' && !!find(el.props.children as React.ReactNode, isPad))!;
-        for (const name of ['onClick', 'onKeyDown']) {
-            const stopPropagation = vi.fn();
-            (wrapper.props[name] as (e: unknown) => void)({ stopPropagation });
-            expect(stopPropagation).toHaveBeenCalled();
-        }
-    });
-
     it('arrow keys do nothing while locked', () => {
         const s = make({});
         const keyed = find(s.tree(), el => typeof el.props.onKeyDown === 'function')!;
