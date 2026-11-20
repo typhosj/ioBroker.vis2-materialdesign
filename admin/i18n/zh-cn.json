@@ -1307,5 +1307,9 @@
     "alertsCount": "提醒",
     "alertsClearAll": "全部清除",
     "alertsExample": "示例提醒（仅限编辑器）",
-    "openDrawerBySwipe": "从屏幕边缘滑动打开菜单"
+    "openDrawerBySwipe": "从屏幕边缘滑动打开菜单",
+    "subMenuMode": "子菜单打开方式",
+    "subMenuMode_inline": "在其条目下方",
+    "subMenuMode_slide": "替换列表",
+    "ariaSubMenuBack": "返回"
 }

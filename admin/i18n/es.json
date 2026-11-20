@@ -1307,5 +1307,9 @@
     "alertsCount": "Avisos",
     "alertsClearAll": "Borrar todo",
     "alertsExample": "Aviso de ejemplo (solo en el editor)",
-    "openDrawerBySwipe": "abrir el menú deslizando desde el borde de la pantalla"
+    "openDrawerBySwipe": "abrir el menú deslizando desde el borde de la pantalla",
+    "subMenuMode": "abrir los submenús",
+    "subMenuMode_inline": "debajo de su entrada",
+    "subMenuMode_slide": "en lugar de la lista",
+    "ariaSubMenuBack": "Atrás"
 }

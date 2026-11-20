@@ -56,6 +56,13 @@ automatische Änderung des Layouts bei Auflösung größer** gesetzten Breite mo
 Vorgabe 800 px), **Breite**, **Zeilenüberschrift anzeigen** samt **Kopfzeile
 Text**, **Beschriftungen für Listenelemente anzeigen** (aus heißt: nur Symbole)
 und den **Trennlinien Stil** (`standard`, `padded`, `inset`, ebenfalls roh).
+**Untermenüs öffnen** legt fest, wo ein Untermenü erscheint: **unter ihrem
+Eintrag** (Vorgabe) klappt es eingerückt unter dem Eintrag auf, **anstelle der
+Liste** ersetzt die Liste durch das Untermenü, das von der Seite hereingleitet
+und auch auf dem Handy keinen zusätzlichen Platz braucht. Eine Zeile mit Pfeil und
+dem Namen des Elterneintrags oben führt eine Ebene zurück, ebenso die
+Pfeil-links-Taste und Escape. Der Drawer öffnet auf der Ebene des gewählten
+Eintrags. Nummern und Pfad im zweiten Datenpunkt bleiben in beiden Modi gleich.
 **Andere Untermenüs beim Öffnen zuklappen** macht die Untermenüs zum Akkordeon:
 Öffnet sich eines, klappen alle anderen zu, nur der Weg zu ihm bleibt offen. **Untermenüs beim Schließen des
 Menüs zuklappen** zeigt jedes Untermenü beim nächsten Öffnen zugeklappt statt so,

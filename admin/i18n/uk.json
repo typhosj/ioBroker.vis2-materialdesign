@@ -1307,5 +1307,9 @@
     "alertsCount": "Повідомлення",
     "alertsClearAll": "Очистити все",
     "alertsExample": "Приклад повідомлення (лише в редакторі)",
-    "openDrawerBySwipe": "відкривати меню свайпом від краю екрана"
+    "openDrawerBySwipe": "відкривати меню свайпом від краю екрана",
+    "subMenuMode": "відкривати підменю",
+    "subMenuMode_inline": "під своїм пунктом",
+    "subMenuMode_slide": "замість списку",
+    "ariaSubMenuBack": "Назад"
 }

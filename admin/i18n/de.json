@@ -1307,5 +1307,9 @@
     "alertsCount": "Meldungen",
     "alertsClearAll": "Alle löschen",
     "alertsExample": "Beispielmeldung (nur im Editor)",
-    "openDrawerBySwipe": "Menü durch Wischen vom Bildschirmrand öffnen"
+    "openDrawerBySwipe": "Menü durch Wischen vom Bildschirmrand öffnen",
+    "subMenuMode": "Untermenüs öffnen",
+    "subMenuMode_inline": "unter ihrem Eintrag",
+    "subMenuMode_slide": "anstelle der Liste",
+    "ariaSubMenuBack": "Zurück"
 }

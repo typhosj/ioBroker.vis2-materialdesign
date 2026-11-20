@@ -1307,5 +1307,9 @@
     "alertsCount": "Alertes",
     "alertsClearAll": "Tout effacer",
     "alertsExample": "Alerte d'exemple (éditeur uniquement)",
-    "openDrawerBySwipe": "ouvrir le menu en glissant depuis le bord de l'écran"
+    "openDrawerBySwipe": "ouvrir le menu en glissant depuis le bord de l'écran",
+    "subMenuMode": "ouvrir les sous-menus",
+    "subMenuMode_inline": "sous leur entrée",
+    "subMenuMode_slide": "à la place de la liste",
+    "ariaSubMenuBack": "Retour"
 }

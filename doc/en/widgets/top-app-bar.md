@@ -56,7 +56,13 @@ The **navigation bar layout** group sets the drawer **layout** (`modal`,
 layout auto change on resoltuion higher than**, 800 px by default), its
 **width**, **show row heading** with **header text**, **show list items labels**
 (off means icons only) and the **divider style** (`standard`, `padded`, `inset`,
-untranslated as well). **close other submenus when one opens** turns the
+untranslated as well). **open submenus** decides where a submenu appears:
+**below their entry** (default) unfolds it indented under its entry, **in place
+of the list** replaces the list with the submenu, sliding in from the side, which
+needs no extra room even on a phone. A row with the arrow and the name of the
+parent entry at the top leads one level back; the left arrow key and Escape do
+the same. The drawer opens on the level of the selected entry. Numbers and the
+path in the second object ID stay the same in both modes. **close other submenus when one opens** turns the
 submenus into an accordion: when one opens, all others close, only the path to it stays open. **close
 submenus when the menu closes** shows every submenu closed each time the menu
 opens again, instead of as it was left. **list item

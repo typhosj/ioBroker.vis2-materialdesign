@@ -1307,5 +1307,9 @@
     "alertsCount": "Komunikaty",
     "alertsClearAll": "Wyczyść wszystko",
     "alertsExample": "Przykładowy komunikat (tylko w edytorze)",
-    "openDrawerBySwipe": "otwieraj menu przesunięciem od krawędzi ekranu"
+    "openDrawerBySwipe": "otwieraj menu przesunięciem od krawędzi ekranu",
+    "subMenuMode": "otwieraj podmenu",
+    "subMenuMode_inline": "pod swoim elementem",
+    "subMenuMode_slide": "zamiast listy",
+    "ariaSubMenuBack": "Wstecz"
 }

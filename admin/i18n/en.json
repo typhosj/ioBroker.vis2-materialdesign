@@ -1307,5 +1307,9 @@
     "alertsCount": "Alerts",
     "alertsClearAll": "Clear all",
     "alertsExample": "Example alert (editor only)",
-    "openDrawerBySwipe": "open menu by swiping from the screen edge"
+    "openDrawerBySwipe": "open menu by swiping from the screen edge",
+    "subMenuMode": "open submenus",
+    "subMenuMode_inline": "below their entry",
+    "subMenuMode_slide": "in place of the list",
+    "ariaSubMenuBack": "Back"
 }

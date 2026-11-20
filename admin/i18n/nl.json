@@ -1307,5 +1307,9 @@
     "alertsCount": "Meldingen",
     "alertsClearAll": "Alles wissen",
     "alertsExample": "Voorbeeldmelding (alleen in de editor)",
-    "openDrawerBySwipe": "menu openen door vanaf de schermrand te vegen"
+    "openDrawerBySwipe": "menu openen door vanaf de schermrand te vegen",
+    "subMenuMode": "submenu's openen",
+    "subMenuMode_inline": "onder hun item",
+    "subMenuMode_slide": "in plaats van de lijst",
+    "ariaSubMenuBack": "Terug"
 }

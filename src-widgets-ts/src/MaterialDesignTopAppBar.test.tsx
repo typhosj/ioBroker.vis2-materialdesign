@@ -562,7 +562,7 @@ describe('top app bar submenus over several levels (fork #32)', () => {
         const row = (text: string) => collectByClass(render(), 'mdc-list-item').find(element => renderToStaticMarkup(element).includes(`${text}<`));
         const click = (text: string): void => { const found = row(text); if (!found) throw new Error(`no row ${text}`); (found.props.onClick as () => void)(); };
         const html = (): string => renderToStaticMarkup(render());
-        return { setValue, render, row, click, html };
+        return { widget, setValue, render, row, click, html };
     };
 
     it('numbers the entries depth first and opens the path to the selected entry', () => {
@@ -649,5 +649,134 @@ describe('top app bar submenus over several levels (fork #32)', () => {
         expect(html).toContain('[10] L10');
         expect(html).not.toContain('L11');
         expect(collectByClass(p.row('L10'), 'mdi-menu-down')).toHaveLength(0);
+    });
+
+    describe('submenus in place of the list', () => {
+        const slide = (rxData: Record<string, unknown> = {}, items: unknown = tree) => {
+            const p = make({ subMenuMode: 'slide', ...rxData }, items);
+            const back = (): React.ReactElement<Record<string, unknown>> | undefined => collectByClass(p.render(), 'mdw-submenu-back')[0];
+            const rows = (): string[] => collectByClass(p.render(), 'mdc-list-item').map(element => renderToStaticMarkup(element).replace(/<[^>]*>/g, ''));
+            return { ...p, back, rows };
+        };
+        const key = (element: React.ReactElement<Record<string, unknown>> | undefined, name: string): void => (element!.props.onKeyDown as (event: unknown) => void)({ key: name, preventDefault: vi.fn() });
+
+        it('shows one level and steps into a submenu in its place', () => {
+            const p = slide();
+            expect(p.rows()).toEqual(['[0] Haus', '[7] Garten']);
+            expect(p.back()).toBeUndefined();
+            p.click('Haus');
+            expect(p.rows()).toEqual(['[1] EG', '[5] OG']);
+            expect(renderToStaticMarkup(p.back())).toContain('Haus');
+            p.click('EG');
+            expect(p.rows()).toEqual(['[2] Wohnzimmer', '[4] Küche']);
+            expect(renderToStaticMarkup(p.back())).toContain('EG');
+        });
+
+        it('steps back one level from the back row and with the left arrow or Escape', () => {
+            const p = slide();
+            p.click('Haus');
+            p.click('EG');
+            (p.back()!.props.onClick as () => void)();
+            expect(p.rows()).toEqual(['[1] EG', '[5] OG']);
+            key(p.back(), 'Enter');
+            expect(p.rows()).toEqual(['[0] Haus', '[7] Garten']);
+            p.click('Haus');
+            key(p.row('OG'), 'ArrowLeft');
+            expect(p.rows()).toEqual(['[0] Haus', '[7] Garten']);
+            p.click('Haus');
+            key(p.row('EG'), 'Escape');
+            expect(p.rows()).toEqual(['[0] Haus', '[7] Garten']);
+            key(p.row('Garten'), 'ArrowLeft');
+            expect(p.rows()).toEqual(['[0] Haus', '[7] Garten']);
+        });
+
+        it('opens on the level of the selected entry and writes the same index and path', () => {
+            const p = slide({ navDefaultValue: 3, selectedItemName_oid: 'test.0.name' });
+            expect(p.rows()).toEqual(['[3] Licht']);
+            p.click('Licht');
+            expect(p.setValue).toHaveBeenCalledWith('test.0.page', 3);
+            expect(p.setValue).toHaveBeenCalledWith('test.0.name', 'Haus.eg.Wohnzimmer.Licht');
+            p.widget.state = fixture<typeof p.widget.state>({ ...p.widget.state, values: { 'test.0.page.val': 7 } });
+            expect(p.rows()).toEqual(['[0] Haus', '[7] Garten']);
+        });
+
+        it('stays in a submenu whose entry also writes its index when stepped into', () => {
+            const p = slide({ navDefaultValue: 2 }, [{ text: 'Haus', setValueOnMenuToggleClick: true, subMenus: [{ text: 'EG' }] }, { text: 'Garten' }]);
+            p.click('Haus');
+            expect(p.setValue).toHaveBeenCalledWith('test.0.page', 0);
+            p.widget.state = fixture<typeof p.widget.state>({ ...p.widget.state, values: { 'test.0.page.val': 0 } });
+            expect(p.rows()).toEqual(['[1] EG']);
+        });
+
+        it('draws every level flat, marks submenus with a forward arrow and gives deeper levels the submenu background', () => {
+            const p = slide({ navDefaultValue: 3, colorDrawerSubBackground: 'rgba(0,0,0,.1)' });
+            expect((p.row('Licht')!.props.style as React.CSSProperties).padding).toBe('0 8px');
+            const list = (): React.ReactElement<Record<string, unknown>> => collectByClass(p.render(), 'mdc-list')[0];
+            expect((list().props.style as React.CSSProperties).background).toBe('rgba(0,0,0,.1)');
+            key(p.back(), 'Enter');
+            key(p.back(), 'Enter');
+            key(p.back(), 'Enter');
+            expect(collectByClass(p.row('Haus'), 'mdi-chevron-right')).toHaveLength(1);
+            expect(collectByClass(p.row('Haus'), 'mdi-menu-down')).toHaveLength(0);
+            expect((list().props.style as React.CSSProperties | undefined)?.background).toBeUndefined();
+        });
+
+        it('falls back to the first level when the open submenu is gone from the JSON', () => {
+            const p = slide();
+            p.click('Haus');
+            p.widget.state = fixture<typeof p.widget.state>({ ...p.widget.state, rxData: { ...p.widget.state.rxData, drawerItemsJsonString: '[{"text":"Neu"},"x"]' } });
+            expect(p.rows()).toEqual(['[0] Neu', '[1] Menu Item']);
+            expect(p.back()).toBeUndefined();
+        });
+
+        it('keeps the submenus below their entry for an unknown mode', () => {
+            const p = make({ subMenuMode: 'sideways', navDefaultValue: 3 });
+            expect(p.html()).toContain('Garten');
+            expect(p.html()).toContain('Licht');
+            expect(collectByClass(p.render(), 'mdw-submenu-back')).toHaveLength(0);
+        });
+
+        it('returns to the first level when the menu closes, if switched on', () => {
+            for (const collapse of [true, false]) {
+                const p = slide({ drawerLayout: 'modal', collapseSubMenusOnClose: collapse });
+                (p.widget as unknown as { open: boolean }).open = true;
+                p.click('Haus');
+                (collectByClass(p.widget.renderWidgetBody(fixture<Parameters<MaterialDesignTopAppBar['renderWidgetBody']>[0]>({})), 'mdc-drawer-scrim')[0].props.onClick as () => void)();
+                (p.widget as unknown as { open: boolean }).open = true;
+                expect(p.rows(), String(collapse)).toEqual(collapse ? ['[0] Haus', '[7] Garten'] : ['[1] EG', '[5] OG']);
+            }
+        });
+
+        it('moves the focus to the back row after stepping in and to the entry after stepping back', () => {
+            vi.useFakeTimers();
+            try {
+                const p = slide();
+                const host = document.createElement('div');
+                document.body.appendChild(host);
+                (p.widget as unknown as { root: HTMLElement }).root = host;
+                const paint = (): void => { host.innerHTML = renderToStaticMarkup(p.render()); };
+                paint();
+                p.click('Haus');
+                paint();
+                vi.runAllTimers();
+                expect(document.activeElement?.classList.contains('mdw-submenu-back')).toBe(true);
+                key(p.back(), 'Enter');
+                paint();
+                vi.runAllTimers();
+                expect(document.activeElement?.textContent).toContain('Haus');
+                host.remove();
+            } finally {
+                vi.useRealTimers();
+            }
+        });
+
+        it('hides the accordion option, which has no meaning with one level shown', () => {
+            const fields = MaterialDesignTopAppBar.getWidgetInfo().visAttrs.flatMap(group => group.fields);
+            const field = (name: string) => fields.find(entry => entry.name === name) as { hidden?: (data: Record<string, unknown>) => boolean; options?: unknown[]; default?: unknown };
+            expect(field('subMenuMode').options).toEqual([{ value: 'inline', label: 'subMenuMode_inline' }, { value: 'slide', label: 'subMenuMode_slide' }]);
+            expect(field('subMenuMode').default).toBe('inline');
+            expect(field('collapseOtherSubMenus').hidden?.({ subMenuMode: 'slide' })).toBe(true);
+            expect(field('collapseOtherSubMenus').hidden?.({})).toBe(false);
+        });
     });
 });
