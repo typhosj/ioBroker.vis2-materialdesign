@@ -568,7 +568,7 @@ export class MaterialDesignViews extends VisWidget {
             >
               <div
                 id={`${this.widgetId}-${this.kind}-${index}`}
-                ref={(el) => this.cellRefs.set(index, el)}
+                ref={(el) => { this.cellRefs.set(index, el); }}
                 style={{
                   height: height || this.measured[index] || (view ? undefined : "100%"),
                   width: "100%",

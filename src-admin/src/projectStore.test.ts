@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { AdminConnection } from '@iobroker/adapter-react-v5';
+import type { AdminConnection } from '@iobroker/gui-components';
 
 import { migrateStoredProject, restoreStoredProject, scanProjects, type FileSocket } from './projectStore';
 

@@ -63,7 +63,7 @@ Material 3 baseline palette.
 
 - ioBroker with Admin 7.6.20 or newer
 - Node.js 22 or newer
-- an installed VIS 2 adapter
+- VIS 2 adapter 2.20.8 or newer (version 1.x of this adapter still runs on older VIS 2)
 - a current Chromium-based browser or Firefox (target environment)
 
 Vibration feedback depends on the browser and device. See the
@@ -118,6 +118,7 @@ to wait with an upgrade.
 ## Changelog
 ### **WORK IN PROGRESS**
 
+- (typhosj) **Breaking:** requires VIS 2 2.20.8 or newer. The widgets are now built against React 19, the React version of VIS 2 since 2.20; older VIS 2 versions run on React 18. Stay on version 1.x of this adapter as long as VIS 2 cannot be updated
 - (typhosj) Added **order of suggestions** to the On-screen Keyboard: `frequent and recent` (new default) lets a word's count lose half its worth for every 30 days without use, so a word typed often long ago no longer stays on top; `most frequent` keeps the previous order, `most recent` shows the words last used first
 - (typhosj) Added a **PIN** to every widget with a lock: the PIN pad asks for 1 to 12 digits, and the right PIN unlocks every widget with the same PIN until the lock time ends. It protects against accidental taps and children, not against attackers (Scrounger/ioBroker.vis-materialdesign#111)
 - (typhosj) Added the **lock** to Input, Select, Autocomplete, Slider and Round Slider: a tap unlocks the widget, or asks for the PIN, and it locks again after the lock time (Scrounger/ioBroker.vis-materialdesign#112)

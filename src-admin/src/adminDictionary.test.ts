@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { I18n } from '@iobroker/adapter-react-v5/build/i18n';
+import { I18n } from '@iobroker/gui-components/build/i18n';
 
 import de from '../../admin/i18n/de.json';
 import { adminDictionary } from './adminDictionary';

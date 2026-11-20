@@ -141,10 +141,10 @@ for (const component of portedComponents) {
 assert.strictEqual(widgetRegistry.components.length, portedComponents.length, "io-package.json must register exactly the ported VIS2 components");
 assert.ok(fs.existsSync(path.join(root, "widgets", "vis2-materialdesign", "materialdesign-widgets-click-sound.mp3")), "VIS2 click sound must be packaged");
 
-// The React 18 copies of react/jsx-runtime and react-dom that the widget bundle carries as share
-// fallbacks read React's internals the moment they are evaluated. Under vis-2 with React 19 those
-// internals are gone, so a fallback that is evaluated before the share scope is asked crashes the
-// whole widget set (ioBroker.vis-2#689). A fallback may therefore never be in the static import
+// The copies of react/jsx-runtime and react-dom that the widget bundle carries as share fallbacks
+// read React's internals the moment they are evaluated. When the host runs another React major those
+// internals differ, so a fallback that is evaluated before the share scope is asked crashes the
+// whole widget set (ioBroker.vis-2#689: React 18 fallbacks on a React 19 host). A fallback may therefore never be in the static import
 // closure of the remote entry or of an exposed widget; a loader chunk that is itself only reached
 // through import() may import it statically.
 function eagerFallbacks(chunks, entries) {
@@ -210,7 +210,7 @@ for (const component of widgetRegistry.components) {
 assert.deepStrictEqual(
     eagerFallbacks(builtChunks, entries),
     [],
-    "React 18 share fallbacks must only be loaded through import(), or the widget set crashes on vis-2 with React 19",
+    "React share fallbacks must only be loaded through import(), or the widget set crashes on a host with another React major",
 );
 
 // vis-2 (React 19 builds) fetches mf-manifest.json next to customWidgets.js before mf-stats.json, so a

@@ -1,4 +1,4 @@
-import { DialogConfirm, GenericApp, I18n, Loader, Logo, type GenericAppProps, type GenericAppState } from '@iobroker/adapter-react-v5';
+import { DialogConfirm, GenericApp, I18n, Loader, Logo, type GenericAppProps, type GenericAppState } from '@iobroker/gui-components';
 import PaletteIcon from '@mui/icons-material/Palette';
 import SettingsIcon from '@mui/icons-material/Settings';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
@@ -37,7 +37,7 @@ async function loadLang(lang: string): Promise<void> {
         const module = await import(`../../admin/i18n/${key}.json`);
         translations[key] = adminDictionary((module.default ?? module) as Record<string, string>);
     } catch {
-        // leave missing — adapter-react-v5 falls back to the key / English
+        // leave missing — gui-components falls back to the key / English
     }
 }
 // GenericApp's constructor merges `translations` into the framework dictionary and calls
@@ -53,7 +53,9 @@ const HEX = /^#[0-9a-f]{6}$/i;
 function ColorSwatch(props: { value: string; size: number; fallback?: string; onChange?: (value: string) => void }): React.JSX.Element {
     const shown = HEX.test(props.value) ? props.value : HEX.test(props.fallback ?? '') && !props.value ? props.fallback! : '';
     const onChange = props.onChange;
-    const style = { border: '1px solid rgba(128, 128, 128, .4)', borderRadius: 2, flex: '0 0 auto', height: props.size, width: props.size };
+    // A string radius: in `sx` a number multiplies theme.shape.borderRadius, which the modern admin
+    // theme sets to 10, so the plain swatches turned into circles next to the square color inputs.
+    const style = { border: '1px solid rgba(128, 128, 128, .4)', borderRadius: '2px', flex: '0 0 auto', height: props.size, width: props.size };
     return onChange && shown
         ? <input aria-label={shown} onChange={event => onChange(event.target.value)} style={{ ...style, background: 'none', cursor: 'pointer', padding: 0 }} type="color" value={shown.toLowerCase()} />
         : <Box aria-label={props.value} sx={{ ...style, backgroundColor: props.value || 'transparent' }} />;

@@ -6,7 +6,7 @@
 
 - ioBroker Admin 7.6.20 or newer
 - Node.js 22 or newer
-- an installed VIS 2 adapter
+- VIS 2 adapter 2.20.8 or newer (version 1.x of this adapter still runs on older VIS 2)
 - a current Chromium-based browser or Firefox as target environment
 
 A complete browser/runtime compatibility matrix has not been tested yet.
