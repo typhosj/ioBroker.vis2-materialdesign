@@ -9,6 +9,7 @@ import { createRoot } from 'react-dom/client';
 // same as the widget names in the theme table below.
 import presets from '../../admin/lib/presets.json';
 import '../../fonts.css';
+import { adminDictionary } from './adminDictionary';
 import { M3_BASELINE_SEED, M3_ROLES, m3SchemeFromSeed, type M3Scheme } from './m3scheme';
 import { THEME_NAMES, ancestorChannels, defaultSlotId, defaultsKey, readDefaults, readEntries, themeDefinitions, themeStateCommon, themeStateId, type NativeConfig, type ThemeEntry, type ThemeName } from './themeConfig';
 import { LEGACY_DARK_STATE, LEGACY_INSTANCE, legacyTakeOver } from './legacyTheme';
@@ -34,7 +35,7 @@ async function loadLang(lang: string): Promise<void> {
     if (translations[key]) return;
     try {
         const module = await import(`../../admin/i18n/${key}.json`);
-        translations[key] = (module.default ?? module) as Record<string, string>;
+        translations[key] = adminDictionary((module.default ?? module) as Record<string, string>);
     } catch {
         // leave missing — adapter-react-v5 falls back to the key / English
     }
