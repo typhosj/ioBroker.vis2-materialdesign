@@ -63,6 +63,28 @@ describe('PinPad', () => {
         expect(pad.onUnlock).toHaveBeenCalledWith('12');
     });
 
+    it('shakes again on every wrong try, also with a one-digit PIN', () => {
+        const pad = show({ kind: 'pin', pin: '7' });
+        const shake = () => document.querySelector<HTMLElement>('[role="dialog"]')!.style.animation;
+        expect(shake()).toBe('');
+        const seen: string[] = [];
+        for (const digit of ['1', '2', '3']) { pad.press(digit); seen.push(shake()); }
+        expect(seen.every(animation => animation.startsWith('mdw-pin-shake-'))).toBe(true);
+        expect(seen[0]).not.toBe(seen[1]);
+        expect(seen[1]).not.toBe(seen[2]);
+        expect(pad.onUnlock).not.toHaveBeenCalled();
+        pad.press('7');
+        expect(pad.onUnlock).toHaveBeenCalledWith('7');
+    });
+
+    it('a digit after a wrong try stops the shake of a longer PIN', () => {
+        const pad = show({ kind: 'pin', pin: '12' });
+        pad.press('9'); pad.press('9');
+        expect(document.querySelector('[data-pin-wrong="true"]')).not.toBeNull();
+        pad.press('1');
+        expect(document.querySelector('[data-pin-wrong="true"]')).toBeNull();
+    });
+
     it('delete removes the last digit, cancel cancels', () => {
         const pad = show({ kind: 'pin', pin: '123' });
         pad.press('1'); pad.press('9'); pad.press('delete');

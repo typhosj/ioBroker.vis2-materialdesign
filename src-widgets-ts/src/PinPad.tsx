@@ -9,11 +9,14 @@ import { VisWidget } from './widgetUtils';
 export interface PinPadProps { pin: Pin; m3: boolean; dark: boolean; onUnlock: (pin: string) => void; onCancel: () => void }
 
 const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'cancel', '0', 'delete'];
-const SHAKE = '@keyframes mdw-pin-shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}';
+const SHAKE_FRAMES = '{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}';
+const SHAKE = `@keyframes mdw-pin-shake-0${SHAKE_FRAMES}@keyframes mdw-pin-shake-1${SHAKE_FRAMES}`;
 
 export default function PinPad({ pin, m3, dark, onUnlock, onCancel }: PinPadProps): React.ReactPortal {
     const [digits, setDigits] = useState('');
-    const [wrong, setWrong] = useState(false);
+    // Wrong tries in a row, 0 after a digit. A one-digit PIN never types a digit between two tries, so
+    // the shake alternates between two keyframes: an unchanged animation would not run again.
+    const [misses, setMisses] = useState(0);
     const dialogRef = useRef<HTMLDivElement>(null);
     // The compatibility click that follows the tap which opened the pad is hit-tested on the pad: a key only acts when its own pointerdown came first.
     const armed = useRef<string | null>(null);
@@ -26,10 +29,10 @@ export default function PinPad({ pin, m3, dark, onUnlock, onCancel }: PinPadProp
     const add = (digit: string): void => {
         if (!ready) return;
         const next = digits + digit;
-        if (next.length < length) { setDigits(next); setWrong(false); return; }
+        if (next.length < length) { setDigits(next); setMisses(0); return; }
         if (next === pin.pin) { onUnlock(pin.pin); return; }
         setDigits('');
-        setWrong(true);
+        setMisses(misses + 1);
     };
     const remove = (): void => { if (ready) setDigits(digits.slice(0, -1)); };
     const press = (key: string): void => {
@@ -50,7 +53,7 @@ export default function PinPad({ pin, m3, dark, onUnlock, onCancel }: PinPadProp
             <div
                 aria-label={VisWidget.t('pinPadTitle')}
                 aria-modal="true"
-                data-pin-wrong={wrong ? 'true' : undefined}
+                data-pin-wrong={misses > 0 ? 'true' : undefined}
                 onKeyDown={event => {
                     if (/^\d$/.test(event.key)) add(event.key);
                     else if (event.key === 'Backspace') remove();
@@ -60,7 +63,7 @@ export default function PinPad({ pin, m3, dark, onUnlock, onCancel }: PinPadProp
                 }}
                 ref={dialogRef}
                 role="dialog"
-                style={{ animation: wrong ? 'mdw-pin-shake 0.3s' : undefined, background: look.background, borderRadius: m3 ? 28 : 8, boxShadow: '0 4px 8px 3px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.3)', color: look.text, outline: 'none', padding: 16, width: 264 }}
+                style={{ animation: misses > 0 ? `mdw-pin-shake-${misses % 2} 0.3s` : undefined, background: look.background, borderRadius: m3 ? 28 : 8, boxShadow: '0 4px 8px 3px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.3)', color: look.text, outline: 'none', padding: 16, width: 264 }}
                 tabIndex={-1}
             >
                 <div style={{ fontSize: 16, marginBottom: 12, textAlign: 'center' }}>{VisWidget.t(ready ? 'pinPadTitle' : 'pinPadNotSetUp')}</div>
