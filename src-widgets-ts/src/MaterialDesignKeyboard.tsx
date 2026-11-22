@@ -222,7 +222,7 @@ export default class MaterialDesignKeyboard extends VisWidget {
         return s(this.data().keyboardFields).split(/[\s,;]+/).filter(Boolean);
     }
 
-    // claims() ignores keyboards in nested views; decide with serves(), or a field in a Dialog View opens two keyboards.
+    // Ignores keyboards in nested views: decide with serves(), never with claims() alone.
     private claims(el: unknown): el is Field {
         if (!isServable(el) || !this.scope?.contains(el)) return false;
         const ids = this.fieldIds();
