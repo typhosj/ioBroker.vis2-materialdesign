@@ -90,7 +90,8 @@ click on the entry or scrolling closes it. The list opens at runtime only, not i
 the editor. Entries that do not fit into the bar move into **More ▾** at its end.
 The selected entry, or for a submenu entry its entry in the bar, is highlighted,
 and **More** when that entry sits inside it. Icons in the bar take the bar's text
-color. The title takes at most half of the bar.
+color. The entries take **font of list item** and **textsize of list item**, so an
+entry looks the same in the bar and in the drawer. The title takes at most half of the bar.
 
 Below the width in **layout 'auto' / 'horizontal': switch at a width of at least**
 (800 px by default) the bar shows the menu button and the drawer as with `modal`.
@@ -126,7 +127,8 @@ Menu entries come from the data and item groups:
 - **icon** with its colors and **submenus** – the latter a JSON array in the
   same format as above. A submenu entry can have `"subMenus"` of its own
   (building → ground floor → living room, up to ten levels); every level from the
-  second on is indented one step further. A submenu entry gets its icon from
+  second on is indented one step further. A level shows at most 100 entries and
+  the whole menu at most 1000; entries beyond that are left out. A submenu entry gets its icon from
   `"icon"` (color `"iconColor"`, otherwise the entry's **sub menu icon color**)
   and a separator below it from `"divider": true`, for example
   `[{ "text": "Living room", "icon": "sofa", "divider": true }, { "text": "Kitchen", "icon": "fridge" }]`.

@@ -2,7 +2,7 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import MaterialDesignTopAppBar, { dropdownPlace, fitCount, swipeAction } from './MaterialDesignTopAppBar';
+import MaterialDesignTopAppBar, { dropdownPlace, fitCount, flatten, swipeAction } from './MaterialDesignTopAppBar';
 
 function fixture<T>(value: unknown): T { return value as T; }
 
@@ -791,6 +791,31 @@ describe('top app bar submenus over several levels (fork #32)', () => {
     });
 });
 
+describe('top app bar menu size limits', () => {
+    const many = (count: number, make: (i: number) => object = i => ({ text: `E${i}` })) => Array.from({ length: count }, (_, i) => make(i));
+
+    it.each([[0, 0], [1, 1], [100, 100], [101, 100], [150, 100]])('%d submenu entries -> %d kept', (count, kept) => {
+        const flat = flatten([{ text: 'Haus', subMenus: many(count) }]);
+        expect(flat[0].children).toHaveLength(kept);
+        expect(flat).toHaveLength(1 + kept);
+    });
+
+    it('stops at 1000 entries in all and keeps the depth-first numbers of the rest', () => {
+        const tree = many(100, i => ({ text: `T${i}`, subMenus: many(100) }));
+        const flat = flatten(tree);
+        expect(flat).toHaveLength(1000);
+        expect(flat.map(entry => entry.index)).toEqual(flat.map((_, i) => i));
+        expect(flat[101].item.text).toBe('T1');
+        expect(flat[999].depth).toBe(1);
+    });
+
+    it('reads entries that are no objects and submenus that are no list as plain entries', () => {
+        const flat = flatten([{ text: 'A', subMenus: 'nope' as unknown as [] }, { text: 'B', subMenus: [5, null, { text: 'C' }] as unknown as [] }]);
+        expect(flat.map(entry => entry.item.text)).toEqual(['A', 'B', undefined, undefined, 'C']);
+        expect(flat[0].children).toHaveLength(0);
+    });
+});
+
 describe('horizontal navigation helpers (upstream #60)', () => {
     it.each([
         ['all fit without More', [100, 100, 100], 80, 300, 3],
@@ -828,7 +853,7 @@ describe('top app bar horizontal navigation (upstream #60)', () => {
         { text: 'Garten', divider: true },
     ];
     // Depth first: Home 0, Haus 1, EG 2, Wohnzimmer 3, Küche 4, OG 5, Web 6, Garten 7.
-    type Api = { root: unknown; dropdownEl: unknown; fit: number; menu: unknown; open: boolean; onPointerDown: (event: unknown) => void; onScroll: (event: unknown) => void; onWindowResize: () => void; onTouchStart: (event: unknown) => void; onTouchEnd: (event: unknown) => void; measure: () => void; componentDidMount: () => void; componentWillUnmount: () => void };
+    type Api = { root: unknown; dropdownEl: unknown; barFit: number; menu: unknown; open: boolean; onPointerDown: (event: unknown) => void; onScroll: (event: unknown) => void; onWindowResize: () => void; onTouchStart: (event: unknown) => void; onTouchEnd: (event: unknown) => void; measure: () => void; componentDidMount: () => void; componentWillUnmount: () => void };
     const viewport = (width: number, height = 800): void => {
         Object.defineProperty(window, 'innerWidth', { configurable: true, value: width });
         Object.defineProperty(window, 'innerHeight', { configurable: true, value: height });
@@ -1029,6 +1054,67 @@ describe('top app bar horizontal navigation (upstream #60)', () => {
         expect(p.setValue).toHaveBeenCalledWith('test.0.page', 0);
     });
 
+    it('writes the index of an entry that writes on toggle also when its dropdown closes, as the drawer does', () => {
+        const p = make({}, { items: [{ text: 'Haus', setValueOnMenuToggleClick: true, subMenus: [{ text: 'EG' }] }, { text: 'Garten', subMenus: [{ text: 'Beet' }] }] as unknown as typeof menu });
+        p.press('Haus');
+        p.press('Haus');
+        expect(p.api.menu).toBeNull();
+        expect(p.setValue.mock.calls.filter(call => call[0] === 'test.0.page')).toEqual([['test.0.page', 0], ['test.0.page', 0]]);
+        p.press('Garten');
+        p.press('Garten');
+        expect(p.setValue.mock.calls.filter(call => call[0] === 'test.0.page')).toHaveLength(2);
+    });
+
+    it('listens to the document and the window only while a feature needs it', () => {
+        const added: string[] = [];
+        const removed: string[] = [];
+        vi.spyOn(document, 'addEventListener').mockImplementation(type => { added.push(`document:${type}`); });
+        vi.spyOn(document, 'removeEventListener').mockImplementation(type => { removed.push(`document:${type}`); });
+        vi.spyOn(window, 'addEventListener').mockImplementation(type => { added.push(`window:${type}`); });
+        vi.spyOn(window, 'removeEventListener').mockImplementation(type => { removed.push(`window:${type}`); });
+        const modal = make({ drawerLayout: 'modal' });
+        modal.api.componentDidMount();
+        expect(added).toEqual([]);
+        modal.api.componentWillUnmount();
+        expect(removed).toEqual([]);
+
+        const swipe = make({ drawerLayout: 'modal', openDrawerBySwipe: true });
+        swipe.api.componentDidMount();
+        expect(added).toEqual(['document:touchstart', 'document:touchend']);
+        swipe.api.componentWillUnmount();
+        expect(removed).toEqual(['document:touchstart', 'document:touchend']);
+        added.length = 0; removed.length = 0;
+
+        const inEditor = make({ drawerLayout: 'modal', openDrawerBySwipe: true }, { editMode: true });
+        inEditor.api.componentDidMount();
+        expect(added).toEqual([]);
+
+        const bar = make();
+        bar.api.componentDidMount();
+        expect(added).toEqual(['window:resize']);
+        bar.press('Haus');
+        (bar.widget as unknown as { componentDidUpdate: (a: unknown, b: unknown) => void }).componentDidUpdate(bar.widget.props, bar.widget.state);
+        expect(added).toEqual(['window:resize', 'document:pointerdown', 'document:scroll']);
+        bar.press('Haus');
+        (bar.widget as unknown as { componentDidUpdate: (a: unknown, b: unknown) => void }).componentDidUpdate(bar.widget.props, bar.widget.state);
+        expect(removed).toEqual(['document:pointerdown', 'document:scroll']);
+        bar.press('Haus');
+        (bar.widget as unknown as { componentDidUpdate: (a: unknown, b: unknown) => void }).componentDidUpdate(bar.widget.props, bar.widget.state);
+        removed.length = 0;
+        bar.api.componentWillUnmount();
+        expect(removed.sort()).toEqual(['document:pointerdown', 'document:scroll', 'window:resize']);
+    });
+
+    it('drops the pending focus move when it unmounts', () => {
+        vi.useFakeTimers();
+        const p = make();
+        p.press('Haus');
+        p.key(p.row('EG'), 'Escape');
+        expect(vi.getTimerCount()).toBe(1);
+        p.api.componentWillUnmount();
+        expect(vi.getTimerCount()).toBe(0);
+    });
+
     it('writes the index of an entry that also writes on toggle and keeps its dropdown open', () => {
         const p = make({}, { items: [{ text: 'Haus', setValueOnMenuToggleClick: true, subMenus: [{ text: 'EG' }] }, { text: 'Garten' }] as unknown as typeof menu });
         p.press('Haus');
@@ -1141,7 +1227,7 @@ describe('top app bar horizontal navigation (upstream #60)', () => {
 
     it('moves the entries that do not fit into More and lists them there with header and divider', () => {
         const p = make();
-        p.api.fit = 1;
+        p.api.barFit = 1;
         expect(p.labels()).toEqual(['Home', 'navMore']);
         p.press('navMore');
         const html = renderToStaticMarkup(p.dropdown());
@@ -1154,21 +1240,21 @@ describe('top app bar horizontal navigation (upstream #60)', () => {
 
     it('shows only More when no entry fits and no More when all fit', () => {
         const p = make();
-        p.api.fit = 0;
+        p.api.barFit = 0;
         expect(p.labels()).toEqual(['navMore']);
-        p.api.fit = 4;
+        p.api.barFit = 4;
         expect(p.labels()).toEqual(['Home', 'Haus', 'Web', 'Garten']);
     });
 
     it('marks More when the selection sits in an entry inside it', () => {
         const p = make({ navDefaultValue: 3 });
-        p.api.fit = 1;
+        p.api.barFit = 1;
         expect(p.bar().filter(element => String(element.props.className).includes('mdw-bar-entry--active')).map(p.text)).toEqual(['navMore']);
     });
 
     it('steps into a submenu in place inside More, with the More list as the floor', () => {
         const p = make({ subMenuMode: 'slide' });
-        p.api.fit = 1;
+        p.api.barFit = 1;
         p.press('navMore');
         p.click('Haus');
         expect(p.rows()).toEqual(['EG', 'OG']);
@@ -1186,21 +1272,21 @@ describe('top app bar horizontal navigation (upstream #60)', () => {
         let room = 300;
         p.api.root = { querySelector: (selector: string) => (selector === '.mdw-bar-probe' ? probe : box(room)) };
         p.api.measure();
-        expect(p.api.fit).toBe(2);
+        expect(p.api.barFit).toBe(2);
         expect(p.widget.forceUpdate).toHaveBeenCalledTimes(1);
         p.api.measure();
         expect(p.widget.forceUpdate).toHaveBeenCalledTimes(1);
         room = 400;
         p.api.measure();
-        expect(p.api.fit).toBe(4);
+        expect(p.api.barFit).toBe(4);
         p.api.root = { querySelector: () => null };
         p.api.measure();
-        expect(p.api.fit).toBe(4);
+        expect(p.api.barFit).toBe(4);
     });
 
     it('renders the hidden copy with every entry and More, out of the accessibility tree', () => {
         const p = make();
-        p.api.fit = 1;
+        p.api.barFit = 1;
         const probe = collectByClass(p.render(), 'mdw-bar-probe')[0];
         expect(probe.props['aria-hidden']).toBe('true');
         const copies = collectByClass(probe, 'mdw-bar-entry');
@@ -1342,7 +1428,7 @@ describe('top app bar horizontal navigation (upstream #60)', () => {
         const p = make();
         const last = { name: 'last' };
         const focused = focusSpy(p, [{ name: 'first' }, last]);
-        p.api.fit = 1;
+        p.api.barFit = 1;
         p.press('navMore');
         focused.length = 0;
         const end = event({ key: 'Tab', target: last });
@@ -1472,9 +1558,9 @@ describe('top app bar horizontal navigation (upstream #60)', () => {
         const leaf = change([{ text: 'Home' }, { text: 'Garten' }]);
         expect(leaf.dropdown()).toBeUndefined();
         const more = make();
-        more.api.fit = 1;
+        more.api.barFit = 1;
         more.press('navMore');
-        more.api.fit = 4;
+        more.api.barFit = 4;
         expect(more.dropdown()).toBeUndefined();
         expect(more.api.menu).toBeNull();
     });
@@ -1503,7 +1589,7 @@ describe('top app bar horizontal navigation (upstream #60)', () => {
         const probe = { querySelectorAll: () => [box(100.4), box(100.4)], querySelector: () => box(80) };
         p.api.root = { querySelector: (selector: string) => (selector === '.mdw-bar-probe' ? probe : box(200.6)) };
         p.api.measure();
-        expect(p.api.fit).toBe(1);
+        expect(p.api.barFit).toBe(1);
     });
 
     it('keeps a scroll inside the dropdown from scrolling the page behind it', () => {
@@ -1514,7 +1600,7 @@ describe('top app bar horizontal navigation (upstream #60)', () => {
 
     it('gives the portalled dropdown the ink of its surface, so headers do not take the page colour', () => {
         const p = make();
-        p.api.fit = 1;
+        p.api.barFit = 1;
         p.press('navMore');
         const ink = (collectByClass(p.dropdown(), 'mdc-list-item')[0].props.style as React.CSSProperties).color;
         expect(ink).toBeTruthy();
