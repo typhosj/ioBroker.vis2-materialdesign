@@ -1,7 +1,9 @@
 import type { RxWidgetInfo, RxWidgetInfoAttributesFieldText } from '@iobroker/types-vis-2';
+import React from 'react';
 
 import { looksLikeBinding } from './deviceFill';
 import { renderIcon } from './MaterialDesignButtons';
+import PinPad from './PinPad';
 import { boolValue, iconField, isReadOnly, textValue } from './widgetUtils';
 
 export type Pin = { kind: 'none' } | { kind: 'pin'; pin: string } | { kind: 'invalid' };
@@ -94,16 +96,35 @@ export function resetPins(): void {
     listeners.clear();
 }
 
+export interface LockHost { forceUpdate(): void; readonly state: { readonly data?: unknown } | null; readonly props: { readonly editMode?: boolean } }
+export interface DragHandlers<T extends Element> { start(event: React.PointerEvent<T>): void; move(event: React.PointerEvent<T>): void; end(): void; cancel(): void }
+type PointerHandlers<T extends Element> = Required<Pick<React.DOMAttributes<T>, 'onPointerDown' | 'onPointerMove' | 'onPointerUp' | 'onPointerCancel'>>;
+
 export class WidgetLock {
     padOpen = false;
     refocusing = false;
     private unlocked = false;
     private holding = false;
+    // The tap that unlocks must not move the knob to where the finger landed.
+    private swallowing = false;
     private timer: number | undefined;
-    private readonly unsubscribe: () => void;
+    private afterPin: (() => void) | undefined;
+    private unsubscribe: (() => void) | undefined;
 
-    constructor(private readonly onChange: () => void) {
-        this.unsubscribe = subscribePins(onChange);
+    constructor(private readonly host: LockHost) {}
+
+    private onChange(): void {
+        this.host.forceUpdate();
+    }
+
+    options(data: LockInput): LockOptions {
+        return lockOptionsOf(data, this.host.state?.data, !!this.host.props.editMode);
+    }
+
+    // On mount, never in the constructor: React may construct an instance it never mounts, and that
+    // one would stay subscribed for good. Call it from componentDidMount; dispose() undoes it.
+    mount(): void {
+        this.unsubscribe ??= subscribePins(() => this.onChange());
     }
 
     // Read only wins: a read-only widget shows no lock, while the lock itself keeps its state.
@@ -116,14 +137,17 @@ export class WidgetLock {
         return !(o.pin.kind === 'pin' && pinUnlocked(o.pin.pin));
     }
 
-    request(o: LockOptions): LockRequest {
+    // `afterUnlock` runs once the widget is unlocked, at once or after the right PIN.
+    request(o: LockOptions, afterUnlock?: () => void): LockRequest {
         if (o.readOnly) return 'blocked';
         if (!this.closed(o)) return 'open';
         if (o.pin.kind === 'none') {
             this.unlock(o.seconds);
+            afterUnlock?.();
             return 'unlocked';
         }
         if (o.editMode) return 'blocked';
+        this.afterPin = afterUnlock;
         this.padOpen = true;
         this.onChange();
         return 'pin';
@@ -137,13 +161,66 @@ export class WidgetLock {
     }
 
     pinAccepted(pin: string, seconds: number): void {
+        const after = this.afterPin;
+        this.afterPin = undefined;
         this.padOpen = false;
         unlockPin(pin, seconds);
+        after?.();
     }
 
     pinCancelled(): void {
+        this.afterPin = undefined;
         this.padOpen = false;
         this.onChange();
+    }
+
+    pad(o: Pick<LockOptions, 'pin' | 'seconds'>, m3: boolean, dark: boolean): React.ReactElement | null {
+        if (!this.padOpen) return null;
+        return React.createElement(PinPad, { dark, m3, pin: o.pin, onCancel: () => this.pinCancelled(), onUnlock: (pin: string) => this.pinAccepted(pin, o.seconds) });
+    }
+
+    // A locked press only asks to unlock; the rest of that gesture does nothing.
+    dragHandlers<T extends Element>(o: LockOptions, locked: boolean, disabled: boolean, on: DragHandlers<T>): PointerHandlers<T> {
+        const release = (event: React.PointerEvent<T>): void => {
+            if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+        };
+        return {
+            onPointerDown: event => {
+                if (locked) {
+                    this.swallowing = true;
+                    this.request(o);
+                    return;
+                }
+                // A locked press released outside the element delivers no pointerup, so the flag may be stale.
+                this.swallowing = false;
+                if (disabled) return;
+                event.currentTarget.setPointerCapture(event.pointerId);
+                this.hold(true, o);
+                on.start(event);
+            },
+            onPointerMove: event => {
+                if (!this.swallowing && event.currentTarget.hasPointerCapture(event.pointerId)) on.move(event);
+            },
+            onPointerUp: event => {
+                event.stopPropagation();
+                if (this.swallowing) {
+                    this.swallowing = false;
+                    return;
+                }
+                release(event);
+                on.end();
+                this.hold(false, o);
+            },
+            onPointerCancel: event => {
+                if (this.swallowing) {
+                    this.swallowing = false;
+                    return;
+                }
+                release(event);
+                on.cancel();
+                this.hold(false, o);
+            },
+        };
     }
 
     // An input that started while unlocked (focus, open menu, drag) is never cut off by the relock.
@@ -178,6 +255,7 @@ export class WidgetLock {
     dispose(): void {
         window.clearTimeout(this.timer);
         this.timer = undefined;
-        this.unsubscribe();
+        this.unsubscribe?.();
+        this.unsubscribe = undefined;
     }
 }

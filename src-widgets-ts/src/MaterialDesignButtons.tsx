@@ -3,8 +3,7 @@ import React from 'react';
 import type { RxWidgetInfo, VisRxWidgetProps } from '@iobroker/types-vis-2';
 import { symbolName } from './IconFilePicker';
 import { fill, withAutoFill, type FillMap } from './deviceFill';
-import PinPad from './PinPad';
-import { WidgetLock, lockOptionsOf, lockPinField, lockSeconds, type LockData, type LockOptions } from './widgetLock';
+import { WidgetLock, lockPinField, type LockData } from './widgetLock';
 
 import { isReadOnly, squarePreview, PressState, RenderProps, SliderWriter, VisWidget, createInfo, indexedFields, itemCount, designStyle, designStyleClasses, iconField, numberValue, parseActionValue, safeWidgetUrl, setStateValue, sizeCss, stateValue, sanitizeHtml, stringValue } from './widgetUtils';
 
@@ -499,7 +498,7 @@ function execute(def: ButtonDefinition, props: VisRxWidgetProps, data: ButtonDat
 
 export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
     return class MaterialDesignButtonVariant extends VisWidget {
-        private readonly lock = new WidgetLock(() => this.forceUpdate());
+        private readonly lock = new WidgetLock(this);
         private readonly actionTimers = new Set<number>();
         private lastTouchAt = 0;
         private lastSliderAt = 0;
@@ -530,6 +529,11 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
             return MaterialDesignButtonVariant.getWidgetInfo();
         }
 
+        componentDidMount(): void {
+            super.componentDidMount();
+            this.lock.mount();
+        }
+
         componentWillUnmount(): void {
             this.lock.dispose();
             this.actionTimers.forEach(timer => window.clearTimeout(timer));
@@ -548,16 +552,12 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
             this.actionTimers.add(timer);
         };
 
-        private lockOptions(data: ButtonData): LockOptions {
-            return lockOptionsOf(data, this.state?.data, !!this.props.editMode);
-        }
-
         isLocked(data: ButtonData): boolean {
-            return this.lock.isLocked(this.lockOptions(data));
+            return this.lock.isLocked(this.lock.options(data));
         }
 
         activate(data: ButtonData, current: ioBroker.StateValue | undefined): void {
-            const request = this.lock.request(this.lockOptions(data));
+            const request = this.lock.request(this.lock.options(data));
             if (request === 'blocked' || request === 'pin') {
                 return;
             }
@@ -640,7 +640,7 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
             if (def.kind !== 'toggle' || isReadOnly(data) || !data.pushButton) {
                 return;
             }
-            const request = this.lock.request(this.lockOptions(data));
+            const request = this.lock.request(this.lock.options(data));
             if (request !== 'open') {
                 // The press that unlocks or asks for the PIN wrote nothing, so its release must not write the off value.
                 this.pressed = false;
@@ -967,15 +967,7 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
                             </>
                         ) : null}
                     </button>
-                    {this.lock.padOpen ? (
-                        <PinPad
-                            dark={this.isDarkTheme()}
-                            m3={isM3}
-                            onCancel={() => this.lock.pinCancelled()}
-                            onUnlock={pin => this.lock.pinAccepted(pin, lockSeconds(data.autoLockAfter))}
-                            pin={this.lockOptions(data).pin}
-                        />
-                    ) : null}
+                    {this.lock.pad(this.lock.options(data), isM3, this.isDarkTheme())}
                 </div>
             );
         }

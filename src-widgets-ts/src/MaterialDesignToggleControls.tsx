@@ -4,8 +4,7 @@ import type { RxWidgetInfo, VisRxWidgetProps } from '@iobroker/types-vis-2';
 
 import { renderIcon, m3ColorExplicit } from './MaterialDesignButtons';
 import { fill, withAutoFill } from './deviceFill';
-import PinPad from './PinPad';
-import { WidgetLock, lockOptionsOf, lockPinField, lockSeconds, type LockData, type LockOptions } from './widgetLock';
+import { WidgetLock, lockPinField, type LockData } from './widgetLock';
 import { boolValue, isReadOnly, squarePreview, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, iconField, m3Switch, parseActionValue, setStateValue, sizeCss, stateValue, stringValue } from './widgetUtils';
 
 export interface ToggleControlData extends LockData {
@@ -178,7 +177,7 @@ function preview(def: ControlDefinition): string {
 
 export function createToggleControlClass(def: ControlDefinition): typeof VisWidget {
     return class MaterialDesignToggleControl extends VisWidget {
-        private readonly lock = new WidgetLock(() => this.forceUpdate());
+        private readonly lock = new WidgetLock(this);
 
         constructor(props: VisRxWidgetProps) {
             super(props);
@@ -199,13 +198,14 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
             return MaterialDesignToggleControl.getWidgetInfo();
         }
 
+        componentDidMount(): void {
+            super.componentDidMount();
+            this.lock.mount();
+        }
+
         componentWillUnmount(): void {
             this.lock.dispose();
             super.componentWillUnmount?.();
-        }
-
-        private lockOptions(data: ToggleControlData): LockOptions {
-            return lockOptionsOf(data, this.state?.data, !!this.props.editMode);
         }
 
         renderWidgetBody(props: RenderProps): React.JSX.Element {
@@ -214,7 +214,7 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
             const on = isOn(stateValue(this.state, data.oid || ''), data);
             const isM3 = designStyle(data as Record<string, unknown>) === 'material3';
             const m3 = (explicitValue: unknown, token: string): string => (m3ColorExplicit(explicitValue) ? String(explicitValue) : token);
-            const locked = this.lock.isLocked(this.lockOptions(data));
+            const locked = this.lock.isLocked(this.lock.options(data));
             const label = on ? data.labelTrue || data.labelFalse || '' : data.labelFalse || '';
             const labelPosition = data.labelPosition || 'right';
             const switchMargin = labelPosition === 'off' ? 0 : 10;
@@ -244,7 +244,7 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
                 );
 
             const toggle = (): void => {
-                const request = this.lock.request(this.lockOptions(data));
+                const request = this.lock.request(this.lock.options(data));
                 if (request === 'blocked' || request === 'pin') {
                     return;
                 }
@@ -482,15 +482,7 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
                             )}
                         </span>
                     ) : null}
-                    {this.lock.padOpen ? (
-                        <PinPad
-                            dark={this.isDarkTheme()}
-                            m3={isM3}
-                            onCancel={() => this.lock.pinCancelled()}
-                            onUnlock={pin => this.lock.pinAccepted(pin, lockSeconds(data.autoLockAfter))}
-                            pin={this.lockOptions(data).pin}
-                        />
-                    ) : null}
+                    {this.lock.pad(this.lock.options(data), isM3, this.isDarkTheme())}
                 </div>
             );
         }

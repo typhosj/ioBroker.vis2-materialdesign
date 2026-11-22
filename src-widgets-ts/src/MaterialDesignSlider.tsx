@@ -5,8 +5,7 @@ import type { RxWidgetInfo, VisRxWidgetProps } from '@iobroker/types-vis-2';
 import { cleanColor, num, snapToStep } from './MaterialDesignProgress';
 import { fill, withAutoFill } from './deviceFill';
 import { m3ColorExplicit } from './MaterialDesignButtons';
-import PinPad from './PinPad';
-import { WidgetLock, lockGroup, lockIcon, lockOptionsOf, type LockData, type LockOptions } from './widgetLock';
+import { WidgetLock, lockGroup, lockIcon, type LockData } from './widgetLock';
 import { isReadOnly, squarePreview, RenderProps, SliderWriter, VisWidget, boundedCount, createInfo, designStyle, designStyleClasses, setStateValue, sizeCss, sliderKeyValue, stateValue, sanitizeHtml } from './widgetUtils';
 
 // The old widget got track/thumb geometry from ambient legacy Vuetify CSS, which is gone.
@@ -269,12 +268,11 @@ export default class MaterialDesignSlider extends VisWidget {
     }
 
     private readonly writer = new SliderWriter();
-    private readonly lock = new WidgetLock(() => this.forceUpdate());
-    // The tap that unlocks must not move the knob to where the finger landed.
-    private swallow = false;
+    private readonly lock = new WidgetLock(this);
 
-    private lockOptions(data: SliderData): LockOptions {
-        return lockOptionsOf(data, this.state?.data, !!this.props.editMode);
+    componentDidMount(): void {
+        super.componentDidMount();
+        this.lock.mount();
     }
 
     componentWillUnmount(): void {
@@ -356,7 +354,7 @@ export default class MaterialDesignSlider extends VisWidget {
         const before = isM3 && !m3ColorExplicit(data.colorBeforeThumb) ? 'var(--md-sys-color-primary)' : cleanColor(data.colorBeforeThumb, '#44739e');
         const thumb = isM3 && !m3ColorExplicit(data.colorThumb) ? 'var(--md-sys-color-primary)' : cleanColor(data.colorThumb, before);
         const after = isM3 && !m3ColorExplicit(data.colorAfterThumb) ? 'var(--md-sys-color-surface-container-high)' : cleanColor(data.colorAfterThumb, 'rgba(161, 161, 161, 0.26)');
-        const opts = this.lockOptions(data);
+        const opts = this.lock.options(data);
         const locked = this.lock.isLocked(opts);
         const disabled = isReadOnly(data) || isWorking(stateValue(this.state, data['oid-working'] || ''));
         const showThumbLabel = data.showThumbLabel === 'yes' || data.showThumbLabel === 'always';
@@ -467,57 +465,19 @@ export default class MaterialDesignSlider extends VisWidget {
                                             ) : null}
                                         </div>
                                         <div
-                                            onPointerDown={event => {
-                                                // Before the haptics and the capture, not after: a read-only or
-                                                // "working"-locked slider used to buzz and click on every touch
-                                                // while refusing to move.
-                                                if (locked) {
-                                                    this.swallow = true;
-                                                    this.lock.request(opts);
-                                                    return;
-                                                }
-                                                // A locked press released outside the element delivers no pointerup, so the flag may be stale.
-                                                this.swallow = false;
-                                                if (disabled) {
-                                                    return;
-                                                }
-                                                feedback(data);
-                                                event.currentTarget.setPointerCapture(event.pointerId);
-                                                this.lock.hold(true, opts);
-                                                this.writeFromPointer(event, data, disabled);
-                                            }}
-                                            onPointerMove={event => {
-                                                if (this.swallow) return;
-                                                if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+                                            // The lock and read only act before the haptics: a locked or "working" slider
+                                            // used to buzz and click on every touch while refusing to move.
+                                            {...this.lock.dragHandlers<HTMLDivElement>(opts, locked, disabled, {
+                                                start: event => {
+                                                    feedback(data);
                                                     this.writeFromPointer(event, data, disabled);
-                                                }
-                                            }}
-                                            onPointerUp={event => {
-                                                event.stopPropagation();
-                                                if (this.swallow) {
-                                                    this.swallow = false;
-                                                    return;
-                                                }
-                                                if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-                                                    event.currentTarget.releasePointerCapture(event.pointerId);
-                                                }
-                                                this.releasePointer(data);
-                                                this.lock.hold(false, opts);
-                                            }}
-                                            onPointerCancel={event => {
-                                                if (this.swallow) {
-                                                    this.swallow = false;
-                                                    return;
-                                                }
-                                                if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-                                                    event.currentTarget.releasePointerCapture(event.pointerId);
-                                                }
-                                                // The gesture was taken away (scroll, call, palm). Releasing the
-                                                // capture alone left the throttled write queued, so the value the
-                                                // finger was on when it was interrupted still landed a moment later.
-                                                this.writer.cancel();
-                                                this.lock.hold(false, opts);
-                                            }}
+                                                },
+                                                move: event => this.writeFromPointer(event, data, disabled),
+                                                end: () => this.releasePointer(data),
+                                                // The gesture was taken away (scroll, call, palm). Releasing the capture alone left
+                                                // the throttled write queued, so the value under the finger still landed a moment later.
+                                                cancel: () => this.writer.cancel(),
+                                            })}
                                             style={{ cursor: disabled ? 'default' : 'pointer', height: '100%', inset: 0, position: 'absolute', touchAction: 'none', width: '100%', zIndex: 2 }}
                                         />
                                     </div>
@@ -539,15 +499,7 @@ export default class MaterialDesignSlider extends VisWidget {
                         ) : null}
                     </div>
                 </div>
-                {this.lock.padOpen ? (
-                    <PinPad
-                        dark={this.isDarkTheme()}
-                        m3={isM3}
-                        onCancel={() => this.lock.pinCancelled()}
-                        onUnlock={pin => this.lock.pinAccepted(pin, opts.seconds)}
-                        pin={opts.pin}
-                    />
-                ) : null}
+                {this.lock.pad(opts, isM3, this.isDarkTheme())}
             </div>
         );
     }

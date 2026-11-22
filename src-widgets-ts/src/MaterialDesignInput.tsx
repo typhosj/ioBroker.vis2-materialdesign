@@ -18,8 +18,7 @@ import {
     resolveHour12,
     todayParts,
 } from './pickerFormat';
-import PinPad from './PinPad';
-import { WidgetLock, lockGroup, lockIcon, lockOptionsOf, type LockData, type LockOptions } from './widgetLock';
+import { WidgetLock, lockGroup, lockIcon, type LockData } from './widgetLock';
 import { squarePreview, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, iconField, legacyInk, legacyInkMuted, legacyOutline, isReadOnly, setStateValue, sizeCss, stateValue } from './widgetUtils';
 
 interface InputData extends LockData {
@@ -460,7 +459,7 @@ export default class MaterialDesignInput extends VisWidget {
     private pickerOpen = false;
     private readonly pickerButtonRef = React.createRef<HTMLButtonElement>();
     private readonly inputRef = React.createRef<HTMLInputElement>();
-    private readonly lock = new WidgetLock(() => this.forceUpdate());
+    private readonly lock = new WidgetLock(this);
 
     constructor(props: VisRxWidgetProps) {
         super(props);
@@ -468,6 +467,7 @@ export default class MaterialDesignInput extends VisWidget {
 
     componentDidMount(): void {
         super.componentDidMount();
+        this.lock.mount();
         this.widDiv?.style.setProperty('overflow', 'visible', 'important');
         this.rootRef.current?.parentElement?.style.setProperty('overflow', 'visible', 'important');
         this.rootRef.current?.parentElement?.parentElement?.style.setProperty('overflow', 'visible', 'important');
@@ -476,10 +476,6 @@ export default class MaterialDesignInput extends VisWidget {
     componentWillUnmount(): void {
         this.lock.dispose();
         super.componentWillUnmount?.();
-    }
-
-    private lockOptions(data: InputData): LockOptions {
-        return lockOptionsOf(data, this.state?.data, !!this.props.editMode);
     }
 
     static getWidgetInfo(): RxWidgetInfo {
@@ -527,7 +523,7 @@ export default class MaterialDesignInput extends VisWidget {
 
     private closePicker(): void {
         this.pickerOpen = false;
-        this.lock.hold(false, this.lockOptions(this.state.rxData));
+        this.lock.hold(false, this.lock.options(this.state.rxData as InputData));
         this.forceUpdate();
         this.pickerButtonRef.current?.focus();
     }
@@ -536,7 +532,7 @@ export default class MaterialDesignInput extends VisWidget {
         super.renderWidgetBody(props);
         const data = this.state.rxData as InputData;
         const readOnly = isReadOnly(data);
-        const opts = this.lockOptions(data);
+        const opts = this.lock.options(data);
         const locked = this.lock.isLocked(opts);
         const blocked = readOnly || locked;
         const state = stateValue(this.state, data.oid || '');
@@ -815,9 +811,7 @@ export default class MaterialDesignInput extends VisWidget {
                                             if (!locked) return;
                                             // The tap that unlocks must not also place the caret in a still-readonly field.
                                             event.preventDefault();
-                                            if (this.lock.request(opts) === 'unlocked') {
-                                                this.lock.focusAfterUnlock(() => this.inputRef.current, opts);
-                                            }
+                                            this.lock.request(opts, () => this.lock.focusAfterUnlock(() => this.inputRef.current, opts));
                                         }}
                                         autoFocus={!!data.autoFocus}
                                         // The picker mask has a fixed length; a shorter max length would make every entry invalid.
@@ -1074,18 +1068,7 @@ export default class MaterialDesignInput extends VisWidget {
                         today={todayParts(new Date())}
                     />
                 ) : null}
-                {this.lock.padOpen ? (
-                    <PinPad
-                        dark={this.isDarkTheme()}
-                        m3={isM3}
-                        onCancel={() => this.lock.pinCancelled()}
-                        onUnlock={pin => {
-                            this.lock.pinAccepted(pin, opts.seconds);
-                            this.lock.focusAfterUnlock(() => this.inputRef.current, opts);
-                        }}
-                        pin={opts.pin}
-                    />
-                ) : null}
+                {this.lock.pad(opts, isM3, this.isDarkTheme())}
             </div>
         );
     }

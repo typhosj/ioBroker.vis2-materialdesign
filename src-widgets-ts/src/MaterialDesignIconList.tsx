@@ -4,8 +4,7 @@ import type { RxWidgetInfo, WidgetData } from '@iobroker/types-vis-2';
 
 import { renderIcon } from './MaterialDesignButtons';
 import { fill, withAutoFill } from './deviceFill';
-import PinPad from './PinPad';
-import { WidgetLock, lockOptionsOf, lockPinField, lockSeconds, type LockData, type LockOptions } from './widgetLock';
+import { WidgetLock, lockOptionsOf, lockPinField, type LockData, type LockOptions } from './widgetLock';
 import { MAX_DYNAMIC_ITEMS, squarePreview, RenderProps, VisWidget, accessibleText, boundedCount, createInfo, designStyle, indexedFields, designStyleClasses, legacyInk, legacyOutline, legacySurface, iconField, itemCount, parseActionValue, safeWidgetUrl, setStateValue, stateValue, sanitizeHtml, stringValue, visibleBy, boolValue as b, numberValue as n, textValue as s } from './widgetUtils';
 
 type Data = Record<string, unknown> & LockData & {
@@ -261,12 +260,19 @@ export default class MaterialDesignIconList extends VisWidget {
 
     componentDidMount(): void {
         super.componentDidMount();
+        this.mountLocks();
         this.followActive();
     }
 
     componentDidUpdate(prevProps: typeof this.props, prevState: typeof this.state): void {
         super.componentDidUpdate(prevProps, prevState);
+        this.mountLocks();
         this.followActive();
+    }
+
+    // The render creates the locks of new entries; they subscribe only once they are on screen.
+    private mountLocks(): void {
+        for (const lock of this.locks.values()) lock.mount();
     }
 
     // Only when another entry became active: a re-render for anything else must not take the list
@@ -296,7 +302,7 @@ export default class MaterialDesignIconList extends VisWidget {
 
     private lockOf(index: number): WidgetLock {
         let lock = this.locks.get(index);
-        if (!lock) { lock = new WidgetLock(() => this.forceUpdate()); this.locks.set(index, lock); }
+        if (!lock) { lock = new WidgetLock(this); this.locks.set(index, lock); }
         return lock;
     }
 
@@ -418,7 +424,7 @@ export default class MaterialDesignIconList extends VisWidget {
         const header = s(data.headers) ? <div className="materialdesign-widget materialdesign-html-card" style={{ flex: '0 0 auto', position: 'relative' }}><div className="materialdesign-list-header-row" style={{ alignItems: 'center', background: 'transparent', boxSizing: 'border-box', display: 'flex', flexDirection: 'row', justifyContent: s(data.alignment, 'flex-start'), margin: '8px 3px 3px', minHeight: headerHeight, padding: `${n(data.header_padding_top, 6)}px ${n(data.header_padding_right, 16)}px ${n(data.header_padding_bottom, 0)}px ${n(data.header_padding_left, 16)}px`, textAlign: s(data.alignment, 'flex-start').replace('flex-', '') as React.CSSProperties['textAlign'], width: 'calc(100% - 6px)' }}>{icon(s(data.headerImage), m3f(data.headerImageColor, 'var(--md-sys-color-on-surface-variant)', ''), n(data.headerImageHeight, 24), !!data.headerImageColor)}<div className="materialdesign-icon-list-header" dangerouslySetInnerHTML={{ __html: sanitizeHtml(s(data.headers)) }} /></div></div> : null;
         const container = <div className="materialdesign-icon-list-container" style={{ flexWrap: b(data.wrapItems, true) ? 'wrap' : undefined, height: b(data.wrapItems, true) ? 'auto' : undefined }}>{items.map((value, index) => this.renderItem(value, index, data))}</div>;
         const padLock = [...this.locks.values()].find(lock => lock.padOpen);
-        const pad = padLock ? <PinPad dark={isDark} m3={isM3} onCancel={() => padLock.pinCancelled()} onUnlock={pin => padLock.pinAccepted(pin, lockSeconds(data.autoLockAfter))} pin={lockOptionsOf(data, this.state?.data, false).pin} /> : null;
+        const pad = padLock?.pad(padLock.options(data), isM3, isDark) ?? null;
         const titleSize = n(data.titleLayout) ? `${n(data.titleLayout)}px` : undefined;
         return <div ref={element => { this.root = element; }} className={`materialdesign-widget materialdesign-icon-list${isM3 ? ` ${designStyleClasses(data, this.isDarkTheme())}` : ''}`} style={{ ...variables, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden', width: '100%' }}><style>{isM3 ? css + m3Css : css}</style>{header}{b(data.cardUse) ? <div className="materialdesign-html-card mdc-card" style={{ flex: '1 1 auto', margin: '3px 0 3px 3px', minHeight: 0, width: 'calc(100% - 6px)' }}>{data.title !== undefined && data.title !== null ? <div className="materialdesign-html-card card-title-section"><div className={`materialdesign-html-card card-title ${s(data.titleLayout).match(/^(headline|subtitle|body|caption|button|overline)/) ? `mdc-typography--${s(data.titleLayout)}` : ''}`} dangerouslySetInnerHTML={{ __html: sanitizeHtml(s(data.title)) }} style={{ fontSize: titleSize }} /></div> : null}<div className="materialdesign-html-card card-text-section iconlist" style={{ flex: '1 1 auto', margin: n(data.borderDistance), minHeight: 0, overflowX: b(data.showScrollbar, true) ? 'hidden' : undefined, overflowY: b(data.showScrollbar, true) ? 'auto' : undefined }}><div className="materialdesign-html-card">{container}</div></div></div> : <div className="materialdesign-icon-list-scroll" style={{ boxSizing: 'border-box', flex: '0 1 auto', maxHeight: '100%', minHeight: 0, overflowX: 'hidden', overflowY: b(data.showScrollbar, true) ? 'auto' : 'hidden' }}>{container}</div>}{pad}</div>;
     }
