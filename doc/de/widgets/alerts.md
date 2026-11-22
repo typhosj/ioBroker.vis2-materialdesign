@@ -25,6 +25,8 @@ aufgeführte Einstellungen sind selbsterklärend.
 - **Anzahl der Meldungen anzeigen** – eine Zeile über den Meldungen mit der Anzahl aller Meldungen im State, auch der über *zeige max. Alerts* hinaus.
 - **Schaltfläche 'Alle löschen' anzeigen** – eine Schaltfläche in derselben Zeile, die den State leert (`[]`). Ein State ohne gültiges JSON wird nie gelöscht.
 
+<img src="../../media/vis2_alerts_count_clear_all.png" width="420" alt="Alerts mit der Zeile „Meldungen: 4“ und „Alle löschen“, zwei Meldungen sichtbar">
+
 Im Editor zeigt eine leere Liste zwei Beispielmeldungen, damit sich Layout und Farben einstellen lassen. Der Editor schreibt nie in den State: Schließen und „Alle löschen“ tun dort nichts, auch bei echten Meldungen.
 
 **Layout**

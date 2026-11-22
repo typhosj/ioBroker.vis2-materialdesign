@@ -80,6 +80,11 @@ zurück zu diesem Rand. Ein dauerhafter Drawer und der Editor reagieren nicht
 darauf. Auf Handys mit Gestensteuerung ist derselbe Wisch die System-Geste
 „Zurück“, die Option passt deshalb eher zu Wandtablets im Kiosk-Modus als zu Handys.
 
+Links klappen die Untermenüs unter ihrem Eintrag auf, über drei Ebenen; rechts
+dieselbe Auswahl mit Untermenüs anstelle der Liste, mit der Zurück-Zeile oben:
+
+<img src="../../media/vis2_top_app_bar_levels.png" width="380" alt="Drawer mit aufgeklappten Untermenüs über drei Ebenen"> <img src="../../media/vis2_top_app_bar_slide.png" width="380" alt="Drawer mit dem Untermenü EG anstelle der Liste und der Zurück-Zeile">
+
 <img src="../../media/vis2_top_app_bar_horizontal.png" alt="Top App Bar mit dem Layout horizontal und geöffneter Liste unter Haus">
 
 Mit dem Layout `horizontal` stehen die Einträge der obersten Ebene nebeneinander
@@ -91,7 +96,9 @@ schließt sie. Die Liste öffnet nur zur Laufzeit, im Editor nicht. Was nicht in
 Leiste passt, wandert in **Mehr ▾** am Ende. Der gewählte Eintrag, bei einem
 Untereintrag sein Eintrag in der Leiste, ist hinterlegt, und **Mehr**, wenn dieser
 Eintrag darin liegt. Die Symbole in der Leiste nehmen die Textfarbe des Balkens.
-Der Titel nimmt höchstens die halbe Leiste ein.
+Die Einträge nehmen **Schriftart des Listenelements** und **Textgröße des Listenelements**, ein
+Eintrag sieht in der Leiste also aus wie im Drawer. Der Titel nimmt höchstens die
+halbe Leiste ein.
 
 Unterhalb der Breite unter **Layout 'auto' / 'horizontal': umschalten ab Breite**
 (Vorgabe 800 px) zeigt die Leiste wie bei `modal` den Menü-Button und den Drawer.
@@ -130,13 +137,14 @@ Die Menüeinträge stammen aus den Daten- und Eintragsgruppen:
 - **Bild** samt Farben und **Untermenüs** – letzteres ein JSON-Array im selben
   Format wie oben. Ein Untereintrag kann selbst wieder `"subMenus"` haben
   (Gebäude → EG → Wohnzimmer, bis zu zehn Ebenen); jede Ebene ab der zweiten
-  rückt ein Stück weiter ein. Ein Untereintrag bekommt sein Symbol mit
+  rückt ein Stück weiter ein. Eine Ebene zeigt höchstens 100 Einträge, das ganze
+  Menü höchstens 1000; was darüber hinausgeht, entfällt. Ein Untereintrag bekommt sein Symbol mit
   `"icon"` (Farbe `"iconColor"`, sonst **Farbe des Untermenüsymbols** des
   Eintrags) und mit `"divider": true` eine Trennlinie darunter, zum Beispiel
   `[{ "text": "Wohnzimmer", "icon": "sofa", "divider": true }, { "text": "Küche", "icon": "fridge" }]`.
   Ein Eintrag mit Untermenü klappt beim Klick nur auf; **Wert
   auch schreiben, wenn Eintrag zum Untermenü umschalten gedrückt wird** schreibt
-  zusätzlich seinen Index.
+  zusätzlich seinen Index, beim Auf- wie beim Zuklappen, auch in der horizontalen Leiste.
 - **URL** / **URL öffnen in** – ein Eintrag mit URL öffnet diese Seite, statt
   eine View zu wählen, in `neuem Tab` oder `demselben Tab`; in die Objekt-IDs
   wird nichts geschrieben. Im JSON-String heißt das `"url"`, mit

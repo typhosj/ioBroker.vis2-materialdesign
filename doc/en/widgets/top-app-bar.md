@@ -80,6 +80,12 @@ drawer ignores it, and so does the editor. On phones with gesture navigation the
 same swipe is the system's "back" gesture, so the option suits wall tablets in
 kiosk mode more than phones.
 
+On the left the submenus unfold below their entry, over three levels; on the
+right the same selection with submenus in place of the list and the back row at
+the top:
+
+<img src="../../media/vis2_top_app_bar_levels.png" width="380" alt="Drawer with submenus unfolded over three levels"> <img src="../../media/vis2_top_app_bar_slide.png" width="380" alt="Drawer with the submenu EG in place of the list and the back row">
+
 <img src="../../media/vis2_top_app_bar_horizontal.png" alt="Top app bar with the layout horizontal and the list under Haus open">
 
 With the layout `horizontal` the top-level entries stand side by side in the bar,
@@ -133,7 +139,7 @@ Menu entries come from the data and item groups:
   and a separator below it from `"divider": true`, for example
   `[{ "text": "Living room", "icon": "sofa", "divider": true }, { "text": "Kitchen", "icon": "fridge" }]`.
   An entry with a submenu only expands on click; **set
-  value on click at item that toggle submenu** also writes its index.
+  value on click at item that toggle submenu** also writes its index, on opening and on closing alike, in the horizontal bar too.
 - **URL** / **open URL in** – an entry with a URL opens that page instead of
   selecting a view, in a `new tab` or the `same tab`; nothing is written to the
   object ids. In the JSON string this is `"url"` with `"urlTarget": "_self"` for

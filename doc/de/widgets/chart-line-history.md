@@ -47,7 +47,9 @@ Zeitreihe. Ohne eigenen Legendentext wird die Objekt-ID angezeigt.
 | Minimaler Zeitabstand | Abfrageschritt in Sekunden; leer oder `0` lässt die History-Instanz wählen |
 | Multiplikator | rechnet jeden gültigen Wert vor der Darstellung um, etwa `0.001` von W in kW |
 | Diagramm Typ | `line` (Vorgabe) oder `bar`. Balken teilen sich die Zeitachse mit den Linien, etwa der Tagesverbrauch als Balken unter einer Temperaturlinie. Sie passen zu einer Aggregation wie `total` oder `average` mit einem minimalen Zeitabstand wie `86400` (ein Balken pro Tag); mit `minmax` werden die Balken so dünn, wie die Punkte dicht liegen. Ein Balken ist in der Datensatzfarbe gefüllt, oder in der Füllfarbe, wenn eine gesetzt ist |
-| Objekt ID / Bedingung / Wert für die Sichtbarkeit | blenden den Datensatz aus, solange die Bedingung nicht zutrifft, etwa eine Heizungslinie, solange `0_userdata.0.modus` nicht `auto` ist. Erlaubt sind `==` (Vorgabe), `!=`, `<`, `<=`, `>`, `>=`, `consist`, `not consist`, `exist` und `not exist`. Ohne Objekt-ID bleibt der Datensatz sichtbar. Ein ausgeblendeter Datensatz verschwindet aus der Legende samt eigener Y-Achse; die übrigen Linien behalten ihre Farben |
+| Objekt ID / Bedingung / Wert für die Sichtbarkeit | blenden den Datensatz aus, solange die Bedingung nicht zutrifft, etwa eine Heizungslinie, solange `0_userdata.0.modus` nicht `auto` ist. Die Bedingung ist eine von `==` (Vorgabe), `!=`, `<`, `<=`, `>`, `>=`, `consist`, `not consist`, `exist` und `not exist`. Ohne Objekt-ID bleibt der Datensatz sichtbar. Ein ausgeblendeter Datensatz verschwindet aus der Legende, seine Y-Achse erst, wenn kein sichtbarer Datensatz sie mehr nutzt. Eine Achse, die bleibt, behält Titel, Position und Bereich ihres ersten Datensatzes, auch solange dieser ausgeblendet ist; die übrigen Linien behalten ihre Farben |
+
+<img src="../../media/vis2_chart_line_history_bars.png" alt="Line History mit einer Linie und einem Datensatz als Balken auf einer zweiten Y-Achse">
 
 Nicht numerische und `null`-Werte werden ausgelassen. Bei einer fehlenden
 History-Instanz oder nicht erreichbarer History-API bleibt das Diagramm leer.
