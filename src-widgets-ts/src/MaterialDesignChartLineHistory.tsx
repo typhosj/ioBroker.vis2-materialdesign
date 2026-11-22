@@ -1,4 +1,4 @@
-import { squarePreview, indexedFields, itemCount, createInfo, designStyle, formatMoment, visLocale, stateValue, visibleBy, boolValue as b, numberValue as n, textValue as s } from "./widgetUtils";
+import { squarePreview, indexedFields, itemCount, createInfo, designStyle, formatMoment, visLocale, stateValue, VISIBILITY_CONDITIONS, visibleBy, boolValue as b, numberValue as n, textValue as s } from "./widgetUtils";
 import type { RxWidgetInfo, VisRxWidgetState } from "@iobroker/types-vis-2";
 import { colorSchemes } from "./MaterialDesignColorScheme";
 import { ChartWidget, cardGroup, legendGroup, tooltipGroup, type ChartSpec } from "./MaterialDesignChartCanvas";
@@ -76,6 +76,12 @@ export function rowAxisId(d: Data, i: number): string {
 export function distinctAxisRows(rowIdx: number[], d: Data): number[] {
   return rowIdx.filter((i, k) => rowIdx.findIndex(j => rowAxisId(d, j) === rowAxisId(d, i)) === k);
 }
+// An axis takes its settings from its first row, hidden or not: hiding that row must not hand the
+// axis of the lines still shown the title and range of the next row.
+export function shownAxisRows(rows: number[], shown: (i: number) => boolean, d: Data): number[] {
+  const used = new Set(rows.filter(shown).map(i => rowAxisId(d, i)));
+  return distinctAxisRows(rows, d).filter(i => used.has(rowAxisId(d, i)));
+}
 const color = (name: string) => ({ name, label: name, type: "color" as const });
 const num = (name: string) => ({ name, label: name, type: "number" as const });
 // vis-2 expands 0..dataCount, one row more than the count asks for, and puts the clone, delete and
@@ -150,7 +156,7 @@ const attrs: RxWidgetInfo["visAttrs"] = [
     ...rows([
       { name: "oid", label: "oid", type: "id" },
       { name: "visibilityOid", label: "visibilityOid", type: "id" },
-      { name: "visibilityCondition", label: "visibilityCondition", type: "text", default: "==" },
+      { name: "visibilityCondition", label: "visibilityCondition", type: "select", options: [...VISIBILITY_CONDITIONS], default: "==" },
       { name: "visibilityConditionValue", label: "visibilityConditionValue", type: "text" },
       {
         name: "aggregate",
@@ -388,9 +394,9 @@ export default class MaterialDesignChartLineHistory extends ChartWidget {
     const on = (v: unknown): number | undefined => (v === undefined || v === null || v === "" || !Number.isFinite(Number(v)) ? undefined : Number(v));
     const isBar = (i: number): boolean => s(item(d, "chartType", i), "line") === "bar";
     const shown = (i: number): boolean => { const oid = s(item(d, "visibilityOid", i)); return !oid || visibleBy(item(d, "visibilityCondition", i), item(d, "visibilityConditionValue", i), stateValue(this.state, oid)); };
-    const rowIdx = Array.from({ length: itemCount(d.dataCount) }, (_v, i) => i).filter(shown);
+    const rowIdx = Array.from({ length: itemCount(d.dataCount) }, (_v, i) => i);
     const yAxisIdOf = (i: number) => rowAxisId(d, i);
-    const yEntries = distinctAxisRows(rowIdx, d)
+    const yEntries = shownAxisRows(rowIdx, shown, d)
       .map((i): [string, Record<string, unknown>] => [yAxisIdOf(i), chartAxis({
         axis: "y",
         type: "linear",

@@ -1,5 +1,5 @@
 import React from "react";
-import { squarePreview, boundedCount, createInfo, indexedFields, itemCount, designStyle, designStyleClasses, RenderProps, stateValue, VisWidget, numberValue as n, textValue as s } from './widgetUtils';
+import { squarePreview, boundedCount, createInfo, indexedFields, itemCount, designStyle, designStyleClasses, RenderProps, stateValue, VisWidget, VISIBILITY_CONDITIONS, visibleBy, numberValue as n, textValue as s } from './widgetUtils';
 import type { RxWidgetInfo } from "@iobroker/types-vis-2";
 
 type Kind = "masonry" | "grid";
@@ -20,18 +20,7 @@ const visibilityFields = [
     name: "visibilityCondition",
     label: "visibilityCondition",
     type: "select" as const,
-    options: [
-      "==",
-      "!=",
-      "<=",
-      ">=",
-      "<",
-      ">",
-      "consist",
-      "not consist",
-      "exist",
-      "not exist",
-    ],
+    options: [...VISIBILITY_CONDITIONS],
     default: "==",
   },
   {
@@ -343,35 +332,6 @@ export function viewsInfo(kind: Kind): RxWidgetInfo {
   };
 }
 
-function visible(
-  value: unknown,
-  condition: string,
-  expected: unknown,
-): boolean {
-  switch (condition) {
-    case "!=":
-      return String(value) !== String(expected);
-    case "<=":
-      return n(value) <= n(expected);
-    case ">=":
-      return n(value) >= n(expected);
-    case "<":
-      return n(value) < n(expected);
-    case ">":
-      return n(value) > n(expected);
-    case "consist":
-      return String(value).includes(String(expected));
-    case "not consist":
-      return !String(value).includes(String(expected));
-    case "exist":
-      return value !== undefined && value !== null;
-    case "not exist":
-      return value === undefined || value === null;
-    default:
-      return String(value) === String(expected);
-  }
-}
-
 export class MaterialDesignViews extends VisWidget {
   private readonly root = React.createRef<HTMLDivElement>();
   private readonly cellRefs = new Map<number, HTMLDivElement | null>();
@@ -532,13 +492,10 @@ export class MaterialDesignViews extends VisWidget {
               // A condition that holds SHOWS the view. This read used to be negated, so
               // "== 1" hid the view exactly while the state was 1; MaterialDesignIconList
               // has always evaluated the same operators this way round.
-              visible(
-                stateValue(
-                  this.state,
-                  s(d[`visibilityOid${index}`]),
-                ),
+              visibleBy(
                 s(d[`visibilityCondition${index}`], "=="),
                 d[`visibilityConditionValue${index}`],
+                stateValue(this.state, s(d[`visibilityOid${index}`])),
               ));
           const height = n(d[`viewsHeight${index}`]);
           const span = Math.max(

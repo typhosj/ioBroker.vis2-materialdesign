@@ -90,6 +90,8 @@ export function isReadOnly(data: { readOnly?: unknown }): boolean {
     return boolValue(data.readOnly);
 }
 
+export const VISIBILITY_CONDITIONS = ['==', '!=', '<=', '>=', '<', '>', 'consist', 'not consist', 'exist', 'not exist'] as const;
+
 export function visibleBy(condition: unknown, expected: unknown, value: unknown): boolean {
     switch (condition) {
         case '!=': return String(value) !== String(expected);

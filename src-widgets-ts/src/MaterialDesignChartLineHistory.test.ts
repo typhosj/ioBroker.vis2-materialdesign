@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { chartConfig } from './MaterialDesignChartCanvas';
-import MaterialDesignChartLineHistory, { distinctAxisRows, item, lineDash, rowAxisId, timeFormatFor } from './MaterialDesignChartLineHistory';
+import MaterialDesignChartLineHistory, { distinctAxisRows, item, lineDash, rowAxisId, shownAxisRows, timeFormatFor } from './MaterialDesignChartLineHistory';
 
 function fixture<T>(value: unknown): T { return value as T; }
 
@@ -384,6 +384,12 @@ describe('line history data set visibility (upstream #84)', () => {
         const fields = MaterialDesignChartLineHistory.getWidgetInfo().visAttrs.flatMap(group => group.fields).map(field => field.name);
         expect(fields).toEqual(expect.arrayContaining(['visibilityOid', 'visibilityCondition', 'visibilityConditionValue']));
     });
+
+    it('offers the condition as a choice of the operators the check knows', () => {
+        const field = MaterialDesignChartLineHistory.getWidgetInfo().visAttrs.flatMap(group => group.fields).find(f => f.name === 'visibilityCondition') as { type?: string; options?: string[]; default?: string };
+        expect(field).toMatchObject({ type: 'select', default: '==' });
+        expect(field.options).toEqual(['==', '!=', '<=', '>=', '<', '>', 'consist', 'not consist', 'exist', 'not exist']);
+    });
 });
 
 describe('line history hiding the first data set', () => {
@@ -395,6 +401,41 @@ describe('line history hiding the first data set', () => {
         expect((config.options.scales as Record<string, { display?: unknown }>).yAxis_id_1.display).not.toBe(false);
         expect((config.options.scales as Record<string, { display?: unknown }>).yAxis_id_0.display).toBe(false);
         widget.componentWillUnmount();
+    });
+
+    it('keeps title and range of a shared axis from its first row when that row is hidden', async () => {
+        const rx = {
+            dataCount: 2, oid: 'a', oid1: 'b', visibilityOid: 'test.0.mode', visibilityConditionValue: 'auto',
+            yAxisTitle: 'Temperatur', yAxisMinValue: 0, yAxisMaxValue: 40, yAxisPosition: 'left',
+            yAxisTitle1: 'Leistung', yAxisMinValue1: 0, yAxisMaxValue1: 3000, yAxisPosition1: 'right',
+        };
+        const widget = await loaded(rx, [[{ ts: 1, val: 1 }], [{ ts: 1, val: 2 }]]);
+        const axisWith = (mode: string) => {
+            widget.state = fixture<typeof widget.state>({ ...widget.state, values: { 'test.0.mode.val': mode } });
+            return (configOf(widget).options.scales as Record<string, { min?: number; max?: number; position?: string; title?: { text?: string } }>).yAxis_id_0;
+        };
+        const shown = axisWith('auto');
+        const hidden = axisWith('manual');
+        expect(hidden).toMatchObject({ min: 0, max: 40, position: 'left', title: { text: 'Temperatur' } });
+        expect(hidden).toEqual(shown);
+        widget.componentWillUnmount();
+    });
+});
+
+describe('shownAxisRows', () => {
+    const d = { commonYAxis0: 0, commonYAxis1: 1, commonYAxis2: 0, commonYAxis3: 1 };
+    it.each([
+        [[0, 1, 2, 3], [0, 1]],
+        [[1, 2, 3], [0, 1]],
+        [[2], [0]],
+        [[3], [1]],
+        [[], []],
+    ])('shown rows %j -> axes defined by rows %j', (shown, axes) => {
+        expect(shownAxisRows([0, 1, 2, 3], i => shown.includes(i), d)).toEqual(axes);
+    });
+    it('takes every row onto the shared axis when no row names one', () => {
+        expect(shownAxisRows([0, 1, 2], i => i === 2, {})).toEqual([0]);
+        expect(shownAxisRows([], () => true, {})).toEqual([]);
     });
 });
 
