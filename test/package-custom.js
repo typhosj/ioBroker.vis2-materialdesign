@@ -251,8 +251,9 @@ for (const file of languageFiles) {
     assert.deepStrictEqual(Object.keys(JSON.parse(content)).sort(), englishKeys, `${file} must contain the same keys as en.json`);
 }
 
-// RepoChecker scans src-widgets-ts/**/*.ts (not .tsx) and reports a plain timer call as E5005, even in
-// browser code; `window.setTimeout(` passes.
+// RepoChecker scans src-widgets-ts/**/*.ts and reports a plain timer call as E5005, even in browser
+// code; `window.setTimeout(` passes. The .tsx files follow the same rule, so moving code between the
+// two kinds never trips the checker.
 const plainTimer = /(^|[^.\w])(setTimeout|setInterval|clearTimeout|clearInterval)\s*\(/;
 for (const sample of ["setTimeout(f, 1)", "x = clearTimeout(t)", "(setInterval (f))"]) {
     assert.ok(plainTimer.test(sample), `timer check must catch ${sample}`);
@@ -261,7 +262,7 @@ for (const sample of ["window.setTimeout(f, 1)", "this.clearTimeout(t)", "mySetT
     assert.ok(!plainTimer.test(sample), `timer check must accept ${sample}`);
 }
 const widgetSource = path.join(root, "src-widgets-ts", "src");
-for (const file of walk(widgetSource, full => full.endsWith(".ts"))) {
+for (const file of walk(widgetSource, full => /\.tsx?$/.test(full))) {
     fs.readFileSync(file, "utf8").split(/\r?\n/).forEach((line, index) => {
         assert.ok(!plainTimer.test(line), `${path.relative(root, file)}:${index + 1} calls a timer without window. (RepoChecker E5005)`);
     });

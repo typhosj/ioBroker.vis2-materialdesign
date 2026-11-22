@@ -412,17 +412,17 @@ export class SliderWriter {
             return;
         }
         if (this.timer === undefined) {
-            this.timer = setTimeout(() => {
+            this.timer = window.setTimeout(() => {
                 this.timer = undefined;
                 this.send(props);
-            }, Math.max(0, wait)) as unknown as number;
+            }, Math.max(0, wait));
         }
     }
 
     // Pointer up: whatever is still queued goes out now, without waiting for the interval.
     flush(props: VisRxWidgetProps): void {
         if (this.timer !== undefined) {
-            clearTimeout(this.timer);
+            window.clearTimeout(this.timer);
             this.timer = undefined;
         }
         this.send(props);
@@ -430,7 +430,7 @@ export class SliderWriter {
 
     cancel(): void {
         if (this.timer !== undefined) {
-            clearTimeout(this.timer);
+            window.clearTimeout(this.timer);
             this.timer = undefined;
         }
         this.pendingOid = undefined;
