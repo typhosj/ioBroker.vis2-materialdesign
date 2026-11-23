@@ -48,7 +48,7 @@ export function subscribedIds(info: RxWidgetInfo, data: Record<string, unknown>)
     const ids = expandFields(info, data)
         .filter(entry => (entry.field as { type?: string }).type === 'id')
         .map(entry => data[entry.key])
-        .filter((value): value is string => typeof value === 'string' && value.trim() !== '');
+        .filter((value): value is string => typeof value === 'string' && value.trim() !== '' && value !== 'nothing_selected');
     return [...new Set(ids)];
 }
 

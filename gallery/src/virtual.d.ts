@@ -6,3 +6,7 @@ declare module 'virtual:gallery-meta' {
     const meta: { version: string };
     export default meta;
 }
+declare module 'virtual:gallery-docs' {
+    const docs: Record<string, { en: string; de: string }>;
+    export default docs;
+}

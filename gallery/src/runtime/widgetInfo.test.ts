@@ -44,6 +44,7 @@ describe('widgetInfo', () => {
     it('subscribes every non-empty id field once, hidden theme fields included', () => {
         expect(subscribedIds(info, { oid: 'a.0.x', count: 1, __mdwThemeDark: 't', entryOid0: 'a.0.x', entryOid1: ' ', label: 'a.0.label' }))
             .toEqual(['a.0.x', 't']);
+        expect(subscribedIds(info, { oid: 'nothing_selected', count: 0 })).toEqual([]);
     });
 
     it('evaluates group and field hidden functions with the index and ignores the string form', () => {
