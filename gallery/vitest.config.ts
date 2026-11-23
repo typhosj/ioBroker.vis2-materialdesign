@@ -1,8 +1,10 @@
 import { defineConfig } from 'vitest/config';
 
 import { reactAlias, repoRoot } from './build/paths';
+import { virtualModules } from './build/plugins';
 
 export default defineConfig({
+    plugins: [virtualModules()],
     resolve: { alias: reactAlias() },
     test: {
         root: repoRoot,
