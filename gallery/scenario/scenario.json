@@ -1,0 +1,712 @@
+{
+  "objects": {
+    "0_userdata.0.demo.living.light": {
+      "type": "state",
+      "common": {
+        "name": "Living room light",
+        "type": "boolean",
+        "role": "switch.light",
+        "read": true,
+        "write": true
+      }
+    },
+    "0_userdata.0.demo.kitchen.light": {
+      "type": "state",
+      "common": {
+        "name": "Kitchen light",
+        "type": "boolean",
+        "role": "switch.light",
+        "read": true,
+        "write": true
+      }
+    },
+    "0_userdata.0.demo.hall.light": {
+      "type": "state",
+      "common": {
+        "name": "Hall light",
+        "type": "boolean",
+        "role": "switch.light",
+        "read": true,
+        "write": true
+      }
+    },
+    "0_userdata.0.demo.terrace.light": {
+      "type": "state",
+      "common": {
+        "name": "Terrace light",
+        "type": "boolean",
+        "role": "switch.light",
+        "read": true,
+        "write": true
+      }
+    },
+    "0_userdata.0.demo.living.dimmer": {
+      "type": "state",
+      "common": {
+        "name": "Living room dimmer",
+        "type": "number",
+        "role": "level.dimmer",
+        "read": true,
+        "write": true,
+        "unit": "%",
+        "min": 0,
+        "max": 100
+      }
+    },
+    "0_userdata.0.demo.bedroom.dimmer": {
+      "type": "state",
+      "common": {
+        "name": "Bedroom dimmer",
+        "type": "number",
+        "role": "level.dimmer",
+        "read": true,
+        "write": true,
+        "unit": "%",
+        "min": 0,
+        "max": 100
+      }
+    },
+    "0_userdata.0.demo.living.colorTemperature": {
+      "type": "state",
+      "common": {
+        "name": "Living room color temperature",
+        "type": "number",
+        "role": "level.color.temperature",
+        "read": true,
+        "write": true,
+        "unit": "K",
+        "min": 2200,
+        "max": 6500
+      }
+    },
+    "0_userdata.0.demo.living.color": {
+      "type": "state",
+      "common": {
+        "name": "Living room color",
+        "type": "string",
+        "role": "level.color.rgb",
+        "read": true,
+        "write": true
+      }
+    },
+    "0_userdata.0.demo.living.blind": {
+      "type": "state",
+      "common": {
+        "name": "Living room blind",
+        "type": "number",
+        "role": "level.blind",
+        "read": true,
+        "write": true,
+        "unit": "%",
+        "min": 0,
+        "max": 100
+      }
+    },
+    "0_userdata.0.demo.kitchen.blind": {
+      "type": "state",
+      "common": {
+        "name": "Kitchen blind",
+        "type": "number",
+        "role": "level.blind",
+        "read": true,
+        "write": true,
+        "unit": "%",
+        "min": 0,
+        "max": 100
+      }
+    },
+    "0_userdata.0.demo.bedroom.blind": {
+      "type": "state",
+      "common": {
+        "name": "Bedroom blind",
+        "type": "number",
+        "role": "level.blind",
+        "read": true,
+        "write": true,
+        "unit": "%",
+        "min": 0,
+        "max": 100
+      }
+    },
+    "0_userdata.0.demo.blinds.stop": {
+      "type": "state",
+      "common": {
+        "name": "Stop blinds",
+        "type": "boolean",
+        "role": "button.stop",
+        "read": true,
+        "write": true
+      }
+    },
+    "0_userdata.0.demo.climate.living.temperature": {
+      "type": "state",
+      "common": {
+        "name": "Living room temperature",
+        "type": "number",
+        "role": "value.temperature",
+        "read": true,
+        "write": false,
+        "unit": "°C"
+      }
+    },
+    "0_userdata.0.demo.climate.living.humidity": {
+      "type": "state",
+      "common": {
+        "name": "Living room humidity",
+        "type": "number",
+        "role": "value.humidity",
+        "read": true,
+        "write": false,
+        "unit": "%"
+      }
+    },
+    "0_userdata.0.demo.climate.kitchen.temperature": {
+      "type": "state",
+      "common": {
+        "name": "Kitchen temperature",
+        "type": "number",
+        "role": "value.temperature",
+        "read": true,
+        "write": false,
+        "unit": "°C"
+      }
+    },
+    "0_userdata.0.demo.climate.kitchen.humidity": {
+      "type": "state",
+      "common": {
+        "name": "Kitchen humidity",
+        "type": "number",
+        "role": "value.humidity",
+        "read": true,
+        "write": false,
+        "unit": "%"
+      }
+    },
+    "0_userdata.0.demo.climate.bedroom.temperature": {
+      "type": "state",
+      "common": {
+        "name": "Bedroom temperature",
+        "type": "number",
+        "role": "value.temperature",
+        "read": true,
+        "write": false,
+        "unit": "°C"
+      }
+    },
+    "0_userdata.0.demo.climate.bedroom.humidity": {
+      "type": "state",
+      "common": {
+        "name": "Bedroom humidity",
+        "type": "number",
+        "role": "value.humidity",
+        "read": true,
+        "write": false,
+        "unit": "%"
+      }
+    },
+    "0_userdata.0.demo.climate.setpoint": {
+      "type": "state",
+      "common": {
+        "name": "Setpoint",
+        "type": "number",
+        "role": "level.temperature",
+        "read": true,
+        "write": true,
+        "unit": "°C",
+        "min": 5,
+        "max": 30
+      }
+    },
+    "0_userdata.0.demo.climate.mode": {
+      "type": "state",
+      "common": {
+        "name": "Thermostat mode",
+        "type": "number",
+        "role": "level.mode.thermostat",
+        "read": true,
+        "write": true,
+        "states": {
+          "0": "Off",
+          "1": "Comfort",
+          "2": "Eco",
+          "3": "Away"
+        }
+      }
+    },
+    "0_userdata.0.demo.energy.power": {
+      "type": "state",
+      "common": {
+        "name": "Power",
+        "type": "number",
+        "role": "value.power",
+        "read": true,
+        "write": false,
+        "unit": "W"
+      }
+    },
+    "0_userdata.0.demo.energy.today": {
+      "type": "state",
+      "common": {
+        "name": "Energy today",
+        "type": "number",
+        "role": "value.energy",
+        "read": true,
+        "write": false,
+        "unit": "kWh"
+      }
+    },
+    "0_userdata.0.demo.energy.pv": {
+      "type": "state",
+      "common": {
+        "name": "Photovoltaics",
+        "type": "number",
+        "role": "value.power",
+        "read": true,
+        "write": false,
+        "unit": "W"
+      }
+    },
+    "0_userdata.0.demo.energy.battery": {
+      "type": "state",
+      "common": {
+        "name": "Battery",
+        "type": "number",
+        "role": "value.battery",
+        "read": true,
+        "write": false,
+        "unit": "%",
+        "min": 0,
+        "max": 100
+      }
+    },
+    "0_userdata.0.demo.energy.distribution": {
+      "type": "state",
+      "common": {
+        "name": "Energy distribution",
+        "type": "json",
+        "role": "json",
+        "read": true,
+        "write": false
+      }
+    },
+    "0_userdata.0.demo.energy.breakdown": {
+      "type": "state",
+      "common": {
+        "name": "Energy breakdown",
+        "type": "json",
+        "role": "json",
+        "read": true,
+        "write": false
+      }
+    },
+    "0_userdata.0.demo.contacts.livingWindow": {
+      "type": "state",
+      "common": {
+        "name": "Living room window",
+        "type": "boolean",
+        "role": "sensor.window",
+        "read": true,
+        "write": false
+      }
+    },
+    "0_userdata.0.demo.contacts.kitchenWindow": {
+      "type": "state",
+      "common": {
+        "name": "Kitchen window",
+        "type": "boolean",
+        "role": "sensor.window",
+        "read": true,
+        "write": false
+      }
+    },
+    "0_userdata.0.demo.contacts.bedroomWindow": {
+      "type": "state",
+      "common": {
+        "name": "Bedroom window",
+        "type": "boolean",
+        "role": "sensor.window",
+        "read": true,
+        "write": false
+      }
+    },
+    "0_userdata.0.demo.contacts.frontDoor": {
+      "type": "state",
+      "common": {
+        "name": "Front door",
+        "type": "boolean",
+        "role": "sensor.door",
+        "read": true,
+        "write": false
+      }
+    },
+    "0_userdata.0.demo.contacts.lock": {
+      "type": "state",
+      "common": {
+        "name": "Door lock",
+        "type": "boolean",
+        "role": "switch.lock",
+        "read": true,
+        "write": true
+      }
+    },
+    "0_userdata.0.demo.media.playing": {
+      "type": "state",
+      "common": {
+        "name": "Playing",
+        "type": "boolean",
+        "role": "media.state",
+        "read": true,
+        "write": true
+      }
+    },
+    "0_userdata.0.demo.media.volume": {
+      "type": "state",
+      "common": {
+        "name": "Volume",
+        "type": "number",
+        "role": "level.volume",
+        "read": true,
+        "write": true,
+        "unit": "%",
+        "min": 0,
+        "max": 100
+      }
+    },
+    "0_userdata.0.demo.media.title": {
+      "type": "state",
+      "common": {
+        "name": "Title",
+        "type": "string",
+        "role": "media.title",
+        "read": true,
+        "write": false
+      }
+    },
+    "0_userdata.0.demo.media.artist": {
+      "type": "state",
+      "common": {
+        "name": "Artist",
+        "type": "string",
+        "role": "media.artist",
+        "read": true,
+        "write": false
+      }
+    },
+    "0_userdata.0.demo.media.input": {
+      "type": "state",
+      "common": {
+        "name": "Input",
+        "type": "string",
+        "role": "media.input",
+        "read": true,
+        "write": true,
+        "states": {
+          "radio": "Radio",
+          "tv": "TV",
+          "stream": "Stream",
+          "aux": "AUX"
+        }
+      }
+    },
+    "0_userdata.0.demo.weather.temperature": {
+      "type": "state",
+      "common": {
+        "name": "Outside temperature",
+        "type": "number",
+        "role": "value.temperature",
+        "read": true,
+        "write": false,
+        "unit": "°C"
+      }
+    },
+    "0_userdata.0.demo.weather.state": {
+      "type": "state",
+      "common": {
+        "name": "Weather",
+        "type": "string",
+        "role": "weather.state",
+        "read": true,
+        "write": false
+      }
+    },
+    "0_userdata.0.demo.weather.icon": {
+      "type": "state",
+      "common": {
+        "name": "Weather icon",
+        "type": "string",
+        "role": "weather.icon.name",
+        "read": true,
+        "write": false
+      }
+    },
+    "0_userdata.0.demo.weather.wind": {
+      "type": "state",
+      "common": {
+        "name": "Wind",
+        "type": "number",
+        "role": "value.speed.wind",
+        "read": true,
+        "write": false,
+        "unit": "km/h"
+      }
+    },
+    "0_userdata.0.demo.weather.rain": {
+      "type": "state",
+      "common": {
+        "name": "Chance of rain",
+        "type": "number",
+        "role": "value.precipitation.chance",
+        "read": true,
+        "write": false,
+        "unit": "%"
+      }
+    },
+    "0_userdata.0.demo.weather.forecast": {
+      "type": "state",
+      "common": {
+        "name": "Forecast",
+        "type": "json",
+        "role": "json",
+        "read": true,
+        "write": false
+      }
+    },
+    "0_userdata.0.demo.calendar.events": {
+      "type": "state",
+      "common": {
+        "name": "Calendar events",
+        "type": "json",
+        "role": "json",
+        "read": true,
+        "write": false
+      }
+    },
+    "0_userdata.0.demo.notifications.alerts": {
+      "type": "state",
+      "common": {
+        "name": "Alerts",
+        "type": "json",
+        "role": "json",
+        "read": true,
+        "write": true
+      }
+    },
+    "0_userdata.0.demo.general.text": {
+      "type": "state",
+      "common": {
+        "name": "Text",
+        "type": "string",
+        "role": "text",
+        "read": true,
+        "write": true
+      }
+    },
+    "0_userdata.0.demo.general.value": {
+      "type": "state",
+      "common": {
+        "name": "Value",
+        "type": "number",
+        "role": "value",
+        "read": true,
+        "write": true
+      }
+    },
+    "0_userdata.0.demo.general.counter": {
+      "type": "state",
+      "common": {
+        "name": "Counter",
+        "type": "number",
+        "role": "value",
+        "read": true,
+        "write": true
+      }
+    },
+    "0_userdata.0.demo.general.flag": {
+      "type": "state",
+      "common": {
+        "name": "Flag",
+        "type": "boolean",
+        "role": "switch",
+        "read": true,
+        "write": true
+      }
+    },
+    "0_userdata.0.demo.general.scene": {
+      "type": "state",
+      "common": {
+        "name": "Scene",
+        "type": "string",
+        "role": "state",
+        "read": true,
+        "write": true,
+        "states": {
+          "morning": "Morning",
+          "day": "Day",
+          "evening": "Evening",
+          "night": "Night"
+        }
+      }
+    },
+    "0_userdata.0.demo.general.view": {
+      "type": "state",
+      "common": {
+        "name": "View",
+        "type": "number",
+        "role": "state",
+        "read": true,
+        "write": true,
+        "states": {
+          "0": "Lights",
+          "1": "Climate",
+          "2": "Media"
+        }
+      }
+    },
+    "0_userdata.0.demo.general.history.temperature": {
+      "type": "state",
+      "common": {
+        "name": "Temperature history",
+        "type": "number",
+        "role": "value.temperature",
+        "read": true,
+        "write": false,
+        "unit": "°C"
+      }
+    }
+  },
+  "states": {
+    "0_userdata.0.demo.living.light": true,
+    "0_userdata.0.demo.kitchen.light": false,
+    "0_userdata.0.demo.hall.light": false,
+    "0_userdata.0.demo.terrace.light": true,
+    "0_userdata.0.demo.living.dimmer": 60,
+    "0_userdata.0.demo.bedroom.dimmer": 25,
+    "0_userdata.0.demo.living.colorTemperature": 3200,
+    "0_userdata.0.demo.living.color": "#ffb74d",
+    "0_userdata.0.demo.living.blind": 70,
+    "0_userdata.0.demo.kitchen.blind": 100,
+    "0_userdata.0.demo.bedroom.blind": 0,
+    "0_userdata.0.demo.blinds.stop": false,
+    "0_userdata.0.demo.climate.living.temperature": 21.4,
+    "0_userdata.0.demo.climate.living.humidity": 46,
+    "0_userdata.0.demo.climate.kitchen.temperature": 22.1,
+    "0_userdata.0.demo.climate.kitchen.humidity": 52,
+    "0_userdata.0.demo.climate.bedroom.temperature": 19.2,
+    "0_userdata.0.demo.climate.bedroom.humidity": 49,
+    "0_userdata.0.demo.climate.setpoint": 21,
+    "0_userdata.0.demo.climate.mode": 1,
+    "0_userdata.0.demo.energy.power": 640,
+    "0_userdata.0.demo.energy.today": 7.8,
+    "0_userdata.0.demo.energy.pv": 2150,
+    "0_userdata.0.demo.energy.battery": 78,
+    "0_userdata.0.demo.energy.distribution": "{\"axisLabels\":[\"House\",\"Heat pump\",\"Car\",\"Grid export\"],\"graphs\":[{\"type\":\"bar\",\"legendText\":\"kWh\",\"data\":[7.8,4.2,3.1,5.6]}]}",
+    "0_userdata.0.demo.energy.breakdown": "[{\"label\":\"House\",\"value\":7.8},{\"label\":\"Heat pump\",\"value\":4.2},{\"label\":\"Car\",\"value\":3.1}]",
+    "0_userdata.0.demo.contacts.livingWindow": false,
+    "0_userdata.0.demo.contacts.kitchenWindow": true,
+    "0_userdata.0.demo.contacts.bedroomWindow": false,
+    "0_userdata.0.demo.contacts.frontDoor": false,
+    "0_userdata.0.demo.contacts.lock": true,
+    "0_userdata.0.demo.media.playing": true,
+    "0_userdata.0.demo.media.volume": 35,
+    "0_userdata.0.demo.media.title": "Morning Light",
+    "0_userdata.0.demo.media.artist": "The Demo Band",
+    "0_userdata.0.demo.media.input": "radio",
+    "0_userdata.0.demo.weather.temperature": 17.5,
+    "0_userdata.0.demo.weather.state": "Partly cloudy",
+    "0_userdata.0.demo.weather.icon": "weather-partly-cloudy",
+    "0_userdata.0.demo.weather.wind": 12,
+    "0_userdata.0.demo.weather.rain": 20,
+    "0_userdata.0.demo.weather.forecast": "[{\"day\":\"Mon\",\"icon\":\"weather-sunny\",\"max\":21,\"min\":11},{\"day\":\"Tue\",\"icon\":\"weather-partly-cloudy\",\"max\":19,\"min\":10},{\"day\":\"Wed\",\"icon\":\"weather-rainy\",\"max\":15,\"min\":9},{\"day\":\"Thu\",\"icon\":\"weather-cloudy\",\"max\":16,\"min\":8},{\"day\":\"Fri\",\"icon\":\"weather-sunny\",\"max\":20,\"min\":10}]",
+    "0_userdata.0.demo.calendar.events": "[]",
+    "0_userdata.0.demo.notifications.alerts": "[]",
+    "0_userdata.0.demo.general.text": "Hello from the demo",
+    "0_userdata.0.demo.general.value": 42,
+    "0_userdata.0.demo.general.counter": 0,
+    "0_userdata.0.demo.general.flag": false,
+    "0_userdata.0.demo.general.scene": "evening",
+    "0_userdata.0.demo.general.view": 0,
+    "0_userdata.0.demo.general.history.temperature": 21.4
+  },
+  "ticker": {
+    "0_userdata.0.demo.climate.living.temperature": {
+      "min": 20.5,
+      "max": 22.5,
+      "step": 0.1,
+      "everyMs": 5000
+    },
+    "0_userdata.0.demo.climate.kitchen.temperature": {
+      "min": 21,
+      "max": 23,
+      "step": 0.1,
+      "everyMs": 6000
+    },
+    "0_userdata.0.demo.climate.bedroom.temperature": {
+      "min": 18.5,
+      "max": 20,
+      "step": 0.1,
+      "everyMs": 7000
+    },
+    "0_userdata.0.demo.climate.living.humidity": {
+      "min": 42,
+      "max": 50,
+      "step": 1,
+      "everyMs": 9000
+    },
+    "0_userdata.0.demo.energy.power": {
+      "min": 250,
+      "max": 1800,
+      "step": 10,
+      "everyMs": 3000
+    },
+    "0_userdata.0.demo.energy.pv": {
+      "min": 0,
+      "max": 4200,
+      "step": 25,
+      "everyMs": 4000
+    },
+    "0_userdata.0.demo.energy.battery": {
+      "min": 60,
+      "max": 95,
+      "step": 1,
+      "everyMs": 15000
+    },
+    "0_userdata.0.demo.weather.temperature": {
+      "min": 15,
+      "max": 19,
+      "step": 0.1,
+      "everyMs": 10000
+    }
+  },
+  "history": {
+    "0_userdata.0.demo.energy.power": {
+      "shape": "daily",
+      "base": 250,
+      "amplitude": 1500,
+      "noise": 0.15
+    },
+    "0_userdata.0.demo.energy.pv": {
+      "shape": "daily",
+      "base": 0,
+      "amplitude": 4200,
+      "noise": 0.1
+    },
+    "0_userdata.0.demo.energy.today": {
+      "shape": "counter",
+      "base": 0,
+      "amplitude": 0.6,
+      "noise": 0.3
+    },
+    "0_userdata.0.demo.climate.living.temperature": {
+      "shape": "flat",
+      "base": 21.4,
+      "amplitude": 0.6,
+      "noise": 0
+    },
+    "0_userdata.0.demo.general.history.temperature": {
+      "shape": "flat",
+      "base": 21,
+      "amplitude": 1.2,
+      "noise": 0
+    }
+  }
+}

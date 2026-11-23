@@ -11,5 +11,5 @@ export default defineConfig({
     plugins: [react(), virtualModules()],
     resolve: { alias: reactAlias() },
     server: { fs: { allow: [repoRoot] } },
-    build: { outDir: 'dist', emptyOutDir: true, target: 'chrome89' },
+    build: { outDir: 'dist', emptyOutDir: true, target: 'es2022' },
 });
