@@ -135,9 +135,9 @@ const VIEWS: Record<string, Variant[]> = {
         V('three-columns', 'Three columns', { countViews: 3, viewColSpan: 4, ...GRID_VIEWS }, 1200, 520),
     ],
     [D('AdvancedViewInWidget')]: [
-        V('by-name', 'View chosen by a state', { oid: demo('general.text'), View0: 'demo-lights' }, 400, 300),
-        V('pre-rendered', 'Views rendered in advance', { oid: demo('general.text'), renderAlways: true, countRenderViewsOnLoad: 3, ...GRID_VIEWS }, 400, 300),
-        V('quiet', 'Without error message', { oid: demo('general.text'), hideErrorMessage: true, fadeInDuration: 300, fadeOutDuration: 300 }, 400, 300),
+        V('by-name', 'View chosen by a state', { oid: demo('general.viewName') }, 400, 300),
+        V('pre-rendered', 'Views rendered in advance', { oid: demo('general.viewName'), renderAlways: true, countRenderViewsOnLoad: 3, ...GRID_VIEWS }, 400, 300),
+        V('quiet', 'Without error message', { oid: demo('general.viewName'), hideErrorMessage: true, fadeInDuration: 300, fadeOutDuration: 300 }, 400, 300),
     ],
     [D('AdvancedViewInWidget8')]: [
         V('three-views', 'Three views by index', { oid: demo('general.view'), count: 3, contains_view_0: 'demo-lights', contains_view_1: 'demo-climate', contains_view_2: 'demo-media' }, 400, 300),

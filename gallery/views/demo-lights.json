@@ -1,0 +1,57 @@
+{
+  "settings": {
+    "style": {
+      "width": "480px",
+      "height": "320px"
+    }
+  },
+  "widgets": {
+    "w1": {
+      "tpl": "tplVis2-materialdesign-Switch",
+      "data": {
+        "oid": "0_userdata.0.demo.living.light",
+        "labelFalse": "Living room off",
+        "labelTrue": "Living room on"
+      },
+      "style": {
+        "left": 20,
+        "top": 20,
+        "width": 240,
+        "height": 44
+      }
+    },
+    "w2": {
+      "tpl": "tplVis2-materialdesign-Switch",
+      "data": {
+        "oid": "0_userdata.0.demo.kitchen.light",
+        "labelFalse": "Kitchen off",
+        "labelTrue": "Kitchen on"
+      },
+      "style": {
+        "left": 20,
+        "top": 84,
+        "width": 240,
+        "height": 44
+      }
+    },
+    "w3": {
+      "tpl": "tplVis2-materialdesign-Slider",
+      "data": {
+        "oid": "0_userdata.0.demo.living.dimmer",
+        "min": 0,
+        "max": 100,
+        "step": 1,
+        "showValueLabel": true,
+        "valueLabelUnit": "%",
+        "prepandText": "Dimmer",
+        "prepandTextWidth": 70
+      },
+      "style": {
+        "left": 20,
+        "top": 164,
+        "width": 420,
+        "height": 60
+      }
+    }
+  }
+}

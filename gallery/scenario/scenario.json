@@ -547,6 +547,16 @@
         }
       }
     },
+    "0_userdata.0.demo.general.viewName": {
+      "type": "state",
+      "common": {
+        "name": "View name",
+        "type": "string",
+        "role": "text",
+        "read": true,
+        "write": true
+      }
+    },
     "0_userdata.0.demo.general.view": {
       "type": "state",
       "common": {
@@ -624,6 +634,7 @@
     "0_userdata.0.demo.general.counter": 0,
     "0_userdata.0.demo.general.flag": false,
     "0_userdata.0.demo.general.scene": "evening",
+    "0_userdata.0.demo.general.viewName": "demo-lights",
     "0_userdata.0.demo.general.view": 0,
     "0_userdata.0.demo.general.history.temperature": 21.4
   },

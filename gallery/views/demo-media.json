@@ -1,0 +1,67 @@
+{
+  "settings": {
+    "style": {
+      "width": "480px",
+      "height": "320px"
+    }
+  },
+  "widgets": {
+    "w1": {
+      "tpl": "tplVis2-materialdesign-Icon-Button-Toggle",
+      "data": {
+        "oid": "0_userdata.0.demo.media.playing",
+        "image": "play",
+        "imageTrue": "pause"
+      },
+      "style": {
+        "left": 20,
+        "top": 20,
+        "width": 48,
+        "height": 48
+      }
+    },
+    "w2": {
+      "tpl": "tplVis2-materialdesign-Slider",
+      "data": {
+        "oid": "0_userdata.0.demo.media.volume",
+        "min": 0,
+        "max": 100,
+        "step": 1,
+        "showValueLabel": true,
+        "valueLabelUnit": "%",
+        "prepandText": "Volume",
+        "prepandTextWidth": 70
+      },
+      "style": {
+        "left": 90,
+        "top": 14,
+        "width": 370,
+        "height": 60
+      }
+    },
+    "w3": {
+      "tpl": "tplVis2-materialdesign-value",
+      "data": {
+        "oid": "0_userdata.0.demo.media.title"
+      },
+      "style": {
+        "left": 20,
+        "top": 110,
+        "width": 420,
+        "height": 44
+      }
+    },
+    "w4": {
+      "tpl": "tplVis2-materialdesign-value",
+      "data": {
+        "oid": "0_userdata.0.demo.media.artist"
+      },
+      "style": {
+        "left": 20,
+        "top": 170,
+        "width": 420,
+        "height": 44
+      }
+    }
+  }
+}

@@ -4,6 +4,7 @@ import { themeStates } from '../../build/themeStates';
 import scenarioJson from '../../scenario/scenario.json';
 import { installShim } from '../runtime/GalleryRxWidget';
 import { validateScenario } from '../runtime/scenario';
+import { VIEWS } from '../views/views';
 
 beforeAll(() => installShim());
 
@@ -32,6 +33,23 @@ describe('catalog', () => {
             for (const variant of catalogEntry(module, info).variants) {
                 for (const id of subscribedIds(info, variant.data)) {
                     if (!(id in states) && !(id in themeStates())) problems.push(`${module}/${variant.id}: ${id}`);
+                }
+            }
+        }
+        expect(problems).toEqual([]);
+    }, 120_000);
+
+    it('points every variant view field at a gallery view', async () => {
+        const { widgetIndex, loadWidget } = await import('../runtime/widgets');
+        const { catalogEntry } = await import('./catalog');
+        const { expandFields } = await import('../runtime/widgetInfo');
+        const problems: string[] = [];
+        for (const { module } of widgetIndex) {
+            const info = (await loadWidget(module)).getWidgetInfo();
+            for (const variant of catalogEntry(module, info).variants) {
+                for (const { key, field } of expandFields(info, variant.data)) {
+                    const value = variant.data[key];
+                    if ((field as { type?: string }).type === 'views' && typeof value === 'string' && value && !(value in VIEWS)) problems.push(`${module}/${variant.id}: ${key} = ${value}`);
                 }
             }
         }

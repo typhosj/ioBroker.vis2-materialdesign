@@ -1,0 +1,62 @@
+{
+  "settings": {
+    "style": {
+      "width": "480px",
+      "height": "320px"
+    }
+  },
+  "widgets": {
+    "w1": {
+      "tpl": "tplVis2-materialdesign-value",
+      "data": {
+        "oid": "0_userdata.0.demo.climate.living.temperature",
+        "valueLabelUnit": "°C",
+        "minDecimals": 1,
+        "maxDecimals": 1,
+        "prepandText": "Temperature"
+      },
+      "style": {
+        "left": 20,
+        "top": 20,
+        "width": 260,
+        "height": 44
+      }
+    },
+    "w2": {
+      "tpl": "tplVis2-materialdesign-value",
+      "data": {
+        "oid": "0_userdata.0.demo.climate.living.humidity",
+        "valueLabelUnit": "%",
+        "minDecimals": 0,
+        "maxDecimals": 0,
+        "prepandText": "Humidity"
+      },
+      "style": {
+        "left": 20,
+        "top": 84,
+        "width": 260,
+        "height": 44
+      }
+    },
+    "w3": {
+      "tpl": "tplVis2-materialdesign-Slider-Round",
+      "data": {
+        "oid": "0_userdata.0.demo.climate.setpoint",
+        "min": 5,
+        "max": 30,
+        "step": 1,
+        "showValueLabel": true,
+        "valueLabelUnit": "°C",
+        "startAngle": 135,
+        "arcLength": 270,
+        "prepandText": "Heating"
+      },
+      "style": {
+        "left": 300,
+        "top": 40,
+        "width": 150,
+        "height": 150
+      }
+    }
+  }
+}
