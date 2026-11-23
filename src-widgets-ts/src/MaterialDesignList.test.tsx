@@ -136,13 +136,27 @@ describe('list toggle rows are named', () => {
         container.remove();
     });
 
-    it('keeps the ids apart between two lists on one page', () => {
+    it.each(cases.filter(c => c.name.endsWith('without labels')))('falls back per row: $name', ({ rxData }) => {
+        const container = document.createElement('div');
+        document.body.appendChild(container);
+        const unmount = mountList(container, rxData, {}, vi.fn());
+        const [emptyText, markupOnly] = Array.from(container.querySelectorAll<HTMLInputElement>('input[type="checkbox"]'));
+        // label0 '' falls back to the visible text "Item 0", so the name is taken from the row.
+        expect(emptyText.getAttribute('aria-label')).toBeNull();
+        expect(document.getElementById(emptyText.getAttribute('aria-labelledby') ?? '')?.textContent).toBe('Item 0');
+        // `<b></b>` shows nothing, so the control carries the fallback name itself.
+        expect(markupOnly.getAttribute('aria-label')).toBe('Item 1');
+        expect(markupOnly.hasAttribute('aria-labelledby')).toBe(false);
+        unmount();
+        container.remove();
+    });
+    it.each(['switch', 'checkbox', 'switch_readonly', 'checkbox_readonly'].flatMap(listType => ['legacy', 'material3'].map(designStyle => ({ listType, designStyle }))))('keeps the ids apart between two lists on one page:  ', ({ listType, designStyle }) => {
         const container = document.createElement('div');
         document.body.appendChild(container);
         const first = document.createElement('div');
         const second = document.createElement('div');
         container.append(first, second);
-        const rxData = { listType: 'switch', countListItems: 2, label0: 'Same', oid0: 'a', label1: 'Other', oid1: 'b' };
+        const rxData = { designStyle, listType, countListItems: 2, label0: 'Same', oid0: 'a', label1: 'Other', oid1: 'b' };
         const unmounts = [mountList(first, rxData, {}, vi.fn()), mountList(second, rxData, {}, vi.fn())];
         const inputs = Array.from(container.querySelectorAll<HTMLInputElement>('input[type="checkbox"]'));
         const ids = inputs.map(input => input.getAttribute('aria-labelledby'));
