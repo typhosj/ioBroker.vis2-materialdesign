@@ -8,6 +8,7 @@ import { type GalleryRuntime, hostRuntime } from '../runtime/runtime';
 import { loadWidget, widgetIndex } from '../runtime/widgets';
 import { defaultData, subscribedIds } from '../runtime/widgetInfo';
 import { type GalleryQuery, routeHash } from '../state';
+import { parseDatapointInput, parseStoredData, pickVariant } from './widgetPageLogic';
 import { ViewportFrame, WidgetInstance } from './Stage';
 
 const moduleByName = (name: string): string | undefined => widgetIndex.find(e => e.name === name || e.module === name)?.module;
@@ -23,7 +24,6 @@ function useEntry(name: string): { info?: RxWidgetInfo; entry?: CatalogEntry } {
 }
 
 const DATA_KEY = 'gallery.data.';
-const pickVariant = (entry: CatalogEntry, id?: string): CatalogEntry['variants'][number] => entry.variants.find(v => v.id === id) ?? entry.variants[0];
 export const variantData = (info: RxWidgetInfo, entry: CatalogEntry, variantId?: string): Record<string, unknown> => {
     const variant = pickVariant(entry, variantId);
     return { ...defaultData(info), ...variant.data, designStyle: 'default' };
@@ -36,11 +36,9 @@ export function WidgetFrame({ name, query, runtime }: { name: string; query: Gal
     useEffect(() => {
         if (!info || !entry) return;
         const read = (): void => {
-            let stored: Record<string, unknown> | undefined;
-            try {
-                const parsed: unknown = JSON.parse(window.parent.sessionStorage.getItem(`${DATA_KEY}${entry.module}`) ?? 'null');
-                stored = parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed as Record<string, unknown> : undefined;
-            } catch { stored = undefined; }
+            let raw: string | null = null;
+            try { raw = window.parent.sessionStorage.getItem(`${DATA_KEY}${entry.module}`); } catch { /* cross-origin parent: use the variant */ }
+            const stored = parseStoredData(raw);
             setData(stored ?? variantData(info, entry, query.variant));
         };
         read();
@@ -96,9 +94,9 @@ export function WidgetPage({ name, query, runtime }: { name: string; query: Gall
                             <td><input aria-label={id} defaultValue={String(runtime.store.getState(id)?.val ?? '')} key={String(runtime.store.getState(id)?.ts)} onBlur={e => {
                                 const old = runtime.store.getState(id)?.val;
                                 const raw = e.target.value;
-                                const next = typeof old === 'number' ? (raw.trim() === '' ? NaN : Number(raw)) : typeof old === 'boolean' ? (raw === 'true' ? true : raw === 'false' ? false : undefined) : raw;
-                                if (next === undefined || (typeof next === 'number' && !Number.isFinite(next))) { e.target.value = String(old ?? ''); return; }
-                                runtime.store.setState(id, next);
+                                const parsed = parseDatapointInput(old, raw);
+                                if (!parsed.ok) { e.target.value = String(old ?? ''); return; }
+                                runtime.store.setState(id, parsed.value);
                             }} /></td>
                         </tr>
                     ))}
