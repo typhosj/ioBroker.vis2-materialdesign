@@ -1,5 +1,7 @@
+import { act } from 'react';
+import { createRoot } from 'react-dom/client';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import MaterialDesignList from './MaterialDesignList';
 
@@ -86,5 +88,69 @@ describe('list styling attributes', () => {
         expect(html).toContain('box-sizing:border-box');
         expect(html).toContain('min-height:60px');
         expect(html).not.toContain('height:65px');
+    });
+});
+
+(globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+
+function mountList(container: HTMLElement, rxData: Record<string, unknown>, values: Record<string, unknown>, setValue: (id: string, value: unknown) => void): () => void {
+    const widget = new MaterialDesignList(fixture<ConstructorParameters<typeof MaterialDesignList>[0]>({ context: { setValue } }));
+    widget.state = fixture<typeof widget.state>({ rxData, values });
+    const root = createRoot(container);
+    act(() => root.render(widget.renderWidgetBody(fixture<Parameters<MaterialDesignList['renderWidgetBody']>[0]>({}))));
+    return () => act(() => root.unmount());
+}
+
+// The accessible name the browser would compute for the native input.
+function nameOf(input: HTMLElement): string {
+    const ids = input.getAttribute('aria-labelledby');
+    if (ids) return ids.split(' ').map(id => document.getElementById(id)?.textContent ?? '').join(' ').trim();
+    return input.getAttribute('aria-label')?.trim() ?? '';
+}
+
+describe('list toggle rows are named', () => {
+    const json = JSON.stringify([{ text: 'Lamp', subText: 'Hall', objectId: 'lamp' }, { text: '', objectId: 'empty' }, { text: '<b>Bold</b> text', objectId: 'bold' }]);
+    const cases: Array<{ name: string; rxData: Record<string, unknown>; labels: string[] }> = [];
+    for (const listType of ['switch', 'checkbox']) {
+        for (const designStyle of ['legacy', 'material3']) {
+            const base = { designStyle, listType };
+            cases.push({ name: `${listType} ${designStyle} with labels`, rxData: { ...base, countListItems: 2, label0: 'Lamp', subLabel0: 'Hall', oid0: 'a', label1: 'Fan', oid1: 'b' }, labels: ['Lamp', 'Fan'] });
+            cases.push({ name: `${listType} ${designStyle} without labels`, rxData: { ...base, countListItems: 2, label0: '', oid0: 'a', label1: '<b></b>', oid1: 'b' }, labels: ['Item 0', 'Item 1'] });
+            cases.push({ name: `${listType} ${designStyle} JSON rows`, rxData: { ...base, listItemDataMethod: 'jsonStringObject', json_string_oid: 'rows' }, labels: ['Lamp', 'Item 1', 'Bold text'] });
+        }
+    }
+
+    it.each(cases)('names every control after its label: $name', ({ rxData, labels }) => {
+        const container = document.createElement('div');
+        document.body.appendChild(container);
+        const setValue = vi.fn();
+        const unmount = mountList(container, rxData, { 'rows.val': json }, setValue);
+        const inputs = Array.from(container.querySelectorAll<HTMLInputElement>('input[type="checkbox"]'));
+        expect(inputs.map(nameOf)).toEqual(labels);
+        const sub = container.querySelector('.mdc-list-item__secondary-text');
+        if (sub) expect(document.getElementById(inputs[0].getAttribute('aria-describedby') ?? '')).toBe(sub);
+        act(() => inputs[0].click());
+        expect(setValue).toHaveBeenCalledTimes(1);
+        expect(setValue.mock.calls[0][1]).toBe(true);
+        unmount();
+        container.remove();
+    });
+
+    it('keeps the ids apart between two lists on one page', () => {
+        const container = document.createElement('div');
+        document.body.appendChild(container);
+        const first = document.createElement('div');
+        const second = document.createElement('div');
+        container.append(first, second);
+        const rxData = { listType: 'switch', countListItems: 2, label0: 'Same', oid0: 'a', label1: 'Other', oid1: 'b' };
+        const unmounts = [mountList(first, rxData, {}, vi.fn()), mountList(second, rxData, {}, vi.fn())];
+        const inputs = Array.from(container.querySelectorAll<HTMLInputElement>('input[type="checkbox"]'));
+        const ids = inputs.map(input => input.getAttribute('aria-labelledby'));
+        expect(new Set(ids).size).toBe(4);
+        expect(inputs.map(nameOf)).toEqual(['Same', 'Other', 'Same', 'Other']);
+        const all = Array.from(container.querySelectorAll('[id]')).map(el => el.id);
+        expect(new Set(all).size).toBe(all.length);
+        unmounts.forEach(unmount => unmount());
+        container.remove();
     });
 });
