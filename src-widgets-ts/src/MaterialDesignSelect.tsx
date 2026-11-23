@@ -684,6 +684,9 @@ export default class MaterialDesignSelect extends VisWidget {
                 : selectedSlot === 'prepend-inner'
                   ? data.prepandInnerIconSize
                   : data.appendOuterIconSize;
+        // `renderIcon` draws a size of 0 at the glyph's natural width, so a 0 falls back to the default
+        // here, and the clear button's position uses the very size that gets drawn.
+        const selectedIconSize = num(configuredSize, num(data.listIconSize, 20)) || 20;
         const selectedIcon =
             selectedSlot === 'no'
                 ? null
@@ -693,7 +696,7 @@ export default class MaterialDesignSelect extends VisWidget {
                           configuredColor || selected?.selectedImageColor || selected?.imageColor,
                           isM3 ? 'var(--md-sys-color-on-surface-variant)' : '#44739e',
                       ),
-                      num(configuredSize, num(data.listIconSize, 20)),
+                      selectedIconSize,
                       !!(configuredColor || selected?.selectedImageColor || selected?.imageColor),
                   );
         let openUp = isTop;
@@ -729,6 +732,16 @@ export default class MaterialDesignSelect extends VisWidget {
               };
         // A plain div, because an <input> nested in a <button> is not typeable.
         const FieldTag = this.isAutocomplete ? 'div' : 'button';
+        const showClear = !!data.clearIconShow && current !== undefined && current !== null && current !== '' && !blocked;
+        const clearSize = num(data.clearIconSize, 16) || 16;
+        const collapseSize = num(data.collapseIconSize, 16) || 16;
+        // The clear button is a sibling of the field, not a child: a button inside the field button
+        // is invalid and unreachable for assistive technology. It sits where it used to flow, so its
+        // right edge is the field padding plus everything that follows it in the field.
+        // Trap: the 10 (field padding), 6 (collapse margin) and 4 (append-outer margin) repeat the margins
+        // below, and the spacer width repeats the button's padding and margin. Change one, change both,
+        // or the button silently sits at the wrong place.
+        const clearRight = 10 + 6 + collapseSize + (selectedIcon && selectedSlot === 'append-outer' ? 4 + selectedIconSize : 0);
         // The hint and counter options existed in the editor since the port but were never rendered.
         // `showInputMessageAlways` follows Vuetify's `persistent-hint`: off, the hint only shows while
         // the field is "focused", which for a select is its open list.
@@ -893,250 +906,277 @@ export default class MaterialDesignSelect extends VisWidget {
                     className="materialdesign-vuetify-select"
                     style={{ boxSizing: 'border-box', display: hasDetails ? 'flex' : undefined, flexDirection: 'column', height: '100%', position: 'relative', width: '100%' }}
                 >
-                    <FieldTag
-                        aria-expanded={this.isAutocomplete ? undefined : this.open}
-                        className="v-input v-input--dense v-select theme--light"
-                        onClick={() => {
-                            if (readOnly) return;
-                            if (locked) {
-                                this.lock.request(opts, () => this.afterUnlock(opts));
-                                return;
-                            }
-                            // Opening without focus would leave a menu that no blur ever closes.
-                            if (this.isAutocomplete) {
-                                this.inputRef?.focus();
-                                return;
-                            }
-                            this.open = !this.open;
-                            this.lock.hold(this.open, opts);
-                            this.forceUpdate();
-                        }}
+                    <div
                         onMouseEnter={() => { this.fieldHovered = true; this.forceUpdate(); }}
                         onMouseLeave={() => { this.fieldHovered = false; this.forceUpdate(); }}
-                        ref={(element: HTMLElement | null) => { this.fieldRef = element; }}
                         style={{
-                            alignItems: 'center',
-                            // Resting -> hover -> open. The two extra stages only apply when the
-                            // editor actually set a color for them.
-                            background:
-                                this.open && m3ColorExplicit(data.inputLayoutBackgroundColorSelected)
-                                    ? color(data.inputLayoutBackgroundColorSelected, 'transparent')
-                                    : this.fieldHovered && m3ColorExplicit(data.inputLayoutBackgroundColorHover)
-                                      ? color(data.inputLayoutBackgroundColorHover, 'transparent')
-                                      : isM3 && !m3ColorExplicit(data.inputLayoutBackgroundColor)
-                                        ? filled
-                                            ? 'var(--md-sys-color-surface-container-high)'
-                                            : 'transparent'
-                                        : color(data.inputLayoutBackgroundColor, filled ? (isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)') : 'transparent'),
-                            border: 0,
-                            borderBottom: enclosed ? 0 : `1px solid ${border}`,
-                            borderRadius: rounded ? 28 : enclosed ? 4 : filled ? '4px 4px 0 0' : undefined,
-                            boxShadow: solo
-                                ? '0 3px 1px -2px rgba(0,0,0,0.2), 0 2px 2px 0 rgba(0,0,0,0.14), 0 1px 5px 0 rgba(0,0,0,0.12)'
-                                : undefined,
-                            boxSizing: 'border-box',
-                            color: textColor,
-                            cursor: 'pointer',
                             display: 'flex',
                             flex: hasDetails ? '1 1 auto' : undefined,
-                            fontFamily: data.inputTextFontFamily || 'inherit',
                             height: hasDetails ? undefined : '100%',
                             minHeight: 0,
-                            padding: '0 10px',
                             position: 'relative',
-                            textAlign: data.inputAlignment || 'left',
                             width: '100%',
                         }}
-                        {...(this.isAutocomplete ? {} : { type: 'button' as const })}
                     >
-                        {outlined ? (
-                            <fieldset
-                                aria-hidden="true"
-                                style={{
-                                    backgroundColor: 'transparent',
-                                    borderColor: outlinedBorder,
-                                    borderRadius: rounded ? 28 : 4,
-                                    borderStyle: 'solid',
-                                    borderWidth: this.open ? 2 : 1,
-                                    bottom: -2,
-                                    left: 0,
-                                    margin: 0,
-                                    padding: '0 8px',
-                                    pointerEvents: 'none',
-                                    position: 'absolute',
-                                    right: 0,
-                                    top: -5,
-                                }}
-                            >
-                                <legend
+                        <FieldTag
+                            aria-expanded={this.isAutocomplete ? undefined : this.open}
+                            className="v-input v-input--dense v-select theme--light"
+                            onClick={() => {
+                                if (readOnly) return;
+                                if (locked) {
+                                    this.lock.request(opts, () => this.afterUnlock(opts));
+                                    return;
+                                }
+                                // Opening without focus would leave a menu that no blur ever closes.
+                                if (this.isAutocomplete) {
+                                    this.inputRef?.focus();
+                                    return;
+                                }
+                                this.open = !this.open;
+                                this.lock.hold(this.open, opts);
+                                this.forceUpdate();
+                            }}
+                            ref={(element: HTMLElement | null) => { this.fieldRef = element; }}
+                            style={{
+                                alignItems: 'center',
+                                // Resting -> hover -> open. The two extra stages only apply when the
+                                // editor actually set a color for them.
+                                background:
+                                    this.open && m3ColorExplicit(data.inputLayoutBackgroundColorSelected)
+                                        ? color(data.inputLayoutBackgroundColorSelected, 'transparent')
+                                        : this.fieldHovered && m3ColorExplicit(data.inputLayoutBackgroundColorHover)
+                                          ? color(data.inputLayoutBackgroundColorHover, 'transparent')
+                                          : isM3 && !m3ColorExplicit(data.inputLayoutBackgroundColor)
+                                            ? filled
+                                                ? 'var(--md-sys-color-surface-container-high)'
+                                                : 'transparent'
+                                            : color(data.inputLayoutBackgroundColor, filled ? (isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)') : 'transparent'),
+                                border: 0,
+                                borderBottom: enclosed ? 0 : `1px solid ${border}`,
+                                borderRadius: rounded ? 28 : enclosed ? 4 : filled ? '4px 4px 0 0' : undefined,
+                                boxShadow: solo
+                                    ? '0 3px 1px -2px rgba(0,0,0,0.2), 0 2px 2px 0 rgba(0,0,0,0.14), 0 1px 5px 0 rgba(0,0,0,0.12)'
+                                    : undefined,
+                                boxSizing: 'border-box',
+                                color: textColor,
+                                cursor: 'pointer',
+                                display: 'flex',
+                                fontFamily: data.inputTextFontFamily || 'inherit',
+                                height: hasDetails ? undefined : '100%',
+                                minHeight: 0,
+                                padding: '0 10px',
+                                position: 'relative',
+                                textAlign: data.inputAlignment || 'left',
+                                width: '100%',
+                            }}
+                            {...(this.isAutocomplete ? {} : { type: 'button' as const })}
+                        >
+                            {outlined ? (
+                                <fieldset
+                                    aria-hidden="true"
                                     style={{
-                                        fontFamily: data.inputLabelFontFamily || 'inherit',
-                                        fontSize: activeLabelFontSize,
-                                        height: 11,
-                                        lineHeight: '11px',
-                                        padding: 0,
-                                        width: active && data.inputLabelText ? 'auto' : 0,
+                                        backgroundColor: 'transparent',
+                                        borderColor: outlinedBorder,
+                                        borderRadius: rounded ? 28 : 4,
+                                        borderStyle: 'solid',
+                                        borderWidth: this.open ? 2 : 1,
+                                        bottom: -2,
+                                        left: 0,
+                                        margin: 0,
+                                        padding: '0 8px',
+                                        pointerEvents: 'none',
+                                        position: 'absolute',
+                                        right: 0,
+                                        top: -5,
                                     }}
                                 >
-                                    {active && data.inputLabelText ? (
-                                        <span
-                                            style={{
-                                                display: 'inline-block',
-                                                padding: '0 4px',
-                                                visibility: 'hidden',
-                                                whiteSpace: 'nowrap',
-                                            }}
-                                        >
-                                            {data.inputLabelText}
-                                        </span>
-                                    ) : null}
-                                </legend>
-                            </fieldset>
-                        ) : null}
-                        {data.prepandIcon && selectedSlot !== 'prepend' ? (
-                            <span style={{ flex: '0 0 auto', marginRight: 4 }}>
-                                {renderIcon(
-                                    data.prepandIcon,
-                                    m3c(data.prepandIconColor, 'var(--md-sys-color-on-surface-variant)', '#44739e'),
-                                    num(data.prepandIconSize, 16),
-                                    !!data.prepandIconColor,
+                                    <legend
+                                        style={{
+                                            fontFamily: data.inputLabelFontFamily || 'inherit',
+                                            fontSize: activeLabelFontSize,
+                                            height: 11,
+                                            lineHeight: '11px',
+                                            padding: 0,
+                                            width: active && data.inputLabelText ? 'auto' : 0,
+                                        }}
+                                    >
+                                        {active && data.inputLabelText ? (
+                                            <span
+                                                style={{
+                                                    display: 'inline-block',
+                                                    padding: '0 4px',
+                                                    visibility: 'hidden',
+                                                    whiteSpace: 'nowrap',
+                                                }}
+                                            >
+                                                {data.inputLabelText}
+                                            </span>
+                                        ) : null}
+                                    </legend>
+                                </fieldset>
+                            ) : null}
+                            {data.prepandIcon && selectedSlot !== 'prepend' ? (
+                                <span style={{ flex: '0 0 auto', marginRight: 4 }}>
+                                    {renderIcon(
+                                        data.prepandIcon,
+                                        m3c(data.prepandIconColor, 'var(--md-sys-color-on-surface-variant)', '#44739e'),
+                                        num(data.prepandIconSize, 16),
+                                        !!data.prepandIconColor,
+                                    )}
+                                </span>
+                            ) : null}
+                            {data.inputPrefix ? (
+                                <span
+                                    style={{
+                                        color: m3c(data.inputAppendixColor, 'var(--md-sys-color-on-surface-variant)', textColor),
+                                        fontFamily: data.inputAppendixFontFamily || undefined,
+                                        fontSize: sizeCss(data.inputAppendixFontSize, 14),
+                                        marginRight: 4,
+                                    }}
+                                >
+                                    {data.inputPrefix}
+                                </span>
+                            ) : null}
+                            {selectedIcon && selectedSlot === 'prepend' ? (
+                                <span style={{ flex: '0 0 auto', marginRight: 4 }}>{selectedIcon}</span>
+                            ) : null}
+                            <span style={{ alignItems: 'center', display: 'flex', flex: '1 1 auto', minWidth: 0, paddingTop: active ? 11 : 0 }}>
+                                {selectedIcon && selectedSlot === 'prepend-inner' ? (
+                                    <span style={{ alignItems: 'center', display: 'flex', flex: '0 0 auto', marginRight: 4 }}>
+                                        {selectedIcon}
+                                    </span>
+                                ) : null}
+                                {data.inputLabelText ? (
+                                    <span
+                                        style={{
+                                            color: this.open
+                                                ? m3c(data.inputLabelColorSelected, 'var(--md-sys-color-primary)', legacyInkMuted(isDark))
+                                                : m3c(data.inputLabelColor, 'var(--md-sys-color-on-surface-variant)', legacyInkMuted(isDark)),
+                                            fontFamily: data.inputLabelFontFamily || 'inherit',
+                                            fontSize: active ? activeLabelFontSize : sizeCss(data.inputLabelFontSize, 16),
+                                            left: 12,
+                                            position: 'absolute',
+                                            top: active ? (outlined ? -4 : 1) : 9,
+                                            transform: num(data.inputTranslateX, 0) || num(data.inputTranslateY, 0)
+                                                ? `translate(${num(data.inputTranslateX, 0)}px, ${num(data.inputTranslateY, 0)}px)`
+                                                : undefined,
+                                            whiteSpace: 'nowrap',
+                                        }}
+                                    >
+                                        {data.inputLabelText}
+                                    </span>
+                                ) : null}
+                                {this.isAutocomplete ? (
+                                    <input
+                                        aria-activedescendant={menuShown && highlighted ? `${idBase}-option-${visibleList.indexOf(highlighted)}` : undefined}
+                                        aria-autocomplete="list"
+                                        aria-controls={listId}
+                                        aria-expanded={menuShown}
+                                        readOnly={blocked}
+                                        onBlur={() => {
+                                            if (this.lock.refocusing) return;
+                                            if (write && this.dirty && !blocked) this.commit(writeValue(list, this.filterText ?? ''), data.oid || '');
+                                            this.closeMenu();
+                                        }}
+                                        onChange={event => {
+                                            if (blocked) return;
+                                            this.filterText = event.target.value;
+                                            this.dirty = true;
+                                            this.hoveredValue = undefined;
+                                            this.forcedOpen = false;
+                                            this.open = true;
+                                            this.forceUpdate();
+                                        }}
+                                        onPointerDown={event => {
+                                            if (!locked) return;
+                                            // The tap that unlocks must not focus the still-readonly field: the focus follows once it is writable.
+                                            event.preventDefault();
+                                            this.lock.request(opts, () => this.afterUnlock(opts));
+                                        }}
+                                        onClick={event => {
+                                            event.stopPropagation();
+                                            if (readOnly) return;
+                                            if (locked) {
+                                                this.lock.request(opts, () => this.afterUnlock(opts));
+                                                return;
+                                            }
+                                            this.startInput(displayed, write);
+                                        }}
+                                        onFocus={() => {
+                                            if (!blocked) {
+                                                this.lock.hold(true, opts);
+                                                this.startInput(displayed, write);
+                                            }
+                                        }}
+                                        onKeyDown={event => !blocked && this.onAutocompleteKey(event, data, { list, visibleList, highlighted, menuShown })}
+                                        placeholder={selected?.text || ''}
+                                        ref={element => { this.inputRef = element; }}
+                                        role="combobox"
+                                        style={{
+                                            background: 'transparent',
+                                            border: 0,
+                                            color: textColor,
+                                            display: 'block',
+                                            flex: '1 1 auto',
+                                            fontFamily: data.inputTextFontFamily || 'inherit',
+                                            fontSize: sizeCss(data.inputTextFontSize, 16),
+                                            minWidth: 0,
+                                            outline: 'none',
+                                            padding: 0,
+                                            textOverflow: 'ellipsis',
+                                            width: '100%',
+                                        }}
+                                        type={data.inputType === 'date' || data.inputType === 'time' ? data.inputType : 'text'}
+                                        value={this.filterText ?? displayed}
+                                    />
+                                ) : (
+                                    <span
+                                        style={{
+                                            display: 'block',
+                                            flex: '1 1 auto',
+                                            fontFamily: data.inputTextFontFamily || 'inherit',
+                                            fontSize: sizeCss(data.inputTextFontSize, 16),
+                                            minWidth: 0,
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            whiteSpace: 'nowrap',
+                                        }}
+                                    >
+                                        {selected?.text || ''}
+                                    </span>
                                 )}
                             </span>
-                        ) : null}
-                        {data.inputPrefix ? (
-                            <span
-                                style={{
-                                    color: m3c(data.inputAppendixColor, 'var(--md-sys-color-on-surface-variant)', textColor),
-                                    fontFamily: data.inputAppendixFontFamily || undefined,
-                                    fontSize: sizeCss(data.inputAppendixFontSize, 14),
-                                    marginRight: 4,
-                                }}
-                            >
-                                {data.inputPrefix}
-                            </span>
-                        ) : null}
-                        {selectedIcon && selectedSlot === 'prepend' ? (
-                            <span style={{ flex: '0 0 auto', marginRight: 4 }}>{selectedIcon}</span>
-                        ) : null}
-                        <span style={{ alignItems: 'center', display: 'flex', flex: '1 1 auto', minWidth: 0, paddingTop: active ? 11 : 0 }}>
-                            {selectedIcon && selectedSlot === 'prepend-inner' ? (
-                                <span style={{ alignItems: 'center', display: 'flex', flex: '0 0 auto', marginRight: 4 }}>
-                                    {selectedIcon}
-                                </span>
-                            ) : null}
-                            {data.inputLabelText ? (
+                            {data.inputSuffix ? (
                                 <span
                                     style={{
-                                        color: this.open
-                                            ? m3c(data.inputLabelColorSelected, 'var(--md-sys-color-primary)', legacyInkMuted(isDark))
-                                            : m3c(data.inputLabelColor, 'var(--md-sys-color-on-surface-variant)', legacyInkMuted(isDark)),
-                                        fontFamily: data.inputLabelFontFamily || 'inherit',
-                                        fontSize: active ? activeLabelFontSize : sizeCss(data.inputLabelFontSize, 16),
-                                        left: 12,
-                                        position: 'absolute',
-                                        top: active ? (outlined ? -4 : 1) : 9,
-                                        transform: num(data.inputTranslateX, 0) || num(data.inputTranslateY, 0)
-                                            ? `translate(${num(data.inputTranslateX, 0)}px, ${num(data.inputTranslateY, 0)}px)`
-                                            : undefined,
-                                        whiteSpace: 'nowrap',
+                                        color: m3c(data.inputAppendixColor, 'var(--md-sys-color-on-surface-variant)', textColor),
+                                        fontFamily: data.inputAppendixFontFamily || undefined,
+                                        fontSize: sizeCss(data.inputAppendixFontSize, 14),
+                                        marginLeft: 4,
                                     }}
                                 >
-                                    {data.inputLabelText}
+                                    {data.inputSuffix}
                                 </span>
                             ) : null}
-                            {this.isAutocomplete ? (
-                                <input
-                                    aria-activedescendant={menuShown && highlighted ? `${idBase}-option-${visibleList.indexOf(highlighted)}` : undefined}
-                                    aria-autocomplete="list"
-                                    aria-controls={listId}
-                                    aria-expanded={menuShown}
-                                    readOnly={blocked}
-                                    onBlur={() => {
-                                        if (this.lock.refocusing) return;
-                                        if (write && this.dirty && !blocked) this.commit(writeValue(list, this.filterText ?? ''), data.oid || '');
-                                        this.closeMenu();
-                                    }}
-                                    onChange={event => {
-                                        if (blocked) return;
-                                        this.filterText = event.target.value;
-                                        this.dirty = true;
-                                        this.hoveredValue = undefined;
-                                        this.forcedOpen = false;
-                                        this.open = true;
-                                        this.forceUpdate();
-                                    }}
-                                    onPointerDown={event => {
-                                        if (!locked) return;
-                                        // The tap that unlocks must not focus the still-readonly field: the focus follows once it is writable.
-                                        event.preventDefault();
-                                        this.lock.request(opts, () => this.afterUnlock(opts));
-                                    }}
-                                    onClick={event => {
-                                        event.stopPropagation();
-                                        if (readOnly) return;
-                                        if (locked) {
-                                            this.lock.request(opts, () => this.afterUnlock(opts));
-                                            return;
-                                        }
-                                        this.startInput(displayed, write);
-                                    }}
-                                    onFocus={() => {
-                                        if (!blocked) {
-                                            this.lock.hold(true, opts);
-                                            this.startInput(displayed, write);
-                                        }
-                                    }}
-                                    onKeyDown={event => !blocked && this.onAutocompleteKey(event, data, { list, visibleList, highlighted, menuShown })}
-                                    placeholder={selected?.text || ''}
-                                    ref={element => { this.inputRef = element; }}
-                                    role="combobox"
-                                    style={{
-                                        background: 'transparent',
-                                        border: 0,
-                                        color: textColor,
-                                        display: 'block',
-                                        flex: '1 1 auto',
-                                        fontFamily: data.inputTextFontFamily || 'inherit',
-                                        fontSize: sizeCss(data.inputTextFontSize, 16),
-                                        minWidth: 0,
-                                        outline: 'none',
-                                        padding: 0,
-                                        textOverflow: 'ellipsis',
-                                        width: '100%',
-                                    }}
-                                    type={data.inputType === 'date' || data.inputType === 'time' ? data.inputType : 'text'}
-                                    value={this.filterText ?? displayed}
-                                />
-                            ) : (
-                                <span
-                                    style={{
-                                        display: 'block',
-                                        flex: '1 1 auto',
-                                        fontFamily: data.inputTextFontFamily || 'inherit',
-                                        fontSize: sizeCss(data.inputTextFontSize, 16),
-                                        minWidth: 0,
-                                        overflow: 'hidden',
-                                        textOverflow: 'ellipsis',
-                                        whiteSpace: 'nowrap',
-                                    }}
-                                >
-                                    {selected?.text || ''}
+                            {showClear ? <span aria-hidden="true" style={{ flex: '0 0 auto', width: clearSize + 8 }} /> : null}
+                            {locked ? (
+                                <span data-lock-icon="" style={{ alignItems: 'center', display: 'flex', flex: '0 0 auto', marginLeft: 4 }}>
+                                    {lockIcon(data, 18)}
                                 </span>
-                            )}
-                        </span>
-                        {data.inputSuffix ? (
-                            <span
-                                style={{
-                                    color: m3c(data.inputAppendixColor, 'var(--md-sys-color-on-surface-variant)', textColor),
-                                    fontFamily: data.inputAppendixFontFamily || undefined,
-                                    fontSize: sizeCss(data.inputAppendixFontSize, 14),
-                                    marginLeft: 4,
-                                }}
-                            >
-                                {data.inputSuffix}
+                            ) : null}
+                            <span style={{ flex: '0 0 auto', marginLeft: 6 }}>
+                                {renderIcon(
+                                    data.collapseIcon || 'menu-down',
+                                    m3c(data.collapseIconColor, 'var(--md-sys-color-on-surface-variant)', '#44739e'),
+                                    collapseSize,
+                                    !!data.collapseIconColor,
+                                )}
                             </span>
-                        ) : null}
-                        {data.clearIconShow && current !== undefined && current !== null && current !== '' && !blocked ? (
+                            {selectedIcon && selectedSlot === 'append-outer' ? (
+                                <span style={{ flex: '0 0 auto', marginLeft: 4 }}>{selectedIcon}</span>
+                            ) : null}
+                        </FieldTag>
+                        {showClear ? (
                             <button
                                 aria-label={VisWidget.t('ariaClearInput')}
                                 onClick={event => {
@@ -1155,36 +1195,23 @@ export default class MaterialDesignSelect extends VisWidget {
                                     border: 0,
                                     cursor: 'pointer',
                                     display: 'flex',
-                                    marginLeft: 4,
                                     padding: 2,
+                                    position: 'absolute',
+                                    right: clearRight,
+                                    top: '50%',
+                                    transform: 'translateY(-50%)',
                                 }}
                                 type="button"
                             >
                                 {renderIcon(
                                     data.clearIcon || 'close',
                                     m3c(data.clearIconColor, 'var(--md-sys-color-on-surface-variant)', '#44739e'),
-                                    num(data.clearIconSize, 16),
+                                    clearSize,
                                     !!data.clearIconColor,
                                 )}
                             </button>
                         ) : null}
-                        {locked ? (
-                            <span data-lock-icon="" style={{ alignItems: 'center', display: 'flex', flex: '0 0 auto', marginLeft: 4 }}>
-                                {lockIcon(data, 18)}
-                            </span>
-                        ) : null}
-                        <span style={{ flex: '0 0 auto', marginLeft: 6 }}>
-                            {renderIcon(
-                                data.collapseIcon || 'menu-down',
-                                m3c(data.collapseIconColor, 'var(--md-sys-color-on-surface-variant)', '#44739e'),
-                                num(data.collapseIconSize, 16),
-                                !!data.collapseIconColor,
-                            )}
-                        </span>
-                        {selectedIcon && selectedSlot === 'append-outer' ? (
-                            <span style={{ flex: '0 0 auto', marginLeft: 4 }}>{selectedIcon}</span>
-                        ) : null}
-                    </FieldTag>
+                    </div>
                     {hasDetails ? (
                         <div
                             className="v-text-field__details"
