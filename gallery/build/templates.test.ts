@@ -1,7 +1,11 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { beforeAll, describe, expect, it } from 'vitest';
 
 import meta from 'virtual:gallery-meta';
 
+import { repoRoot } from './paths';
+import { VIEWS } from '../src/views/views';
 import { installShim } from '../src/runtime/GalleryRxWidget';
 import { defaultData, expandFields } from '../src/runtime/widgetInfo';
 import { entryByTpl, loadWidget } from '../src/runtime/widgets';
@@ -42,6 +46,25 @@ describe('templates', () => {
             expect(style['background-color'], name).toBe(VIEW_COLORS['background-color']);
         }
     });
+    it('keeps the colours out of the gallery source views, so the gallery dark mode inherits the page theme', () => {
+        for (const [name, view] of Object.entries(VIEWS)) {
+            expect(view.settings?.style ?? {}, name).not.toHaveProperty('color');
+            expect(view.settings?.style ?? {}, name).not.toHaveProperty('background-color');
+        }
+    });
+    it('uses the light tokens of gallery.css for the exported colours', () => {
+        const css = readFileSync(join(repoRoot, 'gallery/src/gallery.css'), 'utf8');
+        const light = /:root {([^}]*)}/.exec(css)![1];
+        expect(light).toContain(`--g-fg: ${VIEW_COLORS.color};`);
+        expect(light).toContain(`--g-bg: ${VIEW_COLORS['background-color']};`);
+    });
+    it('tells the download notes to import dashboard-phone-lights before dashboard-phone, in both languages', () => {
+        for (const lang of ['en', 'de']) {
+            const text = (JSON.parse(readFileSync(join(repoRoot, `gallery/src/i18n/${lang}.json`), 'utf8')) as Record<string, string>).gallery_downloads_text;
+            expect(text.indexOf('dashboard-phone-lights'), lang).toBeGreaterThan(-1);
+            expect(text.indexOf('dashboard-phone-lights'), lang).toBeLessThan(text.search(/dashboard-phone(?![-a-z])/));
+        }
+    });
     it('keeps the size keys of the view next to the colours', () => {
         expect(viewTemplate({ settings: { style: { width: '1px' } }, widgets: {} }, 'v').settings).toEqual({ style: { width: '1px', ...VIEW_COLORS } });
     });
@@ -57,6 +80,10 @@ describe('view references', () => {
     it('reports a reference to a view that is not exported, plain or indexed', () => {
         expect(missingViewReferences({ main: view({ contains_view: 'gone' }) }, keys)).toEqual(['main.a.contains_view -> gone']);
         expect(missingViewReferences({ main: view({ contains_view_0: 'gone' }) }, keys)).toEqual(['main.a.contains_view_0 -> gone']);
+    });
+    it('skips a non-string views value and treats a reference that differs only in case as missing', () => {
+        expect(missingViewReferences({ main: view({ contains_view: 5, nav_view: null }) }, keys)).toEqual([]);
+        expect(missingViewReferences({ main: view({ nav_view: 'Child' }), child: { widgets: {} } }, keys)).toEqual(['main.a.nav_view -> Child']);
     });
     it('ignores keys the widget does not declare as views', () => {
         expect(missingViewReferences({ main: view({ title: 'gone' }) }, () => [])).toEqual([]);
