@@ -31,6 +31,7 @@
   "gallery_dashboard_tablet": "Wandtablet",
   "gallery_dashboard_phone": "Handy",
   "gallery_downloads": "Import-Vorlagen",
+  "gallery_downloads_text": "Zuerst demo-objects.json hochladen (Admin, Objekte, Hochladen), danach eine Dashboard-View im vis-2-Editor importieren (Views, Import). Die vier Tablet-Views gehören zusammen: alle importieren, benannt wie die Dateien.",
   "gallery_about": "Über",
   "gallery_about_text": "Alle Werte werden in deinem Browser simuliert. Nichts wird gesendet, keine Cookies, kein Tracking.",
   "gallery_excluded": "In der Galerie nicht gezeigt",

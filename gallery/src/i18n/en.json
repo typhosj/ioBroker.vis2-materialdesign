@@ -31,6 +31,7 @@
   "gallery_dashboard_tablet": "Wall tablet",
   "gallery_dashboard_phone": "Phone",
   "gallery_downloads": "Import templates",
+  "gallery_downloads_text": "Upload demo-objects.json first (admin, Objects, upload), then import a dashboard view in the vis-2 editor (Views, Import). The four tablet views belong together: import all of them, named as the files.",
   "gallery_about": "About",
   "gallery_about_text": "All values are simulated in your browser. Nothing is sent anywhere, no cookies, no tracking.",
   "gallery_excluded": "Not shown in the gallery",

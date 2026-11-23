@@ -4,6 +4,7 @@ import type { Plugin } from 'vite';
 
 import { firstParagraph } from './docText';
 import { repoRoot } from './paths';
+import { templateFiles } from './templates';
 import { m3Schemes, themeStates } from './themeStates';
 
 const modules: Record<string, () => unknown> = {
@@ -41,6 +42,25 @@ export function iframeDemo(): Plugin {
         },
         generateBundle() {
             this.emitFile({ type: 'asset', fileName: 'iframe-demo.html', source: readFileSync(file) });
+        },
+    };
+}
+
+export function importTemplates(): Plugin {
+    return {
+        name: 'gallery-import-templates',
+        configureServer(server) {
+            server.middlewares.use('/templates', (req, res) => {
+                const source = templateFiles()[`templates${(req.url ?? '').split('?')[0]}`];
+                res.statusCode = source ? 200 : 404;
+                res.setHeader('Content-Type', 'application/json');
+                res.end(source);
+            });
+        },
+        generateBundle() {
+            for (const [fileName, source] of Object.entries(templateFiles())) {
+                this.emitFile({ type: 'asset', fileName, source });
+            }
         },
     };
 }
