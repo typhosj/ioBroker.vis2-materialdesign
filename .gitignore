@@ -24,3 +24,8 @@ widgets/materialdesign/js/google-charts-api.js
 
 # release-script temporary commit-message file
 .commitmessage
+
+# gallery build and test output
+gallery/dist
+gallery/test-results
+gallery/playwright-report

@@ -12,6 +12,9 @@ export default [
             'node_modules/**',
             'tasks.js',
             '*.config.mjs',
+            'gallery/dist/**',
+            'gallery/test-results/**',
+            'gallery/playwright-report/**',
         ],
     },
     ...config,
@@ -19,7 +22,7 @@ export default [
         // Maintained widget + admin source. The ported widgets deliberately use a
         // compact single-line style; prettier/jsdoc/brace-opinion rules fight that and
         // add no correctness value, so only the correctness rules stay active.
-        files: ['src-widgets-ts/src/**/*.{ts,tsx}', 'src-admin/src/**/*.{ts,tsx}'],
+        files: ['src-widgets-ts/src/**/*.{ts,tsx}', 'src-admin/src/**/*.{ts,tsx}', 'gallery/**/*.{ts,tsx}'],
         rules: {
             // Formatting / documentation opinions (compact single-line widget style).
             'prettier/prettier': 'off',

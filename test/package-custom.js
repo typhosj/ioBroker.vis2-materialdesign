@@ -28,6 +28,11 @@ const io = readJson("io-package.json");
 assert.strictEqual(pkg.name, `iobroker.${io.common.name}`);
 assert.strictEqual(pkg.version, io.common.version);
 assert.strictEqual(pkg.license, io.common.licenseInformation.license);
+// The live demo lives in gallery/ and must never reach the npm package.
+assert.ok(
+    !pkg.files.some(entry => /^!?gallery(\/|$)/.test(entry)),
+    "package.json files must not list gallery/",
+);
 // The widget files live in the object database and any host's vis-2 serves them, so the minimum
 // vis-2 version is checked on every host, not only on the one that runs this adapter.
 const requires = (list, name) => (list || []).some(entry => Object.prototype.hasOwnProperty.call(entry, name));

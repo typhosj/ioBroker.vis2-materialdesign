@@ -100,14 +100,18 @@
     "test:pr-gate": "node test/pr-gate.js",
     "test:coverage": "vitest run --coverage",
     "test:widgets": "vitest run",
-    "test": "npm run test:package && npm run test:package-custom && npm run test:coverage",
+    "test": "npm run test:package && npm run test:package-custom && npm run test:coverage && npm run gallery:test:unit",
     "pr:repocheck": "node -e \"for (const d of ['src-widgets-ts/build', 'coverage']) require('fs').rmSync(d, { recursive: true, force: true })\" && npx @iobroker/repochecker https://github.com/typhosj/ioBroker.vis2-materialdesign --local",
     "pr:check": "npm run build && npm run lint && tsc -p src-widgets-ts/tsconfig.json --noEmit && npm test && npm run test:pr-gate && npm pack --dry-run && npm run pr:repocheck",
     "pr:objects": "node scripts/check-object-dump.js",
     "release": "release-script",
-    "lint": "eslint src-widgets-ts/src src-admin/src",
+    "lint": "eslint src-widgets-ts/src src-admin/src gallery",
     "build": "node tasks",
-    "build:admin": "vite build --config vite.admin.config.mjs"
+    "build:admin": "vite build --config vite.admin.config.mjs",
+    "gallery:dev": "vite --config gallery/vite.config.ts",
+    "gallery:build": "vite build --config gallery/vite.config.ts",
+    "gallery:test:unit": "vitest run --config gallery/vitest.config.ts",
+    "gallery:test": "npm run gallery:test:unit"
   },
   "bugs": {
     "url": "https://github.com/typhosj/ioBroker.vis2-materialdesign/issues"

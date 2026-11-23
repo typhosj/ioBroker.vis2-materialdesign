@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
+    "allowImportingTsExtensions": true,
+    "esModuleInterop": true,
+    "jsx": "react-jsx",
+    "lib": ["dom", "dom.iterable", "es2022"],
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "target": "es2022",
+    "types": ["@iobroker/types-vis-2", "@iobroker/types", "node", "vite/client"]
+  },
+  "include": ["src", "build", "tests", "vite.config.ts", "vitest.config.ts", "playwright.config.ts", "../src-widgets-ts/src/env.d.ts"]
+}
