@@ -1,0 +1,252 @@
+[
+  {
+    "module": "MaterialDesignColorScheme",
+    "tpl": "tplVis2-materialdesign-ColorScheme-Preview",
+    "name": "Preview Color Schemes"
+  },
+  {
+    "module": "MaterialDesignDialogView",
+    "tpl": "tplVis2-materialdesign-Vuetify-Dialog-View",
+    "name": "Dialog"
+  },
+  {
+    "module": "MaterialDesignDialogIFrame",
+    "tpl": "tplVis2-materialdesign-Vuetify-Dialog-iFrame",
+    "name": "Dialog iFrame"
+  },
+  {
+    "module": "MaterialDesignAutocomplete",
+    "tpl": "tplVis2-materialdesign-Autocomplete",
+    "name": "Autocomplete"
+  },
+  {
+    "module": "MaterialDesignAlerts",
+    "tpl": "tplVis2-materialdesign-Alerts",
+    "name": "Alerts"
+  },
+  {
+    "module": "MaterialDesignCard",
+    "tpl": "tplVis2-materialdesign-Card",
+    "name": "HTML Card"
+  },
+  {
+    "module": "MaterialDesignMasonryViews",
+    "tpl": "tplVis2-materialdesign-Masonry-Views",
+    "name": "Masonry Views"
+  },
+  {
+    "module": "MaterialDesignGridViews",
+    "tpl": "tplVis2-materialdesign-Grid-Views",
+    "name": "Grid Views"
+  },
+  {
+    "module": "MaterialDesignAdvancedViewInWidget",
+    "tpl": "tplVis2-materialdesign-view-in-widget",
+    "name": "Advanced View in Widget"
+  },
+  {
+    "module": "MaterialDesignAdvancedViewInWidget8",
+    "tpl": "tplVis2-materialdesign-view-in-widget8",
+    "name": "Advanced View in Widget 8"
+  },
+  {
+    "module": "MaterialDesignCalendar",
+    "tpl": "tplVis2-materialdesign-Calendar",
+    "name": "Calendar"
+  },
+  {
+    "module": "MaterialDesignChartBar",
+    "tpl": "tplVis2-materialdesign-Chart-Bar",
+    "name": "Bar Chart"
+  },
+  {
+    "module": "MaterialDesignChartPie",
+    "tpl": "tplVis2-materialdesign-Chart-Pie",
+    "name": "Pie Chart"
+  },
+  {
+    "module": "MaterialDesignChartJson",
+    "tpl": "tplVis2-materialdesign-Chart-JSON",
+    "name": "JSON Chart"
+  },
+  {
+    "module": "MaterialDesignChartLineHistory",
+    "tpl": "tplVis2-materialdesign-Chart-Line-History",
+    "name": "Line History Chart"
+  },
+  {
+    "module": "MaterialDesignButtonNavigationVertical",
+    "tpl": "tplVis2-materialdesign-Button-Navigation-vertical",
+    "name": "Button Navigation vertical"
+  },
+  {
+    "module": "MaterialDesignButtonLinkVertical",
+    "tpl": "tplVis2-materialdesign-Button-Link-vertical",
+    "name": "Button Link vertical"
+  },
+  {
+    "module": "MaterialDesignButtonStateVertical",
+    "tpl": "tplVis2-materialdesign-Button-State-vertical",
+    "name": "Button State vertical"
+  },
+  {
+    "module": "MaterialDesignButtonStateMultiVertical",
+    "tpl": "tplVis2-materialdesign-Button-State-Multi-vertical",
+    "name": "Button State Multi vertical"
+  },
+  {
+    "module": "MaterialDesignButtonAditionVertical",
+    "tpl": "tplVis2-materialdesign-Button-Adition-vertical",
+    "name": "Button Addition vertical"
+  },
+  {
+    "module": "MaterialDesignButtonToggleVertical",
+    "tpl": "tplVis2-materialdesign-Button-Toggle-vertical",
+    "name": "Button Toggle vertical"
+  },
+  {
+    "module": "MaterialDesignButtonNavigation",
+    "tpl": "tplVis2-materialdesign-Button-Navigation",
+    "name": "Button Navigation"
+  },
+  {
+    "module": "MaterialDesignButtonLink",
+    "tpl": "tplVis2-materialdesign-Button-Link",
+    "name": "Button Link"
+  },
+  {
+    "module": "MaterialDesignButtonState",
+    "tpl": "tplVis2-materialdesign-Button-State",
+    "name": "Button State"
+  },
+  {
+    "module": "MaterialDesignButtonStateMulti",
+    "tpl": "tplVis2-materialdesign-Button-State-Multi",
+    "name": "Button State Multi"
+  },
+  {
+    "module": "MaterialDesignButtonAdition",
+    "tpl": "tplVis2-materialdesign-Button-Adition",
+    "name": "Button Addition"
+  },
+  {
+    "module": "MaterialDesignButtonToggle",
+    "tpl": "tplVis2-materialdesign-Button-Toggle",
+    "name": "Button Toggle"
+  },
+  {
+    "module": "MaterialDesignIconButtonNavigation",
+    "tpl": "tplVis2-materialdesign-Icon-Button-Navigation",
+    "name": "Icon Button Navigation"
+  },
+  {
+    "module": "MaterialDesignIconButtonLink",
+    "tpl": "tplVis2-materialdesign-Icon-Button-Link",
+    "name": "Icon Button Link"
+  },
+  {
+    "module": "MaterialDesignIconButtonState",
+    "tpl": "tplVis2-materialdesign-Icon-Button-State",
+    "name": "Icon Button State"
+  },
+  {
+    "module": "MaterialDesignIconButtonStateMulti",
+    "tpl": "tplVis2-materialdesign-Icon-Button-State-Multi",
+    "name": "Icon Button State Multi"
+  },
+  {
+    "module": "MaterialDesignIconButtonAdition",
+    "tpl": "tplVis2-materialdesign-Icon-Button-Adition",
+    "name": "Icon Button Addition"
+  },
+  {
+    "module": "MaterialDesignIconButtonToggle",
+    "tpl": "tplVis2-materialdesign-Icon-Button-Toggle",
+    "name": "Icon Button Toggle"
+  },
+  {
+    "module": "MaterialDesignIconButtonSlider",
+    "tpl": "tplVis2-materialdesign-Icon-Button-Slider",
+    "name": "Icon Button Slider"
+  },
+  {
+    "module": "MaterialDesignCheckbox",
+    "tpl": "tplVis2-materialdesign-CheckBox",
+    "name": "Checkbox"
+  },
+  {
+    "module": "MaterialDesignIcon",
+    "tpl": "tplVis2-materialdesign-Icon",
+    "name": "Icon"
+  },
+  {
+    "module": "MaterialDesignIconList",
+    "tpl": "tplVis2-materialdesign-Icon-List",
+    "name": "Icon List"
+  },
+  {
+    "module": "MaterialDesignList",
+    "tpl": "tplVis2-materialdesign-List",
+    "name": "List"
+  },
+  {
+    "module": "MaterialDesignInput",
+    "tpl": "tplVis2-materialdesign-Input",
+    "name": "Input"
+  },
+  {
+    "module": "MaterialDesignKeyboard",
+    "tpl": "tplVis2-materialdesign-Keyboard",
+    "name": "On-screen Keyboard"
+  },
+  {
+    "module": "MaterialDesignInstalledVersion",
+    "tpl": "tplVis2-materialdesign-Installed-Version",
+    "name": "Installed Version"
+  },
+  {
+    "module": "MaterialDesignSelect",
+    "tpl": "tplVis2-materialdesign-Select",
+    "name": "Select"
+  },
+  {
+    "module": "MaterialDesignProgress",
+    "tpl": "tplVis2-materialdesign-Progress",
+    "name": "Progress"
+  },
+  {
+    "module": "MaterialDesignProgressCircular",
+    "tpl": "tplVis2-materialdesign-Progress-Circular",
+    "name": "Progress Circular"
+  },
+  {
+    "module": "MaterialDesignRoundSlider",
+    "tpl": "tplVis2-materialdesign-Slider-Round",
+    "name": "Slider Round"
+  },
+  {
+    "module": "MaterialDesignSlider",
+    "tpl": "tplVis2-materialdesign-Slider",
+    "name": "Slider"
+  },
+  {
+    "module": "MaterialDesignSwitch",
+    "tpl": "tplVis2-materialdesign-Switch",
+    "name": "Switch"
+  },
+  {
+    "module": "MaterialDesignTable",
+    "tpl": "tplVis2-materialdesign-Table",
+    "name": "Table"
+  },
+  {
+    "module": "MaterialDesignTopAppBar",
+    "tpl": "tplVis2-materialdesign-TopAppBar-Navigation",
+    "name": "Top App Bar"
+  },
+  {
+    "module": "MaterialDesignValue",
+    "tpl": "tplVis2-materialdesign-value",
+    "name": "Value"
+  }
+]
