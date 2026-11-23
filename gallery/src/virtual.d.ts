@@ -3,7 +3,7 @@ declare module 'virtual:gallery-theme' {
     export default theme;
 }
 declare module 'virtual:gallery-meta' {
-    const meta: { version: string };
+    const meta: { version: string; templates: string[] };
     export default meta;
 }
 declare module 'virtual:gallery-docs' {

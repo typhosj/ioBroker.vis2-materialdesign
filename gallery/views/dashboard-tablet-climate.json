@@ -2,48 +2,11 @@
   "settings": {
     "style": {
       "width": "1920px",
-      "height": "1200px"
+      "height": "1136px"
     }
   },
   "widgets": {
     "w1": {
-      "tpl": "tplVis2-materialdesign-TopAppBar-Navigation",
-      "data": {
-        "oid": "0_userdata.0.demo.dashboard.page",
-        "navItemCount": 4,
-        "navDefaultValue": 0,
-        "drawerLayout": "horizontal",
-        "permanentIfResolutionHigherThan": 800,
-        "titleTopAppBar": "Smart Home",
-        "showSelectedItemAsTitle": false,
-        "showHeader": true,
-        "headerLabel": "Smart Home",
-        "showLabels": true,
-        "topAppBarLayout": "standard",
-        "labels0": "Overview",
-        "iconDrawer0": "home",
-        "labels1": "Lights",
-        "iconDrawer1": "lightbulb",
-        "labels2": "Climate",
-        "iconDrawer2": "thermometer",
-        "submenus0": "",
-        "useTheme": null,
-        "g_theme": true,
-        "menuId0": "dashboard-tablet",
-        "menuId1": "dashboard-tablet-lights",
-        "menuId2": "dashboard-tablet-climate",
-        "labels3": "Energy",
-        "iconDrawer3": "flash",
-        "menuId3": "dashboard-tablet-energy"
-      },
-      "style": {
-        "left": 0,
-        "top": 0,
-        "width": 1920,
-        "height": 64
-      }
-    },
-    "w2": {
       "tpl": "tplVis2-materialdesign-value",
       "data": {
         "oid": "0_userdata.0.demo.climate.living.temperature",
@@ -61,12 +24,12 @@
       },
       "style": {
         "left": 24,
-        "top": 100,
+        "top": 36,
         "width": 400,
         "height": 44
       }
     },
-    "w3": {
+    "w2": {
       "tpl": "tplVis2-materialdesign-value",
       "data": {
         "oid": "0_userdata.0.demo.climate.living.humidity",
@@ -84,12 +47,12 @@
       },
       "style": {
         "left": 440,
-        "top": 100,
+        "top": 36,
         "width": 400,
         "height": 44
       }
     },
-    "w4": {
+    "w3": {
       "tpl": "tplVis2-materialdesign-value",
       "data": {
         "oid": "0_userdata.0.demo.climate.kitchen.temperature",
@@ -107,12 +70,12 @@
       },
       "style": {
         "left": 24,
-        "top": 160,
+        "top": 96,
         "width": 400,
         "height": 44
       }
     },
-    "w5": {
+    "w4": {
       "tpl": "tplVis2-materialdesign-value",
       "data": {
         "oid": "0_userdata.0.demo.climate.kitchen.humidity",
@@ -130,12 +93,12 @@
       },
       "style": {
         "left": 440,
-        "top": 160,
+        "top": 96,
         "width": 400,
         "height": 44
       }
     },
-    "w6": {
+    "w5": {
       "tpl": "tplVis2-materialdesign-value",
       "data": {
         "oid": "0_userdata.0.demo.climate.bedroom.temperature",
@@ -153,12 +116,12 @@
       },
       "style": {
         "left": 24,
-        "top": 220,
+        "top": 156,
         "width": 400,
         "height": 44
       }
     },
-    "w7": {
+    "w6": {
       "tpl": "tplVis2-materialdesign-value",
       "data": {
         "oid": "0_userdata.0.demo.climate.bedroom.humidity",
@@ -176,12 +139,12 @@
       },
       "style": {
         "left": 440,
-        "top": 220,
+        "top": 156,
         "width": 400,
         "height": 44
       }
     },
-    "w8": {
+    "w7": {
       "tpl": "tplVis2-materialdesign-Slider-Round",
       "data": {
         "oid": "0_userdata.0.demo.climate.setpoint",
@@ -201,12 +164,12 @@
       },
       "style": {
         "left": 24,
-        "top": 320,
+        "top": 256,
         "width": 280,
         "height": 280
       }
     },
-    "w9": {
+    "w8": {
       "tpl": "tplVis2-materialdesign-Select",
       "data": {
         "oid": "0_userdata.0.demo.climate.mode",
@@ -223,12 +186,12 @@
       },
       "style": {
         "left": 360,
-        "top": 400,
+        "top": 336,
         "width": 300,
         "height": 76
       }
     },
-    "w10": {
+    "w9": {
       "tpl": "tplVis2-materialdesign-Card",
       "data": {
         "listItemDataMethod": "inputPerEditor",
@@ -252,12 +215,12 @@
       },
       "style": {
         "left": 900,
-        "top": 100,
+        "top": 36,
         "width": 700,
         "height": 260
       }
     },
-    "w11": {
+    "w10": {
       "tpl": "tplVis2-materialdesign-Table",
       "data": {
         "oid": "0_userdata.0.demo.weather.forecast",
@@ -294,7 +257,7 @@
       },
       "style": {
         "left": 900,
-        "top": 400,
+        "top": 336,
         "width": 700,
         "height": 320
       }

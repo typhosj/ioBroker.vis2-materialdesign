@@ -2,48 +2,11 @@
   "settings": {
     "style": {
       "width": "1920px",
-      "height": "1200px"
+      "height": "1136px"
     }
   },
   "widgets": {
     "w1": {
-      "tpl": "tplVis2-materialdesign-TopAppBar-Navigation",
-      "data": {
-        "oid": "0_userdata.0.demo.dashboard.page",
-        "navItemCount": 4,
-        "navDefaultValue": 0,
-        "drawerLayout": "horizontal",
-        "permanentIfResolutionHigherThan": 800,
-        "titleTopAppBar": "Smart Home",
-        "showSelectedItemAsTitle": false,
-        "showHeader": true,
-        "headerLabel": "Smart Home",
-        "showLabels": true,
-        "topAppBarLayout": "standard",
-        "labels0": "Overview",
-        "iconDrawer0": "home",
-        "labels1": "Lights",
-        "iconDrawer1": "lightbulb",
-        "labels2": "Climate",
-        "iconDrawer2": "thermometer",
-        "submenus0": "",
-        "useTheme": null,
-        "g_theme": true,
-        "menuId0": "dashboard-tablet",
-        "menuId1": "dashboard-tablet-lights",
-        "menuId2": "dashboard-tablet-climate",
-        "labels3": "Energy",
-        "iconDrawer3": "flash",
-        "menuId3": "dashboard-tablet-energy"
-      },
-      "style": {
-        "left": 0,
-        "top": 0,
-        "width": 1920,
-        "height": 64
-      }
-    },
-    "w2": {
       "tpl": "tplVis2-materialdesign-Button-Toggle",
       "data": {
         "oid": "0_userdata.0.demo.living.light",
@@ -52,12 +15,12 @@
       },
       "style": {
         "left": 24,
-        "top": 90,
+        "top": 26,
         "width": 200,
         "height": 56
       }
     },
-    "w3": {
+    "w2": {
       "tpl": "tplVis2-materialdesign-Button-Toggle",
       "data": {
         "oid": "0_userdata.0.demo.kitchen.light",
@@ -66,12 +29,12 @@
       },
       "style": {
         "left": 244,
-        "top": 90,
+        "top": 26,
         "width": 200,
         "height": 56
       }
     },
-    "w4": {
+    "w3": {
       "tpl": "tplVis2-materialdesign-Button-Toggle",
       "data": {
         "oid": "0_userdata.0.demo.hall.light",
@@ -80,12 +43,12 @@
       },
       "style": {
         "left": 464,
-        "top": 90,
+        "top": 26,
         "width": 200,
         "height": 56
       }
     },
-    "w5": {
+    "w4": {
       "tpl": "tplVis2-materialdesign-Button-Toggle",
       "data": {
         "oid": "0_userdata.0.demo.terrace.light",
@@ -94,12 +57,12 @@
       },
       "style": {
         "left": 684,
-        "top": 90,
+        "top": 26,
         "width": 200,
         "height": 56
       }
     },
-    "w6": {
+    "w5": {
       "tpl": "tplVis2-materialdesign-Slider",
       "data": {
         "oid": "0_userdata.0.demo.living.dimmer",
@@ -121,12 +84,12 @@
       },
       "style": {
         "left": 24,
-        "top": 190,
+        "top": 126,
         "width": 860,
         "height": 60
       }
     },
-    "w7": {
+    "w6": {
       "tpl": "tplVis2-materialdesign-Slider",
       "data": {
         "oid": "0_userdata.0.demo.bedroom.dimmer",
@@ -148,12 +111,12 @@
       },
       "style": {
         "left": 24,
-        "top": 270,
+        "top": 206,
         "width": 860,
         "height": 60
       }
     },
-    "w8": {
+    "w7": {
       "tpl": "tplVis2-materialdesign-Slider-Round",
       "data": {
         "oid": "0_userdata.0.demo.living.colorTemperature",
@@ -173,12 +136,12 @@
       },
       "style": {
         "left": 960,
-        "top": 120,
+        "top": 56,
         "width": 170,
         "height": 170
       }
     },
-    "w9": {
+    "w8": {
       "tpl": "tplVis2-materialdesign-Slider",
       "data": {
         "oid": "0_userdata.0.demo.living.blind",
@@ -200,12 +163,12 @@
       },
       "style": {
         "left": 24,
-        "top": 400,
+        "top": 336,
         "width": 90,
         "height": 260
       }
     },
-    "w10": {
+    "w9": {
       "tpl": "tplVis2-materialdesign-Slider",
       "data": {
         "oid": "0_userdata.0.demo.kitchen.blind",
@@ -227,12 +190,12 @@
       },
       "style": {
         "left": 134,
-        "top": 400,
+        "top": 336,
         "width": 90,
         "height": 260
       }
     },
-    "w11": {
+    "w10": {
       "tpl": "tplVis2-materialdesign-Slider",
       "data": {
         "oid": "0_userdata.0.demo.bedroom.blind",
@@ -254,12 +217,12 @@
       },
       "style": {
         "left": 244,
-        "top": 400,
+        "top": 336,
         "width": 90,
         "height": 260
       }
     },
-    "w12": {
+    "w11": {
       "tpl": "tplVis2-materialdesign-Icon-Button-State",
       "data": {
         "image": "stop",
@@ -269,12 +232,12 @@
       },
       "style": {
         "left": 360,
-        "top": 400,
+        "top": 336,
         "width": 56,
         "height": 56
       }
     },
-    "w13": {
+    "w12": {
       "tpl": "tplVis2-materialdesign-Icon-List",
       "data": {
         "listItemDataMethod": "inputPerEditor",
@@ -309,7 +272,7 @@
       },
       "style": {
         "left": 640,
-        "top": 400,
+        "top": 336,
         "width": 600,
         "height": 300
       }

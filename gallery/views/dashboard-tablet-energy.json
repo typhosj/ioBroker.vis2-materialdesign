@@ -2,48 +2,11 @@
   "settings": {
     "style": {
       "width": "1920px",
-      "height": "1200px"
+      "height": "1136px"
     }
   },
   "widgets": {
     "w1": {
-      "tpl": "tplVis2-materialdesign-TopAppBar-Navigation",
-      "data": {
-        "oid": "0_userdata.0.demo.dashboard.page",
-        "navItemCount": 4,
-        "navDefaultValue": 0,
-        "drawerLayout": "horizontal",
-        "permanentIfResolutionHigherThan": 800,
-        "titleTopAppBar": "Smart Home",
-        "showSelectedItemAsTitle": false,
-        "showHeader": true,
-        "headerLabel": "Smart Home",
-        "showLabels": true,
-        "topAppBarLayout": "standard",
-        "labels0": "Overview",
-        "iconDrawer0": "home",
-        "labels1": "Lights",
-        "iconDrawer1": "lightbulb",
-        "labels2": "Climate",
-        "iconDrawer2": "thermometer",
-        "submenus0": "",
-        "useTheme": null,
-        "g_theme": true,
-        "menuId0": "dashboard-tablet",
-        "menuId1": "dashboard-tablet-lights",
-        "menuId2": "dashboard-tablet-climate",
-        "labels3": "Energy",
-        "iconDrawer3": "flash",
-        "menuId3": "dashboard-tablet-energy"
-      },
-      "style": {
-        "left": 0,
-        "top": 0,
-        "width": 1920,
-        "height": 64
-      }
-    },
-    "w2": {
       "tpl": "tplVis2-materialdesign-Chart-Line-History",
       "data": {
         "historyAdapterInstance": "influxdb.0",
@@ -97,12 +60,12 @@
       },
       "style": {
         "left": 24,
-        "top": 90,
+        "top": 26,
         "width": 1100,
         "height": 420
       }
     },
-    "w3": {
+    "w2": {
       "tpl": "tplVis2-materialdesign-Progress-Circular",
       "data": {
         "oid": "0_userdata.0.demo.energy.battery",
@@ -117,12 +80,12 @@
       },
       "style": {
         "left": 1160,
-        "top": 100,
+        "top": 36,
         "width": 200,
         "height": 200
       }
     },
-    "w4": {
+    "w3": {
       "tpl": "tplVis2-materialdesign-Chart-Pie",
       "data": {
         "oid": "0_userdata.0.demo.energy.breakdown",
@@ -133,12 +96,12 @@
       },
       "style": {
         "left": 1400,
-        "top": 90,
+        "top": 26,
         "width": 480,
         "height": 400
       }
     },
-    "w5": {
+    "w4": {
       "tpl": "tplVis2-materialdesign-Alerts",
       "data": {
         "oid": "0_userdata.0.demo.notifications.alerts",
@@ -152,12 +115,12 @@
       },
       "style": {
         "left": 24,
-        "top": 560,
+        "top": 496,
         "width": 700,
         "height": 300
       }
     },
-    "w6": {
+    "w5": {
       "tpl": "tplVis2-materialdesign-Calendar",
       "data": {
         "oid": "0_userdata.0.demo.calendar.events",
@@ -180,7 +143,7 @@
       },
       "style": {
         "left": 760,
-        "top": 560,
+        "top": 496,
         "width": 700,
         "height": 520
       }

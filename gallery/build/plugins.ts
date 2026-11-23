@@ -4,12 +4,12 @@ import type { Plugin } from 'vite';
 
 import { firstParagraph } from './docText';
 import { repoRoot } from './paths';
-import { templateFiles } from './templates';
+import { templateFiles, templateNames } from './templates';
 import { m3Schemes, themeStates } from './themeStates';
 
 const modules: Record<string, () => unknown> = {
     'virtual:gallery-theme': () => ({ states: themeStates(), schemes: m3Schemes() }),
-    'virtual:gallery-meta': () => ({ version: (JSON.parse(readFileSync(join(repoRoot, 'package.json'), 'utf8')) as { version: string }).version }),
+    'virtual:gallery-meta': () => ({ version: (JSON.parse(readFileSync(join(repoRoot, 'package.json'), 'utf8')) as { version: string }).version, templates: templateNames() }),
     'virtual:gallery-docs': () => Object.fromEntries(readdirSync(join(repoRoot, 'doc/en/widgets'))
         .filter(file => file.endsWith('.md') && file !== 'README.md')
         .map(file => [file.replace(/\.md$/, ''), {

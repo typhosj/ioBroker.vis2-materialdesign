@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import { demoObjects, viewTemplate } from './templates';
+import meta from 'virtual:gallery-meta';
+
+import { demoObjects, templateFiles, viewTemplate } from './templates';
 
 describe('templates', () => {
     it('writes every demo object with _id, native and the folder channels above it', () => {
@@ -19,5 +21,12 @@ describe('templates', () => {
         expect(template).toMatchObject({ settings: { style: { width: '390px' } } });
         expect(Object.keys(template.widgets as object)).toEqual(['w000001', 'w000002']);
         expect((template.widgets as Record<string, { data: object }>).w000001.data).toEqual({ designStyle: 'm3' });
+    });
+    it('treats a widget without data as empty data', () => {
+        const template = viewTemplate({ widgets: { w1: { tpl: 't', style: {} } } }, 'v');
+        expect((template.widgets as Record<string, { data: object }>).w000001.data).toEqual({});
+    });
+    it('lists on the About page exactly the files the build emits', () => {
+        expect(meta.templates.map(name => `templates/${name}.json`).sort()).toEqual(Object.keys(templateFiles()).sort());
     });
 });
