@@ -1,6 +1,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 
+import './gallery.css';
 import { installShim } from './runtime/GalleryRxWidget';
 import { type GalleryWindow, createRuntime } from './runtime/runtime';
 
@@ -9,5 +10,5 @@ const runtime = createRuntime({ test: new URLSearchParams(location.hash.split('?
 (window as unknown as GalleryWindow).__galleryRuntime = runtime;
 
 // Widget modules read window.visRxWidget at evaluation time, so nothing that imports them may load before installShim().
-const { Lab } = await import('./pages/Lab');
-createRoot(document.getElementById('root')!).render(<Lab runtime={runtime} />);
+const { App } = await import('./pages/App');
+createRoot(document.getElementById('root')!).render(<App runtime={runtime} />);
