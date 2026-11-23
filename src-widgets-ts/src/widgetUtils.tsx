@@ -358,6 +358,12 @@ export function accessibleText(input: unknown, fallback: string): string {
     return template.content.textContent?.trim() || fallback;
 }
 
+let widgetUid = 0;
+// Ids that aria-labelledby points at must differ between widgets of one page.
+export function nextWidgetUid(): number {
+    return ++widgetUid;
+}
+
 export function sizeCss(value: unknown, fallbackPx: number): string {
     if (typeof value === 'string') {
         const text = value.trim();

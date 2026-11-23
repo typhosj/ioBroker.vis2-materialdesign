@@ -6,7 +6,7 @@ import { cleanColor, num, snapToStep } from './MaterialDesignProgress';
 import { fill, withAutoFill } from './deviceFill';
 import { m3ColorExplicit } from './MaterialDesignButtons';
 import { WidgetLock, lockGroup, lockIcon, type LockData } from './widgetLock';
-import { isReadOnly, squarePreview, RenderProps, SliderWriter, VisWidget, createInfo, designStyle, designStyleClasses, setStateValue, sizeCss, sliderKeyValue, stateValue, sanitizeHtml } from './widgetUtils';
+import { accessibleText, isReadOnly, squarePreview, RenderProps, SliderWriter, VisWidget, createInfo, designStyle, designStyleClasses, setStateValue, sizeCss, sliderKeyValue, stateValue, sanitizeHtml } from './widgetUtils';
 
 export interface RoundSliderData extends LockData {
     oid?: string;
@@ -306,6 +306,7 @@ export default class MaterialDesignRoundSlider extends VisWidget {
                     aria-valuemax={max}
                     aria-valuemin={min}
                     aria-valuenow={value.raw}
+                    aria-valuetext={data.showValueLabel !== false ? accessibleText(label(value.raw, value.percent, data), '') || undefined : undefined}
                     className="materialdesign-round-slider-element"
                     max={max}
                     min={min}

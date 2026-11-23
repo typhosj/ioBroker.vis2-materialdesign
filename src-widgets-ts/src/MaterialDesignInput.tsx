@@ -19,7 +19,7 @@ import {
     todayParts,
 } from './pickerFormat';
 import { WidgetLock, lockGroup, lockIcon, type LockData } from './widgetLock';
-import { squarePreview, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, iconField, legacyInk, legacyInkMuted, legacyOutline, isReadOnly, setStateValue, sizeCss, stateValue } from './widgetUtils';
+import { nextWidgetUid, squarePreview, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, iconField, legacyInk, legacyInkMuted, legacyOutline, isReadOnly, setStateValue, sizeCss, stateValue } from './widgetUtils';
 
 interface InputData extends LockData {
     oid?: string;
@@ -460,6 +460,7 @@ export default class MaterialDesignInput extends VisWidget {
     private readonly pickerButtonRef = React.createRef<HTMLButtonElement>();
     private readonly inputRef = React.createRef<HTMLInputElement>();
     private readonly lock = new WidgetLock(this);
+    private readonly uid = nextWidgetUid();
 
     constructor(props: VisRxWidgetProps) {
         super(props);
@@ -544,6 +545,9 @@ export default class MaterialDesignInput extends VisWidget {
         const mask = spec ? pickerMask(spec) : '';
         const value = this.localValue ?? (spec ? pickerDisplay(spec, String(state ?? '')) : String(state ?? ''));
         const active = this.focused || value !== '';
+        // A blank label would leave the field with an empty name.
+        const hasLabel = !!data.inputLabelText && String(data.inputLabelText).trim() !== '';
+        const labelId = `mdw-input-${this.uid}-label`;
         const layout = layoutClass(data.inputLayout);
         // An explicit saved color wins (m3ColorExplicit); the legacy `#000000` default and `#mdwTheme:`
         // tokens count as unset so the M3 token applies, which dark mode needs.
@@ -781,6 +785,7 @@ export default class MaterialDesignInput extends VisWidget {
                                     ) : null}
                                     {data.inputLabelText ? (
                                         <label
+                                            id={labelId}
                                             className={`v-label${active ? ' v-label--active' : ''}`}
                                             style={{
                                                 color: labelColor,
@@ -805,6 +810,8 @@ export default class MaterialDesignInput extends VisWidget {
                                         </label>
                                     ) : null}
                                     <input
+                                        aria-label={hasLabel ? undefined : VisWidget.t('ariaTextInput')}
+                                        aria-labelledby={hasLabel ? labelId : undefined}
                                         ref={this.inputRef}
                                         readOnly={blocked}
                                         onPointerDown={event => {

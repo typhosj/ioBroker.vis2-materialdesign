@@ -3,7 +3,7 @@ import React from 'react';
 import type { RxWidgetInfo, RxWidgetInfoAttributesField, VisRxWidgetProps } from '@iobroker/types-vis-2';
 
 import { fill, withAutoFill } from './deviceFill';
-import { squarePreview, BaseRxData, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, legacyInk, numberValue, setStateValue, sizeCss, sliderKeyValue, stateValue, sanitizeHtml } from './widgetUtils';
+import { accessibleText, squarePreview, BaseRxData, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, legacyInk, numberValue, setStateValue, sizeCss, sliderKeyValue, stateValue, sanitizeHtml } from './widgetUtils';
 
 export interface ProgressData extends BaseRxData {
     min?: number;
@@ -265,6 +265,8 @@ export default class MaterialDesignProgress extends VisWidget {
                 <div className="materialdesign-vuetify-progress" style={{ alignItems: 'center', display: 'flex', height: '100%', justifyContent: 'center', width: '100%' }}>
                     <div
                         {...interaction}
+                        aria-label={VisWidget.t('ariaProgress')}
+                        aria-valuetext={data.showValueLabel !== false && !indeterminate ? accessibleText(progress.label, '') || undefined : undefined}
                         aria-valuemax={writable ? num(data.max, 100) : 100}
                         aria-valuemin={writable ? num(data.min, 0) : 0}
                         aria-valuenow={writable ? progress.raw : displayedPercent}

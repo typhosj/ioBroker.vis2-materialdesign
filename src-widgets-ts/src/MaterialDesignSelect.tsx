@@ -8,7 +8,7 @@ import { m3ColorExplicit, renderIcon } from './MaterialDesignButtons';
 import { cleanColor, num } from './MaterialDesignProgress';
 import { fill, withAutoFill } from './deviceFill';
 import { WidgetLock, lockGroup, lockIcon, type LockData, type LockOptions } from './widgetLock';
-import { squarePreview, RenderProps, VisWidget, createInfo, indexedFields, itemCount, designStyle, designStyleClasses, iconField, legacyInk, legacyInkMuted, legacyOutline, legacySurface, ownCssVariables, isReadOnly, setStateValue, sizeCss, stateValue, stringValue } from './widgetUtils';
+import { nextWidgetUid, squarePreview, RenderProps, VisWidget, createInfo, indexedFields, itemCount, designStyle, designStyleClasses, iconField, legacyInk, legacyInkMuted, legacyOutline, legacySurface, ownCssVariables, isReadOnly, setStateValue, sizeCss, stateValue, stringValue } from './widgetUtils';
 
 interface SelectData extends LockData {
     oid?: string;
@@ -419,6 +419,7 @@ export default class MaterialDesignSelect extends VisWidget {
     private fieldHovered = false;
     private fieldRef: HTMLElement | null = null;
     private inputRef: HTMLInputElement | null = null;
+    private readonly uid = nextWidgetUid();
     private localValue: ioBroker.StateValue | undefined;
     private seenStateValue: ioBroker.StateValue | undefined;
     private hoveredValue: string | undefined;
@@ -635,6 +636,9 @@ export default class MaterialDesignSelect extends VisWidget {
         const idBase = String(this.props.id ?? '').replace(/[^\w-]/g, '');
         const listId = `${idBase}-list`;
         const active = this.open || (current !== undefined && current !== null && current !== '');
+        // A blank label would leave the combobox with an empty name.
+        const hasLabel = !!data.inputLabelText && String(data.inputLabelText).trim() !== '';
+        const labelId = `mdw-select-${this.uid}-label`;
         // m3c() emits the token only when the saved value is unset; the legacy `#000000` text default
         // counts as unset so the M3 token applies, which dark mode needs.
         const isM3 = designStyle(data) === 'material3';
@@ -1048,6 +1052,7 @@ export default class MaterialDesignSelect extends VisWidget {
                                 ) : null}
                                 {data.inputLabelText ? (
                                     <span
+                                        id={labelId}
                                         style={{
                                             color: this.open
                                                 ? m3c(data.inputLabelColorSelected, 'var(--md-sys-color-primary)', legacyInkMuted(isDark))
@@ -1070,6 +1075,8 @@ export default class MaterialDesignSelect extends VisWidget {
                                     <input
                                         aria-activedescendant={menuShown && highlighted ? `${idBase}-option-${visibleList.indexOf(highlighted)}` : undefined}
                                         aria-autocomplete="list"
+                                        aria-label={hasLabel ? undefined : VisWidget.t('ariaSelectInput')}
+                                        aria-labelledby={hasLabel ? labelId : undefined}
                                         aria-controls={listId}
                                         aria-expanded={menuShown}
                                         readOnly={blocked}
