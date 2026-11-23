@@ -138,7 +138,7 @@
       "tpl": "tplVis2-materialdesign-Vuetify-Dialog-View",
       "data": {
         "buttontext": "Open light controls",
-        "contains_view": "demo-lights",
+        "contains_view": "dashboard-phone-lights",
         "title": "Lights",
         "buttonStyle": "outlined"
       },
