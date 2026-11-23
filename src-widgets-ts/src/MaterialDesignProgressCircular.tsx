@@ -95,6 +95,7 @@ export default class MaterialDesignProgressCircular extends VisWidget {
             <div className={`materialdesign-widget materialdesign-progress${isM3 ? ` ${designStyleClasses(data as unknown as Record<string, unknown>, this.isDarkTheme())}` : ''}`} style={{ height: '100%', padding: 0, width: '100%' }}>
                 <div className="materialdesign-vuetify-progress-circular" style={{ alignItems: 'center', display: 'flex', height: '100%', justifyContent: 'center', width: '100%' }}>
                     <div
+                        aria-label={VisWidget.t('ariaProgress')}
                         aria-valuemax={100}
                         aria-valuemin={0}
                         aria-valuenow={progress.percent}

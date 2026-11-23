@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import MaterialDesignAutocomplete from './MaterialDesignAutocomplete';
 import MaterialDesignInput from './MaterialDesignInput';
 import MaterialDesignProgress from './MaterialDesignProgress';
+import MaterialDesignProgressCircular from './MaterialDesignProgressCircular';
 import MaterialDesignRoundSlider from './MaterialDesignRoundSlider';
 import MaterialDesignSlider from './MaterialDesignSlider';
 
@@ -153,6 +154,17 @@ describe('progress name and value text', () => {
         mount([progress({ progressWritable: true, min: 5, max: 5 }, 5)]);
         expect(bar().getAttribute('aria-valuenow')).toBe('5');
         expect(nameOf(bar())).toBe('ariaProgress');
+    });
+
+    it.each([['a value', 20], ['no value', undefined], ['a value above the range', 900], ['text', 'abc']])('names the circular bar with %s', (_name, value) => {
+        const widget = new MaterialDesignProgressCircular(fixture<ConstructorParameters<typeof MaterialDesignProgressCircular>[0]>({ context: { setValue: vi.fn() } }));
+        for (const designStyle of ['legacy', 'material3']) {
+            widget.state = fixture<typeof widget.state>({ rxData: { oid: 'test.0.level', designStyle }, values: { 'test.0.level.val': value } });
+            mount([widget]);
+            const bars = document.querySelectorAll('[role="progressbar"]');
+            expect(bars).toHaveLength(1);
+            expect(nameOf(bars[0])).toBe('ariaProgress');
+        }
     });
 });
 
