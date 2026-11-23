@@ -39,7 +39,7 @@ export function ViewportFrame({ path, query }: { path: string[]; query: GalleryQ
     const src = `${location.pathname}${routeHash(['frame', ...path], query)}`;
     return (
         <div className="g-frame-outer" ref={outer} style={size ? { height: size.height * scale } : undefined}>
-            <iframe className="g-frame" src={src} style={size ? { width: size.width, height: size.height, transform: `scale(${scale})` } : { width: '100%', height: '70vh' }} title="widget" />
+            <iframe className="g-frame" src={src} style={size ? { width: size.width, height: size.height, transform: `scale(${scale})` } : { width: '100%', height: '70vh' }} title={translate('gallery_stage')} />
         </div>
     );
 }

@@ -17,7 +17,7 @@ export function FieldControls({ info, data, ids, views, onChange }: Props): Reac
             case 'number': return <input max={f.max} min={f.min} onChange={e => set(e.target.value)} step={f.step ?? 'any'} type="number" value={text} />;
             case 'range': return <span className="g-range"><input max={f.max ?? 100} min={f.min ?? 0} onChange={e => set(e.target.value)} step={f.step ?? 1} type="range" value={text || 0} /><output>{text}</output></span>;
             case 'select': return <select onChange={e => set(e.target.value)} value={text}>{selectOptions(field).map(o => <option key={o.value} value={o.value}>{translate(o.label)}</option>)}</select>;
-            case 'color': return <span className="g-color"><input onChange={e => set(e.target.value)} type="color" value={/^#[0-9a-f]{6}$/i.test(text) ? text : '#000000'} /><input onChange={e => set(e.target.value)} type="text" value={text} /></span>;
+            case 'color': return <span className="g-color"><input onChange={e => set(e.target.value)} type="color" value={/^#[0-9a-f]{6}$/i.test(text) ? text : '#000000'} /><input aria-label={translate((field as { label?: string }).label ?? key)} onChange={e => set(e.target.value)} type="text" value={text} /></span>;
             case 'textarea': return <textarea onChange={e => set(e.target.value)} rows={3} value={text} />;
             case 'id': return <><input list="g-ids" onChange={e => set(e.target.value)} type="text" value={text} /></>;
             case 'view': return <select onChange={e => set(e.target.value)} value={text}><option value="" />{views.map(v => <option key={v} value={v}>{v}</option>)}</select>;

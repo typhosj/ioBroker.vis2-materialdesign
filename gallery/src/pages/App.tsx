@@ -17,7 +17,7 @@ export function App({ runtime }: { runtime: GalleryRuntime }): React.JSX.Element
         window.addEventListener('hashchange', onHash);
         return () => window.removeEventListener('hashchange', onHash);
     }, []);
-    useEffect(() => { void applyQuery(runtime, route.query, theme.schemes).then(() => setReady(n => n + 1)); }, [runtime, route.query.theme, route.query.style, route.query.lang, route.query.seed]);
+    useEffect(() => { void applyQuery(runtime, route.query, theme.schemes).catch((error: unknown) => console.error('applyQuery failed', error)).then(() => setReady(n => n + 1)); }, [runtime, route.query.theme, route.query.style, route.query.lang, route.query.seed]);
     useEffect(() => {
         document.documentElement.lang = route.query.lang;
         document.documentElement.dataset.theme = route.query.theme;

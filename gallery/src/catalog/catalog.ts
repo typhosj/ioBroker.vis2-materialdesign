@@ -47,12 +47,21 @@ export const EXCLUDED: Record<string, string> = {};
 
 const FALLBACK_ID = `${DEMO_PREFIX}general.value`;
 
-function defaultVariant(info: RxWidgetInfo): Variant {
+// The fallback id would make the chart ask for a history of a plain value, so it gets the demo history instead.
+const DEFAULT_PATCH: Record<string, { data: Record<string, unknown>; size: Variant['size'] }> = {
+    MaterialDesignChartLineHistory: {
+        data: { historyAdapterInstance: 'influxdb.0', timeIntervalToShow: '1 day', dataCount: 1, oid0: `${DEMO_PREFIX}energy.power`, time_interval_oid: '', manualRefreshTrigger: '', visibilityOid0: '', oid1: '', visibilityOid1: '' },
+        size: { width: 600, height: 340 },
+    },
+};
+
+function defaultVariant(module: string, info: RxWidgetInfo): Variant {
     const data: Record<string, unknown> = { ...defaultData(info) };
     for (const { key, field } of expandFields(info, data)) {
         if ((field as { type?: string }).type === 'id' && !key.startsWith('__mdwTheme') && !data[key]) data[key] = FALLBACK_ID;
     }
-    return { id: 'default', label: 'Default', data, size: { width: 300, height: 60 } };
+    const patch = DEFAULT_PATCH[module];
+    return { id: 'default', label: 'Default', data: { ...data, ...patch?.data }, size: patch?.size ?? { width: 300, height: 60 } };
 }
 
 export function catalogEntry(module: string, info: RxWidgetInfo): CatalogEntry {
@@ -60,7 +69,7 @@ export function catalogEntry(module: string, info: RxWidgetInfo): CatalogEntry {
     const meta = FAMILIES[module] ?? { family: 'values' as const, doc: '' };
     const imported = (generated as Array<Variant & { module: string }>).filter(v => v.module === module).map(({ module: _m, ...v }) => v);
     const variants = [...imported, ...(HAND_VARIANTS[module] ?? [])];
-    if (!variants.some(v => v.id === 'default')) variants.unshift(defaultVariant(info));
+    if (!variants.some(v => v.id === 'default')) variants.unshift(defaultVariant(module, info));
     return {
         module,
         name: index?.name ?? info.visName ?? module,
