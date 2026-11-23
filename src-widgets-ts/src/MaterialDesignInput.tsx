@@ -546,7 +546,7 @@ export default class MaterialDesignInput extends VisWidget {
         const value = this.localValue ?? (spec ? pickerDisplay(spec, String(state ?? '')) : String(state ?? ''));
         const active = this.focused || value !== '';
         // A blank label would leave the field with an empty name.
-        const hasLabel = !!String(data.inputLabelText ?? '').trim();
+        const hasLabel = !!data.inputLabelText && String(data.inputLabelText).trim() !== '';
         const labelId = `mdw-input-${this.uid}-label`;
         const layout = layoutClass(data.inputLayout);
         // An explicit saved color wins (m3ColorExplicit); the legacy `#000000` default and `#mdwTheme:`

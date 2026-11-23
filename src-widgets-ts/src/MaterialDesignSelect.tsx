@@ -637,7 +637,7 @@ export default class MaterialDesignSelect extends VisWidget {
         const listId = `${idBase}-list`;
         const active = this.open || (current !== undefined && current !== null && current !== '');
         // A blank label would leave the combobox with an empty name.
-        const hasLabel = !!String(data.inputLabelText ?? '').trim();
+        const hasLabel = !!data.inputLabelText && String(data.inputLabelText).trim() !== '';
         const labelId = `mdw-select-${this.uid}-label`;
         // m3c() emits the token only when the saved value is unset; the legacy `#000000` text default
         // counts as unset so the M3 token applies, which dark mode needs.

@@ -366,7 +366,7 @@ export default class MaterialDesignSlider extends VisWidget {
         const showTicks = data.showTicks === 'yes' || data.showTicks === 'always';
         const thumbClass = data.knobSize === 'knobMedium' ? ' medium-size' : data.knobSize === 'knobBig' ? ' big-size' : '';
         // A blank text would leave the thumb with an empty name.
-        const hasLabel = !!String(data.prepandText ?? '').trim();
+        const hasLabel = !!data.prepandText && String(data.prepandText).trim() !== '';
         const labelId = `mdw-slider-${this.uid}-label`;
         const valueLabel = labelFor(current.raw, current.percent, data, true);
         const thumbLabel = labelFor(current.raw, current.percent, data, !!data.useLabelRules);

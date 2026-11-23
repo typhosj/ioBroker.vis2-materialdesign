@@ -66,7 +66,7 @@ describe('linear slider name and value', () => {
         expect(el.getAttribute('aria-valuetext')).toBe('40 %');
     });
 
-    it('stays consistent when min equals max', () => {
+    it('keeps the existing max offset of 100 when min equals max', () => {
         mount([slider({ min: 7, max: 7 }, { 'test.0.level.val': 7 })]);
         const el = thumb();
         expect([el.getAttribute('aria-valuemin'), el.getAttribute('aria-valuemax'), el.getAttribute('aria-valuenow')]).toEqual(['7', '107', '7']);
@@ -226,5 +226,64 @@ describe('text field and combobox names', () => {
         const el = find(widget.renderWidgetBody(renderProps))!;
         (el.props.onKeyDown as (event: unknown) => void)({ key: 'Enter', currentTarget: { value: 'xyz' } });
         expect(setValue).toHaveBeenCalledWith('test.0.text', 'xyz');
+    });
+});
+
+describe('label check matches the rendered label', () => {
+    const cases: Array<[string, unknown, string]> = [['0', '0', '0'], ['number 0', 0, ''], ['false', false, ''], ['null', null, ''], ['blank', '   ', '']];
+
+    const noDanglingId = (el: Element): void => {
+        const by = el.getAttribute('aria-labelledby');
+        if (by) expect(document.getElementById(by)).not.toBeNull();
+    };
+
+    it.each(cases)('Slider text %s', (_name, text, shown) => {
+        const widget = new MaterialDesignSlider(fixture<ConstructorParameters<typeof MaterialDesignSlider>[0]>({ context: { setValue: vi.fn() }, id: 'w' }));
+        widget.state = fixture<typeof widget.state>({ rxData: { oid: 'test.0.level', prepandText: text }, values: {} });
+        mount([widget]);
+        expect(nameOf(thumb())).toBe(shown || 'ariaSlider');
+        noDanglingId(thumb());
+    });
+
+    it.each(cases)('Input label %s', (_name, text, shown) => {
+        const widget = new MaterialDesignInput(fixture<ConstructorParameters<typeof MaterialDesignInput>[0]>({ context: { setValue: vi.fn() }, id: 'w' }));
+        widget.state = fixture<typeof widget.state>({ rxData: { oid: 'test.0.text', inputLabelText: text }, values: {} });
+        mount([widget]);
+        expect(nameOf(document.querySelector('input')!)).toBe(shown || 'ariaTextInput');
+        noDanglingId(document.querySelector('input')!);
+    });
+
+    it.each(cases)('Autocomplete label %s', (_name, text, shown) => {
+        const widget = new MaterialDesignAutocomplete(fixture<ConstructorParameters<typeof MaterialDesignAutocomplete>[0]>({ context: { setValue: vi.fn() }, id: 'w' }));
+        widget.state = fixture<typeof widget.state>({ rxData: { oid: 'test.0.c', listDataMethod: 'valueList', valueList: '1', valueListLabels: 'One', inputLabelText: text }, values: {} });
+        mount([widget]);
+        const box = document.querySelector('[role="combobox"]')!;
+        expect(nameOf(box)).toBe(shown || 'ariaSelectInput');
+        noDanglingId(box);
+    });
+});
+
+describe('remaining name cases', () => {
+    it('keeps the Slider name when the widget is locked', () => {
+        const widget = new MaterialDesignSlider(fixture<ConstructorParameters<typeof MaterialDesignSlider>[0]>({ context: { setValue: vi.fn() }, id: 'w' }));
+        widget.state = fixture<typeof widget.state>({ rxData: { oid: 'test.0.level', prepandText: 'Locked one', lockEnabled: true }, values: {} });
+        mount([widget]);
+        expect(nameOf(thumb())).toBe('Locked one');
+    });
+
+    it('shows markup in a Slider text literally, so that is the name', () => {
+        const widget = new MaterialDesignSlider(fixture<ConstructorParameters<typeof MaterialDesignSlider>[0]>({ context: { setValue: vi.fn() }, id: 'w' }));
+        widget.state = fixture<typeof widget.state>({ rxData: { oid: 'test.0.level', prepandText: '<b></b>' }, values: {} });
+        mount([widget]);
+        // The text is rendered as text, so the markup shows literally and is the name.
+        expect(nameOf(thumb())).toBe('<b></b>');
+    });
+
+    it('names the read-only progress bar', () => {
+        const widget = new MaterialDesignProgress(fixture<ConstructorParameters<typeof MaterialDesignProgress>[0]>({ context: { setValue: vi.fn() } }));
+        widget.state = fixture<typeof widget.state>({ rxData: { oid: 'test.0.level', progressWritable: true, readOnly: true }, values: { 'test.0.level.val': 10 } });
+        mount([widget]);
+        const bar = document.querySelector('[role="slider"], [role="progressbar"]')!;
+        expect(nameOf(bar)).toBe('ariaProgress');
     });
 });
