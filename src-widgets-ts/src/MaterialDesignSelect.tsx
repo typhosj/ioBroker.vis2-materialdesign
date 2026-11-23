@@ -684,6 +684,9 @@ export default class MaterialDesignSelect extends VisWidget {
                 : selectedSlot === 'prepend-inner'
                   ? data.prepandInnerIconSize
                   : data.appendOuterIconSize;
+        // `renderIcon` draws a size of 0 at the glyph's natural width, so a 0 falls back to the default
+        // here, and the clear button's position uses the very size that gets drawn.
+        const selectedIconSize = num(configuredSize, num(data.listIconSize, 20)) || 20;
         const selectedIcon =
             selectedSlot === 'no'
                 ? null
@@ -693,7 +696,7 @@ export default class MaterialDesignSelect extends VisWidget {
                           configuredColor || selected?.selectedImageColor || selected?.imageColor,
                           isM3 ? 'var(--md-sys-color-on-surface-variant)' : '#44739e',
                       ),
-                      num(configuredSize, num(data.listIconSize, 20)),
+                      selectedIconSize,
                       !!(configuredColor || selected?.selectedImageColor || selected?.imageColor),
                   );
         let openUp = isTop;
@@ -730,12 +733,15 @@ export default class MaterialDesignSelect extends VisWidget {
         // A plain div, because an <input> nested in a <button> is not typeable.
         const FieldTag = this.isAutocomplete ? 'div' : 'button';
         const showClear = !!data.clearIconShow && current !== undefined && current !== null && current !== '' && !blocked;
-        const clearSize = num(data.clearIconSize, 16);
+        const clearSize = num(data.clearIconSize, 16) || 16;
+        const collapseSize = num(data.collapseIconSize, 16) || 16;
         // The clear button is a sibling of the field, not a child: a button inside the field button
         // is invalid and unreachable for assistive technology. It sits where it used to flow, so its
         // right edge is the field padding plus everything that follows it in the field.
-        const clearRight =
-            10 + 6 + num(data.collapseIconSize, 16) + (selectedIcon && selectedSlot === 'append-outer' ? 4 + num(configuredSize, num(data.listIconSize, 20)) : 0);
+        // Trap: the 10 (field padding), 6 (collapse margin) and 4 (append-outer margin) repeat the margins
+        // below, and the spacer width repeats the button's padding and margin. Change one, change both,
+        // or the button silently sits at the wrong place.
+        const clearRight = 10 + 6 + collapseSize + (selectedIcon && selectedSlot === 'append-outer' ? 4 + selectedIconSize : 0);
         // The hint and counter options existed in the editor since the port but were never rendered.
         // `showInputMessageAlways` follows Vuetify's `persistent-hint`: off, the hint only shows while
         // the field is "focused", which for a select is its open list.
@@ -1162,7 +1168,7 @@ export default class MaterialDesignSelect extends VisWidget {
                                 {renderIcon(
                                     data.collapseIcon || 'menu-down',
                                     m3c(data.collapseIconColor, 'var(--md-sys-color-on-surface-variant)', '#44739e'),
-                                    num(data.collapseIconSize, 16),
+                                    collapseSize,
                                     !!data.collapseIconColor,
                                 )}
                             </span>
@@ -1200,7 +1206,7 @@ export default class MaterialDesignSelect extends VisWidget {
                                 {renderIcon(
                                     data.clearIcon || 'close',
                                     m3c(data.clearIconColor, 'var(--md-sys-color-on-surface-variant)', '#44739e'),
-                                    num(data.clearIconSize, 16),
+                                    clearSize,
                                     !!data.clearIconColor,
                                 )}
                             </button>

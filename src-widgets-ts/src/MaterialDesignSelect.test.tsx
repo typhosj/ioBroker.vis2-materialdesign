@@ -142,7 +142,7 @@ describe('autocomplete write mode and keyboard', () => {
                 inputMode: 'write',
                 ...rxData,
             },
-            values: value === null ? {} : { 'test.0.choice.val': value },
+            values: value === undefined ? {} : { 'test.0.choice.val': value },
         });
         return { widget, setValue };
     }
@@ -708,5 +708,49 @@ describe('clear icon outside the field button', () => {
                 done();
             }
         }
+    });
+
+    it('places the button by the size that is drawn, not by the size that was typed', () => {
+        const rightOf = (rxData: Record<string, unknown>): string => {
+            const { clear, done } = mountSelect(rxData);
+            try { return clear()!.style.right; } finally { done(); }
+        };
+        const standard = rightOf({});
+        expect(standard).toBe('32px');
+        for (const collapseIconSize of [0, '', 'abc']) expect(rightOf({ collapseIconSize })).toBe(standard);
+        expect(rightOf({ collapseIconSize: 24 })).toBe('40px');
+        expect(rightOf({ showSelectedIcon: 'append-outer', appendOuterIcon: 'home', appendOuterIconSize: 0 })).toBe('56px');
+        expect(rightOf({ showSelectedIcon: 'append-outer', appendOuterIcon: 'home', appendOuterIconSize: 30 })).toBe('66px');
+    });
+
+    describe('lock', () => {
+        const lockData = { lockEnabled: true, autoLockAfter: 3 };
+
+        it('draws no clear button while the select is locked', () => {
+            const { clear, done } = mountSelect(lockData);
+            try {
+                expect(clear()).toBeNull();
+            } finally {
+                done();
+            }
+        });
+
+        it('keeps an unlocked select unlocked while the menu stays open after clearing', () => {
+            vi.useFakeTimers();
+            const { clear, container, done, show, widget } = mountSelect({ ...lockData, openOnClear: true });
+            try {
+                act(() => (widget as unknown as { lock: { unlock(seconds: number): void } }).lock.unlock(3));
+                show();
+                act(() => clear()!.click());
+                show();
+                act(() => { vi.advanceTimersByTime(10000); });
+                show();
+                expect(document.body.querySelector('.v-select-list')).not.toBeNull();
+                expect(container.querySelector('[data-lock-icon]')).toBeNull();
+            } finally {
+                done();
+                vi.useRealTimers();
+            }
+        });
     });
 });
