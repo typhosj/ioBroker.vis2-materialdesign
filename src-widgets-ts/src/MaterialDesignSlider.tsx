@@ -6,7 +6,7 @@ import { cleanColor, num, snapToStep } from './MaterialDesignProgress';
 import { fill, withAutoFill } from './deviceFill';
 import { m3ColorExplicit } from './MaterialDesignButtons';
 import { WidgetLock, lockGroup, lockIcon, type LockData } from './widgetLock';
-import { isReadOnly, squarePreview, RenderProps, SliderWriter, VisWidget, boundedCount, createInfo, designStyle, designStyleClasses, setStateValue, sizeCss, sliderKeyValue, stateValue, sanitizeHtml } from './widgetUtils';
+import { accessibleText, isReadOnly, nextWidgetUid, squarePreview, RenderProps, SliderWriter, VisWidget, boundedCount, createInfo, designStyle, designStyleClasses, setStateValue, sizeCss, sliderKeyValue, stateValue, sanitizeHtml } from './widgetUtils';
 
 // The old widget got track/thumb geometry from ambient legacy Vuetify CSS, which is gone.
 const SLIDER_CSS = `
@@ -250,6 +250,7 @@ export function isWorking(value: ioBroker.StateValue | undefined): boolean {
 export default class MaterialDesignSlider extends VisWidget {
     private optimisticValue: number | undefined;
     private seenStateValue: ioBroker.StateValue | undefined;
+    private readonly uid = nextWidgetUid();
 
     constructor(props: VisRxWidgetProps) {
         super(props);
@@ -364,6 +365,9 @@ export default class MaterialDesignSlider extends VisWidget {
         const tickCount = Math.max(2, boundedCount(tickLabels.filter(Boolean).length || Math.floor((max - min) / step) + 1, 2));
         const showTicks = data.showTicks === 'yes' || data.showTicks === 'always';
         const thumbClass = data.knobSize === 'knobMedium' ? ' medium-size' : data.knobSize === 'knobBig' ? ' big-size' : '';
+        // A blank text would leave the thumb with an empty name.
+        const hasLabel = !!String(data.prepandText ?? '').trim();
+        const labelId = `mdw-slider-${this.uid}-label`;
         const valueLabel = labelFor(current.raw, current.percent, data, true);
         const thumbLabel = labelFor(current.raw, current.percent, data, !!data.useLabelRules);
 
@@ -379,6 +383,7 @@ export default class MaterialDesignSlider extends VisWidget {
                     <div className="v-row" style={{ alignItems: 'center', display: 'flex', height: '100%', width: '100%' }}>
                         {data.prepandText ? (
                             <div
+                                id={labelId}
                                 style={{
                                     color: isM3 && !m3ColorExplicit(data.prepandTextColor) ? 'var(--md-sys-color-on-surface)' : cleanColor(data.prepandTextColor, '#44739e'),
                                     flex: data.prepandTextWidth ? `0 0 ${num(data.prepandTextWidth, 0)}px` : '0 0 auto',
@@ -393,7 +398,7 @@ export default class MaterialDesignSlider extends VisWidget {
                             <div className="v-input__control" style={{ height: '100%', width: '100%' }}>
                                 <div className="v-input__slot" style={{ height: '100%', width: '100%' }}>
                                     <div className={`v-slider v-slider--${orientation}${disabled ? ' v-slider--disabled' : ''} theme--light`} style={{ height: '100%', position: 'relative', width: '100%' }}>
-                                        <input value={current.raw} readOnly tabIndex={-1} />
+                                        <input aria-hidden="true" value={current.raw} readOnly tabIndex={-1} />
                                         <div className="v-slider__track-container">
                                             <div
                                                 className="v-slider__track-background"
@@ -434,11 +439,14 @@ export default class MaterialDesignSlider extends VisWidget {
                                             </div>
                                         ) : null}
                                         <div
+                                            aria-label={hasLabel ? undefined : VisWidget.t('ariaSlider')}
+                                            aria-labelledby={hasLabel ? labelId : undefined}
                                             aria-orientation={orientation}
                                             aria-readonly={disabled}
                                             aria-valuemax={max}
                                             aria-valuemin={min}
                                             aria-valuenow={current.raw}
+                                            aria-valuetext={data.showValueLabel !== false ? accessibleText(valueLabel, '') || undefined : undefined}
                                             className={`v-slider__thumb-container${showThumbLabel ? ' v-slider__thumb-container--show-label' : ''}`}
                                             onKeyDown={event => this.writeFromKey(event, data, disabled || locked)}
                                             role="slider"
