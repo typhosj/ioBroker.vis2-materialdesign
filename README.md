@@ -118,6 +118,7 @@ to wait with an upgrade.
 ## Changelog
 ### **WORK IN PROGRESS**
 
+- (typhosj) Fixed the **List** switch and checkbox rows for screen readers: the control had no name, so a screen reader announced only "switch, off". Each row control is now named after the row's text, and the sub text is read as its description; a row without text is named `Item <n>`. Behavior and look are unchanged (found while building the live demo)
 - (typhosj) Added the layout **horizontal** to the Top App Bar: the entries stand side by side in the bar and open their submenus in a list that floats over the page; what does not fit moves into **More**, and below the switch width the bar falls back to the menu button and the drawer (Scrounger/ioBroker.vis-materialdesign#60)
 - (typhosj) **Breaking:** requires VIS 2 2.20.8 or newer. The widgets are now built against React 19, the React version of VIS 2 since 2.20; older VIS 2 versions run on React 18. Stay on version 1.x of this adapter as long as VIS 2 cannot be updated
 - (typhosj) Added **order of suggestions** to the On-screen Keyboard: `frequent and recent` (new default) lets a word's count lose half its worth for every 30 days without use, so a word typed often long ago no longer stays on top; `most frequent` keeps the previous order, `most recent` shows the words last used first
