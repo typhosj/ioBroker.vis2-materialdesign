@@ -60,6 +60,7 @@ describe('catalog', () => {
         }
         expect(missing).toEqual([]);
     }, 120_000);
+
     it('writes hand-made variants only with fields the widget declares', async () => {
         const { loadWidget } = await import('../runtime/widgets');
         const { HAND_VARIANTS } = await import('./catalog');
@@ -69,9 +70,20 @@ describe('catalog', () => {
             const info = (await loadWidget(module)).getWidgetInfo();
             for (const variant of variants) {
                 const known = new Set(expandFields(info, { ...defaultData(info), ...variant.data }).map(({ key }) => key));
-                for (const key of Object.keys(variant.data)) if (!known.has(key)) problems.push(`${module  }/${  variant.id  }: ${  key}`);
+                for (const key of Object.keys(variant.data)) if (!known.has(key)) problems.push(`${module}/${variant.id}: ${key}`);
             }
         }
         expect(problems).toEqual([]);
+    }, 120_000);
+
+    it('keeps variant ids unique per module', async () => {
+        const { widgetIndex, loadWidget } = await import('../runtime/widgets');
+        const { catalogEntry } = await import('./catalog');
+        const duplicates: string[] = [];
+        for (const { module } of widgetIndex) {
+            const ids = catalogEntry(module, (await loadWidget(module)).getWidgetInfo()).variants.map(v => v.id);
+            for (const id of new Set(ids.filter((x, i) => ids.indexOf(x) !== i))) duplicates.push(`${module}/${id}`);
+        }
+        expect(duplicates).toEqual([]);
     }, 120_000);
 });
