@@ -22,6 +22,21 @@ describe('parseRoute', () => {
     });
 });
 
+describe('route segments', () => {
+    it('round-trips a segment with spaces, ampersand, slash and question mark', () => {
+        const name = 'Grid Views & a/b?c';
+        const hash = routeHash(['widget', name], { ...DEFAULT_QUERY });
+        expect(hash).toBe('#/widget/Grid%20Views%20%26%20a%2Fb%3Fc');
+        expect(parseRoute(hash).path).toEqual(['widget', name]);
+    });
+    it('decodes %20 in a path segment', () => {
+        expect(parseRoute('#/widget/Button%20State').path).toEqual(['widget', 'Button State']);
+    });
+    it('keeps a malformed escape raw', () => {
+        expect(parseRoute('#/widget/%E0%A4%A').path).toEqual(['widget', '%E0%A4%A']);
+    });
+});
+
 describe('routeHash', () => {
     it('writes only values that differ from the defaults and round-trips', () => {
         expect(routeHash(['widget', 'Switch'], { ...DEFAULT_QUERY })).toBe('#/widget/Switch');

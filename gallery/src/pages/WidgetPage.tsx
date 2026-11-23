@@ -8,6 +8,7 @@ import { type GalleryRuntime, hostRuntime } from '../runtime/runtime';
 import { loadWidget, widgetIndex } from '../runtime/widgets';
 import { defaultData, subscribedIds } from '../runtime/widgetInfo';
 import { type GalleryQuery, routeHash } from '../state';
+import { VIEWS } from '../views/views';
 import { parseDatapointInput, parseStoredData, pickVariant } from './widgetPageLogic';
 import { ViewportFrame, WidgetInstance } from './Stage';
 
@@ -82,7 +83,7 @@ export function WidgetPage({ name, query, runtime }: { name: string; query: Gall
                     <h2>{translate('gallery_settings')}</h2>
                     <button onClick={() => setData(variantData(info, entry, query.variant))} type="button">{translate('gallery_reset_variant')}</button>
                     <button onClick={() => void navigator.clipboard?.writeText(JSON.stringify({ tpl: entry.tpl, data, style: pickVariant(entry, query.variant).size }, null, 2))} type="button">{translate('gallery_copy_json')}</button>
-                    <FieldControls data={data} ids={runtime.store.ids().filter(id => id.startsWith('0_userdata.0.demo.'))} info={info} onChange={(key, value) => setData(prev => ({ ...prev, [key]: value }))} views={['demo-lights', 'demo-climate', 'demo-media']} />
+                    <FieldControls data={data} ids={runtime.store.ids().filter(id => id.startsWith('0_userdata.0.demo.'))} info={info} onChange={(key, value) => setData(prev => ({ ...prev, [key]: value }))} views={Object.keys(VIEWS)} />
                 </aside>
             </div>
             <section>

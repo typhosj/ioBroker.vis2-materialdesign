@@ -20,6 +20,10 @@ const pick = <T extends string>(value: string | null, allowed: readonly T[], fal
 const SLUG = /^[\w.-]{1,64}$/;
 const SEED = /^#[0-9a-f]{6}$/i;
 
+function decodeSegment(segment: string): string {
+    try { return decodeURIComponent(segment); } catch { return segment; }
+}
+
 export function parseRoute(hash: string): Route {
     const [pathPart, queryPart = ''] = hash.replace(/^#\/?/, '').split('?');
     const params = new URLSearchParams(queryPart);
@@ -34,7 +38,7 @@ export function parseRoute(hash: string): Route {
     };
     if (variant && SLUG.test(variant)) query.variant = variant;
     if (seed && SEED.test(seed)) query.seed = seed.toLowerCase();
-    return { path: pathPart.split('/').filter(Boolean), query };
+    return { path: pathPart.split('/').filter(Boolean).map(decodeSegment), query };
 }
 
 export function routeHash(path: string[], query: Partial<GalleryQuery>): string {
@@ -46,7 +50,7 @@ export function routeHash(path: string[], query: Partial<GalleryQuery>): string 
     if (query.seed) params.set('seed', query.seed);
     if (query.test) params.set('test', '1');
     const search = params.toString();
-    return `#/${path.join('/')}${search ? `?${search}` : ''}`;
+    return `#/${path.map(encodeURIComponent).join('/')}${search ? `?${search}` : ''}`;
 }
 
 export async function applyQuery(runtime: GalleryRuntime, query: GalleryQuery, schemes: Record<string, string>): Promise<void> {

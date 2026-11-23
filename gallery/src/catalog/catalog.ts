@@ -219,7 +219,18 @@ export const EXCLUDED: Record<string, string> = {};
 const FALLBACK_ID = `${DEMO_PREFIX}general.value`;
 
 // The fallback id would make the chart ask for a history of a plain value, so it gets the demo history instead.
-const DEFAULT_PATCH: Record<string, { data: Record<string, unknown>; size: Variant['size'] }> = {
+const DEFAULT_PATCH: Record<string, { data: Record<string, unknown>; size?: Variant['size'] }> = {
+    // A visitor's first look at an embedding widget must show the demo views, not an empty frame.
+    MaterialDesignMasonryViews: { data: { countViews: 3, countCols: 2, ...GRID_VIEWS }, size: { width: 900, height: 520 } },
+    MaterialDesignGridViews: { data: { countViews: 3, viewColSpan: 6, ...GRID_VIEWS }, size: { width: 900, height: 520 } },
+    MaterialDesignAdvancedViewInWidget: { data: { oid: demo('general.viewName'), View0: 'demo-lights' }, size: { width: 400, height: 300 } },
+    MaterialDesignAdvancedViewInWidget8: { data: { oid: demo('general.view'), count: 3, contains_view_0: 'demo-lights', contains_view_1: 'demo-climate', contains_view_2: 'demo-media' }, size: { width: 400, height: 300 } },
+    MaterialDesignButtonNavigation: { data: { nav_view: 'demo-climate' } },
+    MaterialDesignButtonNavigationVertical: { data: { nav_view: 'demo-climate' } },
+    MaterialDesignIconButtonNavigation: { data: { nav_view: 'demo-climate' } },
+    MaterialDesignList: { data: { listTypeButtonNav0: 'demo-climate' } },
+    MaterialDesignIconList: { data: { listTypeButtonNav0: 'demo-climate' } },
+    MaterialDesignDialogView: { data: { ...DIALOG_VIEW }, size: { width: BUTTON.w, height: BUTTON.h } },
     MaterialDesignChartLineHistory: {
         data: { historyAdapterInstance: 'influxdb.0', timeIntervalToShow: '1 day', dataCount: 1, oid0: `${DEMO_PREFIX}energy.power`, time_interval_oid: '', manualRefreshTrigger: '', visibilityOid0: '', oid1: '', visibilityOid1: '' },
         size: { width: 600, height: 340 },

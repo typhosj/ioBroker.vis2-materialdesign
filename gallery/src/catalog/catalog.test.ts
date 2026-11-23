@@ -56,6 +56,20 @@ describe('catalog', () => {
         expect(problems).toEqual([]);
     }, 120_000);
 
+    it('shows a gallery view in the default variant of every widget with a views field', async () => {
+        const { widgetIndex, loadWidget } = await import('../runtime/widgets');
+        const { catalogEntry } = await import('./catalog');
+        const { expandFields, isHidden } = await import('../runtime/widgetInfo');
+        const problems: string[] = [];
+        for (const { module } of widgetIndex) {
+            const info = (await loadWidget(module)).getWidgetInfo();
+            const data = catalogEntry(module, info).variants.find(v => v.id === 'default')!.data;
+            const viewKeys = expandFields(info, data).filter(entry => (entry.field as { type?: string }).type === 'views' && !isHidden(entry, data)).map(({ key }) => key);
+            if (viewKeys.length && !viewKeys.some(key => typeof data[key] === 'string' && data[key] in VIEWS)) problems.push(module);
+        }
+        expect(problems).toEqual([]);
+    }, 120_000);
+
     it('offers the default plus at least two variants for every shown widget', async () => {
         const { widgetIndex, loadWidget } = await import('../runtime/widgets');
         const { catalogEntry } = await import('./catalog');
