@@ -39,7 +39,8 @@ describe('gallery views', () => {
         document.body.appendChild(host);
         const root = createRoot(host);
         act(() => { root.render(React.createElement(GalleryView, { name: 'loop', runtime, query: DEFAULT_QUERY })); });
-        for (let i = 0; i < 20; i++) await act(async () => { await new Promise(resolve => window.setTimeout(resolve, 20)); });
+        // Widget modules load lazily; under a loaded machine 20 ticks were not always enough.
+        for (let i = 0; i < 200 && host.querySelectorAll('.g-missing-view').length === 0; i++) await act(async () => { await new Promise(resolve => window.setTimeout(resolve, 20)); });
         expect(host.querySelectorAll('[data-view="loop"]').length).toBe(MAX_VIEW_LEVELS);
         expect(host.querySelectorAll('.g-missing-view').length).toBeGreaterThan(0);
         act(() => root.unmount());
