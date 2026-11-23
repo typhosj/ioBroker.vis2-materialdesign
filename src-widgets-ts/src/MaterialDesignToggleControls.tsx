@@ -39,6 +39,8 @@ export interface ToggleControlData extends LockData {
     lockFilterGrayscale?: number;
 }
 
+let uidCounter = 0;
+
 type ControlKind = 'checkbox' | 'switch';
 
 interface ControlDefinition {
@@ -178,6 +180,7 @@ function preview(def: ControlDefinition): string {
 export function createToggleControlClass(def: ControlDefinition): typeof VisWidget {
     return class MaterialDesignToggleControl extends VisWidget {
         private readonly lock = new WidgetLock(this);
+        private readonly uid = ++uidCounter;
 
         constructor(props: VisRxWidgetProps) {
             super(props);
@@ -220,9 +223,13 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
             const switchMargin = labelPosition === 'off' ? 0 : 10;
             const labelClick = boolValue(data.labelClickActive, true);
             const userCursor = typeof this.state.rxStyle?.cursor === 'string' ? this.state.rxStyle.cursor.trim() : '';
+            const labelText = label.trim();
+            const labelId = `mdw-toggle-label-${this.uid}`;
+            const labelledBy = labelPosition !== 'off' && labelText ? labelId : undefined;
             const labelElement =
                 labelPosition === 'off' ? null : (
                     <span
+                        id={labelId}
                         // The click handler sits on the whole widget, so an inert label has to stop its own click.
                         onClick={labelClick ? undefined : event => event.stopPropagation()}
                         style={{
@@ -264,18 +271,10 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
                             disabled: isReadOnly(data),
                             filter: controlFilter,
                             icon: !!data.md3SwitchIcon,
-                            input: (
-                                <input
-                                    checked={on}
-                                    disabled={isReadOnly(data)}
-                                    onChange={() => undefined}
-                                    role="switch"
-                                    style={{ cursor: 'inherit', inset: 0, margin: 0, opacity: 0, position: 'absolute', width: '100%', height: '100%' }}
-                                    type="checkbox"
-                                />
-                            ),
+                            input: null,
                             margin: switchMargin,
                             on,
+                            rootProps: { 'aria-checked': undefined, role: undefined },
                             // The handle follows colorSwitchThumb in BOTH states — feeding it the track's on-color painted
                             // handle and track alike, so a switched-on control was a single filled oval.
                             thumbOff: m3ColorExplicit(data.colorSwitchThumb) ? String(data.colorSwitchThumb) : undefined,
@@ -285,9 +284,7 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
                         })
                     ) : (
                         <div
-                            aria-checked={on}
                             className={`mdc-switch${on ? ' mdc-switch--checked' : ''}`}
-                            role="switch"
                             style={{
                                 filter: controlFilter,
                                 marginLeft: switchMargin,
@@ -344,25 +341,13 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
                                         width: 20,
                                     }}
                                 >
-                                    <input
-                                        checked={on}
-                                        className="mdc-switch__native-control"
-                                        disabled={isReadOnly(data)}
-                                        onChange={() => undefined}
-                                        role="switch"
-                                        style={{ cursor: 'inherit', opacity: 0 }}
-                                        type="checkbox"
-                                    />
                                 </div>
                             </div>
                         </div>
                     )
                 ) : (
                     <div
-                        aria-checked={on}
-                        aria-disabled={isReadOnly(data) ? true : undefined}
                         className={`mdc-checkbox mdc-checkbox--upgraded${on ? ' mdc-checkbox--selected' : ''} mdc-ripple-upgraded mdc-ripple-upgraded--unbounded`}
-                        role="checkbox"
                         style={{
                             boxSizing: 'border-box',
                             filter: controlFilter,
@@ -378,14 +363,6 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
                             ['--materialdesign-color-checkbox-hover' as string]: color(data.colorCheckBoxHover, '#44739e'),
                         }}
                     >
-                        <input
-                            checked={on}
-                            className="mdc-checkbox__native-control"
-                            disabled={isReadOnly(data)}
-                            onChange={() => undefined}
-                            style={{ cursor: 'inherit', opacity: 0, position: 'absolute' }}
-                            type="checkbox"
-                        />
                         <div
                             className="mdc-checkbox__background"
                             style={{
@@ -441,6 +418,10 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
                             });
                         }
                     }}
+                    aria-checked={on}
+                    aria-disabled={isReadOnly(data) ? true : undefined}
+                    aria-label={labelledBy ? undefined : labelText || def.name}
+                    aria-labelledby={labelledBy}
                     onClick={toggle}
                     onKeyDown={(event) => {
                         if (event.key === 'Enter' || event.key === ' ') {
@@ -448,7 +429,7 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
                             toggle();
                         }
                     }}
-                    role="button"
+                    role={def.kind}
                     style={{
                         alignItems: 'center',
                         boxSizing: 'border-box',

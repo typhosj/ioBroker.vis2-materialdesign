@@ -90,7 +90,7 @@ describe('shared checkbox/switch behavior', () => {
         expect(legacy).not.toContain('opacity:0.38');
     });
 
-    // The hidden native input showed the browser's arrow over the M3 switch while the empty widget
+    // A hidden native input showed the browser's arrow over the M3 switch while the empty widget
     // edges showed the hand, and the cursor set under "CSS common" never got through (issue #28).
     it('shows the hand over the control itself and lets the widget cursor style win', () => {
         const render = (kind: 'switch' | 'checkbox', rxData: Record<string, unknown>, rxStyle?: Record<string, unknown>): React.ReactElement<{ style: React.CSSProperties }> => {
@@ -102,9 +102,8 @@ describe('shared checkbox/switch behavior', () => {
         for (const kind of ['switch', 'checkbox'] as const) {
             for (const designStyle of ['material3', 'legacy']) {
                 const html = renderToStaticMarkup(render(kind, { designStyle }));
-                const inputs = html.match(/<input[^>]*>/g) ?? [];
-                expect(inputs, `${kind}/${designStyle}`).toHaveLength(1);
-                expect(inputs[0], `${kind}/${designStyle}`).toContain('cursor:inherit');
+                // No hidden native input is left to show its own cursor over the control.
+                expect(html, `${kind}/${designStyle}`).not.toContain('<input');
             }
         }
         expect(render('switch', { designStyle: 'material3' }).props.style.cursor).toBe('pointer');
@@ -144,7 +143,7 @@ describe('shared checkbox/switch behavior', () => {
             if (!label) throw new Error('missing label');
             act(() => { label.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
             const viaLabel = setValue.mock.calls.length;
-            act(() => { container.querySelector('input')!.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+            act(() => { container.querySelector('[role=switch], [role=checkbox]')!.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
             return { label: viaLabel, control: setValue.mock.calls.length - viaLabel };
         };
         try {
@@ -184,5 +183,84 @@ describe('read-only from a binding', () => {
         control.state = fixture<typeof control.state>({ rxData: { oid: 'test.0.mode', readOnly }, values: {} });
         fixture<React.ReactElement<{ onClick: () => void }>>(control.renderWidgetBody(fixture<Parameters<typeof control.renderWidgetBody>[0]>({}))).props.onClick();
         expect(setValue.mock.calls.length).toBe(writes ? 1 : 0);
+    });
+});
+
+// The widget was a role=button around a role=switch/checkbox around a focusable native checkbox:
+// three announced roles and two tab stops for one control.
+describe('one interactive control per switch or checkbox', () => {
+    const FOCUSABLE = '[tabindex]:not([tabindex="-1"]), input:not([tabindex="-1"]), button, select, textarea, a[href]';
+    const ROLES = '[role=switch], [role=checkbox], [role=button]';
+    const cases = (['switch', 'checkbox'] as const).flatMap(kind =>
+        ['legacy', 'material3'].flatMap(designStyle =>
+            [true, false].flatMap(checked =>
+                [false, true].flatMap(readOnly =>
+                    [false, true].map(locked => ({ kind, designStyle, checked, readOnly, locked, tag: `${kind}/${designStyle}/${checked ? 'on' : 'off'}${readOnly ? '/readOnly' : ''}${locked ? '/locked' : ''}` }))))));
+
+    function mount(kind: 'switch' | 'checkbox', rxData: Record<string, unknown>, value: unknown): { container: HTMLElement; setValue: ReturnType<typeof vi.fn>; unmount: () => void } {
+        (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+        const container = document.createElement('div');
+        document.body.appendChild(container);
+        const root = createRoot(container);
+        const setValue = vi.fn();
+        const Control = createToggleControlClass({ id: 'test', name: 'Test', kind });
+        const control = new Control(fixture<ConstructorParameters<typeof Control>[0]>({ context: { setValue } }));
+        control.state = fixture<typeof control.state>({ rxData: { oid: 'test.0.flag', ...rxData }, values: { 'test.0.flag.val': value } });
+        act(() => root.render(control.renderWidgetBody(fixture<Parameters<typeof control.renderWidgetBody>[0]>({}))));
+        return { container, setValue, unmount: () => { act(() => root.unmount()); container.remove(); } };
+    }
+
+    it.each(cases)('exposes exactly one focusable $tag control with its role, state and name', ({ kind, designStyle, checked, readOnly, locked }) => {
+        const nesting = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+        const { container, unmount } = mount(kind, { designStyle, readOnly, lockEnabled: locked, labelFalse: 'Licht', labelTrue: 'Licht an' }, checked);
+        try {
+            const stops = container.querySelectorAll(FOCUSABLE);
+            expect(stops).toHaveLength(1);
+            const [control] = Array.from(stops);
+            expect(control.getAttribute('role')).toBe(kind);
+            expect(control.getAttribute('aria-checked')).toBe(String(checked));
+            expect(control.getAttribute('aria-disabled')).toBe(readOnly ? 'true' : null);
+            expect(control.getAttribute('tabindex')).toBe('0');
+            expect(container.querySelector('input')).toBeNull();
+            for (const element of Array.from(container.querySelectorAll(ROLES))) {
+                expect(element.querySelector(ROLES), 'nested role').toBeNull();
+            }
+            const labelledBy = control.getAttribute('aria-labelledby') ?? '';
+            expect(container.querySelector(`[id="${labelledBy}"]`)?.textContent).toBe(checked ? 'Licht an' : 'Licht');
+            expect(control.hasAttribute('aria-label')).toBe(false);
+            expect(nesting).not.toHaveBeenCalled();
+        } finally {
+            unmount();
+            nesting.mockRestore();
+        }
+    });
+
+    it.each(['switch', 'checkbox'] as const)('names a %s without visible label text from the widget name or the hidden label', kind => {
+        for (const rxData of [{}, { labelPosition: 'off' }, { labelFalse: '   ' }]) {
+            const { container, unmount } = mount(kind, rxData, false);
+            try {
+                const control = container.querySelector(`[role=${kind}]`)!;
+                expect(control.getAttribute('aria-label'), JSON.stringify(rxData)).toBe('Test');
+                expect(control.hasAttribute('aria-labelledby')).toBe(false);
+            } finally { unmount(); }
+        }
+        const { container, unmount } = mount(kind, { labelPosition: 'off', labelFalse: 'Licht' }, false);
+        try {
+            expect(container.querySelector(`[role=${kind}]`)!.getAttribute('aria-label')).toBe('Licht');
+        } finally { unmount(); }
+    });
+
+    it.each(cases)('$tag: Space and Enter write the state, read-only and locked do not', ({ kind, designStyle, checked, readOnly, locked }) => {
+        // A fresh mount per key: the first activation of a locked control unlocks it, the next one writes.
+        for (const key of [' ', 'Enter']) {
+            const { container, setValue, unmount } = mount(kind, { designStyle, readOnly, lockEnabled: locked }, checked);
+            try {
+                const control = container.querySelector<HTMLElement>(`[role=${kind}]`)!;
+                act(() => { control.dispatchEvent(new KeyboardEvent('keydown', { key: 'a', bubbles: true })); });
+                expect(setValue, `${key}: other key`).not.toHaveBeenCalled();
+                act(() => { control.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true })); });
+                expect(setValue.mock.calls, key).toEqual(readOnly || locked ? [] : [['test.0.flag', !checked]]);
+            } finally { unmount(); }
+        }
     });
 });
