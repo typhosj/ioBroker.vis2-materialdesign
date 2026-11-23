@@ -150,7 +150,7 @@ describe('list toggle rows are named', () => {
         unmount();
         container.remove();
     });
-    it.each(['switch', 'checkbox', 'switch_readonly', 'checkbox_readonly'].flatMap(listType => ['legacy', 'material3'].map(designStyle => ({ listType, designStyle }))))('keeps the ids apart between two lists on one page:  ', ({ listType, designStyle }) => {
+    it.each(['switch', 'checkbox', 'switch_readonly', 'checkbox_readonly'].flatMap(listType => ['legacy', 'material3'].map(designStyle => ({ listType, designStyle }))))('keeps the ids apart between two lists on one page: $listType $designStyle', ({ listType, designStyle }) => {
         const container = document.createElement('div');
         document.body.appendChild(container);
         const first = document.createElement('div');
