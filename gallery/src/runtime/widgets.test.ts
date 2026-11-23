@@ -27,6 +27,12 @@ describe('widget index', () => {
             .toEqual(JSON.parse(readFileSync(indexPath, 'utf8')));
     }, 120_000);
 
+    it('loads no test file as a widget module, and has a loader for every indexed widget', async () => {
+        const { widgetIndex, widgetModulePaths } = await import('./widgets');
+        expect(widgetModulePaths.filter(path => path.includes('.test.'))).toEqual([]);
+        for (const { module } of widgetIndex) expect(widgetModulePaths, module).toContain(`../../../src-widgets-ts/src/${module}.tsx`);
+    });
+
     it('builds every widget on the gallery shim', async () => {
         const { loadWidget } = await import('./widgets');
         for (const module of modules) expect((await loadWidget(module)).prototype instanceof GalleryRxWidget, module).toBe(true);

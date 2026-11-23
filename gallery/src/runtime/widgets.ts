@@ -7,7 +7,9 @@ import type { GalleryWidgetProps } from './GalleryRxWidget';
 export interface WidgetIndexEntry { module: string; tpl: string; name: string }
 export type WidgetClass = React.ComponentClass<GalleryWidgetProps> & { getWidgetInfo(): RxWidgetInfo };
 
-const loaders = import.meta.glob<{ default: WidgetClass }>(['../../../src-widgets-ts/src/MaterialDesign*.tsx', '!**/*.test.tsx']);
+const loaders = import.meta.glob<{ default: WidgetClass }>(['../../../src-widgets-ts/src/MaterialDesign*.tsx', '!../../../src-widgets-ts/src/*.test.tsx']);
+
+export const widgetModulePaths = Object.keys(loaders);
 
 export const widgetIndex: readonly WidgetIndexEntry[] = index;
 
