@@ -572,6 +572,18 @@
         }
       }
     },
+    "0_userdata.0.demo.dashboard.page": {
+      "type": "state",
+      "common": {
+        "name": "Dashboard page",
+        "type": "number",
+        "role": "level",
+        "read": true,
+        "write": true,
+        "min": 0,
+        "max": 3
+      }
+    },
     "0_userdata.0.demo.general.history.temperature": {
       "type": "state",
       "common": {
@@ -636,6 +648,7 @@
     "0_userdata.0.demo.general.scene": "evening",
     "0_userdata.0.demo.general.viewName": "demo-lights",
     "0_userdata.0.demo.general.view": 0,
+    "0_userdata.0.demo.dashboard.page": 0,
     "0_userdata.0.demo.general.history.temperature": 21.4
   },
   "ticker": {

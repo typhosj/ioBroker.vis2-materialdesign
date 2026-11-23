@@ -16,6 +16,19 @@ export function Overview({ query }: { query: GalleryQuery }): React.JSX.Element 
         <>
             <p className="g-subtitle">{translate('gallery_subtitle')}</p>
             <input aria-label={translate('gallery_search')} className="g-search" onChange={e => setSearch(e.target.value)} placeholder={translate('gallery_search')} type="search" value={search} />
+            <section>
+                <h2>{translate('gallery_dashboards')}</h2>
+                <ul className="g-tiles">
+                    {(['tablet', 'phone'] as const).map(board => (
+                        <li key={board}>
+                            <a href={routeHash(['dashboard', board], query)}>
+                                <img alt="" height={160} loading="lazy" onError={ev => { ev.currentTarget.style.display = 'none'; }} src={`media/dashboard-${board}-${query.theme}.webp`} width={240} />
+                                <strong>{translate(`gallery_dashboard_${board}`)}</strong>
+                            </a>
+                        </li>
+                    ))}
+                </ul>
+            </section>
             {ORDER.map(family => {
                 const items = widgetIndex.filter(e => (FAMILIES[e.module]?.family ?? 'values') === family)
                     .filter(e => !needle || `${e.name} ${docs[FAMILIES[e.module]?.doc ?? '']?.[lang] ?? ''}`.toLowerCase().includes(needle));

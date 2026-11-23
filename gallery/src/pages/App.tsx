@@ -1,9 +1,10 @@
 import theme from 'virtual:gallery-theme';
 import React, { useEffect, useState } from 'react';
 
-import type { GalleryRuntime } from '../runtime/runtime';
+import { hostRuntime, type GalleryRuntime } from '../runtime/runtime';
 import { type Route, applyQuery, parseRoute } from '../state';
 import { About } from './About';
+import { DashboardFrame, DashboardPage } from './DashboardPage';
 import { Header } from './Header';
 import { Lab } from './Lab';
 import { Overview } from './Overview';
@@ -24,6 +25,7 @@ export function App({ runtime }: { runtime: GalleryRuntime }): React.JSX.Element
     }, [route.query.lang, route.query.theme]);
     if (!ready) return <></>;
     const [section, name] = route.path;
+    if (section === 'frame' && name === 'dashboard') return <DashboardFrame key={`${route.query.lang}${route.path[2]}`} query={route.query} runtime={hostRuntime() ?? runtime} view={route.path[2]} />;
     if (section === 'frame') return <WidgetFrame key={`${route.query.lang}`} name={route.path[2]} query={route.query} runtime={runtime} />;
     // The language is part of the key: Intl formats and widget texts are read on mount.
     return (
@@ -31,6 +33,7 @@ export function App({ runtime }: { runtime: GalleryRuntime }): React.JSX.Element
             <Header route={route} runtime={runtime} />
             <main>
                 {section === 'widget' && name ? <WidgetPage name={name} query={route.query} runtime={runtime} />
+                    : section === 'dashboard' && name ? <DashboardPage name={name} query={route.query} />
                     : section === 'about' ? <About />
                     : section === 'lab' ? <Lab runtime={runtime} />
                     : <Overview query={route.query} />}

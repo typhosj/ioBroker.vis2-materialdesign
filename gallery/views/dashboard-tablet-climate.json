@@ -1,0 +1,303 @@
+{
+  "settings": {
+    "style": {
+      "width": "1920px",
+      "height": "1200px"
+    }
+  },
+  "widgets": {
+    "w1": {
+      "tpl": "tplVis2-materialdesign-TopAppBar-Navigation",
+      "data": {
+        "oid": "0_userdata.0.demo.dashboard.page",
+        "navItemCount": 4,
+        "navDefaultValue": 0,
+        "drawerLayout": "horizontal",
+        "permanentIfResolutionHigherThan": 800,
+        "titleTopAppBar": "Smart Home",
+        "showSelectedItemAsTitle": false,
+        "showHeader": true,
+        "headerLabel": "Smart Home",
+        "showLabels": true,
+        "topAppBarLayout": "standard",
+        "labels0": "Overview",
+        "iconDrawer0": "home",
+        "labels1": "Lights",
+        "iconDrawer1": "lightbulb",
+        "labels2": "Climate",
+        "iconDrawer2": "thermometer",
+        "submenus0": "",
+        "useTheme": null,
+        "g_theme": true,
+        "menuId0": "dashboard-tablet",
+        "menuId1": "dashboard-tablet-lights",
+        "menuId2": "dashboard-tablet-climate",
+        "labels3": "Energy",
+        "iconDrawer3": "flash",
+        "menuId3": "dashboard-tablet-energy"
+      },
+      "style": {
+        "left": 0,
+        "top": 0,
+        "width": 1920,
+        "height": 64
+      }
+    },
+    "w2": {
+      "tpl": "tplVis2-materialdesign-value",
+      "data": {
+        "oid": "0_userdata.0.demo.climate.living.temperature",
+        "targetType": "auto",
+        "image": "",
+        "imageColor": "#44739e",
+        "iconHeight": 24,
+        "iconPosition": "left",
+        "valueLabelUnit": "°C",
+        "minDecimals": 1,
+        "maxDecimals": 1,
+        "textAlign": "center",
+        "valueLabelWidth": 4,
+        "prepandText": "Living"
+      },
+      "style": {
+        "left": 24,
+        "top": 100,
+        "width": 400,
+        "height": 44
+      }
+    },
+    "w3": {
+      "tpl": "tplVis2-materialdesign-value",
+      "data": {
+        "oid": "0_userdata.0.demo.climate.living.humidity",
+        "targetType": "auto",
+        "image": "",
+        "imageColor": "#44739e",
+        "iconHeight": 24,
+        "iconPosition": "left",
+        "valueLabelUnit": "%",
+        "minDecimals": 0,
+        "maxDecimals": 0,
+        "textAlign": "center",
+        "valueLabelWidth": 4,
+        "prepandText": "Humidity living"
+      },
+      "style": {
+        "left": 440,
+        "top": 100,
+        "width": 400,
+        "height": 44
+      }
+    },
+    "w4": {
+      "tpl": "tplVis2-materialdesign-value",
+      "data": {
+        "oid": "0_userdata.0.demo.climate.kitchen.temperature",
+        "targetType": "auto",
+        "image": "",
+        "imageColor": "#44739e",
+        "iconHeight": 24,
+        "iconPosition": "left",
+        "valueLabelUnit": "°C",
+        "minDecimals": 1,
+        "maxDecimals": 1,
+        "textAlign": "center",
+        "valueLabelWidth": 4,
+        "prepandText": "Kitchen"
+      },
+      "style": {
+        "left": 24,
+        "top": 160,
+        "width": 400,
+        "height": 44
+      }
+    },
+    "w5": {
+      "tpl": "tplVis2-materialdesign-value",
+      "data": {
+        "oid": "0_userdata.0.demo.climate.kitchen.humidity",
+        "targetType": "auto",
+        "image": "",
+        "imageColor": "#44739e",
+        "iconHeight": 24,
+        "iconPosition": "left",
+        "valueLabelUnit": "%",
+        "minDecimals": 0,
+        "maxDecimals": 0,
+        "textAlign": "center",
+        "valueLabelWidth": 4,
+        "prepandText": "Humidity kitchen"
+      },
+      "style": {
+        "left": 440,
+        "top": 160,
+        "width": 400,
+        "height": 44
+      }
+    },
+    "w6": {
+      "tpl": "tplVis2-materialdesign-value",
+      "data": {
+        "oid": "0_userdata.0.demo.climate.bedroom.temperature",
+        "targetType": "auto",
+        "image": "",
+        "imageColor": "#44739e",
+        "iconHeight": 24,
+        "iconPosition": "left",
+        "valueLabelUnit": "°C",
+        "minDecimals": 1,
+        "maxDecimals": 1,
+        "textAlign": "center",
+        "valueLabelWidth": 4,
+        "prepandText": "Bedroom"
+      },
+      "style": {
+        "left": 24,
+        "top": 220,
+        "width": 400,
+        "height": 44
+      }
+    },
+    "w7": {
+      "tpl": "tplVis2-materialdesign-value",
+      "data": {
+        "oid": "0_userdata.0.demo.climate.bedroom.humidity",
+        "targetType": "auto",
+        "image": "",
+        "imageColor": "#44739e",
+        "iconHeight": 24,
+        "iconPosition": "left",
+        "valueLabelUnit": "%",
+        "minDecimals": 0,
+        "maxDecimals": 0,
+        "textAlign": "center",
+        "valueLabelWidth": 4,
+        "prepandText": "Humidity bedroom"
+      },
+      "style": {
+        "left": 440,
+        "top": 220,
+        "width": 400,
+        "height": 44
+      }
+    },
+    "w8": {
+      "tpl": "tplVis2-materialdesign-Slider-Round",
+      "data": {
+        "oid": "0_userdata.0.demo.climate.setpoint",
+        "min": 5,
+        "max": 30,
+        "step": 1,
+        "showValueLabel": true,
+        "valueLabelUnit": "°C",
+        "startAngle": 135,
+        "arcLength": 270,
+        "color": "#e0e0e0",
+        "colorBeforeThumb": "#e64a19",
+        "colorThumb": "#e64a19",
+        "valueLabelColor": "#e64a19",
+        "prepandText": "Setpoint",
+        "g_common": true
+      },
+      "style": {
+        "left": 24,
+        "top": 320,
+        "width": 280,
+        "height": 280
+      }
+    },
+    "w9": {
+      "tpl": "tplVis2-materialdesign-Select",
+      "data": {
+        "oid": "0_userdata.0.demo.climate.mode",
+        "inputType": "text",
+        "inputLayout": "filled",
+        "inputAlignment": "left",
+        "inputLabelText": "Heating mode",
+        "inputTextFontSize": 16,
+        "listDataMethod": "valueList",
+        "valueList": "0;1;2;3",
+        "valueListLabels": "Off;Comfort;Eco;Away",
+        "clearIconShow": false,
+        "showSelectedIcon": "no"
+      },
+      "style": {
+        "left": 360,
+        "top": 400,
+        "width": 300,
+        "height": 76
+      }
+    },
+    "w10": {
+      "tpl": "tplVis2-materialdesign-Card",
+      "data": {
+        "listItemDataMethod": "inputPerEditor",
+        "cardLayout": "Basic",
+        "cardStyle": "default",
+        "showScrollbar": true,
+        "showTitle": true,
+        "title": "<b>Weather</b>",
+        "titleLayout": "headline6",
+        "showSubTitle": true,
+        "subtitle": "Partly cloudy",
+        "subtitleLayout": "subtitle2",
+        "showText": true,
+        "html": "Wind 12 km/h<br>Chance of rain 20 %",
+        "textFontSize": "body2",
+        "image": "",
+        "clickType": "none",
+        "controlType": "state",
+        "state_oid": "0_userdata.0.demo.general.text",
+        "state_value": "7"
+      },
+      "style": {
+        "left": 900,
+        "top": 100,
+        "width": 700,
+        "height": 260
+      }
+    },
+    "w11": {
+      "tpl": "tplVis2-materialdesign-Table",
+      "data": {
+        "oid": "0_userdata.0.demo.weather.forecast",
+        "dataJson": "",
+        "countCols": 4,
+        "tableLayout": "standard",
+        "showHeader": true,
+        "roundBorder": true,
+        "colorHeaderRowBackground": "#44739e",
+        "colorHeaderRowText": "#ffffff",
+        "dividers": "",
+        "label0": "Day",
+        "label1": "Icon",
+        "label2": "Max",
+        "showColumn0": true,
+        "showColumn1": false,
+        "showColumn2": true,
+        "colType0": "text",
+        "colType1": "text",
+        "colType2": "text",
+        "textAlign0": "left",
+        "textAlign1": "right",
+        "textAlign2": "right",
+        "suffix1": "",
+        "sortKey0": "day",
+        "sortKey1": "icon",
+        "sortKey2": "max",
+        "label3": "Min",
+        "colType3": "text",
+        "textAlign3": "right",
+        "suffix2": " °C",
+        "suffix3": " °C",
+        "sortKey3": "min"
+      },
+      "style": {
+        "left": 900,
+        "top": 400,
+        "width": 700,
+        "height": 320
+      }
+    }
+  }
+}

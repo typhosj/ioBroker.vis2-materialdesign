@@ -1,0 +1,318 @@
+{
+  "settings": {
+    "style": {
+      "width": "1920px",
+      "height": "1200px"
+    }
+  },
+  "widgets": {
+    "w1": {
+      "tpl": "tplVis2-materialdesign-TopAppBar-Navigation",
+      "data": {
+        "oid": "0_userdata.0.demo.dashboard.page",
+        "navItemCount": 4,
+        "navDefaultValue": 0,
+        "drawerLayout": "horizontal",
+        "permanentIfResolutionHigherThan": 800,
+        "titleTopAppBar": "Smart Home",
+        "showSelectedItemAsTitle": false,
+        "showHeader": true,
+        "headerLabel": "Smart Home",
+        "showLabels": true,
+        "topAppBarLayout": "standard",
+        "labels0": "Overview",
+        "iconDrawer0": "home",
+        "labels1": "Lights",
+        "iconDrawer1": "lightbulb",
+        "labels2": "Climate",
+        "iconDrawer2": "thermometer",
+        "submenus0": "",
+        "useTheme": null,
+        "g_theme": true,
+        "menuId0": "dashboard-tablet",
+        "menuId1": "dashboard-tablet-lights",
+        "menuId2": "dashboard-tablet-climate",
+        "labels3": "Energy",
+        "iconDrawer3": "flash",
+        "menuId3": "dashboard-tablet-energy"
+      },
+      "style": {
+        "left": 0,
+        "top": 0,
+        "width": 1920,
+        "height": 64
+      }
+    },
+    "w2": {
+      "tpl": "tplVis2-materialdesign-Button-Toggle",
+      "data": {
+        "oid": "0_userdata.0.demo.living.light",
+        "buttontext": "Living",
+        "image": "lightbulb"
+      },
+      "style": {
+        "left": 24,
+        "top": 90,
+        "width": 200,
+        "height": 56
+      }
+    },
+    "w3": {
+      "tpl": "tplVis2-materialdesign-Button-Toggle",
+      "data": {
+        "oid": "0_userdata.0.demo.kitchen.light",
+        "buttontext": "Kitchen",
+        "image": "lightbulb"
+      },
+      "style": {
+        "left": 244,
+        "top": 90,
+        "width": 200,
+        "height": 56
+      }
+    },
+    "w4": {
+      "tpl": "tplVis2-materialdesign-Button-Toggle",
+      "data": {
+        "oid": "0_userdata.0.demo.hall.light",
+        "buttontext": "Hall",
+        "image": "lightbulb"
+      },
+      "style": {
+        "left": 464,
+        "top": 90,
+        "width": 200,
+        "height": 56
+      }
+    },
+    "w5": {
+      "tpl": "tplVis2-materialdesign-Button-Toggle",
+      "data": {
+        "oid": "0_userdata.0.demo.terrace.light",
+        "buttontext": "Terrace",
+        "image": "lightbulb"
+      },
+      "style": {
+        "left": 684,
+        "top": 90,
+        "width": 200,
+        "height": 56
+      }
+    },
+    "w6": {
+      "tpl": "tplVis2-materialdesign-Slider",
+      "data": {
+        "oid": "0_userdata.0.demo.living.dimmer",
+        "min": 0,
+        "max": 100,
+        "step": 1,
+        "showValueLabel": true,
+        "valueLabelUnit": "%",
+        "prepandText": "Living",
+        "prepandTextWidth": 90,
+        "prepandTextColor": "#ffa000",
+        "color": "#e0e0e0",
+        "colorBeforeThumb": "#ffa000",
+        "colorThumb": "#ffa000",
+        "colorAfterThumb": "#e0e0e0",
+        "valueLabelColor": "#ffa000",
+        "g_common": true,
+        "valueLabelStyle": "sliderValue"
+      },
+      "style": {
+        "left": 24,
+        "top": 190,
+        "width": 860,
+        "height": 60
+      }
+    },
+    "w7": {
+      "tpl": "tplVis2-materialdesign-Slider",
+      "data": {
+        "oid": "0_userdata.0.demo.bedroom.dimmer",
+        "min": 0,
+        "max": 100,
+        "step": 1,
+        "showValueLabel": true,
+        "valueLabelUnit": "%",
+        "prepandText": "Bedroom",
+        "prepandTextWidth": 90,
+        "prepandTextColor": "#ffa000",
+        "color": "#e0e0e0",
+        "colorBeforeThumb": "#ffa000",
+        "colorThumb": "#ffa000",
+        "colorAfterThumb": "#e0e0e0",
+        "valueLabelColor": "#ffa000",
+        "g_common": true,
+        "valueLabelStyle": "sliderValue"
+      },
+      "style": {
+        "left": 24,
+        "top": 270,
+        "width": 860,
+        "height": 60
+      }
+    },
+    "w8": {
+      "tpl": "tplVis2-materialdesign-Slider-Round",
+      "data": {
+        "oid": "0_userdata.0.demo.living.colorTemperature",
+        "min": 2200,
+        "max": 6500,
+        "step": 100,
+        "showValueLabel": true,
+        "valueLabelUnit": "K",
+        "startAngle": 135,
+        "arcLength": 270,
+        "color": "#e0e0e0",
+        "colorBeforeThumb": "#e64a19",
+        "colorThumb": "#e64a19",
+        "valueLabelColor": "#e64a19",
+        "prepandText": "Color temperature",
+        "g_common": true
+      },
+      "style": {
+        "left": 960,
+        "top": 120,
+        "width": 170,
+        "height": 170
+      }
+    },
+    "w9": {
+      "tpl": "tplVis2-materialdesign-Slider",
+      "data": {
+        "oid": "0_userdata.0.demo.living.blind",
+        "min": 0,
+        "max": 100,
+        "step": 1,
+        "showValueLabel": true,
+        "valueLabelUnit": "%",
+        "prepandText": "",
+        "prepandTextWidth": 90,
+        "prepandTextColor": "#ffa000",
+        "color": "#e0e0e0",
+        "colorBeforeThumb": "#ffa000",
+        "colorThumb": "#ffa000",
+        "colorAfterThumb": "#e0e0e0",
+        "valueLabelColor": "#ffa000",
+        "g_common": true,
+        "orientation": "vertical"
+      },
+      "style": {
+        "left": 24,
+        "top": 400,
+        "width": 90,
+        "height": 260
+      }
+    },
+    "w10": {
+      "tpl": "tplVis2-materialdesign-Slider",
+      "data": {
+        "oid": "0_userdata.0.demo.kitchen.blind",
+        "min": 0,
+        "max": 100,
+        "step": 1,
+        "showValueLabel": true,
+        "valueLabelUnit": "%",
+        "prepandText": "",
+        "prepandTextWidth": 90,
+        "prepandTextColor": "#ffa000",
+        "color": "#e0e0e0",
+        "colorBeforeThumb": "#ffa000",
+        "colorThumb": "#ffa000",
+        "colorAfterThumb": "#e0e0e0",
+        "valueLabelColor": "#ffa000",
+        "g_common": true,
+        "orientation": "vertical"
+      },
+      "style": {
+        "left": 134,
+        "top": 400,
+        "width": 90,
+        "height": 260
+      }
+    },
+    "w11": {
+      "tpl": "tplVis2-materialdesign-Slider",
+      "data": {
+        "oid": "0_userdata.0.demo.bedroom.blind",
+        "min": 0,
+        "max": 100,
+        "step": 1,
+        "showValueLabel": true,
+        "valueLabelUnit": "%",
+        "prepandText": "",
+        "prepandTextWidth": 90,
+        "prepandTextColor": "#ffa000",
+        "color": "#e0e0e0",
+        "colorBeforeThumb": "#ffa000",
+        "colorThumb": "#ffa000",
+        "colorAfterThumb": "#e0e0e0",
+        "valueLabelColor": "#ffa000",
+        "g_common": true,
+        "orientation": "vertical"
+      },
+      "style": {
+        "left": 244,
+        "top": 400,
+        "width": 90,
+        "height": 260
+      }
+    },
+    "w12": {
+      "tpl": "tplVis2-materialdesign-Icon-Button-State",
+      "data": {
+        "image": "stop",
+        "oid": "0_userdata.0.demo.blinds.stop",
+        "value": "true",
+        "md3IconButtonVariant": "filled"
+      },
+      "style": {
+        "left": 360,
+        "top": 400,
+        "width": 56,
+        "height": 56
+      }
+    },
+    "w13": {
+      "tpl": "tplVis2-materialdesign-Icon-List",
+      "data": {
+        "listItemDataMethod": "inputPerEditor",
+        "countListItems": 5,
+        "lastListItemIndex": 4,
+        "listItemHeight": 48,
+        "listType0": "text",
+        "oid0": "0_userdata.0.demo.contacts.livingWindow",
+        "label0": "Living room window",
+        "listImage0": "window-closed",
+        "dividers0": true,
+        "listType1": "text",
+        "oid1": "0_userdata.0.demo.contacts.kitchenWindow",
+        "label1": "Kitchen window",
+        "listImage1": "window-closed",
+        "dividers1": true,
+        "listType2": "text",
+        "oid2": "0_userdata.0.demo.contacts.bedroomWindow",
+        "label2": "Bedroom window",
+        "listImage2": "window-closed",
+        "dividers2": true,
+        "listType3": "text",
+        "oid3": "0_userdata.0.demo.contacts.frontDoor",
+        "label3": "Front door",
+        "listImage3": "door",
+        "dividers3": true,
+        "listType4": "buttonToggle",
+        "oid4": "0_userdata.0.demo.contacts.lock",
+        "label4": "Door lock",
+        "listImage4": "lock",
+        "dividers4": true
+      },
+      "style": {
+        "left": 640,
+        "top": 400,
+        "width": 600,
+        "height": 300
+      }
+    }
+  }
+}

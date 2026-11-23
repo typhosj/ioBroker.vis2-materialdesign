@@ -1,0 +1,153 @@
+{
+  "settings": {
+    "style": {
+      "width": "390px",
+      "height": "844px"
+    }
+  },
+  "widgets": {
+    "w1": {
+      "tpl": "tplVis2-materialdesign-List",
+      "data": {
+        "listType": "buttonToggle",
+        "listItemDataMethod": "inputPerEditor",
+        "countListItems": 4,
+        "lastListItemIndex": 3,
+        "listItemHeight": 48,
+        "oid0": "0_userdata.0.demo.living.light",
+        "label0": "Living room",
+        "listImage0": "lightbulb",
+        "dividers0": true,
+        "oid1": "0_userdata.0.demo.kitchen.light",
+        "label1": "Kitchen",
+        "listImage1": "lightbulb",
+        "dividers1": true,
+        "oid2": "0_userdata.0.demo.hall.light",
+        "label2": "Hall",
+        "listImage2": "lightbulb",
+        "dividers2": true,
+        "oid3": "0_userdata.0.demo.terrace.light",
+        "label3": "Terrace",
+        "listImage3": "lightbulb",
+        "dividers3": true
+      },
+      "style": {
+        "left": 15,
+        "top": 16,
+        "width": 360,
+        "height": 200
+      }
+    },
+    "w2": {
+      "tpl": "tplVis2-materialdesign-value",
+      "data": {
+        "oid": "0_userdata.0.demo.climate.living.temperature",
+        "targetType": "auto",
+        "image": "",
+        "imageColor": "#44739e",
+        "iconHeight": 24,
+        "iconPosition": "left",
+        "valueLabelUnit": "°C",
+        "minDecimals": 1,
+        "maxDecimals": 1,
+        "textAlign": "center",
+        "valueLabelWidth": 4,
+        "prepandText": "Living"
+      },
+      "style": {
+        "left": 15,
+        "top": 236,
+        "width": 175,
+        "height": 44
+      }
+    },
+    "w3": {
+      "tpl": "tplVis2-materialdesign-value",
+      "data": {
+        "oid": "0_userdata.0.demo.climate.living.humidity",
+        "targetType": "auto",
+        "image": "",
+        "imageColor": "#44739e",
+        "iconHeight": 24,
+        "iconPosition": "left",
+        "valueLabelUnit": "%",
+        "minDecimals": 0,
+        "maxDecimals": 0,
+        "textAlign": "center",
+        "valueLabelWidth": 4,
+        "prepandText": "Humidity living"
+      },
+      "style": {
+        "left": 200,
+        "top": 236,
+        "width": 175,
+        "height": 44
+      }
+    },
+    "w4": {
+      "tpl": "tplVis2-materialdesign-Progress-Circular",
+      "data": {
+        "oid": "0_userdata.0.demo.energy.battery",
+        "min": 0,
+        "max": 100,
+        "showValueLabel": true,
+        "valueLabelStyle": "progressPercent",
+        "valueLabelUnit": "%",
+        "colorProgress": "#43a047",
+        "g_common": true,
+        "progressCircularWidth": 12
+      },
+      "style": {
+        "left": 15,
+        "top": 296,
+        "width": 110,
+        "height": 110
+      }
+    },
+    "w5": {
+      "tpl": "tplVis2-materialdesign-Button-State-Multi",
+      "data": {
+        "buttontext": "Eco",
+        "countOids": 1,
+        "oid0": "0_userdata.0.demo.climate.mode",
+        "value0": "2"
+      },
+      "style": {
+        "left": 150,
+        "top": 300,
+        "width": 225,
+        "height": 44
+      }
+    },
+    "w6": {
+      "tpl": "tplVis2-materialdesign-Button-State-Multi",
+      "data": {
+        "buttontext": "Comfort",
+        "countOids": 1,
+        "oid0": "0_userdata.0.demo.climate.mode",
+        "value0": "1"
+      },
+      "style": {
+        "left": 150,
+        "top": 356,
+        "width": 225,
+        "height": 44
+      }
+    },
+    "w7": {
+      "tpl": "tplVis2-materialdesign-Vuetify-Dialog-View",
+      "data": {
+        "buttontext": "Open light controls",
+        "contains_view": "demo-lights",
+        "title": "Lights",
+        "buttonStyle": "outlined"
+      },
+      "style": {
+        "left": 15,
+        "top": 430,
+        "width": 360,
+        "height": 48
+      }
+    }
+  }
+}

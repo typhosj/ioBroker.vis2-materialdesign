@@ -1,0 +1,189 @@
+{
+  "settings": {
+    "style": {
+      "width": "1920px",
+      "height": "1200px"
+    }
+  },
+  "widgets": {
+    "w1": {
+      "tpl": "tplVis2-materialdesign-TopAppBar-Navigation",
+      "data": {
+        "oid": "0_userdata.0.demo.dashboard.page",
+        "navItemCount": 4,
+        "navDefaultValue": 0,
+        "drawerLayout": "horizontal",
+        "permanentIfResolutionHigherThan": 800,
+        "titleTopAppBar": "Smart Home",
+        "showSelectedItemAsTitle": false,
+        "showHeader": true,
+        "headerLabel": "Smart Home",
+        "showLabels": true,
+        "topAppBarLayout": "standard",
+        "labels0": "Overview",
+        "iconDrawer0": "home",
+        "labels1": "Lights",
+        "iconDrawer1": "lightbulb",
+        "labels2": "Climate",
+        "iconDrawer2": "thermometer",
+        "submenus0": "",
+        "useTheme": null,
+        "g_theme": true,
+        "menuId0": "dashboard-tablet",
+        "menuId1": "dashboard-tablet-lights",
+        "menuId2": "dashboard-tablet-climate",
+        "labels3": "Energy",
+        "iconDrawer3": "flash",
+        "menuId3": "dashboard-tablet-energy"
+      },
+      "style": {
+        "left": 0,
+        "top": 0,
+        "width": 1920,
+        "height": 64
+      }
+    },
+    "w2": {
+      "tpl": "tplVis2-materialdesign-Chart-Line-History",
+      "data": {
+        "historyAdapterInstance": "influxdb.0",
+        "timeIntervalToShow": "1 day",
+        "dataCount": 0,
+        "oid0": "0_userdata.0.demo.energy.power",
+        "aggregate0": "max",
+        "lineLabelText0": "Power",
+        "dataColor0": "#e67e22",
+        "showLegend": true,
+        "legendPosition": "bottom",
+        "legendFontColor": null,
+        "legendFontFamily": null,
+        "legendFontSize": null,
+        "legendBoxWidth": null,
+        "legendPadding": null,
+        "g_legendLayout": true,
+        "lineSpanGaps": true,
+        "steppedLine": null,
+        "lineThikness": null,
+        "dataColor": null,
+        "useFillColor": null,
+        "fillColor": null,
+        "pointColor": null,
+        "legendText": "Power (W)",
+        "showValues": "showValuesOn",
+        "valuesSteps": null,
+        "valuesMinDecimals": null,
+        "valuesMaxDecimals": null,
+        "valuesAppendText": null,
+        "valuesFontColor": null,
+        "valuesFontFamily": null,
+        "valuesFontSize": null,
+        "g_layoutForData": true,
+        "yAxisTitleColor": null,
+        "yAxisTitleFontFamily": null,
+        "yAxisTitleFontSize": null,
+        "yAxisValueLabelColor": null,
+        "yAxisValueFontFamily": null,
+        "yAxisValueFontSize": null,
+        "g_yAxisLayout": true,
+        "xAxisValueLabelColor": "",
+        "xAxisShowGridLines": true,
+        "xAxisGridLinesColor": "",
+        "g_xAxisLayout": true,
+        "minTimeInterval0": 7200,
+        "maxDataPoints0": 24,
+        "refreshTimeInterval": "30 seconds",
+        "xAxisTimeFormats": "HH:mm",
+        "showValues0": "showValuesOff"
+      },
+      "style": {
+        "left": 24,
+        "top": 90,
+        "width": 1100,
+        "height": 420
+      }
+    },
+    "w3": {
+      "tpl": "tplVis2-materialdesign-Progress-Circular",
+      "data": {
+        "oid": "0_userdata.0.demo.energy.battery",
+        "min": 0,
+        "max": 100,
+        "showValueLabel": true,
+        "valueLabelStyle": "progressPercent",
+        "valueLabelUnit": "%",
+        "colorProgress": "#43a047",
+        "g_common": true,
+        "progressCircularWidth": 12
+      },
+      "style": {
+        "left": 1160,
+        "top": 100,
+        "width": 200,
+        "height": 200
+      }
+    },
+    "w4": {
+      "tpl": "tplVis2-materialdesign-Chart-Pie",
+      "data": {
+        "oid": "0_userdata.0.demo.energy.breakdown",
+        "chartDataMethod": "jsonStringObject",
+        "chartType": "doughnut",
+        "showValues": "showValuesOn",
+        "showLegend": true
+      },
+      "style": {
+        "left": 1400,
+        "top": 90,
+        "width": 480,
+        "height": 400
+      }
+    },
+    "w5": {
+      "tpl": "tplVis2-materialdesign-Alerts",
+      "data": {
+        "oid": "0_userdata.0.demo.notifications.alerts",
+        "showMaxAlerts": 3,
+        "alertLayouts": "normal",
+        "alertDense": false,
+        "alertElevation": 2,
+        "alertMarginBottom": 12,
+        "alertBorderLayout": "left",
+        "closeIcon": ""
+      },
+      "style": {
+        "left": 24,
+        "top": 560,
+        "width": 700,
+        "height": 300
+      }
+    },
+    "w6": {
+      "tpl": "tplVis2-materialdesign-Calendar",
+      "data": {
+        "oid": "0_userdata.0.demo.calendar.events",
+        "calendarView": "month",
+        "calendarWeeksNumbersShow": true,
+        "calendarShortWeekdays": true,
+        "calendarEventOverlapMode": "column",
+        "calendarEventHeight": null,
+        "calendarEventFontSize": null,
+        "calendarEventFont": null,
+        "g_calendarEventLayout": true,
+        "calendarMonthViewHeaderFormat": null,
+        "calendarMonthViewDayFormat": null,
+        "calendarWeekViewHeaderFormat": null,
+        "calendarWeekViewDayFormat": null,
+        "calendarDayViewHeaderFormat": null,
+        "calendarDayViewDayFormat": null,
+        "g_calendarCustomFormats": true,
+        "g_style": true
+      },
+      "style": {
+        "left": 760,
+        "top": 560,
+        "width": 700,
+        "height": 520
+      }
+    }
+  }
+}
