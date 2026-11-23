@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { act } from 'react';
+import { createRoot } from 'react-dom/client';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -141,7 +142,7 @@ describe('autocomplete write mode and keyboard', () => {
                 inputMode: 'write',
                 ...rxData,
             },
-            values: value === undefined ? {} : { 'test.0.choice.val': value },
+            values: value === null ? {} : { 'test.0.choice.val': value },
         });
         return { widget, setValue };
     }
@@ -607,5 +608,105 @@ describe('menu above every container', () => {
         const tree = widget.renderWidgetBody(renderProps);
         expect(findPortal(tree)).toBeUndefined();
         expect(style(findElement(tree, element => (typeof element.props.className === 'string' && element.props.className.includes('v-select-list'))))).toMatchObject({ position: 'absolute' });
+    });
+});
+
+describe('clear icon outside the field button', () => {
+    const NESTED = 'button button, button [role="button"], button input, button a[href], button [tabindex]';
+    const renderProps = fixture<Parameters<MaterialDesignSelect['renderWidgetBody']>[0]>({});
+
+    function mountSelect(rxData: Record<string, unknown>, value: string | null = '2', Widget = MaterialDesignSelect) {
+        (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+        const widget = new Widget(fixture<ConstructorParameters<typeof MaterialDesignSelect>[0]>({ context: { setValue: vi.fn() } }));
+        widget.forceUpdate = vi.fn();
+        widget.state = fixture<typeof widget.state>({
+            rxData: { oid: 'test.0.choice', listDataMethod: 'valueList', valueList: '1;2;3', valueListLabels: 'One;Two;Three', clearIconShow: true, ...rxData },
+            values: value === null ? {} : { 'test.0.choice.val': value },
+        });
+        const container = document.createElement('div');
+        document.body.appendChild(container);
+        const root = createRoot(container);
+        const show = (): void => act(() => root.render(widget.renderWidgetBody(renderProps)));
+        show();
+        const clear = (): HTMLButtonElement | null => container.querySelector<HTMLButtonElement>('button[aria-label]');
+        const done = (): void => { act(() => root.unmount()); container.remove(); };
+        return { clear, container, done, show, widget };
+    }
+
+    it.each([
+        ['legacy', {}],
+        ['Material 3', { designStyle: 'material3' }],
+        ['prefix and suffix', { inputPrefix: 'a', inputSuffix: 'b' }],
+        ['hint and counter', { inputMessage: 'hint', showInputCounter: true }],
+        ['appended selected icon', { showSelectedIcon: 'append-outer', appendOuterIcon: 'home' }],
+        ['outlined layout', { inputLayout: 'outlined' }],
+    ])('keeps every control out of the field button (%s)', (_name, rxData) => {
+        const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+        const { clear, container, done } = mountSelect(rxData);
+        try {
+            expect(error.mock.calls.filter(call => String(call[0]).includes('validateDOMNesting'))).toHaveLength(0);
+            expect(container.querySelectorAll(NESTED)).toHaveLength(0);
+            expect(clear()).not.toBeNull();
+            expect(clear()?.closest('button')).toBe(clear());
+        } finally {
+            error.mockRestore();
+            done();
+        }
+    });
+
+    it('keeps the autocomplete input outside any button too', () => {
+        const { clear, container, done } = mountSelect({}, '2', MaterialDesignAutocomplete);
+        try {
+            expect(container.querySelectorAll(NESTED)).toHaveLength(0);
+            expect(clear()).not.toBeNull();
+        } finally {
+            done();
+        }
+    });
+
+    it('clears the value on click without opening the menu or reaching the field', () => {
+        const { clear, done, show, widget } = mountSelect({});
+        try {
+            const setValue = (widget.props.context as unknown as { setValue: ReturnType<typeof vi.fn> }).setValue;
+            expect(clear()?.getAttribute('aria-label')).toBeTruthy();
+            act(() => clear()!.click());
+            expect(setValue).toHaveBeenCalledTimes(1);
+            expect(setValue).toHaveBeenCalledWith('test.0.choice', '');
+            show();
+            expect(document.body.querySelector('.v-select-list')).toBeNull();
+            expect(document.body.querySelector('button[aria-expanded="true"]')).toBeNull();
+            expect(clear()).toBeNull();
+        } finally {
+            done();
+        }
+    });
+
+    it('opens the menu after clearing when openOnClear is set', () => {
+        const { clear, container, done, show } = mountSelect({ openOnClear: true });
+        try {
+            act(() => clear()!.click());
+            show();
+            expect(document.body.querySelector('.v-select-list')).not.toBeNull();
+            expect(container.querySelectorAll(NESTED)).toHaveLength(0);
+        } finally {
+            done();
+        }
+    });
+
+    it('draws no clear control when it is switched off, the value is empty or the widget is read-only', () => {
+        for (const [rxData, value] of [
+            [{ clearIconShow: false }, '2'],
+            [{}, ''],
+            [{}, null],
+            [{ readOnly: true }, '2'],
+        ] as const) {
+            const { clear, container, done } = mountSelect(rxData, value);
+            try {
+                expect(clear()).toBeNull();
+                expect(container.querySelectorAll(NESTED)).toHaveLength(0);
+            } finally {
+                done();
+            }
+        }
     });
 });
