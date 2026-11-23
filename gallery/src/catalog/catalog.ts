@@ -40,9 +40,179 @@ export const FAMILIES: Record<string, { family: Family; doc: string }> = {
     MaterialDesignTopAppBar: { family: 'navigation', doc: 'top-app-bar' },
 };
 
-// Hand-written additions for widgets the doc views do not cover; Task 15 fills it.
-export const HAND_VARIANTS: Record<string, Variant[]> = {};
-export const EXPECTS: Record<string, CatalogEntry['expects']> = {};
+const V = (id: string, label: string, data: Record<string, unknown>, width: number, height: number): Variant => ({ id, label, data, size: { width, height } });
+const D = (name: string) => `MaterialDesign${name}`;
+const demo = (path: string): string => `${DEMO_PREFIX}${path}`;
+
+const BUTTON = { w: 170, h: 44 };
+const VERTICAL = { w: 120, h: 96 };
+const ICON = { w: 48, h: 48 };
+const LOCKED = { lockEnabled: true, lockPin: '1234' };
+const SCENE_TARGETS = [['general.scene', 'night'], ['living.light', 'false'], ['kitchen.light', 'false'], ['hall.light', 'false']] as const;
+const multi = (count: number): Record<string, unknown> => ({
+    countOids: count,
+    ...Object.fromEntries(SCENE_TARGETS.slice(0, count).flatMap(([path, value], i) => [[`oid${i}`, demo(path)], [`value${i}`, value]])),
+});
+const GRID_VIEWS = { View0: 'demo-lights', View1: 'demo-climate', View2: 'demo-media' };
+const DIALOG_VIEW = { buttontext: 'Open media', contains_view: 'demo-media', title: 'Media' };
+
+function buttonFamily(vertical: boolean): Record<string, Variant[]> {
+    const { w, h } = vertical ? VERTICAL : BUTTON;
+    const suffix = vertical ? 'Vertical' : '';
+    const nav = { nav_view: 'demo-climate' };
+    const link = { href: '#/widget/Switch' };
+    const counter = { oid: demo('general.counter') };
+    const light = { oid: demo('living.light') };
+    const sets: Array<[string, Variant[]]> = [
+        ['ButtonNavigation', [
+            V('text-only', 'Text only', { buttontext: 'Climate', image: '', ...nav }, w, h),
+            V('with-icon', 'With icon', { buttontext: 'Climate', image: 'thermometer', ...nav }, w, h),
+            V('outlined', 'Outlined', { buttontext: 'Climate', image: 'thermometer', buttonStyle: 'outlined', ...nav }, w, h),
+        ]],
+        ['ButtonLink', [
+            V('text-only', 'Text only', { buttontext: 'Switch widget', image: '', ...link }, w, h),
+            V('with-icon', 'With icon', { buttontext: 'Switch widget', image: 'link-variant', ...link }, w, h),
+            V('outlined', 'Outlined', { buttontext: 'Switch widget', image: 'link-variant', buttonStyle: 'outlined', ...link }, w, h),
+        ]],
+        ['ButtonStateMulti', [
+            V('two-targets', 'Scene with two targets', { buttontext: 'Night', ...multi(2) }, w, h),
+            V('four-targets', 'Scene with four targets', { buttontext: 'All off', ...multi(4) }, w, h),
+        ]],
+        ['ButtonAdition', [
+            V('step-plus-1', 'Step +1', { buttontext: '+1', ...counter, value: 1 }, w, h),
+            V('step-minus-5', 'Step -5', { buttontext: '-5', image: 'minus', ...counter, value: -5 }, w, h),
+            V('with-lock', 'With lock', { buttontext: '+1', ...counter, value: 1, lockEnabled: true }, w, h),
+        ]],
+        ['ButtonToggle', [
+            V('text', 'Text', { buttontext: 'Light', image: '', ...light }, w, h),
+            V('icon', 'Icon', { buttontext: 'Light', image: 'lightbulb', ...light }, w, h),
+            V('lock-pin', 'With lock and PIN 1234', { buttontext: 'Light', image: 'lightbulb', ...light, ...LOCKED }, w, h),
+        ]],
+    ];
+    // The vertical toggle already has two imported variants; only its lock variant is missing.
+    return Object.fromEntries(sets.map(([name, variants]) => [D(name + suffix), vertical && name === 'ButtonToggle' ? variants.slice(2) : variants]));
+}
+
+const ICON_BUTTONS: Record<string, Variant[]> = {
+    [D('IconButtonNavigation')]: [
+        V('thermometer', 'Climate icon', { image: 'thermometer', nav_view: 'demo-climate' }, ICON.w, ICON.h),
+        V('home', 'Home icon', { image: 'home', nav_view: 'demo-lights' }, ICON.w, ICON.h),
+        V('lock-pin', 'With lock and PIN 1234', { image: 'thermometer', nav_view: 'demo-climate', ...LOCKED }, ICON.w, ICON.h),
+    ],
+    [D('IconButtonLink')]: [
+        V('link', 'Link icon', { image: 'link-variant', href: '#/widget/Switch' }, ICON.w, ICON.h),
+        V('open', 'Open icon', { image: 'open-in-new', href: '#/widget/Switch' }, ICON.w, ICON.h),
+        V('lock-pin', 'With lock and PIN 1234', { image: 'link-variant', href: '#/widget/Switch', ...LOCKED }, ICON.w, ICON.h),
+    ],
+    [D('IconButtonStateMulti')]: [
+        V('two-targets', 'Scene with two targets', { image: 'weather-night', ...multi(2) }, ICON.w, ICON.h),
+        V('four-targets', 'Scene with four targets', { image: 'power', ...multi(4) }, ICON.w, ICON.h),
+    ],
+    [D('IconButtonAdition')]: [
+        V('step-plus-1', 'Step +1', { image: 'plus', oid: demo('general.counter'), value: 1 }, ICON.w, ICON.h),
+        V('step-minus-5', 'Step -5', { image: 'minus', oid: demo('general.counter'), value: -5 }, ICON.w, ICON.h),
+        V('with-lock', 'With lock', { image: 'plus', oid: demo('general.counter'), value: 1, lockEnabled: true }, ICON.w, ICON.h),
+    ],
+    [D('IconButtonToggle')]: [
+        V('bulb', 'Light bulb', { image: 'lightbulb-outline', imageTrue: 'lightbulb', oid: demo('living.light') }, ICON.w, ICON.h),
+        V('power', 'Power icon', { image: 'power', oid: demo('living.light') }, ICON.w, ICON.h),
+        V('lock-pin', 'With lock and PIN 1234', { image: 'lightbulb', oid: demo('living.light'), ...LOCKED }, ICON.w, ICON.h),
+    ],
+    [D('IconButtonSlider')]: [
+        V('full-circle', 'Full circle', { oid: demo('living.dimmer'), image: 'lightbulb', angleArc: 360 }, 120, 120),
+        V('half-circle', 'Half circle', { oid: demo('living.dimmer'), image: 'lightbulb', angleArc: 180, angleOffset: 270 }, 120, 120),
+        V('slider-only', 'Slider only', { oid: demo('living.dimmer'), image: 'lightbulb', sliderOnly: true }, 120, 120),
+    ],
+};
+
+const VIEWS: Record<string, Variant[]> = {
+    [D('MasonryViews')]: [
+        V('two-columns', 'Two columns', { countViews: 3, countCols: 2, ...GRID_VIEWS }, 900, 520),
+        V('three-columns', 'Three columns', { countViews: 3, countCols: 3, ...GRID_VIEWS }, 1200, 520),
+    ],
+    [D('GridViews')]: [
+        V('two-columns', 'Two columns', { countViews: 3, viewColSpan: 6, ...GRID_VIEWS }, 900, 520),
+        V('three-columns', 'Three columns', { countViews: 3, viewColSpan: 4, ...GRID_VIEWS }, 1200, 520),
+    ],
+    [D('AdvancedViewInWidget')]: [
+        V('by-name', 'View chosen by a state', { oid: demo('general.text'), View0: 'demo-lights' }, 400, 300),
+        V('pre-rendered', 'Views rendered in advance', { oid: demo('general.text'), renderAlways: true, countRenderViewsOnLoad: 3, ...GRID_VIEWS }, 400, 300),
+        V('quiet', 'Without error message', { oid: demo('general.text'), hideErrorMessage: true, fadeInDuration: 300, fadeOutDuration: 300 }, 400, 300),
+    ],
+    [D('AdvancedViewInWidget8')]: [
+        V('three-views', 'Three views by index', { oid: demo('general.view'), count: 3, contains_view_0: 'demo-lights', contains_view_1: 'demo-climate', contains_view_2: 'demo-media' }, 400, 300),
+        V('two-views', 'Two views', { oid: demo('general.view'), count: 2, contains_view_0: 'demo-lights', contains_view_1: 'demo-climate' }, 400, 300),
+        V('slow-fade', 'Slow fade', { oid: demo('general.view'), count: 3, contains_view_0: 'demo-lights', contains_view_1: 'demo-climate', contains_view_2: 'demo-media', fadeInDuration: 400, fadeOutDuration: 400 }, 400, 300),
+    ],
+    [D('DialogView')]: [
+        V('open-button', 'Open button', { ...DIALOG_VIEW }, BUTTON.w, BUTTON.h),
+        V('outlined', 'Outlined button', { ...DIALOG_VIEW, buttonStyle: 'outlined' }, BUTTON.w, BUTTON.h),
+        V('data-point', 'Opened by a data point', { ...DIALOG_VIEW, showDialogMethod: 'datapoint', showDialogOid: demo('general.flag') }, BUTTON.w, BUTTON.h),
+    ],
+    [D('DialogIFrame')]: [
+        V('window', 'In a window', { buttontext: 'Open page', src: './iframe-demo.html', title: 'iFrame demo' }, BUTTON.w, BUTTON.h),
+        V('fullscreen', 'Fullscreen', { buttontext: 'Open page', src: './iframe-demo.html', title: 'iFrame demo', fullscreenResolutionLower: 100000 }, BUTTON.w, BUTTON.h),
+    ],
+    // These two have no settings besides the style, so only the stage size differs.
+    [D('ColorScheme')]: [V('compact', 'Compact', {}, 420, 240), V('wide', 'Wide', {}, 800, 360)],
+    [D('InstalledVersion')]: [V('small', 'Small', {}, 90, 20), V('wide', 'Wide', {}, 200, 40)],
+};
+
+const INPUTS: Record<string, Variant[]> = {
+    [D('Autocomplete')]: [
+        V('scene-list', 'Scene list', { oid: demo('general.scene'), inputLayout: 'solo', inputLabelText: 'Scene', listDataMethod: 'valueList', valueList: 'morning;day;evening;night', valueListLabels: 'Morning;Day;Evening;Night' }, 300, 76),
+    ],
+    [D('Keyboard')]: [
+        V('english-text', 'English text keys', { keyboardLayout: 'text', keyboardLanguage: 'en', keyboardShowOn: 'always' }, 640, 280),
+        V('numbers', 'Number pad', { keyboardLayout: 'number', keyboardShowOn: 'always' }, 320, 280),
+    ],
+    [D('IconList')]: [
+        V('light-switches', 'Light switches', { listItemDataMethod: 'inputPerEditor', countListItems: 2, listType0: 'buttonToggle', oid0: demo('living.light'), label0: 'Living room', listImage0: 'lightbulb', listType1: 'buttonToggle', oid1: demo('kitchen.light'), label1: 'Kitchen', listImage1: 'lightbulb' }, 300, 120),
+    ],
+};
+
+export const HAND_VARIANTS: Record<string, Variant[]> = { ...buttonFamily(false), ...buttonFamily(true), ...ICON_BUTTONS, ...VIEWS, ...INPUTS };
+
+const T = (type: string, ...roles: string[]): CatalogEntry['expects'] => [{ attr: 'oid', type, roles }];
+const ANY = 'number | string | boolean';
+export const EXPECTS: Record<string, CatalogEntry['expects']> = Object.fromEntries(Object.entries({
+    Switch: T('boolean', 'switch', 'switch.light'),
+    Checkbox: T(ANY, 'switch', 'state'),
+    Input: T('string | number', 'text', 'state', 'value'),
+    Select: T(ANY, 'state', 'value', 'text'),
+    Autocomplete: T('string | number', 'text', 'state', 'value'),
+    Slider: T('number', 'level', 'level.dimmer', 'level.blind'),
+    RoundSlider: T('number', 'level', 'level.dimmer', 'level.blind'),
+    IconButtonSlider: T('number', 'level', 'level.dimmer', 'level.blind'),
+    Progress: T('number | boolean', 'value', 'level', 'value.battery'),
+    ProgressCircular: T('number | boolean', 'value', 'level', 'value.battery'),
+    Value: T(ANY, 'value', 'text'),
+    IconList: T(ANY, 'switch', 'state', 'value'),
+    List: T(ANY, 'switch', 'state', 'value'),
+    Table: T('string (JSON array)', 'json'),
+    Alerts: T('string (JSON array)', 'json'),
+    Calendar: T('string (JSON array)', 'json'),
+    ChartBar: T('string (JSON array)', 'json'),
+    ChartPie: T('string (JSON array)', 'json'),
+    ChartJson: T('string (JSON object)', 'json'),
+    ChartLineHistory: T('number', 'value', 'value.power', 'value.temperature'),
+    TopAppBar: T('string | number', 'state', 'text'),
+    AdvancedViewInWidget: T('string (view name)', 'state', 'text'),
+    AdvancedViewInWidget8: T('number | boolean (view index)', 'state', 'value'),
+    ButtonAdition: T('number', 'value', 'level'),
+    ButtonAditionVertical: T('number', 'value', 'level'),
+    IconButtonAdition: T('number', 'value', 'level'),
+    ButtonToggle: T(ANY, 'switch', 'switch.light', 'state'),
+    ButtonToggleVertical: T(ANY, 'switch', 'switch.light', 'state'),
+    IconButtonToggle: T(ANY, 'switch', 'switch.light', 'state'),
+    ButtonState: T(ANY, 'state', 'value', 'switch'),
+    ButtonStateVertical: T(ANY, 'state', 'value', 'switch'),
+    IconButtonState: T(ANY, 'state', 'value', 'switch'),
+    ButtonStateMulti: T(ANY, 'state', 'value', 'switch'),
+    ButtonStateMultiVertical: T(ANY, 'state', 'value', 'switch'),
+    IconButtonStateMulti: T(ANY, 'state', 'value', 'switch'),
+}).map(([name, expects]) => [D(name), expects]));
+
 export const EXCLUDED: Record<string, string> = {};
 
 const FALLBACK_ID = `${DEMO_PREFIX}general.value`;

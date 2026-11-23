@@ -37,4 +37,41 @@ describe('catalog', () => {
         }
         expect(problems).toEqual([]);
     }, 120_000);
+
+    it('offers the default plus at least two variants for every shown widget', async () => {
+        const { widgetIndex, loadWidget } = await import('../runtime/widgets');
+        const { catalogEntry } = await import('./catalog');
+        const thin: string[] = [];
+        for (const { module } of widgetIndex) {
+            const entry = catalogEntry(module, (await loadWidget(module)).getWidgetInfo());
+            if (!entry.excluded && entry.variants.length < 3) thin.push(`${module}: ${entry.variants.length}`);
+        }
+        expect(thin).toEqual([]);
+    }, 120_000);
+
+    it('documents the expected data point for every widget with an oid field', async () => {
+        const { widgetIndex, loadWidget } = await import('../runtime/widgets');
+        const { catalogEntry } = await import('./catalog');
+        const missing: string[] = [];
+        for (const { module } of widgetIndex) {
+            const info = (await loadWidget(module)).getWidgetInfo();
+            const hasOid = info.visAttrs.some(g => g.fields.some(f => (f as { name?: string }).name === 'oid'));
+            if (hasOid && !catalogEntry(module, info).expects.length) missing.push(module);
+        }
+        expect(missing).toEqual([]);
+    }, 120_000);
+    it('writes hand-made variants only with fields the widget declares', async () => {
+        const { loadWidget } = await import('../runtime/widgets');
+        const { HAND_VARIANTS } = await import('./catalog');
+        const { defaultData, expandFields } = await import('../runtime/widgetInfo');
+        const problems: string[] = [];
+        for (const [module, variants] of Object.entries(HAND_VARIANTS)) {
+            const info = (await loadWidget(module)).getWidgetInfo();
+            for (const variant of variants) {
+                const known = new Set(expandFields(info, { ...defaultData(info), ...variant.data }).map(({ key }) => key));
+                for (const key of Object.keys(variant.data)) if (!known.has(key)) problems.push(`${module  }/${  variant.id  }: ${  key}`);
+            }
+        }
+        expect(problems).toEqual([]);
+    }, 120_000);
 });

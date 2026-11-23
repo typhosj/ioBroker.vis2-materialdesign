@@ -27,3 +27,20 @@ export function virtualModules(): Plugin {
         },
     };
 }
+
+// publicDir is the widget build's static folder, so the demo page lives beside the gallery and is served and emitted here.
+export function iframeDemo(): Plugin {
+    const file = join(repoRoot, 'gallery/public/iframe-demo.html');
+    return {
+        name: 'gallery-iframe-demo',
+        configureServer(server) {
+            server.middlewares.use('/iframe-demo.html', (_req, res) => {
+                res.setHeader('Content-Type', 'text/html');
+                res.end(readFileSync(file));
+            });
+        },
+        generateBundle() {
+            this.emitFile({ type: 'asset', fileName: 'iframe-demo.html', source: readFileSync(file) });
+        },
+    };
+}
