@@ -9,7 +9,7 @@ import { VIEWS } from '../src/views/views';
 import { installShim } from '../src/runtime/GalleryRxWidget';
 import { defaultData, expandFields } from '../src/runtime/widgetInfo';
 import { entryByTpl, loadWidget } from '../src/runtime/widgets';
-import { TEMPLATE_VIEWS, VIEW_COLORS, demoObjects, missingViewReferences, templateFiles, viewTemplate } from './templates';
+import { TEMPLATE_VIEWS, demoObjects, missingViewReferences, templateFiles, viewTemplate } from './templates';
 
 beforeAll(() => installShim());
 
@@ -23,11 +23,11 @@ describe('templates', () => {
     });
     it('wraps a view so the vis-2 view import accepts it and drops gallery-only keys', () => {
         const template = viewTemplate({ widgets: { w1: { tpl: 't', data: { designStyle: 'default', oid: 'x' }, style: {} } } }, 'dashboard-phone');
-        expect(template).toEqual({ settings: { style: { ...VIEW_COLORS } }, widgets: { w000001: { tpl: 't', data: { oid: 'x' }, style: {}, widgetSet: 'vis2-materialdesign' } }, activeWidgets: [], name: 'dashboard-phone' });
+        expect(template).toEqual({ settings: { style: {} }, widgets: { w000001: { tpl: 't', data: { oid: 'x' }, style: {}, widgetSet: 'vis2-materialdesign' } }, activeWidgets: [], name: 'dashboard-phone' });
     });
     it('keeps other designStyle values, keeps the view settings and numbers widgets in order', () => {
         const template = viewTemplate({ settings: { style: { width: '390px' } }, widgets: { a: { tpl: 't', data: { designStyle: 'm3' }, style: {} }, b: { tpl: 'u', data: {}, style: {} } } }, 'v');
-        expect(template).toMatchObject({ settings: { style: { width: '390px', ...VIEW_COLORS } } });
+        expect(template).toMatchObject({ settings: { style: { width: '390px' } } });
         expect(Object.keys(template.widgets as object)).toEqual(['w000001', 'w000002']);
         expect((template.widgets as Record<string, { data: object }>).w000001.data).toEqual({ designStyle: 'm3' });
     });
@@ -39,24 +39,16 @@ describe('templates', () => {
         expect(meta.templates.map(name => `templates/${name}.json`).sort()).toEqual(Object.keys(templateFiles()).sort());
     });
 
-    it('gives every exported view an explicit text colour and background, so the vis-2 UI theme cannot change them', () => {
+    it('sets no colour or background on any exported or source view, so vis-2 and the gallery theme colour them', () => {
+        const colourKeys = ['color', 'background-color', 'background'];
+        const styleOf = (view: { settings?: { style?: Record<string, unknown> } }) => view.settings?.style ?? {};
         for (const name of TEMPLATE_VIEWS) {
-            const { style } = JSON.parse(templateFiles()[`templates/${name}.json`]).settings as { style: Record<string, string> };
-            expect(style.color, name).toBe(VIEW_COLORS.color);
-            expect(style['background-color'], name).toBe(VIEW_COLORS['background-color']);
+            const exported = JSON.parse(templateFiles()[`templates/${name}.json`]) as { settings?: { style?: Record<string, unknown> } };
+            for (const key of colourKeys) expect(styleOf(exported), `${name} export`).not.toHaveProperty(key);
         }
-    });
-    it('keeps the colours out of the gallery source views, so the gallery dark mode inherits the page theme', () => {
         for (const [name, view] of Object.entries(VIEWS)) {
-            expect(view.settings?.style ?? {}, name).not.toHaveProperty('color');
-            expect(view.settings?.style ?? {}, name).not.toHaveProperty('background-color');
+            for (const key of colourKeys) expect(styleOf(view), `${name} source`).not.toHaveProperty(key);
         }
-    });
-    it('uses the light tokens of gallery.css for the exported colours', () => {
-        const css = readFileSync(join(repoRoot, 'gallery/src/gallery.css'), 'utf8');
-        const light = /:root {([^}]*)}/.exec(css)![1];
-        expect(light).toContain(`--g-fg: ${VIEW_COLORS.color};`);
-        expect(light).toContain(`--g-bg: ${VIEW_COLORS['background-color']};`);
     });
     it('tells the download notes to import dashboard-phone-lights before dashboard-phone, in both languages', () => {
         for (const lang of ['en', 'de']) {
@@ -65,8 +57,8 @@ describe('templates', () => {
             expect(text.indexOf('dashboard-phone-lights'), lang).toBeLessThan(text.search(/dashboard-phone(?![-a-z])/));
         }
     });
-    it('keeps the size keys of the view next to the colours', () => {
-        expect(viewTemplate({ settings: { style: { width: '1px' } }, widgets: {} }, 'v').settings).toEqual({ style: { width: '1px', ...VIEW_COLORS } });
+    it('keeps the size keys of the view', () => {
+        expect(viewTemplate({ settings: { style: { width: '1px' } }, widgets: {} }, 'v').settings).toEqual({ style: { width: '1px' } });
     });
 });
 

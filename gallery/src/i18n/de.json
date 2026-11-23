@@ -31,7 +31,7 @@
   "gallery_dashboard_tablet": "Wandtablet",
   "gallery_dashboard_phone": "Handy",
   "gallery_downloads": "Import-Vorlagen",
-  "gallery_downloads_text": "Zuerst demo-objects.json hochladen (Admin, Objekte, Hochladen). Danach die Views im vis-2-Editor importieren (Views, Import), genau so benannt wie die Dateien: zuerst die vier Inhalts-Views dashboard-tablet-*, dann dashboard-tablet, das sie einbettet. dashboard-phone-lights vor dashboard-phone importieren, das es einbettet.",
+  "gallery_downloads_text": "Zuerst demo-objects.json hochladen (Admin, Objekte, Hochladen). Danach die Views im vis-2-Editor importieren (Views, Import), genau so benannt wie die Dateien: zuerst die vier Inhalts-Views dashboard-tablet-*, dann dashboard-tablet, das sie einbettet. dashboard-phone-lights vor dashboard-phone importieren, das es einbettet. Die Views folgen dem vis-2-Theme, solange der Datenpunkt 'Dark colors: auto (follow the VIS theme) | light | dark' auf auto steht (Standard); bei festem light oder dark ein passendes vis-2-Theme verwenden.",
   "gallery_about": "Über",
   "gallery_about_text": "Alle Werte werden in deinem Browser simuliert. Nichts wird gesendet, keine Cookies, kein Tracking.",
   "gallery_excluded": "In der Galerie nicht gezeigt",

@@ -3,10 +3,6 @@ import { join } from 'node:path';
 
 import { repoRoot } from './paths';
 
-// The gallery's light theme. vis-2 colours a view without these from its own UI theme (#fff on #000 in dark mode),
-// so the import would look different on every install.
-export const VIEW_COLORS = { color: '#1c1b1f', 'background-color': '#fafafa' };
-
 // Content views come first: the main view embeds them by name, so they are imported before it.
 export const TEMPLATE_VIEWS = ['dashboard-phone-lights', 'dashboard-tablet-home', 'dashboard-tablet-lights', 'dashboard-tablet-climate', 'dashboard-tablet-energy', 'dashboard-tablet', 'dashboard-phone'];
 
@@ -31,7 +27,7 @@ export function viewTemplate(view: { settings?: Record<string, unknown>; widgets
         const { designStyle, ...kept } = data;
         widgets[`w${String(index + 1).padStart(6, '0')}`] = { ...rest, data: designStyle === 'default' ? kept : data, widgetSet: 'vis2-materialdesign' };
     });
-    return { settings: { ...view.settings, style: { ...(view.settings?.style as object), ...VIEW_COLORS } }, widgets, activeWidgets: [], name };
+    return { settings: view.settings ?? { style: {} }, widgets, activeWidgets: [], name };
 }
 
 // Names every view a widget references that the template set does not contain. `viewKeys` lists, per widget tpl, the
