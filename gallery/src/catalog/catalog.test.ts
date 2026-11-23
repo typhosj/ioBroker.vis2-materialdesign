@@ -86,4 +86,15 @@ describe('catalog', () => {
         }
         expect(duplicates).toEqual([]);
     }, 120_000);
+
+    it('keeps expects entries unique by attribute and type', async () => {
+        const { widgetIndex, loadWidget } = await import('../runtime/widgets');
+        const { catalogEntry } = await import('./catalog');
+        const duplicates: string[] = [];
+        for (const { module } of widgetIndex) {
+            const keys = catalogEntry(module, (await loadWidget(module)).getWidgetInfo()).expects.map(e => `${e.attr}:${e.type}`);
+            for (const key of new Set(keys.filter((x, i) => keys.indexOf(x) !== i))) duplicates.push(`${module}/${key}`);
+        }
+        expect(duplicates).toEqual([]);
+    }, 120_000);
 });

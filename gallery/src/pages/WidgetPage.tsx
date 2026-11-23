@@ -101,7 +101,7 @@ export function WidgetPage({ name, query, runtime }: { name: string; query: Gall
                         </tr>
                     ))}
                 </tbody></table>
-                {entry.expects.length ? <><h2>{translate('gallery_expects')}</h2><ul>{entry.expects.map(e => <li key={e.attr}><code>{e.attr}</code>: {e.type}{e.roles.length ? ` (${e.roles.join(', ')})` : ''}</li>)}</ul></> : null}
+                {entry.expects.length ? <><h2>{translate('gallery_expects')}</h2><ul>{entry.expects.map(e => <li key={`${e.attr}:${e.type}`}><code>{e.attr}</code>: {e.type}{e.roles.length ? ` (${e.roles.join(', ')})` : ''}</li>)}</ul></> : null}
             </section>
         </article>
     );
