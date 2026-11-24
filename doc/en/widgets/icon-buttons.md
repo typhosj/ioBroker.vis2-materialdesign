@@ -23,6 +23,8 @@ variant (target view, URL, object id and value, …).
 
 The icon button has no **labeling** group — it carries no text.
 
+- **Accessible name** – the name a screen reader announces. The icon button shows no text, so this is its name. Without an entry the button is announced as "Button". Picking the object id fills it with the object name.
+
 **icon**
 
 - **Image** / **active image** – Material Design icon name or image source, the

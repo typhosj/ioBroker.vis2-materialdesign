@@ -368,3 +368,69 @@ describe('repeat while held (upstream #57)', () => {
         for (const kind of ['navigation', 'multiState', 'toggle'] as const) expect(names(kind)).not.toContain('repeatOnHold');
     });
 });
+
+// VisWidget.t returns the key in unit tests, so a fallback name shows up as `ariaButton` / `ariaSlider`.
+describe('button accessible name', () => {
+    const kinds = ['navigation', 'link', 'state', 'multiState', 'addition', 'toggle', 'slider'] as const;
+    const render = (layout: 'icon' | 'default', kind: (typeof kinds)[number], rxData: Record<string, unknown>, values: Record<string, unknown> = {}): Element => {
+        const Button = createButtonClass({ id: `test-${kind}`, name: 'Internal Widget Name', kind, layout, label: '', icon: 'plus' });
+        const instance = fixture<{ state: unknown; renderWidgetBody: (props: unknown) => React.JSX.Element }>(
+            new Button(fixture<ConstructorParameters<typeof Button>[0]>({ context: { setValue: vi.fn() } })),
+        );
+        instance.state = fixture<typeof instance.state>({ rxData: { oid: 'test.0.x', ...rxData }, values });
+        document.body.innerHTML = renderToStaticMarkup(instance.renderWidgetBody(fixture<Parameters<typeof instance.renderWidgetBody>[0]>({})));
+        return document.querySelector('button')!;
+    };
+
+    describe.each(kinds)('icon layout, kind %s', kind => {
+        it.each([
+            ['set', 'Living room light', 'Living room light'],
+            ['padded', '  Door  ', 'Door'],
+            ['empty', '', 'ariaButton'],
+            ['whitespace-only', '   ', 'ariaButton'],
+            ['unset', undefined, 'ariaButton'],
+        ])('ariaLabel %s', (_name, ariaLabel, expected) => {
+            const button = render('icon', kind, { ariaLabel });
+            expect(button.getAttribute('aria-label')).toBe(expected);
+            if (kind === 'slider') {
+                expect(document.querySelector('[role="slider"]')!.getAttribute('aria-label')).toBe(expected === 'ariaButton' ? 'ariaSlider' : expected);
+            }
+        });
+    });
+
+    it('never uses the internal widget name for the slider', () => {
+        render('icon', 'slider', {});
+        expect(document.querySelector('[role="slider"]')!.getAttribute('aria-label')).toBe('ariaSlider');
+        expect(document.body.innerHTML).not.toContain('Internal Widget Name');
+    });
+
+    it('leaves a button with visible text to its content, even with ariaLabel set', () => {
+        const button = render('default', 'state', { buttontext: 'Start', ariaLabel: 'Something else' });
+        expect(button.hasAttribute('aria-label')).toBe(false);
+        expect(button.textContent).toContain('Start');
+    });
+
+    it('treats the true label as visible text while on', () => {
+        const button = render('default', 'toggle', { buttontext: '', labelTrue: 'Running', ariaLabel: 'x' }, { 'test.0.x.val': true });
+        expect(button.hasAttribute('aria-label')).toBe(false);
+    });
+
+    it.each([
+        ['empty', ''],
+        ['unset', undefined],
+        ['markup-only', '<span></span>'],
+        ['nbsp-only', '&nbsp;'],
+        ['blank', '   '],
+    ])('falls back to ariaLabel, then ariaButton, when the text is %s', (_name, buttontext) => {
+        // The definition label is empty here, so nothing else is rendered as text.
+        expect(render('default', 'state', { buttontext, ariaLabel: 'Pump' }).getAttribute('aria-label')).toBe('Pump');
+        expect(render('default', 'state', { buttontext }).getAttribute('aria-label')).toBe('ariaButton');
+        expect(render('default', 'state', { buttontext, ariaLabel: '  ' }).getAttribute('aria-label')).toBe('ariaButton');
+    });
+
+    it('still writes its state on activation', () => {
+        const { instance, setValue } = widget('state');
+        instance.activate({ oid: 'test.0.value', value: '1', ariaLabel: 'Pump' }, undefined);
+        expect(setValue).toHaveBeenCalledWith('test.0.value', 1);
+    });
+});

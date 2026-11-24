@@ -1231,6 +1231,8 @@
     "ariaRoundSlider": "Cursore rotondo",
     "ariaSlider": "Cursore",
     "ariaProgress": "Avanzamento",
+    "ariaLabel": "Nome accessibile",
+    "ariaButton": "Pulsante",
     "ariaTextInput": "Immissione di testo",
     "ariaSelectInput": "Selezione",
     "ariaDialog": "Finestra di dialogo",

@@ -31,6 +31,7 @@ listed below are self-explanatory.
   (shows the state, writes nothing). With `value`, *state if value unequal to 'on'
   condition* decides how a third value counts: `off` means only the on-value
   switches on, `on` means everything but the off-value does.
+- **Accessible name** – the name a screen reader announces. It only applies while the button shows no text; a button with text is named by that text. Without an entry the button is announced as "Button". Picking the object id fills it with the object name.
 
 **labeling**
 

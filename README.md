@@ -118,6 +118,7 @@ to wait with an upgrade.
 ## Changelog
 ### **WORK IN PROGRESS**
 
+- (typhosj) Added **accessible name** to all Buttons, the Progress bar and the Progress Circular: an icon button or a button without text is announced by the name you enter, otherwise as "Button"; a progress bar by that name, otherwise as "Progress", so several bars on one view can be told apart. A button with text keeps being named by its text. Picking the object id fills the name of an icon button and of a progress bar with the object name. The slider of the Icon Button Slider is announced as "Slider" instead of its internal widget name. Nothing looks different. (found while building the live demo)
 - (typhosj) Added the layout **horizontal** to the Top App Bar: the entries stand side by side in the bar and open their submenus in a list that floats over the page; what does not fit moves into **More**, and below the switch width the bar falls back to the menu button and the drawer (Scrounger/ioBroker.vis-materialdesign#60)
 - (typhosj) **Breaking:** requires VIS 2 2.20.8 or newer. The widgets are now built against React 19, the React version of VIS 2 since 2.20; older VIS 2 versions run on React 18. Stay on version 1.x of this adapter as long as VIS 2 cannot be updated
 - (typhosj) Added **order of suggestions** to the On-screen Keyboard: `frequent and recent` (new default) lets a word's count lose half its worth for every 30 days without use, so a word typed often long ago no longer stays on top; `most frequent` keeps the previous order, `most recent` shows the words last used first

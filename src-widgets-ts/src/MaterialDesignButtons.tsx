@@ -5,7 +5,7 @@ import { symbolName } from './IconFilePicker';
 import { fill, withAutoFill, type FillMap } from './deviceFill';
 import { WidgetLock, lockPinField, type LockData } from './widgetLock';
 
-import { isReadOnly, squarePreview, PressState, RenderProps, SliderWriter, VisWidget, createInfo, indexedFields, itemCount, designStyle, designStyleClasses, iconField, numberValue, parseActionValue, safeWidgetUrl, setStateValue, sizeCss, stateValue, sanitizeHtml, stringValue } from './widgetUtils';
+import { ariaLabelField, ariaName, accessibleText, isReadOnly, squarePreview, PressState, RenderProps, SliderWriter, VisWidget, createInfo, indexedFields, itemCount, designStyle, designStyleClasses, iconField, numberValue, parseActionValue, safeWidgetUrl, setStateValue, sizeCss, stateValue, sanitizeHtml, stringValue } from './widgetUtils';
 
 type ButtonKind = 'navigation' | 'link' | 'state' | 'multiState' | 'addition' | 'toggle' | 'slider';
 type ButtonLayout = 'default' | 'vertical' | 'icon';
@@ -25,6 +25,7 @@ interface ButtonData extends LockData {
     countOids?: number;
     minmax?: string;
     buttontext?: string;
+    ariaLabel?: string;
     labelTrue?: string;
     labelColorFalse?: string;
     labelColorTrue?: string;
@@ -174,7 +175,7 @@ const actionFields = {
 // Issue #15: picking the datapoint fills what the object's own metadata already says. Only the
 // kinds that carry an oid of their own; navigation and link have no object to read.
 function autoFillMap(def: ButtonDefinition): FillMap {
-    const text = def.layout === 'icon' ? [] : [fill.name('buttontext')];
+    const text = [fill.name(def.layout === 'icon' ? 'ariaLabel' : 'buttontext')];
     const icon = fill.icon('image');
     if (def.kind === 'state') {
         return { oid: [...text, icon, fill.firstState('value')] };
@@ -235,7 +236,7 @@ function attrs(def: ButtonDefinition): RxWidgetInfo['visAttrs'] {
     return [
         {
             name: 'common',
-            fields: [...(isIcon ? iconStyleFields : styleFields), ...actionFields[def.kind], ...feedbackFields],
+            fields: [...(isIcon ? iconStyleFields : styleFields), ...actionFields[def.kind], ...feedbackFields, ariaLabelField],
         },
         ...multiStateGroups,
         // An icon button has no label, so labelFields is empty — and an empty group is an empty
@@ -758,6 +759,8 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
             const icon = data.colorize && def.kind === 'slider'
                 ? <span style={{ display: 'inline-flex', filter: `brightness(${1 - colorizeFactor + colorizeFactor * sliderRatio})` }}>{renderIcon(image, iconColor, iconSize, imageColorSet)}</span>
                 : renderIcon(image, iconColor, iconSize, imageColorSet);
+            // Same condition as the label span below: only visible text names the button (WCAG 2.5.3).
+            const buttonName = !isIcon && accessibleText(label, '') ? undefined : ariaName(data.ariaLabel, 'ariaButton');
             const content = (
                 <>
                     {icon}
@@ -783,6 +786,7 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
                     <button
                         type="button"
                         aria-pressed={on}
+                        aria-label={buttonName}
                         // A read-only button writes nothing, so `aria-disabled` is the honest state and makes the M3
                         // disabled rule apply. Legacy has no rule for it.
                         aria-disabled={isReadOnly(data) ? true : undefined}
@@ -894,7 +898,7 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
                         {def.kind === 'slider' ? (
                             <>
                                 <svg
-                                    aria-label={def.name}
+                                    aria-label={ariaName(data.ariaLabel, 'ariaSlider')}
                                     role="slider"
                                     aria-valuemax={sliderMax}
                                     aria-valuemin={sliderMin}

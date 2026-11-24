@@ -1231,6 +1231,8 @@
     "ariaRoundSlider": "圆形滑块",
     "ariaSlider": "滑块",
     "ariaProgress": "进度",
+    "ariaLabel": "无障碍名称",
+    "ariaButton": "按钮",
     "ariaTextInput": "文本输入",
     "ariaSelectInput": "选择",
     "ariaDialog": "对话框",

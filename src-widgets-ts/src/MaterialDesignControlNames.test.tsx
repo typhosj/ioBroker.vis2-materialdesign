@@ -299,3 +299,40 @@ describe('remaining name cases', () => {
         expect(nameOf(bar)).toBe('ariaProgress');
     });
 });
+
+describe('progress accessible name option', () => {
+    const linear = (rxData: Record<string, unknown>): MaterialDesignProgress => {
+        const widget = new MaterialDesignProgress(fixture<ConstructorParameters<typeof MaterialDesignProgress>[0]>({ context: { setValue: vi.fn() } }));
+        widget.state = fixture<typeof widget.state>({ rxData: { oid: 'test.0.level', ...rxData }, values: { 'test.0.level.val': 20 } });
+        return widget;
+    };
+    const circular = (rxData: Record<string, unknown>): MaterialDesignProgressCircular => {
+        const widget = new MaterialDesignProgressCircular(fixture<ConstructorParameters<typeof MaterialDesignProgressCircular>[0]>({ context: { setValue: vi.fn() } }));
+        widget.state = fixture<typeof widget.state>({ rxData: { oid: 'test.0.level', ...rxData }, values: { 'test.0.level.val': 20 } });
+        return widget;
+    };
+    const makers = [
+        ['linear', linear],
+        ['writable linear', (rxData: Record<string, unknown>) => linear({ progressWritable: true, ...rxData })],
+        ['circular', circular],
+    ] as const;
+    const bars = (): Element[] => Array.from(document.querySelectorAll('[role="slider"], [role="progressbar"]'));
+
+    describe.each(makers)('%s', (_kind, make) => {
+        it.each([
+            ['set', 'Battery', 'Battery'],
+            ['padded', '  Tank ', 'Tank'],
+            ['empty', '', 'ariaProgress'],
+            ['whitespace-only', '   ', 'ariaProgress'],
+            ['unset', undefined, 'ariaProgress'],
+        ])('ariaLabel %s', (_name, ariaLabel, expected) => {
+            mount([make({ ariaLabel })]);
+            expect(bars().map(nameOf)).toEqual([expected]);
+        });
+
+        it('tells two instances apart', () => {
+            mount([make({ ariaLabel: 'Battery' }), make({ ariaLabel: 'Tank' })]);
+            expect(bars().map(nameOf)).toEqual(['Battery', 'Tank']);
+        });
+    });
+});

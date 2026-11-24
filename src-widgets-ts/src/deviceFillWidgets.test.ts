@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { RxWidgetInfo, WidgetData } from '@iobroker/types-vis-2';
 
 import MaterialDesignButtonState from './MaterialDesignButtonState';
+import MaterialDesignIconButtonState from './MaterialDesignIconButtonState';
 import MaterialDesignIconList from './MaterialDesignIconList';
 import MaterialDesignInput from './MaterialDesignInput';
 import MaterialDesignList from './MaterialDesignList';
@@ -178,6 +179,22 @@ describe('widgets fill themselves from the selected object', () => {
             buttontext: 'Mode',
             value: '0',
         });
+    });
+
+    it('an icon button takes the name as its accessible name, a text button as its text, never both', async () => {
+        resetEnumCache();
+        const icon = await pick(widget(MaterialDesignIconButtonState).getWidgetInfo(), mode._id);
+        expect(icon).toMatchObject({ ariaLabel: 'Mode' });
+        expect(icon).not.toHaveProperty('buttontext');
+        const text = await pick(widget(MaterialDesignButtonState).getWidgetInfo(), mode._id);
+        expect(text).toMatchObject({ buttontext: 'Mode' });
+        expect(text).not.toHaveProperty('ariaLabel');
+    });
+
+    it('Progress and Progress Circular take the name as their accessible name', async () => {
+        resetEnumCache();
+        expect(await pick(MaterialDesignProgress.getWidgetInfo())).toMatchObject({ ariaLabel: 'Temperature' });
+        expect(await pick(MaterialDesignProgressCircular.getWidgetInfo())).toMatchObject({ ariaLabel: 'Temperature' });
     });
 
     it('Select builds its menu entries from common.states', async () => {

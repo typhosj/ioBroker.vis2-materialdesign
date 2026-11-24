@@ -3,7 +3,7 @@ import React from 'react';
 import type { RxWidgetInfo, RxWidgetInfoAttributesField, VisRxWidgetProps } from '@iobroker/types-vis-2';
 
 import { fill, withAutoFill } from './deviceFill';
-import { accessibleText, squarePreview, BaseRxData, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, legacyInk, numberValue, setStateValue, sizeCss, sliderKeyValue, stateValue, sanitizeHtml } from './widgetUtils';
+import { accessibleText, ariaLabelField, ariaName, squarePreview, BaseRxData, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, legacyInk, numberValue, setStateValue, sizeCss, sliderKeyValue, stateValue, sanitizeHtml } from './widgetUtils';
 
 export interface ProgressData extends BaseRxData {
     min?: number;
@@ -11,6 +11,7 @@ export interface ProgressData extends BaseRxData {
     reverse?: boolean;
     invertValue?: boolean;
     progressWritable?: boolean;
+    ariaLabel?: string;
     step?: number;
     progressRounded?: boolean;
     progressIndeterminate?: boolean;
@@ -48,7 +49,7 @@ export const linearPreview =
 
 // Issue #15: picking the datapoint fills what the object's own metadata already says.
 export const progressFillMap = {
-    oid: [fill.unit('valueLabelUnit'), fill.min('min'), fill.max('max'), fill.decimals('valueMaxDecimals')],
+    oid: [fill.name('ariaLabel'), fill.unit('valueLabelUnit'), fill.min('min'), fill.max('max'), fill.decimals('valueMaxDecimals')],
 };
 
 const commonFields: RxWidgetInfoAttributesField[] = [
@@ -86,6 +87,7 @@ export const linearAttrs: RxWidgetInfo['visAttrs'] = [
             { name: 'invertValue', label: 'invertValue', type: 'checkbox' },
             { name: 'progressWritable', label: 'progressWritable', type: 'checkbox' },
             { name: 'step', label: 'step', type: 'number', default: 1 },
+            ariaLabelField,
         ],
     },
     {
@@ -265,7 +267,7 @@ export default class MaterialDesignProgress extends VisWidget {
                 <div className="materialdesign-vuetify-progress" style={{ alignItems: 'center', display: 'flex', height: '100%', justifyContent: 'center', width: '100%' }}>
                     <div
                         {...interaction}
-                        aria-label={VisWidget.t('ariaProgress')}
+                        aria-label={ariaName(data.ariaLabel, 'ariaProgress')}
                         aria-valuetext={data.showValueLabel !== false && !indeterminate ? accessibleText(progress.label, '') || undefined : undefined}
                         aria-valuemax={writable ? num(data.max, 100) : 100}
                         aria-valuemin={writable ? num(data.min, 0) : 0}

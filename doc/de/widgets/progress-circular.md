@@ -20,6 +20,7 @@ aufgeklappt. Nicht aufgeführte Einstellungen sind selbsterklärend.
   boolescher State zählt `true` als Maximum und `false` als Minimum.
 - **unbestimmt - kontinuierlich animiert** – Dauerrotation, die den Wert ignoriert
   (Busy-Anzeige).
+- **Name für Screenreader** – der Name, den ein Screenreader für den Ring vorliest, zum Beispiel „Batterie“. Ohne Eintrag wird er als „Fortschritt“ vorgelesen. Beim Wählen der Objekt-ID wird er mit dem Objektnamen gefüllt.
 
 **Layout**
 

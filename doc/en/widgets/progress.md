@@ -24,6 +24,7 @@ the ioBroker system language, so the screenshots are German.
 - **invert value** – fills the bar to the remaining percentage; the label keeps
   showing the reached one.
 - **change value by tap and drag** – turns the bar into a slider with the same look: a tap or a drag on the bar sets the value, written once on release, in steps of **steps** (default 1) between minimum and maximum. Reverse, invert value and the rotated bar are taken into account: the arrow keys move the fill the way they point, Page Up/Down, Home and End work too. In the editor, with an indeterminate bar or without object id the bar stays read-only.
+- **Accessible name** – the name a screen reader announces for the bar, for example "Battery". Without an entry it is announced as "Progress". Picking the object id fills it with the object name.
 
 **layout**
 
