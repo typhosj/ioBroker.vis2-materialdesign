@@ -13,6 +13,6 @@ export function mount(node: React.ReactNode): { root: HTMLElement; rerender(node
     };
 }
 
-export function key(target: Element, keyName: string): void {
-    act(() => { target.dispatchEvent(new KeyboardEvent('keydown', { key: keyName, bubbles: true, cancelable: true })); });
+export function key(target: Element, keyName: string, init: KeyboardEventInit = {}): void {
+    act(() => { target.dispatchEvent(new KeyboardEvent('keydown', { key: keyName, bubbles: true, cancelable: true, ...init })); });
 }

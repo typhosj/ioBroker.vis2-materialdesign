@@ -51,6 +51,72 @@ describe('Sheet', () => {
     });
 });
 
+describe('focus trap on the document', () => {
+    const openSheet = (): { view: ReturnType<typeof mount>; opener: HTMLButtonElement; isOpen: () => boolean } => {
+        const opener = document.createElement('button'); document.body.append(opener); opener.focus();
+        let open = true; const held: { view?: ReturnType<typeof mount> } = {};
+        const render = (): React.JSX.Element => <Sheet label="Settings" modal onClose={() => { open = false; held.view?.rerender(render()); }} open={open} side="end"><button type="button">first</button><button type="button">last</button></Sheet>;
+        const view = mount(render()); held.view = view; cleanup = () => { view.unmount(); opener.remove(); };
+        return { view, opener, isOpen: () => open };
+    };
+    it('wraps Shift+Tab from the dialog node to the last focusable', () => {
+        const { view } = openSheet();
+        const dialog = view.root.querySelector<HTMLElement>('[role="dialog"]')!;
+        dialog.focus();
+        key(dialog, 'Tab', { shiftKey: true });
+        const buttons = [...dialog.querySelectorAll('button')];
+        expect(document.activeElement).toBe(buttons[buttons.length - 1]);
+    });
+    it('sends Tab from the dialog node to the first focusable', () => {
+        const { view } = openSheet();
+        const dialog = view.root.querySelector<HTMLElement>('[role="dialog"]')!;
+        dialog.focus();
+        key(dialog, 'Tab');
+        expect(document.activeElement).toBe(dialog.querySelector('button'));
+    });
+    it('closes on Escape while focus is on the body and returns focus to the opener', () => {
+        const { view, opener, isOpen } = openSheet();
+        (document.activeElement as HTMLElement).blur();
+        expect(document.activeElement).toBe(document.body);
+        key(document.body, 'Escape');
+        expect(isOpen()).toBe(false);
+        expect(view.root.querySelector('[role="dialog"]')).toBeNull();
+        expect(document.activeElement).toBe(opener);
+    });
+    it('treats Tab with focus outside the dialog as the edge', () => {
+        const { view } = openSheet();
+        const dialog = view.root.querySelector<HTMLElement>('[role="dialog"]')!;
+        (document.activeElement as HTMLElement).blur();
+        key(document.body, 'Tab');
+        expect(document.activeElement).toBe(dialog.querySelector('button'));
+    });
+    it('pulls focus that lands outside the open dialog back inside', () => {
+        const { view } = openSheet();
+        const outside = document.createElement('button'); document.body.append(outside);
+        outside.focus();
+        expect(view.root.querySelector('[role="dialog"]')!.contains(document.activeElement)).toBe(true);
+        outside.remove();
+    });
+    it('traps Tab in a modal NavDrawer and closes it on Escape, returning focus to the opener', () => {
+        const opener = document.createElement('button'); document.body.append(opener); opener.focus();
+        let open = true; const held: { view?: ReturnType<typeof mount> } = {};
+        const render = (): React.JSX.Element => <NavDrawer footer={<button type="button">reset</button>} label="Navigation" modal onClose={() => { open = false; held.view?.rerender(render()); }} open={open} sections={[{ items: [{ href: '#/', label: 'Overview', icon: 'home', current: true }] }]} />;
+        const view = mount(render()); held.view = view; cleanup = () => { view.unmount(); opener.remove(); };
+        const dialog = view.root.querySelector<HTMLElement>('[role="dialog"]')!;
+        const items = [...dialog.querySelectorAll<HTMLElement>('a[href], button')];
+        items[items.length - 1].focus();
+        key(dialog, 'Tab');
+        expect(document.activeElement).toBe(items[0]);
+        dialog.focus();
+        key(dialog, 'Tab', { shiftKey: true });
+        expect(document.activeElement).toBe(items[items.length - 1]);
+        (document.activeElement as HTMLElement).blur();
+        key(document.body, 'Escape');
+        expect(open).toBe(false);
+        expect(document.activeElement).toBe(opener);
+    });
+});
+
 describe('NavDrawer', () => {
     it('marks the current page and labels the sections', () => {
         const view = mount(<NavDrawer label="Navigation" modal={false} onClose={() => undefined} open sections={[{ items: [{ href: '#/', label: 'Overview', icon: 'home', current: false }] }, { label: 'Widgets', items: [{ href: '#/family/buttons', label: 'Buttons', icon: 'gesture-tap-button', current: true }] }]} />); cleanup = view.unmount;

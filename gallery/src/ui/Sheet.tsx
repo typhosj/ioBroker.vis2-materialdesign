@@ -11,17 +11,23 @@ export function useFocusTrap(active: boolean, onClose: () => void): React.RefObj
         const opener = document.activeElement as HTMLElement | null;
         const node = ref.current;
         (node?.querySelector<HTMLElement>(FOCUSABLE) ?? node)?.focus();
+        // On the document: focus can sit on the dialog node or outside it, and Escape must still close.
         const onKey = (event: KeyboardEvent): void => {
             if (event.key === 'Escape') { event.preventDefault(); close.current(); return; }
             if (event.key !== 'Tab' || !node) return;
             const items = [...node.querySelectorAll<HTMLElement>(FOCUSABLE)];
-            if (!items.length) return;
+            if (!items.length) { event.preventDefault(); node.focus(); return; }
             const first = items[0]; const last = items[items.length - 1];
-            if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
-            else if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+            const inside = node.contains(document.activeElement) && document.activeElement !== node;
+            if (!event.shiftKey && (!inside || document.activeElement === last)) { event.preventDefault(); first.focus(); }
+            else if (event.shiftKey && (!inside || document.activeElement === first)) { event.preventDefault(); last.focus(); }
         };
-        node?.addEventListener('keydown', onKey);
-        return () => { node?.removeEventListener('keydown', onKey); opener?.focus?.(); };
+        const onFocusIn = (event: FocusEvent): void => {
+            if (node && event.target instanceof Node && !node.contains(event.target)) (node.querySelector<HTMLElement>(FOCUSABLE) ?? node).focus();
+        };
+        document.addEventListener('keydown', onKey);
+        document.addEventListener('focusin', onFocusIn);
+        return () => { document.removeEventListener('keydown', onKey); document.removeEventListener('focusin', onFocusIn); opener?.focus?.(); };
     }, [active]);
     return ref;
 }
