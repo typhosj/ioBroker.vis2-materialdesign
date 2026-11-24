@@ -479,7 +479,18 @@ export function MaterialDesignChartCanvas({ type, data, options }: Props): React
     if (!instance || (applied.current?.data === data && applied.current?.options === options)) return;
     applied.current = { data, options };
     try {
-      instance.data = data as never;
+      // chart.js finds a dataset's elements by object identity: a fresh dataset object gets new
+      // elements, and those replay the entry animation from the axis on every state update.
+      type Dataset = Record<string, unknown>;
+      const held = (instance.data as unknown as { datasets?: Dataset[] }).datasets || [];
+      const next = (data as { datasets?: Dataset[] }).datasets || [];
+      const datasets = next.map((dataset, i) => {
+        const old = held[i];
+        if (!old) return dataset;
+        for (const key of Object.keys(old)) if (!(key in dataset)) delete old[key];
+        return Object.assign(old, dataset);
+      });
+      instance.data = { ...data, datasets } as never;
       instance.options = options;
       instance.update();
     } catch (error) {
