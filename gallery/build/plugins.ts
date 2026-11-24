@@ -98,3 +98,4 @@ export function budgetPlugin(): Plugin {
         },
     };
 }
+export { m3TokensPlugin } from './m3Tokens';
