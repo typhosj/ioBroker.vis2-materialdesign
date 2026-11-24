@@ -37,3 +37,5 @@
 .g-button-tonal:hover { background: color-mix(in srgb, var(--md-sys-color-secondary-container), var(--md-sys-color-on-secondary-container) var(--md-sys-state-hover)); }
 .g-switch-row { display: flex; align-items: center; gap: 12px; min-height: 40px; font: var(--md-sys-typescale-body-large); color: var(--md-sys-color-on-surface); cursor: pointer; }
 .g-switch-row input { width: 20px; height: 20px; margin: 0; accent-color: var(--md-sys-color-primary); }
+/* Keeps a focused link clear of the sticky footer; must stay at least as tall as .g-drawer-footer. */
+.g-shell-body > .g-drawer, .g-drawer-modal { scroll-padding-bottom: 136px; }

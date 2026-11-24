@@ -239,6 +239,31 @@ test('the navigation drawer stays in view while the start page scrolls', async (
     await expect(reset).toBeInViewport();
 });
 
+const lastLinkClearOfFooter = async (page: Page) => {
+    const link = page.locator('nav.g-drawer .g-drawer-item').last();
+    // Scrolling to the nearest edge is what keyboard focus does for a link that is already partly visible.
+    await link.evaluate(el => el.scrollIntoView({ block: 'nearest' }));
+    await link.focus();
+    await expect(link).toBeFocused();
+    const linkBox = (await link.boundingBox())!;
+    const footer = (await page.locator('.g-drawer-footer').boundingBox())!;
+    expect(linkBox.y + linkBox.height, 'the focused link ends above the footer').toBeLessThanOrEqual(footer.y + 1);
+};
+
+test.describe('short windows', () => {
+    test('the focused last link of the docked drawer is not under the sticky footer', async ({ page }) => {
+        await page.setViewportSize({ width: 1300, height: 600 });
+        await visit(page, '#/');
+        await lastLinkClearOfFooter(page);
+    });
+    test('the focused last link of the modal drawer is not under the sticky footer', async ({ page }) => {
+        await page.setViewportSize({ width: 360, height: 600 });
+        await visit(page, '#/');
+        await page.getByRole('button', { name: 'Open navigation' }).click();
+        await lastLinkClearOfFooter(page);
+    });
+});
+
 test('the start page transfers less than 2 MB', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
     let bytes = 0;
