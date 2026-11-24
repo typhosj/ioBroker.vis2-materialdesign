@@ -35,8 +35,9 @@ describe('Sheet', () => {
         expect(document.activeElement).toBe(opener);
     });
     it('keeps focus on an input inside the sheet when the parent re-renders with a new onClose', () => {
-        const render = (): React.JSX.Element => <Sheet closeLabel="Close" label="Settings" modal onClose={() => undefined} open side="end"><input /></Sheet>;
-        const view = mount(render()); cleanup = view.unmount;
+        const opener = document.createElement('button'); document.body.append(opener); opener.focus();
+        const render = (): React.JSX.Element => <Sheet closeLabel="Close" label="Settings" modal onClose={() => undefined} open side="end"><button type="button">before</button><input /></Sheet>;
+        const view = mount(render()); cleanup = () => { view.unmount(); opener.remove(); };
         const input = view.root.querySelector('input')!;
         input.focus();
         view.rerender(render());
