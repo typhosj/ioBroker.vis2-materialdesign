@@ -415,6 +415,24 @@ describe('button accessible name', () => {
         expect(button.hasAttribute('aria-label')).toBe(false);
     });
 
+    it('falls back to ariaLabel, then ariaButton, while off with only a true label', () => {
+        const rxData = { buttontext: '', labelTrue: 'Running' };
+        expect(render('default', 'toggle', { ...rxData, ariaLabel: 'Pump' }).getAttribute('aria-label')).toBe('Pump');
+        expect(render('default', 'toggle', rxData).getAttribute('aria-label')).toBe('ariaButton');
+    });
+
+    it('names the button by the text it shows while on with an empty true label', () => {
+        const button = render('default', 'toggle', { buttontext: 'Pump', labelTrue: '', ariaLabel: 'x' }, { 'test.0.x.val': true });
+        expect(button.hasAttribute('aria-label')).toBe(false);
+        expect(button.textContent).toContain('Pump');
+    });
+
+    it('agrees with the rendered text for a numeric 0 as buttontext', () => {
+        const button = render('default', 'state', { buttontext: 0, ariaLabel: 'Pump' });
+        const shown = (button.textContent ?? '').trim() !== '';
+        expect(button.hasAttribute('aria-label')).toBe(!shown);
+    });
+
     it.each([
         ['empty', ''],
         ['unset', undefined],

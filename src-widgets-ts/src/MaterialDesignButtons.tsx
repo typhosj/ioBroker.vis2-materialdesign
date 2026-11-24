@@ -760,6 +760,7 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
                 ? <span style={{ display: 'inline-flex', filter: `brightness(${1 - colorizeFactor + colorizeFactor * sliderRatio})` }}>{renderIcon(image, iconColor, iconSize, imageColorSet)}</span>
                 : renderIcon(image, iconColor, iconSize, imageColorSet);
             // Same condition as the label span below: only visible text names the button (WCAG 2.5.3).
+            // Known limit: a label made only of markup (an <img> with alt) counts as no text, so the button is named by ariaLabel or "Button" and the image alt is not used.
             const buttonName = !isIcon && accessibleText(label, '') ? undefined : ariaName(data.ariaLabel, 'ariaButton');
             const content = (
                 <>
