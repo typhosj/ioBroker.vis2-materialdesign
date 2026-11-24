@@ -1289,7 +1289,7 @@
     "label": "read only",
     "data": {
       "bindings": [],
-      "oid": "0_userdata.0.demo.climate.setpoint",
+      "oid": "0_userdata.0.demo.living.dimmer",
       "name": "m3-35-slider-read-only-m3",
       "min": 0,
       "max": 100,
@@ -1318,7 +1318,7 @@
     "label": "Vertical",
     "data": {
       "bindings": [],
-      "oid": "0_userdata.0.demo.climate.setpoint",
+      "oid": "0_userdata.0.demo.living.dimmer",
       "name": "m3-35-slider-vertikal-m3",
       "min": 0,
       "max": 100,
@@ -1347,7 +1347,7 @@
     "label": "Round Slider 360°",
     "data": {
       "bindings": [],
-      "oid": "0_userdata.0.demo.living.dimmer",
+      "oid": "0_userdata.0.demo.climate.setpoint",
       "name": "m3-35-slider-round-slider-360--m3",
       "min": 5,
       "max": 30,
@@ -1401,7 +1401,7 @@
     "label": "Round Slider read only",
     "data": {
       "bindings": [],
-      "oid": "0_userdata.0.demo.media.volume",
+      "oid": "0_userdata.0.demo.climate.setpoint",
       "name": "m3-35-slider-round-slider-read-only-m3",
       "min": 5,
       "max": 30,

@@ -39,6 +39,28 @@ describe('catalog', () => {
         expect(problems).toEqual([]);
     }, 120_000);
 
+    it('gives every variant a value range and unit that fit its data point', async () => {
+        const { widgetIndex, loadWidget } = await import('../runtime/widgets');
+        const { catalogEntry } = await import('./catalog');
+        const objects = (scenarioJson as unknown as { objects: Record<string, { common: { unit?: string; min?: number; max?: number } }> }).objects;
+        const problems: string[] = [];
+        for (const { module } of widgetIndex) {
+            const info = (await loadWidget(module)).getWidgetInfo();
+            for (const variant of catalogEntry(module, info).variants) {
+                const { oid, min, max, valueLabelUnit } = variant.data as { oid?: string; min?: unknown; max?: unknown; valueLabelUnit?: unknown };
+                const common = typeof oid === 'string' ? objects[oid]?.common : undefined;
+                if (!common) continue;
+                const where = `${module}/${variant.id} on ${oid}`;
+                // A progress bar in its default style shows a percentage of min..max; its unit only shows with progressValue.
+                const showsPercent = module.startsWith('MaterialDesignProgress') && ((variant.data.valueLabelStyle as string | undefined) ?? 'progressPercent') === 'progressPercent';
+                if (!showsPercent && typeof valueLabelUnit === 'string' && valueLabelUnit && common.unit && valueLabelUnit !== common.unit) problems.push(`${where}: unit ${valueLabelUnit}, data point ${common.unit}`);
+                if (typeof min === 'number' && typeof common.min === 'number' && common.min < min) problems.push(`${where}: min ${min} above data point min ${common.min}`);
+                if (typeof max === 'number' && typeof common.max === 'number' && common.max > max) problems.push(`${where}: max ${max} below data point max ${common.max}`);
+            }
+        }
+        expect(problems).toEqual([]);
+    }, 120_000);
+
     it('points every variant view field at a gallery view', async () => {
         const { widgetIndex, loadWidget } = await import('../runtime/widgets');
         const { catalogEntry } = await import('./catalog');
