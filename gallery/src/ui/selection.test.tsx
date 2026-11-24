@@ -67,4 +67,19 @@ describe('Tabs', () => {
         expect(tabs()[1].getAttribute('aria-selected')).toBe('true');
         expect(view.root.querySelector('[role="tabpanel"]:not([hidden])')!.textContent).toBe('two');
     });
+    it('jumps with Home and End, wraps at both ends and keeps one tab stop', () => {
+        const view = mount(<Tabs idPrefix="t" label="Sheet" tabs={[{ id: 'a', label: 'A', panel: <p>a</p> }, { id: 'b', label: 'B', panel: <p>b</p> }, { id: 'c', label: 'C', panel: <p>c</p> }]} />); cleanup = view.unmount;
+        const tabs = () => [...view.root.querySelectorAll<HTMLElement>('[role="tab"]')];
+        const selected = () => tabs().findIndex(t => t.getAttribute('aria-selected') === 'true');
+        key(tabs()[0], 'End');
+        expect(selected()).toBe(2);
+        expect(document.activeElement).toBe(tabs()[2]);
+        key(tabs()[2], 'ArrowRight');
+        expect(selected()).toBe(0);
+        key(tabs()[0], 'ArrowLeft');
+        expect(selected()).toBe(2);
+        key(tabs()[2], 'Home');
+        expect(selected()).toBe(0);
+        expect(tabs().map(t => t.getAttribute('tabindex'))).toEqual(['0', '-1', '-1']);
+    });
 });

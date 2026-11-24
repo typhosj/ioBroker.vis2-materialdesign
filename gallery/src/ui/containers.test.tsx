@@ -1,8 +1,10 @@
 import React from 'react';
 import { afterEach, describe, expect, it } from 'vitest';
 
+import { Card } from './Card';
 import { NavDrawer } from './NavDrawer';
 import { Sheet } from './Sheet';
+import { TopAppBar } from './TopAppBar';
 import { key, mount } from './testRender';
 import { windowClassFor } from './useWindowClass';
 
@@ -128,5 +130,37 @@ describe('NavDrawer', () => {
     it('is not in the DOM while modal and closed', () => {
         const view = mount(<NavDrawer label="Navigation" modal onClose={() => undefined} open={false} sections={[]} />); cleanup = view.unmount;
         expect(view.root.querySelector('nav')).toBeNull();
+    });
+});
+
+describe('Card', () => {
+    it('is a section whose title is a heading and whose toolbar sits in the header', () => {
+        const view = mount(<Card title="Stage" toolbar={<button type="button">tool</button>}><p>body</p></Card>); cleanup = view.unmount;
+        const section = view.root.querySelector('section.g-card')!;
+        expect(section.querySelector('header h2')!.textContent).toBe('Stage');
+        expect(section.querySelector('header .g-card-toolbar button')!.textContent).toBe('tool');
+        expect(section.textContent).toContain('body');
+    });
+    it('renders no header and no empty heading without title and toolbar', () => {
+        const view = mount(<Card><p>body</p></Card>); cleanup = view.unmount;
+        expect(view.root.querySelector('header')).toBeNull();
+        expect(view.root.querySelector('h2')).toBeNull();
+    });
+});
+
+describe('TopAppBar', () => {
+    it('labels the menu button, reports a click and renders title and actions in the banner', () => {
+        let clicks = 0;
+        const view = mount(<TopAppBar actions={<button type="button">act</button>} menuLabel="Open navigation" onMenu={() => { clicks += 1; }} title="Gallery" />); cleanup = view.unmount;
+        const bar = view.root.querySelector('header')!;
+        const menu = bar.querySelector<HTMLButtonElement>('button[aria-label="Open navigation"]')!;
+        menu.click();
+        expect(clicks).toBe(1);
+        expect(bar.querySelector('.g-topbar-title')!.textContent).toBe('Gallery');
+        expect(bar.querySelector('.g-topbar-actions button')!.textContent).toBe('act');
+    });
+    it('has no menu button without onMenu', () => {
+        const view = mount(<TopAppBar actions={null} menuLabel="Open navigation" title="Gallery" />); cleanup = view.unmount;
+        expect(view.root.querySelector('button')).toBeNull();
     });
 });
