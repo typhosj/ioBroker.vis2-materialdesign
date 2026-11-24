@@ -1,7 +1,8 @@
 import { readdirSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
-import type { Plugin } from 'vite';
+import { join, relative } from 'node:path';
+import type { Plugin, ResolvedConfig } from 'vite';
 
+import { START_PAGE_BUDGET, gzipSize, isOverBudget, startPageFiles, testFileNames, type ManifestChunk } from './budget';
 import { firstParagraph } from './docText';
 import { repoRoot } from './paths';
 import { templateFiles, templateNames } from './templates';
@@ -61,6 +62,39 @@ export function importTemplates(): Plugin {
             for (const [fileName, source] of Object.entries(templateFiles())) {
                 this.emitFile({ type: 'asset', fileName, source });
             }
+        },
+    };
+}
+
+export function budgetPlugin(): Plugin {
+    let config: ResolvedConfig;
+    return {
+        name: 'gallery-budget',
+        apply: 'build',
+        config: () => ({ build: { manifest: true } }),
+        configResolved: resolved => {
+            config = resolved;
+        },
+        closeBundle() {
+            const out = join(config.root, config.build.outDir);
+            const emitted = readdirSync(out, { recursive: true, withFileTypes: true })
+                .filter(entry => entry.isFile())
+                .map(entry => relative(out, join(entry.parentPath, entry.name)).replaceAll('\\', '/'));
+            const tests = testFileNames(emitted);
+            if (tests.length) {
+                throw new Error(`test files in the gallery bundle: ${tests.join(', ')}`);
+            }
+            const manifest = JSON.parse(readFileSync(join(out, '.vite/manifest.json'), 'utf8')) as Record<string, ManifestChunk>;
+            const sizes = startPageFiles(manifest)
+                .map(file => ({ file, size: gzipSize(readFileSync(join(out, file))) }))
+                .sort((a, b) => b.size - a.size);
+            const total = sizes.reduce((sum, { size }) => sum + size, 0);
+            const kB = (bytes: number): number => Math.round(bytes / 1024);
+            if (isOverBudget(total)) {
+                const largest = sizes.slice(0, 5).map(({ file, size }) => `${file} ${kB(size)} kB`).join(', ');
+                throw new Error(`start page transfers ${kB(total)} kB, budget ${kB(START_PAGE_BUDGET)} kB: ${largest}`);
+            }
+            console.log(`gallery start page transfers ${kB(total)} kB gzip (budget ${kB(START_PAGE_BUDGET)} kB)`);
         },
     };
 }
