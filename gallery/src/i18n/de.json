@@ -45,5 +45,9 @@
   "gallery_family_charts": "Diagramme",
   "gallery_family_calendar": "Kalender",
   "gallery_family_views": "Views und Dialoge",
-  "gallery_family_navigation": "Navigation"
+  "gallery_family_navigation": "Navigation",
+  "gallery_nav": "Navigation",
+  "gallery_nav_overview": "Übersicht",
+  "gallery_nav_widgets": "Widgets",
+  "gallery_menu": "Navigation öffnen"
 }

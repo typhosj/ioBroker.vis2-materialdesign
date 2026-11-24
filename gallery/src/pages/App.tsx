@@ -5,14 +5,15 @@ import { hostRuntime, type GalleryRuntime } from '../runtime/runtime';
 import { type Route, applyQuery, parseRoute } from '../state';
 import { About } from './About';
 import { DashboardFrame, DashboardPage } from './DashboardPage';
-import { Header } from './Header';
 import { Lab } from './Lab';
 import { Overview } from './Overview';
+import { Shell } from './Shell';
 import { WidgetFrame, WidgetPage } from './WidgetPage';
 
 export function App({ runtime }: { runtime: GalleryRuntime }): React.JSX.Element {
     const [route, setRoute] = useState<Route>(() => parseRoute(location.hash));
     const [ready, setReady] = useState(0);
+    const [search, setSearch] = useState('');
     useEffect(() => {
         const onHash = (): void => setRoute(parseRoute(location.hash));
         window.addEventListener('hashchange', onHash);
@@ -30,14 +31,13 @@ export function App({ runtime }: { runtime: GalleryRuntime }): React.JSX.Element
     // The language is part of the key: Intl formats and widget texts are read on mount.
     return (
         <div className="g-app" key={route.query.lang}>
-            <Header route={route} runtime={runtime} />
-            <main>
+            <Shell onSearch={setSearch} route={route} runtime={runtime} search={search}>
                 {section === 'widget' && name ? <WidgetPage name={name} query={route.query} runtime={runtime} />
                     : section === 'dashboard' && name ? <DashboardPage name={name} query={route.query} />
                     : section === 'about' ? <About />
                     : section === 'lab' ? <Lab runtime={runtime} />
-                    : <Overview query={route.query} />}
-            </main>
+                    : <Overview family={section === 'family' ? name : undefined} query={route.query} search={search} />}
+            </Shell>
         </div>
     );
 }
