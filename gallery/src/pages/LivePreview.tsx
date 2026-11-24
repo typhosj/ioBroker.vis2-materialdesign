@@ -19,6 +19,15 @@ export function LivePreview({ module, runtime, query, box }: { module: string; r
     const host = useRef<HTMLDivElement>(null);
     const [visible, setVisible] = useState(false);
     const [variant, setVariant] = useState<Variant>();
+    const [width, setWidth] = useState(box.width);
+    useEffect(() => {
+        if (!host.current || typeof ResizeObserver === 'undefined') return;
+        const measure = (): void => { const measured = host.current?.clientWidth; if (measured) setWidth(Math.min(measured, box.width)); };
+        measure();
+        const observer = new ResizeObserver(measure);
+        observer.observe(host.current);
+        return () => observer.disconnect();
+    }, [box.width]);
     useEffect(() => {
         if (!host.current || typeof IntersectionObserver === 'undefined') return;
         const observer = new IntersectionObserver(entries => { if (entries.some(e => e.isIntersecting)) { setVisible(true); observer.disconnect(); } }, { rootMargin: '200px' });
@@ -31,12 +40,15 @@ export function LivePreview({ module, runtime, query, box }: { module: string; r
         void loadWidget(module).then(W => { if (alive) setVariant(catalogEntry(module, W.getWidgetInfo()).variants[0]); }, () => undefined);
         return () => { alive = false; };
     }, [visible, module]);
-    const width = variant ? (variant.size.width === 'fill' ? FILL_WIDTH : variant.size.width) : 0;
+    const natural = variant ? (variant.size.width === 'fill' ? FILL_WIDTH : variant.size.width) : 0;
+    const scale = variant ? fitScale(variant.size, { width, height: box.height }) : 1;
     return (
-        <div className="g-live-preview" ref={host} style={{ width: box.width, height: box.height }}>
+        <div className="g-live-preview" ref={host} style={{ maxWidth: box.width, height: box.height }}>
             {variant ? (
-                <div inert style={{ transform: `scale(${fitScale(variant.size, box)})`, transformOrigin: '0 0', width, height: variant.size.height }}>
-                    <WidgetInstance data={variant.data} module={module} query={query} runtime={runtime} size={{ width, height: variant.size.height }} />
+                <div style={{ width: natural * scale, height: variant.size.height * scale, flex: 'none' }}>
+                    <div inert style={{ transform: `scale(${scale})`, transformOrigin: '0 0', width: natural, height: variant.size.height }}>
+                        <WidgetInstance data={variant.data} module={module} query={query} runtime={runtime} size={{ width: natural, height: variant.size.height }} />
+                    </div>
                 </div>
             ) : null}
         </div>

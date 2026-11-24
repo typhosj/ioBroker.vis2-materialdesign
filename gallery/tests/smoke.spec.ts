@@ -192,6 +192,53 @@ test.describe('medium window', () => {
     });
 });
 
+const compactChecks = async (page: Page, hash: string, maxBar: number) => {
+    await visit(page, hash);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), `${hash} overflows horizontally`).toBe(true);
+    expect((await page.locator('.g-topbar').boundingBox())!.height).toBeLessThanOrEqual(maxBar);
+    await expect(page.locator('h1')).toHaveCount(1);
+};
+
+test.describe('compact window', () => {
+    test.use({ viewport: { width: 360, height: 740 } });
+    for (const hash of ['#/', '#/widget/Switch', '#/family/charts', '#/dashboard/tablet', '#/dashboard/phone', '#/about']) {
+        test(`${hash} has no horizontal scroll, a slim top bar and one h1`, async ({ page }) => { await compactChecks(page, hash, 72); });
+    }
+    test('the drawer holds theme, style and language, and the top bar does not', async ({ page }) => {
+        await visit(page, '#/');
+        await expect(page.locator('.g-topbar [role="group"]')).toHaveCount(0);
+        await page.getByRole('button', { name: 'Open navigation' }).click();
+        const drawer = page.getByRole('dialog', { name: 'Navigation' });
+        await expect(drawer.getByRole('group')).toHaveCount(3);
+        await expect(drawer.getByText('Display', { exact: true })).toBeVisible();
+    });
+    test('a start page preview is centred in its box and not clipped', async ({ page }) => {
+        await visit(page, '#/');
+        const inert = page.locator('.g-live-preview [inert]').first();
+        await inert.waitFor({ state: 'attached' });
+        await expect.poll(async () => (await inert.locator('.vis-widget').first().boundingBox())?.width ?? 0).toBeGreaterThan(0);
+        const host = (await page.locator('.g-live-preview').first().boundingBox())!;
+        const widget = (await inert.locator('.vis-widget').first().boundingBox())!;
+        expect(widget.x).toBeGreaterThanOrEqual(host.x - 1);
+        expect(widget.x + widget.width).toBeLessThanOrEqual(host.x + host.width + 1);
+        expect(Math.abs(widget.x + widget.width / 2 - (host.x + host.width / 2))).toBeLessThan(2);
+        expect(Math.abs(widget.y + widget.height / 2 - (host.y + host.height / 2))).toBeLessThan(2);
+    });
+});
+
+test.describe('medium window top bar', () => {
+    test.use({ viewport: { width: 1000, height: 800 } });
+    test('stays one slim row', async ({ page }) => { await compactChecks(page, '#/widget/Switch', 72); });
+});
+
+test('the navigation drawer stays in view while the start page scrolls', async ({ page }) => {
+    await visit(page, '#/');
+    await page.mouse.move(900, 500);
+    await page.mouse.wheel(0, 3000);
+    const reset = page.getByRole('button', { name: 'Reset demo data' });
+    await expect(reset).toBeInViewport();
+});
+
 test('the start page transfers less than 2 MB', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
     let bytes = 0;

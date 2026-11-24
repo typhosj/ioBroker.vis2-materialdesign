@@ -53,6 +53,24 @@ describe('Shell', () => {
         act(() => view.root.querySelector<HTMLButtonElement>('.g-topbar .mdi-menu')!.click());
         expect(view.root.querySelector('nav')).not.toBeNull();
     });
+    it.each([360, 1000])('keeps theme, style and language out of the top bar at %i px and puts them at the top of the drawer', width => {
+        Object.defineProperty(window, 'innerWidth', { configurable: true, value: width });
+        const view = mount(<Shell onSearch={() => undefined} route={parseRoute('#/')} runtime={createRuntime({ test: true })} search=""><p /></Shell>); cleanup = view.unmount;
+        expect(view.root.querySelectorAll('.g-topbar [role="group"]').length).toBe(0);
+        act(() => view.root.querySelector<HTMLButtonElement>('.g-topbar .mdi-menu')!.click());
+        const drawer = view.root.querySelector('[role="dialog"]')!;
+        expect(drawer.querySelectorAll('[role="group"]').length).toBe(3);
+        const nav = drawer.querySelector('nav')!;
+        expect(nav.firstElementChild!.textContent).toBe('Display');
+        expect(nav.firstElementChild!.nextElementSibling!.querySelectorAll('[role="group"]').length).toBe(3);
+        expect(nav.querySelector('[role="group"]')!.compareDocumentPosition(nav.querySelector('.g-drawer-item')!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    });
+    it('keeps the groups in the top bar and no display block in the drawer from 1240 px', () => {
+        Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1240 });
+        const view = mount(<Shell onSearch={() => undefined} route={parseRoute('#/')} runtime={createRuntime({ test: true })} search=""><p /></Shell>); cleanup = view.unmount;
+        expect(view.root.querySelectorAll('.g-topbar [role="group"]').length).toBe(3);
+        expect(view.root.querySelectorAll('nav [role="group"]').length).toBe(0);
+    });
     it.each(['#/widget/Switch', '#/about'])('typing in the search on %s opens the overview, keeps the query and drops the variant', from => {
         Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1700 });
         const onSearch = vi.fn();

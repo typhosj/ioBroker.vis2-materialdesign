@@ -5,11 +5,12 @@ import { useFocusTrap } from './Sheet';
 export interface NavItem { href: string; label: string; icon: string; current: boolean }
 export interface NavSection { label?: string; items: NavItem[] }
 
-export function NavDrawer({ label, sections, modal, open, onClose, footer }: { label: string; sections: NavSection[]; modal: boolean; open: boolean; onClose(): void; footer?: React.ReactNode }): React.JSX.Element | null {
+export function NavDrawer({ label, sections, modal, open, onClose, footer, header }: { label: string; sections: NavSection[]; modal: boolean; open: boolean; onClose(): void; footer?: React.ReactNode; header?: React.ReactNode }): React.JSX.Element | null {
     const ref = useFocusTrap(modal && open, onClose);
     if (modal && !open) return null;
     const nav = (
         <nav aria-label={label} className="g-drawer">
+            {header}
             {sections.map((s, i) => (
                 <div className="g-drawer-section" key={s.label ?? i}>
                     {s.label ? <div className="g-drawer-headline">{s.label}</div> : null}

@@ -15,15 +15,16 @@
 .g-card-header h2 { font: var(--md-sys-typescale-title-medium); margin: 0 auto 0 0; }
 .g-card-toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .g-topbar { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 8px; min-height: 64px; padding: 8px 16px; background: var(--md-sys-color-surface-container); }
-.g-topbar-title { font: var(--md-sys-typescale-title-large); margin-right: auto; }
+.g-topbar-title { font: var(--md-sys-typescale-title-large); margin-right: auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .g-topbar-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .g-icon-button { width: 40px; height: 40px; border: 0; border-radius: var(--md-sys-shape-corner-full); background: transparent; color: var(--md-sys-color-on-surface-variant); font-size: 24px; cursor: pointer; }
 .g-drawer { display: flex; flex-direction: column; width: 280px; padding: 12px; gap: 4px; background: var(--md-sys-color-surface-container-low); min-height: 100%; }
+.g-drawer-display { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding: 0 16px 8px; }
 .g-drawer-headline { font: var(--md-sys-typescale-title-small); color: var(--md-sys-color-on-surface-variant); padding: 16px 16px 8px; }
 .g-drawer-item { display: flex; align-items: center; gap: 12px; height: 56px; padding: 0 16px; border-radius: var(--md-sys-shape-corner-full); color: var(--md-sys-color-on-surface-variant); text-decoration: none; font: var(--md-sys-typescale-label-large); }
 .g-drawer-item[aria-current='page'] { background: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container); }
 .g-drawer-item .mdi { font-size: 24px; }
-.g-drawer-footer { margin-top: auto; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+.g-drawer-footer { position: sticky; bottom: 0; background: var(--md-sys-color-surface-container-low); margin-top: auto; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
 .g-scrim { position: fixed; inset: 0; background: rgb(0 0 0 / 32%); z-index: 20; }
 .g-drawer-modal { position: fixed; inset: 0 auto 0 0; z-index: 21; border-radius: 0 var(--md-sys-shape-corner-large) var(--md-sys-shape-corner-large) 0; overflow: auto; }
 .g-sheet { background: var(--md-sys-color-surface-container-low); overflow: auto; }
