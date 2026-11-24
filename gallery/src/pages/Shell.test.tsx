@@ -1,5 +1,5 @@
 import React, { act } from 'react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { createRuntime } from '../runtime/runtime';
 import { parseRoute } from '../state';
@@ -10,6 +10,13 @@ import { Shell } from './Shell';
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 let cleanup: () => void = () => undefined;
 afterEach(() => cleanup());
+
+const type = (input: Element, value: string): void => {
+    act(() => {
+        Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(input, value);
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+};
 
 describe('navSections', () => {
     it('lists overview, every family once and dashboards and about, with the current family marked', () => {
@@ -45,5 +52,21 @@ describe('Shell', () => {
         expect(view.root.querySelector('nav')).toBeNull();
         act(() => view.root.querySelector<HTMLButtonElement>('.g-topbar .mdi-menu')!.click());
         expect(view.root.querySelector('nav')).not.toBeNull();
+    });
+    it.each(['#/widget/Switch', '#/about'])('typing in the search on %s opens the overview and keeps the query', from => {
+        Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1700 });
+        const onSearch = vi.fn();
+        const view = mount(<Shell onSearch={onSearch} route={parseRoute(`${from}?theme=dark`)} runtime={createRuntime({ test: true })} search=""><p /></Shell>); cleanup = view.unmount;
+        location.hash = from;
+        type(view.root.querySelector('input[type="search"]')!, 'sw');
+        expect(location.hash).toBe('#/?theme=dark');
+        expect(onSearch).toHaveBeenCalledWith('sw');
+    });
+    it('filters in place on a family page', () => {
+        Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1700 });
+        const view = mount(<Shell onSearch={() => undefined} route={parseRoute('#/family/charts')} runtime={createRuntime({ test: true })} search=""><p /></Shell>); cleanup = view.unmount;
+        location.hash = '#/family/charts';
+        type(view.root.querySelector('input[type="search"]')!, 'sw');
+        expect(location.hash).toBe('#/family/charts');
     });
 });

@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 
 const ORIGIN = 'http://localhost:4173/';
-// Thumbnails and clips come from gallery:media, which the smoke run does not execute; the tiles hide a missing image.
+// Thumbnails and clips come from gallery:media, which the smoke run does not execute; the start page carries no images.
 const MEDIA = `${ORIGIN}media/`;
 
 const watch = (page: Page): string[] => {
@@ -42,7 +42,7 @@ test('every route loads without errors or foreign requests', async ({ page }) =>
         if (problems.length) throw new Error(`${hash}\n${problems.join('\n')}`);
     };
     await check('#/');
-    const widgetPages = await page.locator('.g-tiles a').evaluateAll(links => links.map(a => (a as HTMLAnchorElement).hash.split('?')[0]).filter(hash => hash.startsWith('#/widget/')));
+    const widgetPages = await page.locator('.g-preview-card').evaluateAll(links => links.map(a => (a as HTMLAnchorElement).hash.split('?')[0]).filter(hash => hash.startsWith('#/widget/')));
     expect(widgetPages.length).toBe(50);
     for (const widgetPage of widgetPages) {
         await check(widgetPage);

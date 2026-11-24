@@ -1,51 +1,49 @@
 import docs from 'virtual:gallery-docs';
 import React from 'react';
 
-import { FAMILIES, type Family } from '../catalog/catalog';
+import { FAMILIES } from '../catalog/catalog';
 import { currentLang, translate } from '../runtime/i18n';
+import type { GalleryRuntime } from '../runtime/runtime';
 import { widgetIndex } from '../runtime/widgets';
 import { type GalleryQuery, routeHash } from '../state';
+import { Card } from '../ui/Card';
+import { LivePreview } from './LivePreview';
+import { FAMILY_ORDER } from './navigation';
 
-const ORDER: Family[] = ['buttons', 'iconButtons', 'input', 'sliders', 'progress', 'values', 'lists', 'charts', 'calendar', 'views', 'navigation'];
+const BOX = { width: 280, height: 160 };
 
-export function Overview({ query, search, family }: { query: GalleryQuery; search: string; family?: string }): React.JSX.Element {
+export function Overview({ query, runtime, search, family }: { query: GalleryQuery; runtime: GalleryRuntime; search: string; family?: string }): React.JSX.Element {
     const lang = currentLang();
-    const only = ORDER.find(f => f === family);
+    const only = FAMILY_ORDER.find(f => f === family);
     const needle = search.trim().toLowerCase();
     return (
         <>
-            <p className="g-subtitle">{translate('gallery_subtitle')}</p>
-            <section hidden={!!only}>
-                <h2>{translate('gallery_dashboards')}</h2>
-                <ul className="g-tiles">
-                    {(['tablet', 'phone'] as const).map(board => (
-                        <li key={board}>
-                            <a href={routeHash(['dashboard', board], query)}>
-                                <img alt="" height={160} loading="lazy" onError={ev => { ev.currentTarget.style.display = 'none'; }} src={`media/dashboard-${board}-${query.theme}.webp`} width={240} />
-                                <strong>{translate(`gallery_dashboard_${board}`)}</strong>
-                            </a>
-                        </li>
-                    ))}
-                </ul>
-            </section>
-            {ORDER.filter(f => !only || f === only).map(family => {
-                const items = widgetIndex.filter(e => (FAMILIES[e.module]?.family ?? 'values') === family)
+            {only ? null : (
+                <header className="g-hero">
+                    <p className="g-subtitle">{translate('gallery_subtitle')}</p>
+                    <p>{translate('gallery_install')}</p>
+                    <p className="g-hero-actions">
+                        {(['tablet', 'phone'] as const).map(board => (
+                            <a className="g-button-filled" href={routeHash(['dashboard', board], query)} key={board}>{translate(`gallery_dashboard_${board}`)}</a>
+                        ))}
+                    </p>
+                </header>
+            )}
+            {FAMILY_ORDER.filter(f => !only || f === only).map(fam => {
+                const items = widgetIndex.filter(e => (FAMILIES[e.module]?.family ?? 'values') === fam)
                     .filter(e => !needle || `${e.name} ${docs[FAMILIES[e.module]?.doc ?? '']?.[lang] ?? ''}`.toLowerCase().includes(needle));
                 if (!items.length) return null;
                 return (
-                    <section key={family}>
-                        <h2>{translate(`gallery_family_${family}`)}</h2>
-                        <ul className="g-tiles">
+                    <Card key={fam} title={translate(`gallery_family_${fam}`)}>
+                        <div className="g-cards">
                             {items.map(e => (
-                                <li key={e.module}>
-                                    <a href={routeHash(['widget', e.name], query)}>
-                                        <img alt="" height={160} loading="lazy" onError={ev => { ev.currentTarget.style.display = 'none'; }} src={`media/thumbs/${e.module}-${query.theme}.webp`} width={240} />
-                                        <strong>{e.name}</strong>
-                                    </a>
-                                </li>
+                                <a className="g-preview-card" href={routeHash(['widget', e.name], query)} key={e.module}>
+                                    <LivePreview box={BOX} module={e.module} query={query} runtime={runtime} />
+                                    <strong>{e.name}</strong>
+                                </a>
                             ))}
-                        </ul>
-                    </section>
+                        </div>
+                    </Card>
                 );
             })}
         </>

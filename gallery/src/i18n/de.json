@@ -1,6 +1,7 @@
 {
   "gallery_title": "Material-Design-Widgets für vis-2",
   "gallery_subtitle": "Live-Demo mit simulierten Datenpunkten – ohne ioBroker",
+  "gallery_install": "Den Adapter vis2-materialdesign im ioBroker-Admin installieren, danach stehen die Widgets in vis-2 bereit.",
   "gallery_search": "Widgets suchen",
   "gallery_theme_light": "Hell",
   "gallery_theme_dark": "Dunkel",
@@ -27,7 +28,6 @@
   "gallery_navigate": "Würde zur View „%s“ wechseln",
   "gallery_view_missing": "View „%s“ gibt es in der Galerie nicht",
   "gallery_no_description": "Noch keine Beschreibung.",
-  "gallery_dashboards": "Beispiel-Dashboards",
   "gallery_dashboard_tablet": "Wandtablet",
   "gallery_dashboard_phone": "Handy",
   "gallery_downloads": "Import-Vorlagen",

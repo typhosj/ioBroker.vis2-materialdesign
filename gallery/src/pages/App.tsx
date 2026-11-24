@@ -36,7 +36,7 @@ export function App({ runtime }: { runtime: GalleryRuntime }): React.JSX.Element
                     : section === 'dashboard' && name ? <DashboardPage name={name} query={route.query} />
                     : section === 'about' ? <About />
                     : section === 'lab' ? <Lab runtime={runtime} />
-                    : <Overview family={section === 'family' ? name : undefined} query={route.query} search={search} />}
+                    : <Overview family={section === 'family' ? name : undefined} query={route.query} runtime={runtime} search={search} />}
             </Shell>
         </div>
     );

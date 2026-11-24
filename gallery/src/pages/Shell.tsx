@@ -20,7 +20,7 @@ export function Shell({ route, runtime, search, onSearch, children }: { route: R
     const actions = (
         <>
             {showField
-                ? <input aria-label={translate('gallery_search')} autoFocus={cls === 'compact'} className="g-search" onChange={e => onSearch(e.target.value)} placeholder={translate('gallery_search')} type="search" value={search} />
+                ? <input aria-label={translate('gallery_search')} autoFocus={cls === 'compact'} className="g-search" onChange={e => { if (route.path[0] && route.path[0] !== 'family') location.hash = routeHash([], route.query); onSearch(e.target.value); }} placeholder={translate('gallery_search')} type="search" value={search} />
                 : <button aria-label={translate('gallery_search')} className="g-icon-button mdi mdi-magnify" onClick={() => setSearchOpen(true)} type="button" />}
             <SegmentedButton label={translate('gallery_group_theme')} onChange={theme => go({ theme })} options={[{ value: 'light', label: translate('gallery_theme_light') }, { value: 'dark', label: translate('gallery_theme_dark') }]} value={route.query.theme} />
             <SegmentedButton label={translate('gallery_group_style')} onChange={style => go({ style })} options={[{ value: 'legacy', label: translate('gallery_style_legacy') }, { value: 'material3', label: translate('gallery_style_material3') }]} value={route.query.style} />
