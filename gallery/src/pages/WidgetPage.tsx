@@ -67,6 +67,9 @@ export function WidgetPage({ name, query, runtime }: { name: string; query: Gall
     const [sheetOpen, setSheetOpen] = useState(false);
     useEffect(() => { if (info && entry) setData(variantData(info, entry, query.variant)); }, [info, entry, query.variant]);
     useEffect(() => {
+        if (entry) for (const [id, value] of Object.entries(pickVariant(entry, query.variant).states ?? {})) runtime.store.setState(id, value);
+    }, [entry, query.variant, runtime]);
+    useEffect(() => {
         if (!entry || !data) return;
         try { sessionStorage.setItem(`${DATA_KEY}${entry.module}`, JSON.stringify(data)); } catch { /* the frame falls back to the variant */ }
         document.querySelector<HTMLIFrameElement>('.g-frame')?.contentWindow?.postMessage('gallery-data', location.origin);

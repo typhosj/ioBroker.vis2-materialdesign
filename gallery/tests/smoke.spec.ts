@@ -58,7 +58,7 @@ test('no cookies are set', async ({ page, context }) => {
     expect(await context.cookies()).toEqual([]);
 });
 
-// The first variant of a page is the widget's own defaults, so the cases below pick a variant that binds a demo data point.
+// The first variant of a page is its typical example, which may bind no demo data point, so the cases below pick a variant that does.
 const read = (page: Page, id: string) => datapoint(page, id).inputValue();
 
 test('operating a widget changes its state and the data point', async ({ page }) => {

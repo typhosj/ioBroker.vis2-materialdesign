@@ -9,7 +9,7 @@ import { VIEWS } from '../views/views';
 beforeAll(() => installShim());
 
 describe('catalog', () => {
-    it('has a family, a doc page with text and a default variant for every widget', async () => {
+    it('has a family and a doc page with text for every widget', async () => {
         const { widgetIndex, loadWidget } = await import('../runtime/widgets');
         const { catalogEntry, FAMILIES } = await import('./catalog');
         const problems: string[] = [];
@@ -17,9 +17,21 @@ describe('catalog', () => {
             const entry = catalogEntry(module, (await loadWidget(module)).getWidgetInfo());
             if (!FAMILIES[module]) problems.push(`${module}: no family`);
             if (!entry.excluded && (!entry.description.en || !entry.description.de)) problems.push(`${module}: no description from doc/${entry.doc}`);
-            if (!entry.variants.some(v => v.id === 'default')) problems.push(`${module}: no default variant`);
         }
         expect(problems).toEqual([]);
+    }, 120_000);
+
+    it('puts the configured examples first and the as-inserted variant last for every widget', async () => {
+        const { widgetIndex, loadWidget } = await import('../runtime/widgets');
+        const { catalogEntry } = await import('./catalog');
+        const { EXAMPLES } = await import('./examples');
+        const { DEFAULTS_ID } = await import('./example');
+        for (const { module } of widgetIndex) {
+            const entry = catalogEntry(module, (await loadWidget(module)).getWidgetInfo());
+            expect(entry.variants.at(-1)!.id, module).toBe(DEFAULTS_ID);
+            expect(entry.variants.length, module).toBe((EXAMPLES[module] ?? []).length + 1);
+            expect(EXAMPLES[module]?.length ?? 0, `${module} has no configured example`).toBeGreaterThan(0);
+        }
     }, 120_000);
 
     it('points every variant id field at a scenario state or a theme state', async () => {
@@ -78,21 +90,22 @@ describe('catalog', () => {
         expect(problems).toEqual([]);
     }, 120_000);
 
-    it('shows a gallery view in the default variant of every widget with a views field', async () => {
+    it('shows a gallery view in the as-inserted variant of every widget with a views field', async () => {
         const { widgetIndex, loadWidget } = await import('../runtime/widgets');
         const { catalogEntry } = await import('./catalog');
-        const { expandFields, isHidden } = await import('../runtime/widgetInfo');
+        const { defaultData, expandFields, isHidden } = await import('../runtime/widgetInfo');
+        const { DEFAULTS_ID } = await import('./example');
         const problems: string[] = [];
         for (const { module } of widgetIndex) {
             const info = (await loadWidget(module)).getWidgetInfo();
-            const data = catalogEntry(module, info).variants.find(v => v.id === 'default')!.data;
+            const data = { ...defaultData(info), ...catalogEntry(module, info).variants.find(v => v.id === DEFAULTS_ID)!.data };
             const viewKeys = expandFields(info, data).filter(entry => (entry.field as { type?: string }).type === 'views' && !isHidden(entry, data)).map(({ key }) => key);
             if (viewKeys.length && !viewKeys.some(key => typeof data[key] === 'string' && data[key] in VIEWS)) problems.push(module);
         }
         expect(problems).toEqual([]);
     }, 120_000);
 
-    it('offers the default plus at least two variants for every shown widget', async () => {
+    it('offers at least two examples plus the as-inserted variant for every shown widget', async () => {
         const { widgetIndex, loadWidget } = await import('../runtime/widgets');
         const { catalogEntry } = await import('./catalog');
         const thin: string[] = [];
@@ -115,12 +128,12 @@ describe('catalog', () => {
         expect(missing).toEqual([]);
     }, 120_000);
 
-    it('writes hand-made variants only with fields the widget declares', async () => {
+    it('writes examples only with fields the widget declares', async () => {
         const { loadWidget } = await import('../runtime/widgets');
-        const { HAND_VARIANTS } = await import('./catalog');
+        const { EXAMPLES } = await import('./examples');
         const { defaultData, expandFields } = await import('../runtime/widgetInfo');
         const problems: string[] = [];
-        for (const [module, variants] of Object.entries(HAND_VARIANTS)) {
+        for (const [module, variants] of Object.entries(EXAMPLES)) {
             const info = (await loadWidget(module)).getWidgetInfo();
             for (const variant of variants) {
                 const known = new Set(expandFields(info, { ...defaultData(info), ...variant.data }).map(({ key }) => key));

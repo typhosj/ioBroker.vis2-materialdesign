@@ -1,3 +1,0 @@
-[
-  { "pattern": "^deyeidc\\.0\\.\\d+\\.DP1$", "replace": "0_userdata.0.demo.energy.power" }
-]
