@@ -13,6 +13,9 @@ const watch = (page: Page): string[] => {
     return problems;
 };
 
+// At the large window class the settings sheet is docked, so no scrim covers the stage; the data points sit on its second tab.
+test.use({ viewport: { width: 1700, height: 900 } });
+const openDataPoints = (page: Page) => page.getByRole('tab', { name: 'Data points' }).click();
 const frame = (page: Page) => page.frameLocator('iframe.g-frame');
 const datapoint = (page: Page, id: string) => page.getByRole('textbox', { name: `0_userdata.0.demo.${id}`, exact: true });
 // A hash change inside the open document keeps the gallery runtime, and with it the data point store.
@@ -28,6 +31,7 @@ async function visit(page: Page, hash: string): Promise<void> {
     if (hash.startsWith('#/widget/') || hash.startsWith('#/dashboard/')) await frame(page).locator('.vis-widget').first().waitFor({ state: 'attached' });
     else await page.locator('.g-app main > *').first().waitFor({ state: 'attached' });
     await page.waitForLoadState('networkidle');
+    if (hash.startsWith('#/widget/')) await openDataPoints(page);
 }
 
 test('every route loads without errors or foreign requests', async ({ page }) => {
@@ -42,8 +46,8 @@ test('every route loads without errors or foreign requests', async ({ page }) =>
     expect(widgetPages.length).toBe(50);
     for (const widgetPage of widgetPages) {
         await check(widgetPage);
-        const variants = await page.locator('.g-variants a').evaluateAll(links => links.map(a => (a as HTMLAnchorElement).hash));
-        for (const variant of variants.slice(1)) await check(variant);
+        const variants = await page.locator('[role="radiogroup"] [role="radio"][data-id]').evaluateAll(chips => chips.map(chip => chip.getAttribute('data-id') ?? ''));
+        for (const variant of variants.slice(1)) await check(`${widgetPage}?variant=${encodeURIComponent(variant)}`);
     }
     for (const hash of ['#/dashboard/tablet', '#/dashboard/phone', '#/about', '#/lab']) await check(hash);
     console.log(`routes visited: ${routes.length}`);
@@ -122,6 +126,7 @@ test('the dashboard shares the store with the gallery', async ({ page }) => {
     await goHash(page, '#/dashboard/tablet?test=1');
     await frame(page).locator('.vis-widget').first().waitFor({ state: 'attached' });
     await goHash(page, '#/widget/Checkbox?variant=checkbox-off&test=1');
+    await openDataPoints(page);
     await expect(datapoint(page, 'kitchen.light')).toHaveValue('true');
 });
 

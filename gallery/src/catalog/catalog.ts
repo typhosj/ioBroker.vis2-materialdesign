@@ -7,7 +7,7 @@ import { defaultData, expandFields } from '../runtime/widgetInfo';
 import generated from './variants.generated.json';
 
 export type Family = 'buttons' | 'iconButtons' | 'input' | 'sliders' | 'progress' | 'values' | 'lists' | 'charts' | 'calendar' | 'views' | 'navigation';
-export interface Variant { id: string; label: string; data: Record<string, unknown>; size: { width: number; height: number } }
+export interface Variant { id: string; label: string; purpose?: string; data: Record<string, unknown>; size: { width: number | 'fill'; height: number }; designStyle?: 'legacy' | 'material3' }
 export interface CatalogEntry { module: string; name: string; tpl: string; family: Family; doc: string; description: { en: string; de: string }; expects: Array<{ attr: string; type: string; roles: string[] }>; variants: Variant[]; excluded?: string }
 
 const B = (doc: string) => ({ family: 'buttons' as const, doc });

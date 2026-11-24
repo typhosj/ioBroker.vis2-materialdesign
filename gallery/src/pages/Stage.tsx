@@ -7,9 +7,16 @@ import { type WidgetClass, loadWidget } from '../runtime/widgets';
 import { type GalleryQuery, VIEWPORTS, routeHash } from '../state';
 import { GalleryView } from '../views/GalleryView';
 
-export function WidgetInstance(props: { module: string; data: Record<string, unknown>; size: { width: number; height: number }; runtime: GalleryRuntime; query: GalleryQuery; left?: number; top?: number; id?: string; depth?: number; onNavigate?(view: string): void }): React.JSX.Element | null {
+export function WidgetInstance(props: { module: string; data: Record<string, unknown>; size: { width: number | 'fill'; height: number }; runtime: GalleryRuntime; query: GalleryQuery; left?: number; top?: number; id?: string; depth?: number; onNavigate?(view: string): void }): React.JSX.Element | null {
     const [Widget, setWidget] = useState<WidgetClass>();
     const [toast, setToast] = useState('');
+    const [bodyWidth, setBodyWidth] = useState(() => document.body.clientWidth - 32);
+    useEffect(() => {
+        if (props.size.width !== 'fill') return;
+        const observer = new ResizeObserver(() => setBodyWidth(document.body.clientWidth - 32));
+        observer.observe(document.body);
+        return () => observer.disconnect();
+    }, [props.size.width]);
     useEffect(() => { void loadWidget(props.module).then(W => setWidget(() => W)); }, [props.module]);
     const data = useMemo(() => (Widget ? { ...defaultData(Widget.getWidgetInfo()), ...props.data } : props.data), [Widget, props.data]);
     if (!Widget) return null;
@@ -25,7 +32,7 @@ export function WidgetInstance(props: { module: string; data: Record<string, unk
     });
     return (
         <>
-            <Widget context={context} data={data} editMode={false} id={props.id ?? 'stage'} style={{ left: props.left ?? 0, top: props.top ?? 0, width: props.size.width, height: props.size.height }} tpl={Widget.getWidgetInfo().id} view="gallery" />
+            <Widget context={context} data={data} editMode={false} id={props.id ?? 'stage'} style={{ left: props.left ?? 0, top: props.top ?? 0, width: props.size.width === 'fill' ? bodyWidth : props.size.width, height: props.size.height }} tpl={Widget.getWidgetInfo().id} view="gallery" />
             {toast ? <div className="g-toast" role="status">{toast}</div> : null}
         </>
     );

@@ -49,5 +49,8 @@
   "gallery_nav": "Navigation",
   "gallery_nav_overview": "Übersicht",
   "gallery_nav_widgets": "Widgets",
-  "gallery_menu": "Navigation öffnen"
+  "gallery_menu": "Navigation öffnen",
+  "gallery_doc_link": "Dokumentation",
+  "gallery_code": "Code",
+  "gallery_close": "Schließen"
 }
