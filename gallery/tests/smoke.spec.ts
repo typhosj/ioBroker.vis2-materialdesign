@@ -1,0 +1,156 @@
+import { expect, test, type Page } from '@playwright/test';
+
+const ORIGIN = 'http://localhost:4173/';
+// Thumbnails and clips come from gallery:media, which the smoke run does not execute; the tiles hide a missing image.
+const MEDIA = `${ORIGIN}media/`;
+
+const watch = (page: Page): string[] => {
+    const problems: string[] = [];
+    page.on('console', message => { if (message.type() === 'error' && !message.location().url.startsWith(MEDIA)) problems.push(`console: ${message.text()} ${message.location().url}`); });
+    page.on('pageerror', error => problems.push(`pageerror: ${error.message}`));
+    page.on('requestfailed', request => problems.push(`failed: ${request.url()}`));
+    page.on('request', request => { if (!request.url().startsWith(ORIGIN) && !request.url().startsWith('data:') && !request.url().startsWith('blob:')) problems.push(`foreign: ${request.url()}`); });
+    return problems;
+};
+
+const frame = (page: Page) => page.frameLocator('iframe.g-frame');
+const datapoint = (page: Page, id: string) => page.getByRole('textbox', { name: `0_userdata.0.demo.${id}`, exact: true });
+// A hash change inside the open document keeps the gallery runtime, and with it the data point store.
+const goHash = (page: Page, hash: string) => page.evaluate(h => { location.hash = h; }, hash);
+
+const routes: string[] = [];
+
+// A route counts as loaded once the widget (or the page chrome) is in the DOM and the network is quiet.
+async function visit(page: Page, hash: string): Promise<void> {
+    routes.push(hash);
+    await page.goto('about:blank');
+    await page.goto(`./${hash}${hash.includes('?') ? '&' : '?'}test=1`);
+    if (hash.startsWith('#/widget/') || hash.startsWith('#/dashboard/')) await frame(page).locator('.vis-widget').first().waitFor({ state: 'attached' });
+    else await page.locator('.g-app main > *').first().waitFor({ state: 'attached' });
+    await page.waitForLoadState('networkidle');
+}
+
+test('every route loads without errors or foreign requests', async ({ page }) => {
+    test.setTimeout(20 * 60_000);
+    const problems = watch(page);
+    const check = async (hash: string): Promise<void> => {
+        await visit(page, hash);
+        if (problems.length) throw new Error(`${hash}\n${problems.join('\n')}`);
+    };
+    await check('#/');
+    const widgetPages = await page.locator('.g-tiles a').evaluateAll(links => links.map(a => (a as HTMLAnchorElement).hash.split('?')[0]).filter(hash => hash.startsWith('#/widget/')));
+    expect(widgetPages.length).toBe(50);
+    for (const widgetPage of widgetPages) {
+        await check(widgetPage);
+        const variants = await page.locator('.g-variants a').evaluateAll(links => links.map(a => (a as HTMLAnchorElement).hash));
+        for (const variant of variants.slice(1)) await check(variant);
+    }
+    for (const hash of ['#/dashboard/tablet', '#/dashboard/phone', '#/about', '#/lab']) await check(hash);
+    console.log(`routes visited: ${routes.length}`);
+});
+
+test('no cookies are set', async ({ page, context }) => {
+    await visit(page, '#/widget/Switch');
+    expect(await context.cookies()).toEqual([]);
+});
+
+// The first variant of a page is the widget's own defaults, so the cases below pick a variant that binds a demo data point.
+const read = (page: Page, id: string) => datapoint(page, id).inputValue();
+
+test('operating a widget changes its state and the data point', async ({ page }) => {
+    await visit(page, '#/widget/Switch?variant=switch-off');
+    const before = await read(page, 'living.light');
+    await frame(page).locator('.vis-widget').first().click();
+    await expect(datapoint(page, 'living.light')).not.toHaveValue(before);
+});
+
+test('Checkbox writes its data point', async ({ page }) => {
+    await visit(page, '#/widget/Checkbox?variant=checkbox-off');
+    const before = await read(page, 'kitchen.light');
+    await frame(page).locator('.vis-widget').first().click();
+    await expect(datapoint(page, 'kitchen.light')).not.toHaveValue(before);
+});
+
+test('Slider writes its data point on a key press', async ({ page }) => {
+    await visit(page, '#/widget/Slider?variant=horizontal');
+    const before = await read(page, 'living.dimmer');
+    await frame(page).locator('[role="slider"]').first().focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(datapoint(page, 'living.dimmer')).not.toHaveValue(before);
+});
+
+test('Select writes the chosen option to its data point', async ({ page }) => {
+    await visit(page, '#/widget/Select?variant=regular');
+    await frame(page).locator('.vis-widget button').first().click();
+    await frame(page).locator('.v-list-item', { hasText: 'Kitchen' }).click();
+    await expect(datapoint(page, 'general.scene')).toHaveValue('2');
+});
+
+test('Button State Multi writes its data point', async ({ page }) => {
+    await visit(page, '#/widget/Button%20State%20Multi');
+    const before = await read(page, 'general.value');
+    await frame(page).locator('.vis-widget button').first().click();
+    await expect(datapoint(page, 'general.value')).not.toHaveValue(before);
+});
+
+test('closing an alert removes it from the data point', async ({ page }) => {
+    await visit(page, '#/widget/Alerts?variant=normal');
+    const before = JSON.parse(await read(page, 'notifications.alerts')) as unknown[];
+    await frame(page).getByRole('button', { name: 'Close alert' }).first().click();
+    await expect.poll(async () => (JSON.parse(await read(page, 'notifications.alerts')) as unknown[]).length).toBe(before.length - 1);
+});
+
+for (const [name, query, action] of [
+    ['Button Toggle', '', 'click'], ['Icon Button Toggle', '', 'click'], ['Slider Round', '?variant=round-slider-270', 'key'],
+    ['Input', '', 'type'], ['Dialog', '', 'click'],
+] as const) {
+    test(`${name} reacts visibly`, async ({ page }) => {
+        await visit(page, `#/widget/${encodeURIComponent(name)}${query}`);
+        const widget = frame(page).locator('.vis-widget').first();
+        const before = await widget.innerHTML();
+        if (action === 'click') await widget.click();
+        else if (action === 'type') { await widget.locator('input').fill('demo'); await widget.locator('input').press('Enter'); }
+        else { await widget.locator('[role="slider"]').first().focus(); await page.keyboard.press('ArrowRight'); }
+        await expect.poll(() => widget.innerHTML()).not.toBe(before);
+    });
+}
+
+test('the dashboard shares the store with the gallery', async ({ page }) => {
+    await visit(page, '#/widget/Checkbox?variant=checkbox-off');
+    await datapoint(page, 'kitchen.light').fill('true');
+    await datapoint(page, 'kitchen.light').blur();
+    await goHash(page, '#/dashboard/tablet?test=1');
+    await frame(page).locator('.vis-widget').first().waitFor({ state: 'attached' });
+    await goHash(page, '#/widget/Checkbox?variant=checkbox-off&test=1');
+    await expect(datapoint(page, 'kitchen.light')).toHaveValue('true');
+});
+
+for (const theme of ['light', 'dark']) {
+    for (const [board, width] of [['tablet', 1920], ['phone', 390]] as const) {
+        test(`overview and ${board} dashboard load in ${theme}`, async ({ page }) => {
+            const problems = watch(page);
+            await visit(page, `#/?theme=${theme}`);
+            await visit(page, `#/dashboard/${board}?theme=${theme}`);
+            expect(problems).toEqual([]);
+            await expect(page.locator('iframe.g-frame')).toHaveAttribute('style', new RegExp(`width: ${width}px`));
+        });
+    }
+}
+
+for (const vp of ['phone', 'tablet', 'desktop']) {
+    test(`a widget page frames the ${vp} viewport`, async ({ page }) => {
+        await visit(page, `#/widget/Switch?vp=${vp}`);
+        await expect(page.locator('iframe.g-frame')).toHaveAttribute('style', new RegExp(vp === 'phone' ? 'width: 390px' : 'width: 1920px'));
+    });
+}
+
+test('the start page transfers less than 2 MB', async ({ page }) => {
+    let bytes = 0;
+    const pending: Promise<void>[] = [];
+    page.on('response', response => { pending.push(response.body().then(body => { bytes += body.length; }, () => undefined)); });
+    await page.goto('./');
+    await page.waitForLoadState('networkidle');
+    await Promise.all(pending);
+    console.log(`start page bytes (uncompressed): ${bytes}`);
+    expect(bytes).toBeLessThan(2 * 1024 * 1024);
+});

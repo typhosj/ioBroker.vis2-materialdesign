@@ -35,9 +35,9 @@ jobs:
       - run: npm ci
       - run: npm ci --prefix src-widgets-ts
       - run: npm run gallery:build
-      # Off until the browser tests and the media step exist: gallery:test then needs the Playwright
-      # container, gallery:media needs ffmpeg (apt-get install -y --no-install-recommends ffmpeg).
-      # - run: npm run gallery:test
+      - run: npx playwright install --with-deps chromium
+      - run: npm run gallery:test
+      # Off until the media step exists: gallery:media needs ffmpeg (apt-get install -y --no-install-recommends ffmpeg).
       # - run: npm run gallery:media
       #   if: github.event_name != 'pull_request'
       - uses: actions/upload-artifact@v7
