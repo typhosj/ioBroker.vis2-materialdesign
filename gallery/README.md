@@ -13,8 +13,6 @@ Run them from the adapter root. Install `npm ci` and `npm ci --prefix src-widget
   start page transfers more than 2 MB (gzip) or when a `.test` file lands in the bundle.
 - `npm run gallery:test` runs the gallery unit tests (also part of `npm test`).
 
-Visual tests and the screenshot and video step are added with Task 22 and later; they are not documented here yet.
-
 ## Publishing on GitHub Pages
 
 `.github/workflows/gallery.yml` builds on every pull request and every push to `master`. It publishes
@@ -23,9 +21,10 @@ only for `v*` release tags and for a manual run.
 One-time setup by the repository owner:
 
 1. Settings, Pages, Source: **GitHub Actions**.
-2. Settings, Environments, `github-pages`, deployment branches and tags: add a tag rule `v*`. Check
-   this: if the environment only allows the default branch, tag deployments are rejected by the
-   environment's protection rule. GitHub's documentation does not state the default rule.
+2. Settings, Environments, `github-pages`, deployment branches and tags: add a tag rule `v*`. The
+   environment that GitHub creates for Pages allows only the default branch, so without the rule a
+   tag run fails with "Tag … is not allowed to deploy to github-pages due to environment protection
+   rules".
 
 The site is then served at `https://typhosj.github.io/ioBroker.vis2-materialdesign/`.
 
