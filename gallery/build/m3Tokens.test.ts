@@ -17,6 +17,10 @@ describe('m3CssVariables', () => {
     it('rejects a value that could break out of the style element', () => {
         expect(() => m3CssVariables({ light: { primary: '#fff;}</style>' }, dark: {} })).toThrow(/invalid color/);
     });
+    it('rejects a role name that could leave the style element', () => {
+        expect(() => m3CssVariables({ light: { 'x:red}</style><script>': '#ffffff' }, dark: {} })).toThrow(/invalid role/);
+        expect(() => m3CssVariables({ light: {}, dark: { 'On-Primary': '#ffffff' } })).toThrow(/invalid role/);
+    });
     it('rejects a short hex and a color name', () => {
         expect(() => m3CssVariables({ light: { primary: '#fff' }, dark: {} })).toThrow(/invalid color/);
         expect(() => m3CssVariables({ light: {}, dark: { primary: 'red' } })).toThrow(/invalid color/);

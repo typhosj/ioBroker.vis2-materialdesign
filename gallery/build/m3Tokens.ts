@@ -3,9 +3,11 @@ import type { Plugin } from 'vite';
 import { M3_BASELINE_SEED, m3SchemeFromSeed } from '../../src-admin/src/m3scheme';
 
 const HEX = /^#[0-9a-f]{6}$/i;
+const ROLE = /^[a-z][a-z0-9-]*$/;
 
 const block = (selector: string, roles: Record<string, string>): string => {
     const body = Object.entries(roles).map(([role, value]) => {
+        if (!ROLE.test(role)) throw new Error(`invalid role: ${role}`);
         if (!HEX.test(value)) throw new Error(`invalid color for ${role}: ${value}`);
         return `--md-sys-color-${role}:${value}`;
     }).join(';');
