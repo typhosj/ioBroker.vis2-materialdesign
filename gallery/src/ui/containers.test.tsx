@@ -34,6 +34,15 @@ describe('Sheet', () => {
         expect(view.root.querySelector('[role="dialog"]')).toBeNull();
         expect(document.activeElement).toBe(opener);
     });
+    it('keeps focus on an input inside the sheet when the parent re-renders with a new onClose', () => {
+        const render = (): React.JSX.Element => <Sheet closeLabel="Close" label="Settings" modal onClose={() => undefined} open side="end"><input /></Sheet>;
+        const view = mount(render()); cleanup = view.unmount;
+        const input = view.root.querySelector('input')!;
+        input.focus();
+        view.rerender(render());
+        expect(document.activeElement).toBe(input);
+        expect(view.root.querySelector('.g-sheet-close')!.getAttribute('aria-label')).toBe('Close');
+    });
     it('renders a fixed sheet as a complementary region without a trap', () => {
         const view = mount(<Sheet label="Settings" modal={false} onClose={() => undefined} open side="end"><p>x</p></Sheet>); cleanup = view.unmount;
         expect(view.root.querySelector('aside[aria-label="Settings"]')).not.toBeNull();
