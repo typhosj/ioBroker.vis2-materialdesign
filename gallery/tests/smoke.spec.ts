@@ -15,7 +15,7 @@ const watch = (page: Page): string[] => {
 
 // At the large window class the settings sheet is docked, so no scrim covers the stage; the data points sit on its second tab.
 test.use({ viewport: { width: 1700, height: 900 } });
-const openDataPoints = (page: Page) => page.getByRole('tab', { name: 'Data points' }).click();
+const openDataPoints = async (page: Page) => { const tab = page.getByRole('tab', { name: 'Data points' }); if (await tab.count()) await tab.click(); };
 const frame = (page: Page) => page.frameLocator('iframe.g-frame');
 const datapoint = (page: Page, id: string) => page.getByRole('textbox', { name: `0_userdata.0.demo.${id}`, exact: true });
 // A hash change inside the open document keeps the gallery runtime, and with it the data point store.
@@ -126,7 +126,7 @@ test('the dashboard shares the store with the gallery', async ({ page }) => {
     await goHash(page, '#/dashboard/tablet?test=1');
     await frame(page).locator('.vis-widget').first().waitFor({ state: 'attached' });
     await goHash(page, '#/widget/Checkbox?variant=checkbox-off&test=1');
-    await openDataPoints(page);
+    await page.getByRole('tab', { name: 'Data points' }).click();
     await expect(datapoint(page, 'kitchen.light')).toHaveValue('true');
 });
 
@@ -148,6 +148,41 @@ for (const vp of ['phone', 'tablet', 'desktop']) {
         await expect(page.locator('iframe.g-frame')).toHaveAttribute('style', new RegExp(vp === 'phone' ? 'width: 390px' : 'width: 1920px'));
     });
 }
+
+test('the variant chips are a radiogroup that switches the stage', async ({ page }) => {
+    await visit(page, '#/widget/Switch');
+    const chips = page.locator('[role="radiogroup"] [role="radio"][data-id]');
+    expect(await chips.count()).toBeGreaterThan(1);
+    const stage = frame(page).locator('.vis-widget').first();
+    const before = await stage.innerHTML();
+    const id = await chips.nth(1).getAttribute('data-id');
+    await chips.nth(1).click();
+    await expect.poll(() => page.url()).toContain(`variant=${id}`);
+    await expect.poll(() => stage.innerHTML()).not.toBe(before);
+});
+
+test('a fixed-size widget is centred in the stage', async ({ page }) => {
+    await visit(page, '#/widget/Switch?vp=desktop');
+    const box = await frame(page).locator('.vis-widget').first().boundingBox();
+    const body = await frame(page).locator('.g-frame-body').boundingBox();
+    expect(box && body).toBeTruthy();
+    expect(Math.abs(box!.x + box!.width / 2 - (body!.x + body!.width / 2))).toBeLessThan(2);
+    expect(Math.abs(box!.y + box!.height / 2 - (body!.y + body!.height / 2))).toBeLessThan(2);
+});
+
+test.describe('medium window', () => {
+    test.use({ viewport: { width: 1000, height: 800 } });
+    test('the settings sheet is modal, closes on Escape and returns focus', async ({ page }) => {
+        await visit(page, '#/widget/Switch');
+        const button = page.getByRole('button', { name: 'Settings', exact: true });
+        await expect(page.getByRole('dialog')).toHaveCount(0);
+        await button.click();
+        await expect(page.getByRole('dialog')).toHaveAttribute('aria-modal', 'true');
+        await page.keyboard.press('Escape');
+        await expect(page.getByRole('dialog')).toHaveCount(0);
+        await expect(button).toBeFocused();
+    });
+});
 
 test('the start page transfers less than 2 MB', async ({ page }) => {
     let bytes = 0;

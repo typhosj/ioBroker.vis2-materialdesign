@@ -56,7 +56,7 @@ export function WidgetFrame({ name, query, runtime }: { name: string; query: Gal
     }, [info, entry, query.variant]);
     if (!info || !entry || !data) return null;
     const variant = pickVariant(entry, query.variant);
-    return <div className="g-frame-body"><WidgetInstance data={data} module={entry.module} query={query} runtime={shared} size={variant.size} left={16} top={16} /></div>;
+    return <div className="g-frame-body"><div className="g-frame-stage" style={{ width: variant.size.width === 'fill' ? 'calc(100% - 32px)' : variant.size.width, height: variant.size.height }}><WidgetInstance data={data} module={entry.module} query={query} runtime={shared} size={variant.size} /></div></div>;
 }
 
 export function WidgetPage({ name, query, runtime }: { name: string; query: GalleryQuery; runtime: GalleryRuntime }): React.JSX.Element | null {
