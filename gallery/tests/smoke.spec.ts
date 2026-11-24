@@ -149,6 +149,14 @@ for (const vp of ['phone', 'tablet', 'desktop']) {
     });
 }
 
+test('a widget page without a viewport shows the widget at its example size', async ({ page }) => {
+    await visit(page, '#/widget/Switch');
+    await expect(page.locator('iframe.g-frame')).toHaveAttribute('style', /width: 100%/);
+    const widget = await frame(page).locator('.vis-widget').first().boundingBox();
+    expect(widget!.width).toBeGreaterThan(30);
+    expect(widget!.width).toBeLessThan(400);
+});
+
 test('the variant chips are a radiogroup that switches the stage', async ({ page }) => {
     await visit(page, '#/widget/Switch');
     const chips = page.locator('[role="radiogroup"] [role="radio"][data-id]');

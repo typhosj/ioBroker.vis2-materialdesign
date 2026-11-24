@@ -42,7 +42,7 @@ export function WidgetInstance(props: { module: string; data: Record<string, unk
 export function ViewportFrame({ path, query }: { path: string[]; query: GalleryQuery }): React.JSX.Element {
     const outer = useRef<HTMLDivElement>(null);
     const [scale, setScale] = useState(1);
-    const size = query.vp === 'fit' ? undefined : VIEWPORTS[query.vp];
+    const size = query.vp && query.vp !== 'fit' ? VIEWPORTS[query.vp] : undefined;
     useEffect(() => {
         if (!size || !outer.current) return;
         const update = (): void => setScale(Math.min(1, (outer.current?.clientWidth ?? size.width) / size.width));

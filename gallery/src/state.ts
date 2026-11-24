@@ -11,10 +11,11 @@ export const VIEWPORTS: Record<Exclude<Viewport, 'fit'>, { width: number; height
     desktop: { width: 1920, height: 1080 },
 };
 
-export interface GalleryQuery { theme: Theme; style: Style; lang: Lang; vp: Viewport; test: boolean; variant?: string; seed?: string }
+export interface GalleryQuery { theme: Theme; style: Style; lang: Lang; vp?: Viewport; test: boolean; variant?: string; seed?: string }
 export interface Route { path: string[]; query: GalleryQuery }
 
-export const DEFAULT_QUERY: GalleryQuery = { theme: 'light', style: 'material3', lang: 'en', vp: 'desktop', test: false };
+// A missing vp means the page default: a widget page fits the window, a dashboard shows its own device.
+export const DEFAULT_QUERY: GalleryQuery = { theme: 'light', style: 'material3', lang: 'en', test: false };
 
 const pick = <T extends string>(value: string | null, allowed: readonly T[], fallback: T): T => (allowed.includes(value as T) ? (value as T) : fallback);
 const SLUG = /^[\w.-]{1,64}$/;
@@ -33,9 +34,10 @@ export function parseRoute(hash: string): Route {
         theme: pick(params.get('theme'), ['light', 'dark'] as const, DEFAULT_QUERY.theme),
         style: pick(params.get('style'), ['legacy', 'material3'] as const, DEFAULT_QUERY.style),
         lang: parseLang(params.get('lang')),
-        vp: pick(params.get('vp'), ['phone', 'tablet', 'desktop', 'fit'] as const, DEFAULT_QUERY.vp),
         test: params.get('test') === '1',
     };
+    const vp = params.get('vp');
+    if (vp === 'phone' || vp === 'tablet' || vp === 'desktop' || vp === 'fit') query.vp = vp;
     if (variant && SLUG.test(variant)) query.variant = variant;
     if (seed && SEED.test(seed)) query.seed = seed.toLowerCase();
     return { path: pathPart.split('/').filter(Boolean).map(decodeSegment), query };

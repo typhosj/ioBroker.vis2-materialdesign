@@ -12,13 +12,19 @@ describe('parseRoute', () => {
     });
 
     it('falls back to the defaults for unknown or broken values', () => {
-        expect(parseRoute('#/?theme=foo&style=&lang=xx&vp=0x0&test=yes')).toEqual({ path: [], query: DEFAULT_QUERY });
+        expect(parseRoute('#/?theme=foo&style=&lang=xx&vp=0x0&test=yes')).toStrictEqual({ path: [], query: DEFAULT_QUERY });
         expect(parseRoute('')).toEqual({ path: [], query: DEFAULT_QUERY });
         expect(parseRoute('#/widget/%E0%A4%A')).toEqual({ path: ['widget', '%E0%A4%A'], query: DEFAULT_QUERY });
     });
 
-    it('defaults to light, Material 3, English, desktop', () => {
-        expect(DEFAULT_QUERY).toEqual({ theme: 'light', style: 'material3', lang: 'en', vp: 'desktop', test: false });
+    it('defaults to light, Material 3, English and no viewport, which means the page default', () => {
+        expect(DEFAULT_QUERY).toEqual({ theme: 'light', style: 'material3', lang: 'en', test: false });
+        expect(parseRoute('#/widget/Switch').query.vp).toBeUndefined();
+        expect(parseRoute('#/widget/Switch?vp=0x0').query.vp).toBeUndefined();
+        expect(parseRoute('#/widget/Switch?vp=').query.vp).toBeUndefined();
+    });
+    it.each(['phone', 'tablet', 'desktop', 'fit'] as const)('keeps an explicit vp=%s', vp => {
+        expect(parseRoute(`#/widget/Switch?vp=${vp}`).query.vp).toBe(vp);
     });
 });
 
@@ -43,6 +49,21 @@ describe('routeHash', () => {
         const hash = routeHash(['widget', 'Slider'], { ...DEFAULT_QUERY, theme: 'dark', variant: 'vertical' });
         expect(hash).toBe('#/widget/Slider?theme=dark&variant=vertical');
         expect(parseRoute(hash).query.theme).toBe('dark');
+    });
+});
+
+describe('routeHash viewport', () => {
+    it('omits an undefined vp and writes every explicit one, which parses back', () => {
+        expect(routeHash(['widget', 'Switch'], { ...DEFAULT_QUERY, vp: undefined })).toBe('#/widget/Switch');
+        for (const vp of ['phone', 'tablet', 'desktop', 'fit'] as const) {
+            const hash = routeHash(['widget', 'Switch'], { ...DEFAULT_QUERY, vp });
+            expect(hash).toBe(`#/widget/Switch?vp=${vp}`);
+            expect(parseRoute(hash).query.vp).toBe(vp);
+        }
+    });
+    it('round-trips a route without vp to a query without vp', () => {
+        const route = parseRoute('#/dashboard/tablet?theme=dark');
+        expect(parseRoute(routeHash(route.path, route.query))).toStrictEqual(route);
     });
 });
 
