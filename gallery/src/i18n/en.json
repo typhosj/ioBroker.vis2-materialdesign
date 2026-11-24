@@ -24,7 +24,6 @@
   "gallery_expects": "Expects",
   "gallery_reset_variant": "Reset to variant",
   "gallery_copy_json": "Copy widget JSON",
-  "gallery_copied": "Copied",
   "gallery_navigate": "Would switch to view “%s”",
   "gallery_view_missing": "View “%s” is not part of the gallery",
   "gallery_no_description": "No description yet.",
@@ -52,5 +51,7 @@
   "gallery_menu": "Open navigation",
   "gallery_doc_link": "Documentation",
   "gallery_code": "Code",
-  "gallery_close": "Close"
+  "gallery_close": "Close",
+  "gallery_no_results": "No widget matches your search.",
+  "gallery_open_settings": "Open settings"
 }

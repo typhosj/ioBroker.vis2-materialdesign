@@ -31,3 +31,8 @@
 .g-sheet-end[role='dialog'] { position: fixed; inset: 0 0 0 auto; width: min(400px, 100vw); z-index: 21; border-radius: var(--md-sys-shape-corner-large) 0 0 var(--md-sys-shape-corner-large); padding: 16px; }
 .g-sheet-bottom[role='dialog'] { position: fixed; inset: auto 0 0 0; max-height: 85vh; z-index: 21; border-radius: var(--md-sys-shape-corner-extra-large) var(--md-sys-shape-corner-extra-large) 0 0; padding: 16px; }
 .g-sheet-close { float: right; border: 0; background: transparent; font-size: 24px; cursor: pointer; color: var(--md-sys-color-on-surface-variant); }
+.g-chips :focus-visible, .g-segmented :focus-visible { outline-offset: -2px; }
+.g-button-tonal { height: 40px; padding: 0 24px; border: 0; border-radius: var(--md-sys-shape-corner-full); background: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container); font: var(--md-sys-typescale-label-large); cursor: pointer; }
+.g-button-tonal:hover { background: color-mix(in srgb, var(--md-sys-color-secondary-container), var(--md-sys-color-on-secondary-container) var(--md-sys-state-hover)); }
+.g-switch-row { display: flex; align-items: center; gap: 12px; min-height: 40px; font: var(--md-sys-typescale-body-large); color: var(--md-sys-color-on-surface); cursor: pointer; }
+.g-switch-row input { width: 20px; height: 20px; margin: 0; accent-color: var(--md-sys-color-primary); }

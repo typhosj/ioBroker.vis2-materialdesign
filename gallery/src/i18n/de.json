@@ -24,7 +24,6 @@
   "gallery_expects": "Erwartet",
   "gallery_reset_variant": "Variante wiederherstellen",
   "gallery_copy_json": "Widget-JSON kopieren",
-  "gallery_copied": "Kopiert",
   "gallery_navigate": "Würde zur View „%s“ wechseln",
   "gallery_view_missing": "View „%s“ gibt es in der Galerie nicht",
   "gallery_no_description": "Noch keine Beschreibung.",
@@ -52,5 +51,7 @@
   "gallery_menu": "Navigation öffnen",
   "gallery_doc_link": "Dokumentation",
   "gallery_code": "Code",
-  "gallery_close": "Schließen"
+  "gallery_close": "Schließen",
+  "gallery_no_results": "Kein Widget passt zur Suche.",
+  "gallery_open_settings": "Einstellungen öffnen"
 }

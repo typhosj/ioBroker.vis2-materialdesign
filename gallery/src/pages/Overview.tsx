@@ -16,6 +16,11 @@ export function Overview({ query, runtime, search, family }: { query: GalleryQue
     const lang = currentLang();
     const only = FAMILY_ORDER.find(f => f === family);
     const needle = search.trim().toLowerCase();
+    const sections = FAMILY_ORDER.filter(f => !only || f === only).map(fam => ({
+        fam,
+        items: widgetIndex.filter(e => (FAMILIES[e.module]?.family ?? 'values') === fam)
+            .filter(e => !needle || `${e.name} ${docs[FAMILIES[e.module]?.doc ?? '']?.[lang] ?? ''}`.toLowerCase().includes(needle)),
+    })).filter(section => section.items.length);
     return (
         <>
             {only ? null : (
@@ -29,23 +34,18 @@ export function Overview({ query, runtime, search, family }: { query: GalleryQue
                     </p>
                 </header>
             )}
-            {FAMILY_ORDER.filter(f => !only || f === only).map(fam => {
-                const items = widgetIndex.filter(e => (FAMILIES[e.module]?.family ?? 'values') === fam)
-                    .filter(e => !needle || `${e.name} ${docs[FAMILIES[e.module]?.doc ?? '']?.[lang] ?? ''}`.toLowerCase().includes(needle));
-                if (!items.length) return null;
-                return (
-                    <Card key={fam} title={translate(`gallery_family_${fam}`)}>
-                        <div className="g-cards">
-                            {items.map(e => (
-                                <a className="g-preview-card" href={routeHash(['widget', e.name], query)} key={e.module}>
-                                    <LivePreview box={BOX} module={e.module} query={query} runtime={runtime} />
-                                    <strong>{e.name}</strong>
-                                </a>
-                            ))}
-                        </div>
-                    </Card>
-                );
-            })}
+            {sections.length ? sections.map(({ fam, items }) => (
+                <Card key={fam} title={translate(`gallery_family_${fam}`)}>
+                    <div className="g-cards">
+                        {items.map(e => (
+                            <a className="g-preview-card" href={routeHash(['widget', e.name], query)} key={e.module}>
+                                <LivePreview box={BOX} module={e.module} query={query} runtime={runtime} />
+                                <strong>{e.name}</strong>
+                            </a>
+                        ))}
+                    </div>
+                </Card>
+            )) : <p className="g-no-results" role="status">{translate('gallery_no_results')}</p>}
         </>
     );
 }

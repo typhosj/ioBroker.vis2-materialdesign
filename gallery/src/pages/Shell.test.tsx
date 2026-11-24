@@ -53,13 +53,14 @@ describe('Shell', () => {
         act(() => view.root.querySelector<HTMLButtonElement>('.g-topbar .mdi-menu')!.click());
         expect(view.root.querySelector('nav')).not.toBeNull();
     });
-    it.each(['#/widget/Switch', '#/about'])('typing in the search on %s opens the overview and keeps the query', from => {
+    it.each(['#/widget/Switch', '#/about'])('typing in the search on %s opens the overview, keeps the query and drops the variant', from => {
         Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1700 });
         const onSearch = vi.fn();
-        const view = mount(<Shell onSearch={onSearch} route={parseRoute(`${from}?theme=dark`)} runtime={createRuntime({ test: true })} search=""><p /></Shell>); cleanup = view.unmount;
+        const view = mount(<Shell onSearch={onSearch} route={parseRoute(`${from}?theme=dark&variant=on`)} runtime={createRuntime({ test: true })} search=""><p /></Shell>); cleanup = view.unmount;
         location.hash = from;
         type(view.root.querySelector('input[type="search"]')!, 'sw');
         expect(location.hash).toBe('#/?theme=dark');
+        expect(location.hash).not.toContain('variant=');
         expect(onSearch).toHaveBeenCalledWith('sw');
     });
     it('filters in place on a family page', () => {

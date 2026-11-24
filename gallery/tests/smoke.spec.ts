@@ -174,7 +174,7 @@ test.describe('medium window', () => {
     test.use({ viewport: { width: 1000, height: 800 } });
     test('the settings sheet is modal, closes on Escape and returns focus', async ({ page }) => {
         await visit(page, '#/widget/Switch');
-        const button = page.getByRole('button', { name: 'Settings', exact: true });
+        const button = page.getByRole('button', { name: 'Open settings', exact: true });
         await expect(page.getByRole('dialog')).toHaveCount(0);
         await button.click();
         await expect(page.getByRole('dialog')).toHaveAttribute('aria-modal', 'true');
@@ -185,6 +185,7 @@ test.describe('medium window', () => {
 });
 
 test('the start page transfers less than 2 MB', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
     let bytes = 0;
     const pending: Promise<void>[] = [];
     page.on('response', response => { pending.push(response.body().then(body => { bytes += body.length; }, () => undefined)); });

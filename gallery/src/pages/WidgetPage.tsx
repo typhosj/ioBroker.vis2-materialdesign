@@ -85,7 +85,7 @@ export function WidgetPage({ name, query, runtime }: { name: string; query: Gall
             <SegmentedButton<Viewport> label={translate('gallery_viewport')} onChange={vp => { location.hash = routeHash(['widget', name], { ...query, vp }); }} options={(['fit', 'phone', 'tablet', 'desktop'] as const).map(vp => ({ value: vp, label: translate(`gallery_viewport_${vp}`) }))} value={query.vp} />
             <button aria-label={translate('gallery_reset_variant')} className="g-icon-button mdi mdi-restore" onClick={() => setData(variantData(info, entry, query.variant))} type="button" />
             <button aria-label={translate('gallery_copy_json')} className="g-icon-button mdi mdi-code-json" onClick={() => void navigator.clipboard?.writeText(json)} type="button" />
-            {cls !== 'large' ? <button aria-label={translate('gallery_settings')} className="g-icon-button mdi mdi-tune" onClick={() => setSheetOpen(true)} type="button" /> : null}
+            {cls !== 'large' ? <button aria-label={translate('gallery_open_settings')} className="g-icon-button mdi mdi-tune" onClick={() => setSheetOpen(true)} type="button" /> : null}
         </>
     );
     const datapointTable = (
