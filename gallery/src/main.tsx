@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 
 import './gallery.css';
 import './ui/tokens.css';
+import './ui/ui.css';
 import { installShim } from './runtime/GalleryRxWidget';
 import { type GalleryWindow, createRuntime } from './runtime/runtime';
 
