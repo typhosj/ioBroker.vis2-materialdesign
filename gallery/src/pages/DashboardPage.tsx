@@ -19,12 +19,15 @@ export function DashboardPage({ name, query }: { name: string; query: GalleryQue
     const vp: Viewport = query.vp === 'fit' ? 'fit' : board.vp;
     const toolbar = (
         <SegmentedButton<Viewport> label={translate('gallery_viewport')} onChange={next => { location.hash = routeHash(['dashboard', name], { ...query, vp: next }); }}
-            options={(['fit', board.vp] as const).map(value => ({ value, label: translate(`gallery_viewport_${  value}`) }))} value={vp} />
+            options={(['fit', board.vp] as const).map(value => ({ value, label: translate(`gallery_viewport_${value}`) }))} value={vp} />
     );
     return (
-        <Card title={translate(`gallery_dashboard_${  name}`)} toolbar={toolbar}>
-            <ViewportFrame path={['dashboard', board.view]} query={{ ...query, vp }} />
-        </Card>
+        <>
+            <header className="g-page-head"><h1>{translate(`gallery_dashboard_${name}`)}</h1></header>
+            <Card toolbar={toolbar}>
+                <ViewportFrame path={['dashboard', board.view]} query={{ ...query, vp }} />
+            </Card>
+        </>
     );
 }
 

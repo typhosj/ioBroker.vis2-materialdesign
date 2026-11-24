@@ -10,7 +10,7 @@ import { Card } from '../ui/Card';
 import { LivePreview } from './LivePreview';
 import { FAMILY_ORDER } from './navigation';
 
-const BOX = { width: 280, height: 160 };
+const BOX = { width: 280, height: 120 };
 
 export function Overview({ query, runtime, search, family }: { query: GalleryQuery; runtime: GalleryRuntime; search: string; family?: string }): React.JSX.Element {
     const lang = currentLang();
@@ -19,12 +19,13 @@ export function Overview({ query, runtime, search, family }: { query: GalleryQue
     const sections = FAMILY_ORDER.filter(f => !only || f === only).map(fam => ({
         fam,
         items: widgetIndex.filter(e => (FAMILIES[e.module]?.family ?? 'values') === fam)
-            .filter(e => !needle || `${e.name} ${docs[FAMILIES[e.module]?.doc ?? '']?.[lang] ?? ''}`.toLowerCase().includes(needle)),
+            .filter(e => !needle || `${e.name} ${translate(`gallery_family_${fam}`)} ${docs[FAMILIES[e.module]?.doc ?? '']?.[lang] ?? ''}`.toLowerCase().includes(needle)),
     })).filter(section => section.items.length);
     return (
         <>
-            {only ? null : (
+            {only ? <header className="g-page-head"><h1>{translate(`gallery_family_${only}`)}</h1></header> : (
                 <header className="g-hero">
+                    <h1>{translate('gallery_title')}</h1>
                     <p className="g-subtitle">{translate('gallery_subtitle')}</p>
                     <p>{translate('gallery_install')}</p>
                     <p className="g-hero-actions">
@@ -35,7 +36,7 @@ export function Overview({ query, runtime, search, family }: { query: GalleryQue
                 </header>
             )}
             {sections.length ? sections.map(({ fam, items }) => (
-                <Card key={fam} title={translate(`gallery_family_${fam}`)}>
+                <Card key={fam} title={only ? undefined : translate(`gallery_family_${fam}`)}>
                     <div className="g-cards">
                         {items.map(e => (
                             <a className="g-preview-card" href={routeHash(['widget', e.name], query)} key={e.module}>
