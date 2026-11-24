@@ -1,0 +1,66 @@
+name: Live demo
+
+on:
+  push:
+    tags:
+      - v[0-9]+.[0-9]+.[0-9]+
+    branches:
+      - master
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Tag or branch to publish
+        required: true
+        default: master
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gallery-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.inputs.ref || github.ref }}
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24.x
+          cache: npm
+      - run: npm ci
+      - run: npm ci --prefix src-widgets-ts
+      - run: npm run gallery:build
+      # Task 21 adds the Playwright container and enables gallery:test; Task 23 enables gallery:media
+      # (it needs ffmpeg: apt-get install -y --no-install-recommends ffmpeg).
+      # - run: npm run gallery:test
+      # - run: npm run gallery:media
+      #   if: github.event_name != 'pull_request'
+      - uses: actions/upload-artifact@v7
+        if: github.event_name == 'pull_request'
+        with:
+          name: gallery-dist
+          path: gallery/dist
+      - uses: actions/upload-pages-artifact@v5
+        if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
+        with:
+          path: gallery/dist
+
+  deploy:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    concurrency: pages
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5
