@@ -22,6 +22,7 @@ the ioBroker system language, so the screenshots are German.
   counts `true` as the maximum and `false` as the minimum.
 - **indeterminate - continuously animates** – a permanent rotation that ignores
   the value (busy indicator).
+- **Accessible name** – the name a screen reader announces for the ring, for example "Battery". Without an entry it is announced as "Progress". Picking the object id fills it with the object name.
 
 **layout**
 

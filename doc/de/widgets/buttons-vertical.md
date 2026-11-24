@@ -20,6 +20,8 @@ aufgeklappt. Nicht aufgeführte Einstellungen sind selbsterklärend.
 **Allgemein** – die Aktionsfelder entsprechen dem jeweiligen normalen
 [Button](buttons.md) (Navigation, Link, State, Multi State, Addition, Toggle).
 
+- **Name für Screenreader** – der Name, den ein Screenreader vorliest. Er gilt nur, solange der Button keinen Text zeigt; ein Button mit Text heißt wie dieser Text. Ohne Eintrag wird der Button als „Button“ vorgelesen. Beim Wählen der Objekt-ID wird er mit dem Objektnamen gefüllt.
+
 **Beschriftung**
 
 - **Ausrichtung** – waagerechte Ausrichtung von Icon und Text in der Spalte:

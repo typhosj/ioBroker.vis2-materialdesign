@@ -364,6 +364,14 @@ export function nextWidgetUid(): number {
     return ++widgetUid;
 }
 
+// Name rule for controls without visible text: the configured `ariaLabel`, else the generic name.
+// Whitespace-only counts as empty.
+export const ariaLabelField = { name: 'ariaLabel', label: 'ariaLabel', type: 'text' } as const;
+
+export function ariaName(ariaLabel: unknown, fallbackKey: string): string {
+    return stringValue(ariaLabel).trim() || VisWidget.t(fallbackKey);
+}
+
 export function sizeCss(value: unknown, fallbackPx: number): string {
     if (typeof value === 'string') {
         const text = value.trim();

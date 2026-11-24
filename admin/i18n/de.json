@@ -1231,6 +1231,8 @@
     "ariaRoundSlider": "Runder Regler",
     "ariaSlider": "Regler",
     "ariaProgress": "Fortschritt",
+    "ariaLabel": "Name für Screenreader",
+    "ariaButton": "Button",
     "ariaTextInput": "Texteingabe",
     "ariaSelectInput": "Auswahl",
     "ariaDialog": "Dialog",

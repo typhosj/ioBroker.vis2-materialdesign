@@ -1231,6 +1231,8 @@
     "ariaRoundSlider": "Controle giratório",
     "ariaSlider": "Controle deslizante",
     "ariaProgress": "Progresso",
+    "ariaLabel": "Nome acessível",
+    "ariaButton": "Botão",
     "ariaTextInput": "Entrada de texto",
     "ariaSelectInput": "Seleção",
     "ariaDialog": "Diálogo",

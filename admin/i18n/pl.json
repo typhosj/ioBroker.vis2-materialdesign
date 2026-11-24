@@ -1231,6 +1231,8 @@
     "ariaRoundSlider": "Suwak okrągły",
     "ariaSlider": "Suwak",
     "ariaProgress": "Postęp",
+    "ariaLabel": "Nazwa dla czytników ekranu",
+    "ariaButton": "Przycisk",
     "ariaTextInput": "Pole tekstowe",
     "ariaSelectInput": "Wybór",
     "ariaDialog": "Okno dialogowe",

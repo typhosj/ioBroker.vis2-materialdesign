@@ -1231,6 +1231,8 @@
     "ariaRoundSlider": "Ronde schuifregelaar",
     "ariaSlider": "Schuifregelaar",
     "ariaProgress": "Voortgang",
+    "ariaLabel": "Toegankelijke naam",
+    "ariaButton": "Knop",
     "ariaTextInput": "Tekstinvoer",
     "ariaSelectInput": "Selectie",
     "ariaDialog": "Dialoogvenster",

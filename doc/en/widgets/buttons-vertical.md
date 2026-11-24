@@ -21,6 +21,8 @@ the ioBroker system language, so the screenshots are German.
 **Common** – the action fields match the corresponding normal
 [button](buttons.md) (Navigation, Link, State, Multi State, Addition, Toggle).
 
+- **Accessible name** – the name a screen reader announces. It only applies while the button shows no text; a button with text is named by that text. Without an entry the button is announced as "Button". Picking the object id fills it with the object name.
+
 **labeling**
 
 - **alignment** – horizontal alignment of icon and text inside the column: left,

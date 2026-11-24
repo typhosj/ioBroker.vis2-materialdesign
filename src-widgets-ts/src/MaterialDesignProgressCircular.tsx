@@ -2,7 +2,7 @@ import React from 'react';
 
 import type { RxWidgetInfo, VisRxWidgetProps } from '@iobroker/types-vis-2';
 
-import { squarePreview, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, legacyInk, sizeCss, stateValue, sanitizeHtml } from './widgetUtils';
+import { ariaLabelField, ariaName, squarePreview, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, legacyInk, sizeCss, stateValue, sanitizeHtml } from './widgetUtils';
 import { ProgressData, cleanColor, num, progressState, progressFillMap } from './MaterialDesignProgress';
 import { withAutoFill } from './deviceFill';
 
@@ -15,6 +15,7 @@ const attrs: RxWidgetInfo['visAttrs'] = [
             { name: 'min', label: 'min', type: 'number' },
             { name: 'max', label: 'max', type: 'number' },
             { name: 'progressIndeterminate', label: 'progressIndeterminate', type: 'checkbox' },
+            ariaLabelField,
         ],
     },
     {
@@ -95,7 +96,7 @@ export default class MaterialDesignProgressCircular extends VisWidget {
             <div className={`materialdesign-widget materialdesign-progress${isM3 ? ` ${designStyleClasses(data as unknown as Record<string, unknown>, this.isDarkTheme())}` : ''}`} style={{ height: '100%', padding: 0, width: '100%' }}>
                 <div className="materialdesign-vuetify-progress-circular" style={{ alignItems: 'center', display: 'flex', height: '100%', justifyContent: 'center', width: '100%' }}>
                     <div
-                        aria-label={VisWidget.t('ariaProgress')}
+                        aria-label={ariaName(data.ariaLabel, 'ariaProgress')}
                         aria-valuemax={100}
                         aria-valuemin={0}
                         aria-valuenow={progress.percent}

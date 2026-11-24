@@ -30,6 +30,7 @@ Variante im Widget-Set **Material Design** wählen, markieren und den Reiter
   lesen* (zeigt den Zustand, schreibt nichts). Bei `value` entscheidet *Zustand,
   wenn der Wert nicht der Bedingung 'Ein' entspricht*, wie ein dritter Wert gilt:
   `off` heißt nur der Ein-Wert schaltet an, `on` heißt alles außer dem Aus-Wert.
+- **Name für Screenreader** – der Name, den ein Screenreader vorliest. Er gilt nur, solange der Button keinen Text zeigt; ein Button mit Text heißt wie dieser Text. Ohne Eintrag wird der Button als „Button“ vorgelesen. Beim Wählen der Objekt-ID wird er mit dem Objektnamen gefüllt.
 
 **Beschriftung**
 

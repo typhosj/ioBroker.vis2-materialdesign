@@ -23,6 +23,7 @@ aufgeklappt. Nicht aufgeführte Einstellungen sind selbsterklärend.
 - **Wert invertieren** – füllt den Balken auf den verbleibenden Prozentwert; die
   Beschriftung zeigt weiter den erreichten.
 - **Wert per Tippen und Ziehen ändern** – macht den Balken zu einem Slider im selben Aussehen: Tippen oder Ziehen auf dem Balken setzt den Wert, geschrieben einmal beim Loslassen, in **Schritte** (Vorgabe 1) zwischen Minimum und Maximum. Umkehren, Wert invertieren und der gedrehte Balken werden berücksichtigt: Die Pfeiltasten bewegen die Füllung in ihre Richtung, Bild auf/ab, Pos1 und Ende gehen auch. Im Editor, bei einem unbestimmten Balken oder ohne Objekt-ID bleibt der Balken nur zur Anzeige.
+- **Name für Screenreader** – der Name, den ein Screenreader für den Balken vorliest, zum Beispiel „Batterie“. Ohne Eintrag wird er als „Fortschritt“ vorgelesen. Beim Wählen der Objekt-ID wird er mit dem Objektnamen gefüllt.
 
 **Layout**
 

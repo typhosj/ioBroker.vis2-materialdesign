@@ -1231,6 +1231,8 @@
     "ariaRoundSlider": "Round slider",
     "ariaSlider": "Slider",
     "ariaProgress": "Progress",
+    "ariaLabel": "Accessible name",
+    "ariaButton": "Button",
     "ariaTextInput": "Text input",
     "ariaSelectInput": "Selection",
     "ariaDialog": "Dialog",

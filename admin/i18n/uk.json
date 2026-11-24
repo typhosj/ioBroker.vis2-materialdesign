@@ -1231,6 +1231,8 @@
     "ariaRoundSlider": "Круглий регулятор",
     "ariaSlider": "Повзунок",
     "ariaProgress": "Прогрес",
+    "ariaLabel": "Доступна назва",
+    "ariaButton": "Кнопка",
     "ariaTextInput": "Текстове поле",
     "ariaSelectInput": "Вибір",
     "ariaDialog": "Діалог",

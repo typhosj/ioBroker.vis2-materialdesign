@@ -1231,6 +1231,8 @@
     "ariaRoundSlider": "Curseur rotatif",
     "ariaSlider": "Curseur",
     "ariaProgress": "Progression",
+    "ariaLabel": "Nom accessible",
+    "ariaButton": "Bouton",
     "ariaTextInput": "Saisie de texte",
     "ariaSelectInput": "Sélection",
     "ariaDialog": "Boîte de dialogue",

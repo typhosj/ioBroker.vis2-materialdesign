@@ -22,6 +22,8 @@ Die Screenshots zeigen einen normalen Icon-Button und die kreisförmige Variante
 
 Der Icon-Button hat keine Gruppe **Beschriftung** — ihm fehlt der Text.
 
+- **Name für Screenreader** – der Name, den ein Screenreader vorliest. Der Icon-Button zeigt keinen Text, daher ist das sein Name. Ohne Eintrag wird der Button als „Button“ vorgelesen. Beim Wählen der Objekt-ID wird er mit dem Objektnamen gefüllt.
+
 **Symbol**
 
 - **Bild** / **aktives Bild** – Material-Design-Iconname oder Bildquelle, das
