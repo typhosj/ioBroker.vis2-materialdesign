@@ -452,3 +452,44 @@ describe('button accessible name', () => {
         expect(setValue).toHaveBeenCalledWith('test.0.value', 1);
     });
 });
+
+// Brightness only darkens: on a dark icon (the M3 light theme) the dimming was invisible.
+describe('icon slider colorize', () => {
+    const Slider = createButtonClass({ id: 'test-slider', name: 'slider', kind: 'slider', layout: 'icon', label: '', icon: 'lightbulb' });
+    const render = (rxData: Record<string, unknown>, current: ioBroker.StateValue | undefined): string => {
+        const instance = fixture<{ state: unknown; renderWidgetBody: (props: unknown) => React.JSX.Element }>(
+            new Slider(fixture<ConstructorParameters<typeof Slider>[0]>({ context: { setValue: vi.fn() } })),
+        );
+        instance.state = fixture<typeof instance.state>({ rxData: { oid: 'test.0.dim', colorize: true, ...rxData }, values: { 'test.0.dim.val': current } });
+        return renderToStaticMarkup(instance.renderWidgetBody(fixture<Parameters<typeof instance.renderWidgetBody>[0]>({})));
+    };
+    const opacity = (html: string): number | undefined => {
+        const match = /opacity:\s*([\d.]+)/.exec(html);
+        return match ? Number(match[1]) : undefined;
+    };
+
+    it('fades the icon instead of darkening it, so it shows on dark and light icons alike', () => {
+        const html = render({}, 0);
+        expect(html).not.toContain('brightness(');
+        expect(opacity(html)).toBe(0.5);
+    });
+
+    it('runs from 1 - factor at the minimum to full at the maximum', () => {
+        expect(opacity(render({ colorizeFactor: 0.8 }, 0))).toBeCloseTo(0.2);
+        expect(opacity(render({ colorizeFactor: 0.8 }, 50))).toBeCloseTo(0.6);
+        expect(opacity(render({ colorizeFactor: 0.8 }, 100))).toBe(1);
+        expect(opacity(render({ colorizeFactor: 0.8 }, 250))).toBe(1);
+        expect(opacity(render({ colorizeFactor: 0.8 }, -20))).toBeCloseTo(0.2);
+    });
+
+    it('clamps the factor and ignores an empty one', () => {
+        expect(opacity(render({ colorizeFactor: 3 }, 0))).toBe(0);
+        expect(opacity(render({ colorizeFactor: -1 }, 0))).toBe(1);
+        expect(opacity(render({ colorizeFactor: '' }, 0))).toBe(0.5);
+        expect(opacity(render({ colorizeFactor: 'abc' }, 0))).toBe(0.5);
+    });
+
+    it('leaves the icon untouched without colorize', () => {
+        expect(opacity(render({ colorize: false }, 0))).toBeUndefined();
+    });
+});
