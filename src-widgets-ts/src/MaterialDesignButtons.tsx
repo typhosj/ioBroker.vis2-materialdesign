@@ -757,11 +757,11 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
             const fgExplicit = on ? m3ColorExplicit(data.imageTrueColor) || m3ColorExplicit(data.mdwButtonSecondaryColor) : m3ColorExplicit(data.mdwButtonSecondaryColor) || m3ColorExplicit(data.imageColor);
             const labelExplicit = m3ColorExplicit(on ? data.labelColorTrue : data.labelColorFalse);
             const iconColor = isM3 && !fgExplicit ? 'currentColor' : secondary;
-            // `colorize`: the icon dims with the slider value. A brightness filter does that for
-            // every icon and image alike, without parsing the configured color or an M3 token.
+            // `colorize`: the icon fades with the slider value. Opacity works for every icon and image
+            // in both themes; a brightness filter only darkens and vanished on a dark (M3 light) icon.
             const colorizeFactor = Math.max(0, Math.min(1, numeric(data.colorizeFactor, 0.5)));
             const icon = data.colorize && def.kind === 'slider'
-                ? <span style={{ display: 'inline-flex', filter: `brightness(${1 - colorizeFactor + colorizeFactor * sliderRatio})` }}>{renderIcon(image, iconColor, iconSize, imageColorSet)}</span>
+                ? <span style={{ display: 'inline-flex', opacity: 1 - colorizeFactor + colorizeFactor * sliderRatio }}>{renderIcon(image, iconColor, iconSize, imageColorSet)}</span>
                 : renderIcon(image, iconColor, iconSize, imageColorSet);
             // Same condition as the label span below: only visible text names the button (WCAG 2.5.3).
             // Known limit: a label made only of markup (an <img> with alt) counts as no text, so the button is named by ariaLabel or "Button" and the image alt is not used.
