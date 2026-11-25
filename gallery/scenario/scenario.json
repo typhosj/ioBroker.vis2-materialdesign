@@ -501,6 +501,16 @@
         "write": true
       }
     },
+    "0_userdata.0.demo.general.keyboardWords": {
+      "type": "state",
+      "common": {
+        "name": "Keyboard words",
+        "type": "string",
+        "role": "json",
+        "read": true,
+        "write": true
+      }
+    },
     "0_userdata.0.demo.general.value": {
       "type": "state",
       "common": {
@@ -642,6 +652,7 @@
     "0_userdata.0.demo.calendar.events": "[]",
     "0_userdata.0.demo.notifications.alerts": "[]",
     "0_userdata.0.demo.general.text": "Hello from the demo",
+    "0_userdata.0.demo.general.keyboardWords": "{\"kitchen\":{\"w\":\"Kitchen\",\"n\":9,\"t\":1768410000000},\"hello\":{\"w\":\"Hello\",\"n\":7,\"t\":1768410000000},\"window\":{\"w\":\"Window\",\"n\":5,\"t\":1768410000000},\"shopping\":{\"w\":\"Shopping\",\"n\":4,\"t\":1768410000000},\"garden\":{\"w\":\"Garden\",\"n\":3,\"t\":1768410000000}}",
     "0_userdata.0.demo.general.value": 42,
     "0_userdata.0.demo.general.counter": 0,
     "0_userdata.0.demo.general.flag": false,

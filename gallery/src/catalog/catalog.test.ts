@@ -34,6 +34,17 @@ describe('catalog', () => {
         }
     }, 120_000);
 
+    it('gives the as-inserted variant the companion of the first example, so a keyboard has a field to serve', async () => {
+        const { widgetIndex, loadWidget } = await import('../runtime/widgets');
+        const { catalogEntry } = await import('./catalog');
+        const { EXAMPLES } = await import('./examples');
+        for (const { module } of widgetIndex) {
+            const entry = catalogEntry(module, (await loadWidget(module)).getWidgetInfo());
+            expect(entry.variants.at(-1)!.companion, module).toEqual(EXAMPLES[module]?.[0]?.companion);
+        }
+        expect(EXAMPLES.MaterialDesignKeyboard[0].companion).toBeDefined();
+    }, 120_000);
+
     it('points every variant id field at a scenario state or a theme state', async () => {
         const { widgetIndex, loadWidget } = await import('../runtime/widgets');
         const { catalogEntry } = await import('./catalog');

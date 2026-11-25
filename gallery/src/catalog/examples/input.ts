@@ -13,7 +13,7 @@ const note = { oid: `${D}general.text`, inputLayout: 'outlined', inputLabelText:
 const scene = { oid: `${D}general.scene`, inputLayout: 'outlined', inputLabelText: 'Scene', listDataMethod: 'multistatesObject' };
 const mode = { oid: `${D}climate.mode`, inputLayout: 'outlined', inputLabelText: 'Heating mode', listDataMethod: 'valueList', valueList: '0;1;2;3', valueListLabels: 'Off;Comfort;Eco;Away', valueListIcons: 'power;sofa;leaf;airplane' };
 const daypart = { oid: `${D}general.scene`, inputLayout: 'filled', inputLabelText: 'Scene', listDataMethod: 'valueList', valueList: 'morning;day;evening;night', valueListLabels: 'Morning;Day;Evening;Night', valueListIcons: 'weather-sunset-up;white-balance-sunny;weather-sunset;weather-night' };
-const keyboard = { keyboardShowOn: 'always', keyboardAnimation: 'none' };
+const keyboard = { keyboardShowOn: 'always', keyboardAnimation: 'none', keyboardWordsOid: `${D}general.keyboardWords` };
 const noteField = { module: 'MaterialDesignInput', data: { ...note, autoFocus: true }, size: FIELD };
 
 const toggles = (light: string, label: string, offId: string) => [
@@ -50,7 +50,7 @@ export const input: FamilyExamples = {
         { ...text('icons', 'Own list with icons', 'Eigene Liste mit Icons', 'Values, labels and icons from three lists in a filled field.', 'Werte, Beschriftungen und Icons aus drei Listen in einem gefüllten Feld.'), size: FIELD, data: daypart },
     ],
     MaterialDesignKeyboard: [
-        { ...typical('Opens below the focused text field, so the tablet keyboard stays closed.', 'Öffnet sich unter dem fokussierten Textfeld, damit die Tablet-Tastatur geschlossen bleibt.'), size: KEYBOARD, data: { ...keyboard, keyboardLanguage: 'en' }, companion: noteField },
+        { ...typical('Opens below the focused text field, so the tablet keyboard stays closed; the bar above the keys offers the learned words.', 'Öffnet sich unter dem fokussierten Textfeld, damit die Tablet-Tastatur geschlossen bleibt; die Leiste über den Tasten bietet die gelernten Wörter an.'), size: KEYBOARD, data: { ...keyboard, keyboardLanguage: 'en' }, companion: noteField },
         { ...text('german', 'German key map', 'Deutsche Belegung', 'QWERTZ with ä, ö, ü and ß.', 'QWERTZ mit ä, ö, ü und ß.'), size: KEYBOARD, data: { ...keyboard, keyboardLanguage: 'de' }, companion: noteField },
         { ...text('numbers', 'Number pad', 'Ziffernblock', 'A number field gets the number pad on its own.', 'Ein Zahlenfeld bekommt von selbst den Ziffernblock.'), size: KEYBOARD, data: keyboard, companion: { module: 'MaterialDesignInput', data: { oid: `${D}climate.setpoint`, inputType: 'number', inputLayout: 'outlined', inputLabelText: 'Set temperature', inputSuffix: '°C', autoFocus: true }, size: FIELD } },
     ],

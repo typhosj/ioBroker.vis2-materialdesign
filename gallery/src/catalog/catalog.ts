@@ -97,6 +97,8 @@ const DEFAULT_PATCH: Record<string, { data: Record<string, unknown> }> = {
     // A visitor's first look at an embedding widget must show the demo views, not an empty frame.
     MaterialDesignMasonryViews: { data: { countViews: 3, countCols: 2, ...GRID_VIEWS } },
     MaterialDesignGridViews: { data: { countViews: 3, viewColSpan: 6, ...GRID_VIEWS } },
+    // `touch` (the default) never opens on a desktop browser, so the gallery would show only the field.
+    MaterialDesignKeyboard: { data: { keyboardShowOn: 'always' } },
     MaterialDesignAdvancedViewInWidget: { data: { oid: demo('general.viewName'), View0: 'demo-lights' } },
     MaterialDesignAdvancedViewInWidget8: { data: { oid: demo('general.view'), count: 3, contains_view_0: 'demo-lights', contains_view_1: 'demo-climate', contains_view_2: 'demo-media' } },
     MaterialDesignButtonNavigation: { data: { nav_view: 'demo-climate' } },
@@ -119,6 +121,7 @@ function defaultsVariant(module: string, info: RxWidgetInfo): Variant {
         label: currentLang() === 'de' ? 'Standard (wie eingefügt)' : 'As inserted',
         data: { ...data, ...DEFAULT_PATCH[module]?.data },
         size: defaultSize(module),
+        companion: EXAMPLES[module]?.[0]?.companion,
     };
 }
 
