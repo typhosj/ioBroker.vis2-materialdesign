@@ -733,6 +733,8 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
             const sliderColor = isM3 && !m3ColorExplicit(data.foregroundColor) ? 'var(--md-sys-color-primary)' : color(data.foregroundColor, '#44739e');
             const sliderTrackColor = isM3 && !m3ColorExplicit(data.backgroundColor) ? 'var(--md-sys-color-surface-container-high)' : color(data.backgroundColor, '#eeeeee');
             const sliderRatio = sliderMax === sliderMin ? 0 : Math.max(0, Math.min(1, (sliderValue - sliderMin) / (sliderMax - sliderMin)));
+            // Trap: the fallback 54 is not the insert default 48 on purpose; widgets saved without a
+            // diameter (vis-1 imports, cleared field) have always drawn 54 and must keep their look.
             const sliderSize = Math.max(32, Math.min(160, Math.max(48, numeric(data.sliderWidth, 54))));
             const sliderStroke = Math.max(2, numeric(data.sliderThikness, 4));
             const sliderRadius = 22;
