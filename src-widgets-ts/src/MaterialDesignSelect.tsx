@@ -960,7 +960,7 @@ export default class MaterialDesignSelect extends VisWidget {
                                 borderBottom: enclosed ? 0 : `1px solid ${border}`,
                                 borderRadius: rounded ? 28 : shaped ? '16px 16px 0 0' : enclosed ? 4 : filled ? '4px 4px 0 0' : undefined,
                                 boxShadow: solo
-                                    ? '0 3px 1px -2px rgba(0,0,0,0.2), 0 2px 2px 0 rgba(0,0,0,0.14), 0 1px 5px 0 rgba(0,0,0,0.12)'
+                                    ? isM3 ? 'var(--md-sys-elevation-level1)' : '0 3px 1px -2px rgba(0,0,0,0.2), 0 2px 2px 0 rgba(0,0,0,0.14), 0 1px 5px 0 rgba(0,0,0,0.12)'
                                     : undefined,
                                 boxSizing: 'border-box',
                                 color: textColor,
