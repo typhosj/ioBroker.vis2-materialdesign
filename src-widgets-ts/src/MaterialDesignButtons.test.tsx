@@ -543,3 +543,13 @@ describe('icon slider colorize', () => {
         expect(opacity(render({}, 0, 'state'))).toBeUndefined();
     });
 });
+
+describe('icon slider diameter default', () => {
+    it('inserts a diameter the ring can actually have (48 to 160 px)', () => {
+        const Slider = createButtonClass({ id: 'test-slider', name: 'slider', kind: 'slider', layout: 'icon', label: '', icon: 'lightbulb' });
+        const info = fixture<{ getWidgetInfo(): { visAttrs?: Array<{ fields: Array<{ name: string; default?: unknown }> }> } }>(Slider).getWidgetInfo();
+        const fields = (info.visAttrs ?? []).flatMap(group => group.fields);
+        const diameter = fields.find(field => field.name === 'sliderWidth');
+        expect(diameter?.default).toBe(48);
+    });
+});
