@@ -15,7 +15,7 @@ function findAll(node: React.ReactNode, predicate: (el: El) => boolean, out: El[
     findAll(el.props.children as React.ReactNode, predicate, out);
     return out;
 }
-const style = (el: El | undefined): React.CSSProperties => (el?.props.style ?? {}) as React.CSSProperties;
+const style = (el: El | undefined): React.CSSProperties => (el?.props.style ?? {});
 
 function inputParts(inputLayout: unknown): { slot: React.CSSProperties; outline: React.CSSProperties | undefined } {
     const input = new MaterialDesignInput(fixture<ConstructorParameters<typeof MaterialDesignInput>[0]>({ context: {} }));
