@@ -668,6 +668,7 @@ export default class MaterialDesignSelect extends VisWidget {
         const solo = lay.includes('solo');
         const filled = lay.includes('filled');
         const rounded = lay.includes('rounded');
+        const shaped = lay.includes('shaped');
         const enclosed = outlined || solo;
         const selectedSlot = data.showSelectedIcon || 'prepend-inner';
         const configuredIcon =
@@ -957,7 +958,7 @@ export default class MaterialDesignSelect extends VisWidget {
                                             : color(data.inputLayoutBackgroundColor, filled ? (isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)') : 'transparent'),
                                 border: 0,
                                 borderBottom: enclosed ? 0 : `1px solid ${border}`,
-                                borderRadius: rounded ? 28 : enclosed ? 4 : filled ? '4px 4px 0 0' : undefined,
+                                borderRadius: rounded ? 28 : shaped ? '16px 16px 0 0' : enclosed ? 4 : filled ? '4px 4px 0 0' : undefined,
                                 boxShadow: solo
                                     ? '0 3px 1px -2px rgba(0,0,0,0.2), 0 2px 2px 0 rgba(0,0,0,0.14), 0 1px 5px 0 rgba(0,0,0,0.12)'
                                     : undefined,
@@ -981,7 +982,7 @@ export default class MaterialDesignSelect extends VisWidget {
                                     style={{
                                         backgroundColor: 'transparent',
                                         borderColor: outlinedBorder,
-                                        borderRadius: rounded ? 28 : 4,
+                                        borderRadius: rounded ? 28 : shaped ? '16px 16px 0 0' : 4,
                                         borderStyle: 'solid',
                                         borderWidth: this.open ? 2 : 1,
                                         bottom: -2,
