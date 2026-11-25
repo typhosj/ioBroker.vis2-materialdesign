@@ -154,6 +154,27 @@ describe('catalog', () => {
         expect(duplicates).toEqual([]);
     }, 120_000);
 
+    it('gives every example an English and German label and purpose', async () => {
+        const { EXAMPLES } = await import('./examples');
+        const { FAMILIES } = await import('./catalog');
+        // Families whose examples still carry the imported placeholder texts; each review round removes its own.
+        const PENDING_FAMILIES = new Set(['buttons', 'iconButtons', 'input', 'sliders', 'progress', 'values', 'lists', 'charts', 'calendar', 'views', 'navigation']);
+        const missing = new Map<string, string[]>();
+        for (const [module, examples] of Object.entries(EXAMPLES)) {
+            const family = FAMILIES[module].family;
+            for (const e of examples) {
+                for (const field of ['label', 'purpose'] as const) {
+                    for (const lang of ['en', 'de'] as const) {
+                        if (!e[field][lang].trim()) missing.set(family, [...(missing.get(family) ?? []), `${module}/${e.id}: ${field}.${lang}`]);
+                    }
+                }
+            }
+        }
+        const problems = [...missing].filter(([family]) => !PENDING_FAMILIES.has(family)).flatMap(([, list]) => list);
+        const stalePending = [...PENDING_FAMILIES].filter(family => !missing.has(family));
+        expect({ problems, stalePending }).toEqual({ problems: [], stalePending: [] });
+    });
+
     it('keeps expects entries unique by attribute and type', async () => {
         const { widgetIndex, loadWidget } = await import('../runtime/widgets');
         const { catalogEntry } = await import('./catalog');
