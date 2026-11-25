@@ -112,7 +112,7 @@
     "gallery:dev": "vite --config gallery/vite.config.ts",
     "gallery:build": "vite build --config gallery/vite.config.ts",
     "gallery:test:unit": "vitest run --config gallery/vitest.config.ts",
-    "gallery:test": "npm run gallery:test:unit && playwright test -c gallery/playwright.config.ts --project=smoke"
+    "gallery:test": "npm run gallery:test:unit && playwright test -c gallery/playwright.config.ts --project=smoke --project=variants"
   },
   "bugs": {
     "url": "https://github.com/typhosj/ioBroker.vis2-materialdesign/issues"

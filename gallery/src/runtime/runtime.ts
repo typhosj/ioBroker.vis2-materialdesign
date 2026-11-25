@@ -12,10 +12,11 @@ import { startTicker } from './ticker';
 export interface GalleryRuntime { store: Store; socket: FakeSocket; scenario: Scenario; setLive(live: boolean): void; isLive(): boolean; stop(): void }
 
 export const HISTORY_SEED = 20261123;
+export const TEST_NOW = new Date('2026-01-15T10:00:00+01:00');
 
 export function createRuntime(options: { test: boolean; now?: Date }): GalleryRuntime {
     const scenario = validateScenario(scenarioJson);
-    const store = new Store({ ...theme.states, ...scenario.states, ...dynamicStates(options.now ?? new Date()) }, scenario.objects, { ackDelayMs: options.test ? 0 : 150 });
+    const store = new Store({ ...theme.states, ...scenario.states, ...dynamicStates(options.now ?? (options.test ? TEST_NOW : new Date())) }, scenario.objects, { ackDelayMs: options.test ? 0 : 150 });
     const socket = createFakeSocket(store, { version: meta.version, history: scenario.history, seed: HISTORY_SEED });
     let live = !options.test;
     const stopTicker = options.test ? () => undefined : startTicker(store, scenario.ticker, mulberry32(HISTORY_SEED), () => !live || document.hidden);

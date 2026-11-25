@@ -12,5 +12,6 @@ export default defineConfig({
         { name: 'smoke', testMatch: /smoke\.spec\.ts/ },
         { name: 'visual', testMatch: /visual\.spec\.ts/ },
         { name: 'media', testMatch: /media\.spec\.ts/ },
+        { name: 'variants', testMatch: /variants\.spec\.ts/ },
     ],
 });
