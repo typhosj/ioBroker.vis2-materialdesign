@@ -544,12 +544,30 @@ describe('icon slider colorize', () => {
     });
 });
 
-describe('icon slider diameter default', () => {
+describe('icon slider diameter', () => {
+    const Slider = createButtonClass({ id: 'test-slider', name: 'slider', kind: 'slider', layout: 'icon', label: '', icon: 'lightbulb' });
+    const ring = (rxData: Record<string, unknown>): number => {
+        const instance = fixture<{ state: unknown; renderWidgetBody: (props: unknown) => React.JSX.Element }>(
+            new Slider(fixture<ConstructorParameters<typeof Slider>[0]>({ context: { setValue: vi.fn() } })),
+        );
+        instance.state = fixture<typeof instance.state>({ rxData: { oid: 'test.0.dim', showAlways: true, ...rxData }, values: {} });
+        const match = /<svg[^>]*width="(\d+)"/.exec(renderToStaticMarkup(instance.renderWidgetBody(fixture<Parameters<typeof instance.renderWidgetBody>[0]>({}))));
+        return Number(match?.[1]);
+    };
+
     it('inserts a diameter the ring can actually have (48 to 160 px)', () => {
-        const Slider = createButtonClass({ id: 'test-slider', name: 'slider', kind: 'slider', layout: 'icon', label: '', icon: 'lightbulb' });
         const info = fixture<{ getWidgetInfo(): { visAttrs?: Array<{ fields: Array<{ name: string; default?: unknown }> }> } }>(Slider).getWidgetInfo();
-        const fields = (info.visAttrs ?? []).flatMap(group => group.fields);
-        const diameter = fields.find(field => field.name === 'sliderWidth');
+        const diameter = (info.visAttrs ?? []).flatMap(group => group.fields).find(field => field.name === 'sliderWidth');
         expect(diameter?.default).toBe(48);
+        expect(ring({ sliderWidth: diameter?.default })).toBe(48);
+    });
+
+    it('keeps saved widgets as they were: the old default, values out of range and a missing value', () => {
+        expect(ring({ sliderWidth: 20 })).toBe(48);
+        expect(ring({ sliderWidth: 47 })).toBe(48);
+        expect(ring({ sliderWidth: 100 })).toBe(100);
+        expect(ring({ sliderWidth: 161 })).toBe(160);
+        expect(ring({ sliderWidth: '' })).toBe(54);
+        expect(ring({})).toBe(54);
     });
 });
