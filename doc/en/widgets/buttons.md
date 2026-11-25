@@ -47,7 +47,7 @@ rows, each with its own delay:
 
 The **icon** group takes a Material Design icon name or image source (with its
 own **active image** and on-state color) and puts the icon left or right of the
-text via **image position**. **colors** overrides the theme and **Locking**
+text via **image position**; an emptied icon field leaves a text-only button. **colors** overrides the theme and **Locking**
 requires an unlock click before the action runs — both groups only appear once
 **show advanced options** is ticked in **Common**. Vibration and the click sound
 have no group of their own and sit at the bottom of **Common**.

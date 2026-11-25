@@ -189,6 +189,39 @@ describe('state button active presentation (upstream #159)', () => {
     });
 });
 
+describe('button icon when the image field is empty', () => {
+    const render = (layout: 'default' | 'vertical' | 'icon', rxData: Record<string, unknown>, current?: ioBroker.StateValue): string => {
+        const Button = createButtonClass({ ...definition('state'), layout });
+        const instance = fixture<{ state: unknown; renderWidgetBody: (props: unknown) => React.JSX.Element }>(
+            new Button(fixture<ConstructorParameters<typeof Button>[0]>({ context: { setValue: vi.fn() } })),
+        );
+        instance.state = fixture<typeof instance.state>({ rxData: { oid: 'test.0.v', value: '1', buttontext: 'Scene', ...rxData }, values: { 'test.0.v.val': current } });
+        return renderToStaticMarkup(instance.renderWidgetBody(fixture<Parameters<typeof instance.renderWidgetBody>[0]>({})));
+    };
+
+    it('shows the default icon for a widget saved without the image key', () => {
+        expect(render('default', {})).toContain('mdi-plus');
+        expect(render('vertical', {})).toContain('mdi-plus');
+    });
+
+    it('shows no icon on a text button whose image field was emptied', () => {
+        for (const image of ['', null, '   ']) {
+            expect(render('default', { image })).not.toContain('class="mdi ');
+            expect(render('vertical', { image })).not.toContain('class="mdi ');
+            expect(render('default', { image })).toContain('Scene');
+        }
+    });
+
+    it('keeps the default icon on an icon button, which has nothing else to show', () => {
+        for (const image of ['', null, '   ']) expect(render('icon', { image })).toContain('mdi-plus');
+    });
+
+    it('still shows the on icon of a button without an off icon', () => {
+        expect(render('default', { image: '', imageTrue: 'check' }, 1)).toContain('mdi-check');
+        expect(render('default', { image: '', imageTrue: 'check' }, 2)).not.toContain('class="mdi ');
+    });
+});
+
 describe('Material Symbols as a second icon source', () => {
     const html = (value: string): string => renderToStaticMarkup(renderIcon(value, '#000', 24));
 

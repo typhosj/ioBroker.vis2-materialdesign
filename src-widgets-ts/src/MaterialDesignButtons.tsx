@@ -715,7 +715,10 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
             const isSliderIcon = isIcon && def.kind === 'slider';
             const flatButton = data.buttonStyle === 'text' || data.buttonStyle === 'outlined';
             const background = !isSliderIcon && (pressState.active || pressState.hovered) ? pressed : primary;
-            const image = on && data.imageTrue ? data.imageTrue : data.image || def.icon;
+            // Only a missing key means "never set": the editor fills the default icon on insert, so an
+            // emptied field is a deliberate text-only button. An icon button has nothing else to show.
+            const offImage = data.image === undefined ? def.icon : stringValue(data.image).trim() || (isIcon ? def.icon : '');
+            const image = on && data.imageTrue ? data.imageTrue : offImage;
             const imageColorSet = !!(on && data.imageTrue ? data.imageTrueColor : data.imageColor);
             const label = (on && data.labelTrue ? data.labelTrue : data.buttontext) || def.label;
             const iconFirst = isVertical ? data.iconPosition !== 'bottom' : data.iconPosition !== 'right';
