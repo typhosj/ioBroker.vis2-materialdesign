@@ -687,7 +687,8 @@ export default class MaterialDesignInput extends VisWidget {
                                     borderBottom: enclosed
                                         ? undefined
                                         : `${this.focused ? 2 : 1}px solid ${this.focused ? activeBorderColor : inactiveBorderColor}`,
-                                    borderRadius: layout.includes('rounded') ? 28 : enclosed ? 4 : undefined,
+                                    borderRadius: layout.includes('rounded') ? 28 : layout.includes('shaped') ? '16px 16px 0 0' : enclosed ? 4 : undefined,
+                                    boxShadow: layout.includes('solo') ? '0 3px 1px -2px rgba(0,0,0,0.2), 0 2px 2px 0 rgba(0,0,0,0.14), 0 1px 5px 0 rgba(0,0,0,0.12)' : undefined,
                                     boxSizing: 'border-box',
                                     cursor: 'text',
                                     display: 'flex',
@@ -706,7 +707,7 @@ export default class MaterialDesignInput extends VisWidget {
                                             // positioned absolutely to span the slot.
                                             backgroundColor: 'transparent',
                                             borderColor,
-                                            borderRadius: layout.includes('rounded') ? 28 : 4,
+                                            borderRadius: layout.includes('rounded') ? 28 : layout.includes('shaped') ? '16px 16px 0 0' : 4,
                                             borderStyle: 'solid',
                                             borderWidth: this.focused ? 2 : 1,
                                             bottom: 0,
