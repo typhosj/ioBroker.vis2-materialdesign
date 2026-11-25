@@ -158,7 +158,7 @@ describe('catalog', () => {
         const { EXAMPLES } = await import('./examples');
         const { FAMILIES } = await import('./catalog');
         // Families whose examples still carry the imported placeholder texts; each review round removes its own.
-        const PENDING_FAMILIES = new Set(['iconButtons', 'input', 'sliders', 'progress', 'values', 'lists', 'charts', 'calendar', 'views', 'navigation']);
+        const PENDING_FAMILIES = new Set(['input', 'sliders', 'progress', 'values', 'lists', 'charts', 'calendar', 'views', 'navigation']);
         const missing = new Map<string, string[]>();
         for (const [module, examples] of Object.entries(EXAMPLES)) {
             const family = FAMILIES[module].family;

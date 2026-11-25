@@ -1,48 +1,59 @@
-import type { FamilyExamples } from '../example';
+import type { Example, FamilyExamples } from '../example';
+
+const S = { width: 48, height: 48 };
+const D = '0_userdata.0.demo.';
+
+const typical = (en: string, de: string): Pick<Example, 'id' | 'label' | 'purpose'> => ({ id: 'typical', label: { en: 'Typical', de: 'Typisch' }, purpose: { en, de } });
+const m3 = (variant: 'filled' | 'tonal' | 'outlined', en: string, de: string): Pick<Example, 'id' | 'label' | 'purpose' | 'designStyle'> => ({
+    id: variant,
+    label: { en: variant[0].toUpperCase() + variant.slice(1), de: { filled: 'Gefüllt', tonal: 'Tonal', outlined: 'Umrandet' }[variant] },
+    purpose: { en, de },
+    designStyle: 'material3',
+});
+const locked = { id: 'locked', label: { en: 'Locked', de: 'Gesperrt' }, purpose: { en: 'The first tap unlocks, the second one acts; it locks again after 10 s.', de: 'Der erste Tipp entsperrt, der zweite löst aus; nach 10 s sperrt er wieder.' } };
+const pin = { id: 'lock-pin', label: { en: 'Lock with PIN', de: 'Sperre mit PIN' }, purpose: { en: 'Unlocking asks for the PIN 1234, for a door or an alarm system.', de: 'Das Entsperren fragt die PIN 1234 ab, etwa für eine Tür oder Alarmanlage.' } };
+
+const scene = { image: 'weather-night', ariaLabel: 'Night scene', oid: `${D}general.scene`, value: 'night' };
+const light = { image: 'lightbulb-outline', imageTrue: 'lightbulb-on', ariaLabel: 'Living room light', oid: `${D}living.light` };
+const dimmer = { image: 'lightbulb', ariaLabel: 'Living room dimmer', oid: `${D}living.dimmer`, showAlways: true, sliderWidth: 64 };
+const volume = { image: 'volume-plus', ariaLabel: 'Volume up', oid: `${D}media.volume`, value: 5, minmax: '0;100' };
+const RING = { width: 72, height: 72 };
 
 export const iconButtons: FamilyExamples = {
     MaterialDesignIconButtonNavigation: [
-        { id: 'typical', label: { en: 'Typical', de: 'Typical' }, purpose: { en: '', de: '' }, size: { width: 300, height: 60 }, data: { nav_view: 'demo-climate' } },
-        { id: 'thermometer', label: { en: 'Climate icon', de: 'Climate icon' }, purpose: { en: '', de: '' }, size: { width: 48, height: 48 }, data: { image: 'thermometer', nav_view: 'demo-climate' } },
-        { id: 'home', label: { en: 'Home icon', de: 'Home icon' }, purpose: { en: '', de: '' }, size: { width: 48, height: 48 }, data: { image: 'home', nav_view: 'demo-lights' } },
-        { id: 'lock-pin', label: { en: 'With lock and PIN 1234', de: 'With lock and PIN 1234' }, purpose: { en: '', de: '' }, size: { width: 48, height: 48 }, data: { image: 'thermometer', nav_view: 'demo-climate', lockEnabled: true, lockPin: '1234' } },
+        { ...typical('Opens the climate view from a compact row of view icons.', 'Öffnet die Klima-Ansicht aus einer kompakten Reihe von Ansichts-Icons.'), size: S, data: { image: 'thermometer', ariaLabel: 'Climate', nav_view: 'demo-climate' } },
+        { ...m3('filled', 'A filled container marks the main destination, as in a navigation rail.', 'Ein gefüllter Container hebt das Hauptziel hervor, wie in einer Navigationsleiste.'), size: S, data: { image: 'home', ariaLabel: 'Home', nav_view: 'demo-lights', md3IconButtonVariant: 'filled' } },
     ],
     MaterialDesignIconButtonLink: [
-        { id: 'typical', label: { en: 'Typical', de: 'Typical' }, purpose: { en: '', de: '' }, size: { width: 300, height: 60 }, data: {} },
-        { id: 'link', label: { en: 'Link icon', de: 'Link icon' }, purpose: { en: '', de: '' }, size: { width: 48, height: 48 }, data: { image: 'link-variant', href: '#/widget/Switch' } },
-        { id: 'open', label: { en: 'Open icon', de: 'Open icon' }, purpose: { en: '', de: '' }, size: { width: 48, height: 48 }, data: { image: 'open-in-new', href: '#/widget/Switch' } },
-        { id: 'lock-pin', label: { en: 'With lock and PIN 1234', de: 'With lock and PIN 1234' }, purpose: { en: '', de: '' }, size: { width: 48, height: 48 }, data: { image: 'link-variant', href: '#/widget/Switch', lockEnabled: true, lockPin: '1234' } },
+        { ...typical('Opens a web page in a new window, for example a camera or the router.', 'Öffnet eine Webseite in einem neuen Fenster, etwa eine Kamera oder den Router.'), size: S, data: { image: 'open-in-new', ariaLabel: 'ioBroker website', href: 'https://www.iobroker.net', openNewWindow: true } },
+        { ...m3('outlined', 'An outline sets a link apart from the action buttons beside it.', 'Eine Umrandung hebt einen Link von den Aktions-Buttons daneben ab.'), size: S, data: { image: 'open-in-new', ariaLabel: 'ioBroker website', href: 'https://www.iobroker.net', openNewWindow: true, md3IconButtonVariant: 'outlined' } },
     ],
     MaterialDesignIconButtonState: [
-        { id: 'typical', label: { en: 'Typical', de: 'Typical' }, purpose: { en: '', de: '' }, size: { width: 300, height: 60 }, data: { oid: '0_userdata.0.demo.general.value' } },
-        { id: 'standard', label: { en: 'standard', de: 'standard' }, purpose: { en: '', de: '' }, size: { width: 48, height: 48 }, data: { oid: '0_userdata.0.demo.general.counter', value: '5' } },
-        { id: 'filled', label: { en: 'filled', de: 'filled' }, purpose: { en: '', de: '' }, size: { width: 48, height: 48 }, data: { oid: '0_userdata.0.demo.general.counter', value: '5', md3IconButtonVariant: 'filled' } },
-        { id: 'tonal', label: { en: 'tonal', de: 'tonal' }, purpose: { en: '', de: '' }, size: { width: 48, height: 48 }, data: { oid: '0_userdata.0.demo.general.counter', value: '5', md3IconButtonVariant: 'tonal' } },
-        { id: 'outlined', label: { en: 'outlined', de: 'outlined' }, purpose: { en: '', de: '' }, size: { width: 48, height: 48 }, data: { oid: '0_userdata.0.demo.general.counter', value: '5', md3IconButtonVariant: 'outlined' } },
-        { id: 'read-only-disabled', label: { en: 'Read only (disabled)', de: 'Read only (disabled)' }, purpose: { en: '', de: '' }, size: { width: 48, height: 48 }, data: { oid: '0_userdata.0.demo.general.counter', value: '5', md3IconButtonVariant: 'filled' } },
-        { id: 'large-target-56-px', label: { en: 'Large target (56 px)', de: 'Large target (56 px)' }, purpose: { en: '', de: '' }, size: { width: 56, height: 56 }, data: { oid: '0_userdata.0.demo.general.counter', value: '5', md3IconButtonVariant: 'tonal' } },
+        { ...typical('Writes a fixed value, here the scene "night".', 'Schreibt einen festen Wert, hier die Szene „night“.'), size: S, data: scene },
+        { id: 'active', label: { en: 'Highlights the current value', de: 'Hebt den aktuellen Wert hervor' }, purpose: { en: 'The scene is already "evening", so the button shows its on color and icon.', de: 'Die Szene steht schon auf „evening“, daher zeigt der Button Ein-Farbe und Ein-Icon.' }, size: S, data: { ...scene, image: 'weather-sunset', imageTrue: 'check', ariaLabel: 'Evening scene', value: 'evening', colorBgTrue: '#2e7d32', imageTrueColor: '#ffffff' } },
+        { ...m3('filled', 'Material 3 filled icon button: the strongest emphasis.', 'Gefüllter Material-3-Icon-Button: die stärkste Betonung.'), size: S, data: { ...scene, md3IconButtonVariant: 'filled' } },
+        { ...m3('tonal', 'Material 3 tonal icon button: less weight than filled.', 'Tonaler Material-3-Icon-Button: weniger Gewicht als gefüllt.'), size: S, data: { ...scene, md3IconButtonVariant: 'tonal' } },
+        { ...m3('outlined', 'Material 3 outlined icon button: for a secondary action.', 'Umrandeter Material-3-Icon-Button: für eine Nebenaktion.'), size: S, data: { ...scene, md3IconButtonVariant: 'outlined' } },
+        { id: 'large', label: { en: 'Large target', de: 'Große Fläche' }, purpose: { en: '56 px and a 32 px icon for a wall tablet that is operated from a distance.', de: '56 px und ein 32-px-Icon für ein Wandtablet, das aus Abstand bedient wird.' }, size: { width: 56, height: 56 }, data: { ...scene, iconHeight: 32 } },
+        { ...locked, size: S, data: { ...scene, lockEnabled: true } },
     ],
     MaterialDesignIconButtonStateMulti: [
-        { id: 'typical', label: { en: 'Typical', de: 'Typical' }, purpose: { en: '', de: '' }, size: { width: 300, height: 60 }, data: { oid0: '0_userdata.0.demo.general.value', oid1: '0_userdata.0.demo.general.value' } },
-        { id: 'two-targets', label: { en: 'Scene with two targets', de: 'Scene with two targets' }, purpose: { en: '', de: '' }, size: { width: 48, height: 48 }, data: { image: 'weather-night', countOids: 2, oid0: '0_userdata.0.demo.general.scene', value0: 'night', oid1: '0_userdata.0.demo.living.light', value1: 'false' } },
-        { id: 'four-targets', label: { en: 'Scene with four targets', de: 'Scene with four targets' }, purpose: { en: '', de: '' }, size: { width: 48, height: 48 }, data: { image: 'power', countOids: 4, oid0: '0_userdata.0.demo.general.scene', value0: 'night', oid1: '0_userdata.0.demo.living.light', value1: 'false', oid2: '0_userdata.0.demo.kitchen.light', value2: 'false', oid3: '0_userdata.0.demo.hall.light', value3: 'false' } },
+        { ...typical('Writes several data points with one tap, here all lights off.', 'Schreibt mehrere Datenpunkte mit einem Tipp, hier alle Lichter aus.'), size: S, data: { image: 'lightbulb-group-off', ariaLabel: 'All lights off', countOids: 3, oid0: `${D}living.light`, value0: 'false', oid1: `${D}kitchen.light`, value1: 'false', oid2: `${D}terrace.light`, value2: 'false' } },
+        { id: 'delayed', label: { en: 'Scene with a delay', de: 'Szene mit Verzögerung' }, purpose: { en: 'Sets the scene and the light at once and closes the blind two seconds later.', de: 'Setzt Szene und Licht sofort und schließt den Rollladen zwei Sekunden später.' }, size: S, data: { image: 'weather-night', ariaLabel: 'Good night', countOids: 3, oid0: `${D}general.scene`, value0: 'night', oid1: `${D}living.light`, value1: 'false', oid2: `${D}living.blind`, value2: '0', delayInMs2: 2000 } },
     ],
     MaterialDesignIconButtonAdition: [
-        { id: 'typical', label: { en: 'Typical', de: 'Typical' }, purpose: { en: '', de: '' }, size: { width: 300, height: 60 }, data: { oid: '0_userdata.0.demo.general.value' } },
-        { id: 'step-plus-1', label: { en: 'Step +1', de: 'Step +1' }, purpose: { en: '', de: '' }, size: { width: 48, height: 48 }, data: { oid: '0_userdata.0.demo.general.counter', value: 1 } },
-        { id: 'step-minus-5', label: { en: 'Step -5', de: 'Step -5' }, purpose: { en: '', de: '' }, size: { width: 48, height: 48 }, data: { image: 'minus', oid: '0_userdata.0.demo.general.counter', value: -5 } },
-        { id: 'with-lock', label: { en: 'With lock', de: 'With lock' }, purpose: { en: '', de: '' }, size: { width: 48, height: 48 }, data: { oid: '0_userdata.0.demo.general.counter', value: 1, lockEnabled: true } },
+        { ...typical('Raises the volume by 5, at most to 100.', 'Erhöht die Lautstärke um 5, höchstens auf 100.'), size: S, data: volume },
+        { id: 'step-down', label: { en: 'Step down', de: 'Schritt abwärts' }, purpose: { en: 'A negative step counts down; 0 is the lower bound.', de: 'Ein negativer Schritt zählt abwärts; 0 ist die Untergrenze.' }, size: S, data: { ...volume, image: 'volume-minus', ariaLabel: 'Volume down', value: -5 } },
     ],
     MaterialDesignIconButtonToggle: [
-        { id: 'typical', label: { en: 'Typical', de: 'Typical' }, purpose: { en: '', de: '' }, size: { width: 300, height: 60 }, data: { oid: '0_userdata.0.demo.general.value' } },
-        { id: 'bulb', label: { en: 'Light bulb', de: 'Light bulb' }, purpose: { en: '', de: '' }, size: { width: 48, height: 48 }, data: { image: 'lightbulb-outline', imageTrue: 'lightbulb', oid: '0_userdata.0.demo.living.light' } },
-        { id: 'power', label: { en: 'Power icon', de: 'Power icon' }, purpose: { en: '', de: '' }, size: { width: 48, height: 48 }, data: { image: 'power', oid: '0_userdata.0.demo.living.light' } },
-        { id: 'lock-pin', label: { en: 'With lock and PIN 1234', de: 'With lock and PIN 1234' }, purpose: { en: '', de: '' }, size: { width: 48, height: 48 }, data: { image: 'lightbulb', oid: '0_userdata.0.demo.living.light', lockEnabled: true, lockPin: '1234' } },
+        { ...typical('Switches a light; the lit bulb shows that it is on.', 'Schaltet ein Licht; die leuchtende Birne zeigt, dass es an ist.'), size: S, data: light },
+        { id: 'off', label: { en: 'Off state', de: 'Aus-Zustand' }, purpose: { en: 'The same button on a light that is off: outline icon instead of the lit bulb.', de: 'Derselbe Button an einem ausgeschalteten Licht: Umriss-Icon statt leuchtender Birne.' }, size: S, data: { ...light, ariaLabel: 'Kitchen light', oid: `${D}kitchen.light` } },
+        { id: 'on-color', label: { en: 'Colored when on', de: 'Farbig wenn an' }, purpose: { en: 'An on background makes the state readable from across the room.', de: 'Ein Ein-Hintergrund macht den Zustand quer durch den Raum lesbar.' }, size: S, data: { ...light, colorBgTrue: '#f9a825', imageTrueColor: '#3e2723' } },
+        { ...pin, size: S, data: { ...light, image: 'lock-open-variant', imageTrue: 'lock', ariaLabel: 'Door lock', oid: `${D}contacts.lock`, lockEnabled: true, lockPin: '1234' } },
     ],
     MaterialDesignIconButtonSlider: [
-        { id: 'typical', label: { en: 'Typical', de: 'Typical' }, purpose: { en: '', de: '' }, size: { width: 300, height: 60 }, data: { oid: '0_userdata.0.demo.general.value' } },
-        { id: 'full-circle', label: { en: 'Full circle', de: 'Full circle' }, purpose: { en: '', de: '' }, size: { width: 120, height: 120 }, data: { oid: '0_userdata.0.demo.living.dimmer', image: 'lightbulb' } },
-        { id: 'half-circle', label: { en: 'Half circle', de: 'Half circle' }, purpose: { en: '', de: '' }, size: { width: 120, height: 120 }, data: { oid: '0_userdata.0.demo.living.dimmer', image: 'lightbulb', angleArc: 180, angleOffset: 270 } },
-        { id: 'slider-only', label: { en: 'Slider only', de: 'Slider only' }, purpose: { en: '', de: '' }, size: { width: 120, height: 120 }, data: { oid: '0_userdata.0.demo.living.dimmer', image: 'lightbulb', sliderOnly: true } },
+        { ...typical('A tap switches the dimmer between 0 and 100 %, the ring sets the level; the ring stays visible for touch screens.', 'Ein Tipp schaltet den Dimmer zwischen 0 und 100 %, der Ring stellt die Helligkeit ein; der Ring bleibt für Touchscreens sichtbar.'), size: RING, data: dimmer },
+        { id: 'half-circle', label: { en: 'Half circle', de: 'Halbkreis' }, purpose: { en: 'A 180° arc below the icon, like the dial of a thermostat.', de: 'Ein 180°-Bogen unter dem Icon, wie die Skala eines Thermostats.' }, size: RING, data: { ...dimmer, angleArc: 180, angleOffset: 270 } },
+        { id: 'colorize', label: { en: 'Icon dims with the level', de: 'Icon dimmt mit' }, purpose: { en: 'The icon gets darker the lower the level, so the brightness reads without the ring.', de: 'Das Icon wird dunkler, je niedriger der Wert ist, so ist die Helligkeit auch ohne Ring lesbar.' }, size: RING, data: { ...dimmer, image: 'lightbulb-on', ariaLabel: 'Bedroom dimmer', oid: `${D}bedroom.dimmer`, colorize: true } },
     ],
 };
