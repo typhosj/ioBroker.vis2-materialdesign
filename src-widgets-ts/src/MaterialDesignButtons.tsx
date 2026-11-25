@@ -5,7 +5,7 @@ import { symbolName } from './IconFilePicker';
 import { fill, withAutoFill, type FillMap } from './deviceFill';
 import { WidgetLock, lockPinField, type LockData } from './widgetLock';
 
-import { ariaLabelField, ariaName, accessibleText, isReadOnly, squarePreview, PressState, RenderProps, SliderWriter, VisWidget, createInfo, indexedFields, itemCount, designStyle, designStyleClasses, iconField, numberValue, parseActionValue, safeWidgetUrl, setStateValue, sizeCss, stateValue, sanitizeHtml, stringValue } from './widgetUtils';
+import { ariaLabelField, ariaName, accessibleText, isReadOnly, squarePreview, PressState, RenderProps, SliderWriter, VisWidget, createInfo, indexedFields, itemCount, designStyle, designStyleClasses, iconField, numberValue, parseActionValue, safeWidgetUrl, setStateValue, sizeCss, stateValue, sanitizeHtml, stringValue, textValue } from './widgetUtils';
 
 type ButtonKind = 'navigation' | 'link' | 'state' | 'multiState' | 'addition' | 'toggle' | 'slider';
 type ButtonLayout = 'default' | 'vertical' | 'icon';
@@ -717,9 +717,10 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
             const background = !isSliderIcon && (pressState.active || pressState.hovered) ? pressed : primary;
             // Only a missing key means "never set": the editor fills the default icon on insert, so an
             // emptied field is a deliberate text-only button. An icon button has nothing else to show.
-            const offImage = data.image === undefined ? def.icon : stringValue(data.image).trim() || (isIcon ? def.icon : '');
-            const image = on && data.imageTrue ? data.imageTrue : offImage;
-            const imageColorSet = !!(on && data.imageTrue ? data.imageTrueColor : data.imageColor);
+            const offImage = data.image === undefined ? def.icon : textValue(data.image).trim() || (isIcon ? def.icon : '');
+            const onImage = on ? textValue(data.imageTrue).trim() : '';
+            const image = onImage || offImage;
+            const imageColorSet = !!(onImage ? data.imageTrueColor : data.imageColor);
             const label = (on && data.labelTrue ? data.labelTrue : data.buttontext) || def.label;
             const iconFirst = isVertical ? data.iconPosition !== 'bottom' : data.iconPosition !== 'right';
             const iconSize = numeric(data.iconHeight, isVertical || isIcon ? 26 : 18);

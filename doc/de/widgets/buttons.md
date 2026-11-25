@@ -46,7 +46,7 @@ Objekt-/Wert-Zeilen mit jeweils eigener Verzögerung:
 
 Die Gruppe **Symbol** nimmt einen Material-Design-Iconnamen oder eine Bildquelle
 (mit eigenem **aktiven Bild** und eigener Farbe für den Ein-Zustand) und setzt
-über **Bildposition** das Icon links oder rechts vom Text; ein geleertes Symbol-Feld ergibt einen reinen Text-Button. **Farben**
+über **Bildposition** das Icon links oder rechts vom Text; ein geleertes Feld **Bild** ergibt einen reinen Text-Button. **Farben**
 überschreibt das Thema, **Verriegeln** verlangt einen Entsperr-Klick vor der
 Aktion — beide Gruppen erscheinen erst mit dem Schalter **Erweiterte Optionen
 anzeigen** in **Allgemein**. Vibration und Klickton stehen ohne eigene Gruppe

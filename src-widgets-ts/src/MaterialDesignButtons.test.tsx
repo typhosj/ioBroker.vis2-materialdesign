@@ -205,7 +205,7 @@ describe('button icon when the image field is empty', () => {
     });
 
     it('shows no icon on a text button whose image field was emptied', () => {
-        for (const image of ['', null, '   ']) {
+        for (const image of ['', null, 'null', '   ']) {
             expect(render('default', { image })).not.toContain('class="mdi ');
             expect(render('vertical', { image })).not.toContain('class="mdi ');
             expect(render('default', { image })).toContain('Scene');
@@ -213,12 +213,16 @@ describe('button icon when the image field is empty', () => {
     });
 
     it('keeps the default icon on an icon button, which has nothing else to show', () => {
-        for (const image of ['', null, '   ']) expect(render('icon', { image })).toContain('mdi-plus');
+        for (const image of ['', null, 'null', '   ']) expect(render('icon', { image })).toContain('mdi-plus');
     });
 
     it('still shows the on icon of a button without an off icon', () => {
         expect(render('default', { image: '', imageTrue: 'check' }, 1)).toContain('mdi-check');
         expect(render('default', { image: '', imageTrue: 'check' }, 2)).not.toContain('class="mdi ');
+    });
+
+    it('falls back to the off icon while on when the on icon is empty', () => {
+        for (const imageTrue of ['', null, 'null', '   ']) expect(render('default', { image: 'lightbulb', imageTrue }, 1)).toContain('mdi-lightbulb"');
     });
 });
 
