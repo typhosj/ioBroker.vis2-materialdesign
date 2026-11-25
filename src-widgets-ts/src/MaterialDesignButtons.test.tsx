@@ -492,16 +492,19 @@ describe('button accessible name', () => {
 
 // Brightness only darkens: on a dark icon (the M3 light theme) the dimming was invisible.
 describe('icon slider colorize', () => {
-    const Slider = createButtonClass({ id: 'test-slider', name: 'slider', kind: 'slider', layout: 'icon', label: '', icon: 'lightbulb' });
-    const render = (rxData: Record<string, unknown>, current: ioBroker.StateValue | undefined): string => {
+    const render = (rxData: Record<string, unknown>, current: ioBroker.StateValue | undefined, kind: 'slider' | 'state' = 'slider'): string => {
+        const Button = createButtonClass({ id: `test-${kind}`, name: kind, kind, layout: 'icon', label: '', icon: 'lightbulb' });
         const instance = fixture<{ state: unknown; renderWidgetBody: (props: unknown) => React.JSX.Element }>(
-            new Slider(fixture<ConstructorParameters<typeof Slider>[0]>({ context: { setValue: vi.fn() } })),
+            new Button(fixture<ConstructorParameters<typeof Button>[0]>({ context: { setValue: vi.fn() } })),
         );
-        instance.state = fixture<typeof instance.state>({ rxData: { oid: 'test.0.dim', colorize: true, ...rxData }, values: { 'test.0.dim.val': current } });
+        instance.state = fixture<typeof instance.state>({ rxData: { oid: 'test.0.dim', colorize: true, showAlways: true, ...rxData }, values: { 'test.0.dim.val': current } });
         return renderToStaticMarkup(instance.renderWidgetBody(fixture<Parameters<typeof instance.renderWidgetBody>[0]>({})));
     };
+    // Only the span around the icon may fade: the ring and the lock badge stay fully visible.
     const opacity = (html: string): number | undefined => {
-        const match = /opacity:\s*([\d.]+)/.exec(html);
+        expect((html.match(/opacity:/g) ?? []).length).toBeLessThanOrEqual(1);
+        const match = /display:inline-flex;opacity:([\d.]+)"><span class="mdi mdi-lightbulb"/.exec(html);
+        if (!match && html.includes('opacity:')) throw new Error('opacity is not on the icon span');
         return match ? Number(match[1]) : undefined;
     };
 
@@ -512,21 +515,31 @@ describe('icon slider colorize', () => {
     });
 
     it('runs from 1 - factor at the minimum to full at the maximum', () => {
-        expect(opacity(render({ colorizeFactor: 0.8 }, 0))).toBeCloseTo(0.2);
-        expect(opacity(render({ colorizeFactor: 0.8 }, 50))).toBeCloseTo(0.6);
-        expect(opacity(render({ colorizeFactor: 0.8 }, 100))).toBe(1);
-        expect(opacity(render({ colorizeFactor: 0.8 }, 250))).toBe(1);
-        expect(opacity(render({ colorizeFactor: 0.8 }, -20))).toBeCloseTo(0.2);
+        expect(opacity(render({ colorizeFactor: 0.6 }, 0))).toBeCloseTo(0.4);
+        expect(opacity(render({ colorizeFactor: 0.6 }, 50))).toBeCloseTo(0.7);
+        expect(opacity(render({ colorizeFactor: 0.6 }, 100))).toBe(1);
+        expect(opacity(render({ colorizeFactor: 0.6 }, 250))).toBe(1);
+        expect(opacity(render({ colorizeFactor: 0.6 }, -20))).toBeCloseTo(0.4);
     });
 
-    it('clamps the factor and ignores an empty one', () => {
-        expect(opacity(render({ colorizeFactor: 3 }, 0))).toBe(0);
+    it('never fades the icon below 20 %, so a large factor does not leave an empty button', () => {
+        expect(opacity(render({ colorizeFactor: 1 }, 0))).toBeCloseTo(0.2);
+        expect(opacity(render({ colorizeFactor: 3 }, 0))).toBeCloseTo(0.2);
+        expect(opacity(render({ colorizeFactor: 1 }, 100))).toBe(1);
+    });
+
+    it('clamps a negative factor and ignores an empty one', () => {
         expect(opacity(render({ colorizeFactor: -1 }, 0))).toBe(1);
         expect(opacity(render({ colorizeFactor: '' }, 0))).toBe(0.5);
         expect(opacity(render({ colorizeFactor: 'abc' }, 0))).toBe(0.5);
     });
 
-    it('leaves the icon untouched without colorize', () => {
+    it('stays at the floor of the factor when minimum and maximum are equal', () => {
+        expect(opacity(render({ valueOff: 50, valueOn: 50 }, 50))).toBe(0.5);
+    });
+
+    it('leaves the icon untouched without colorize or on a button that is no slider', () => {
         expect(opacity(render({ colorize: false }, 0))).toBeUndefined();
+        expect(opacity(render({}, 0, 'state'))).toBeUndefined();
     });
 });

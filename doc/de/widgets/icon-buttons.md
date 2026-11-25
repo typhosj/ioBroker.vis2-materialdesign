@@ -50,7 +50,7 @@ Die Variante **Slider** macht aus dem Button einen kreisförmigen Wert-Slider:
   anzeigen** hält ihn sichtbar; ohne den Schalter erscheint er nur bei Hover
   oder Berührung.
 - **Einfärben** / **Einfärbungsfaktor** – dimmt das Icon mit sinkendem Wert; der
-  Faktor (Vorgabe 0,5) bestimmt, wie stark.
+  Faktor (Vorgabe 0,5) bestimmt, wie stark; unter 20 % blendet das Icon nie aus.
 
 Unterstützt werden Material-Design-Iconnamen, lokale Bilder, URLs und Data-URLs.
 

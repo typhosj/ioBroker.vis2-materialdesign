@@ -50,7 +50,7 @@ The **Slider** variant turns the button into a circular value slider:
 - **Show in front** puts the arc above the icon instead of below it, **Always
   show** keeps it visible; without it the arc only appears on hover or touch.
 - **Colorize** / **Colorize factor** – dims the icon as the value drops; the
-  factor (0.5 by default) sets how strongly.
+  factor (0.5 by default) sets how strongly; the icon never fades below 20 %.
 
 Material Design icon names, local image paths, URLs and data URLs are supported.
 Single-color SVGs can be recolored with the icon color.
