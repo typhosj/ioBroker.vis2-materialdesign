@@ -92,9 +92,9 @@ test('Select writes the chosen option to its data point', async ({ page }) => {
 
 test('Button State Multi writes its data point', async ({ page }) => {
     await visit(page, '#/widget/Button%20State%20Multi');
-    const before = await read(page, 'general.value');
+    const before = await read(page, 'living.light');
     await frame(page).locator('.vis-widget button').first().click();
-    await expect(datapoint(page, 'general.value')).not.toHaveValue(before);
+    await expect(datapoint(page, 'living.light')).not.toHaveValue(before);
 });
 
 test('closing an alert removes it from the data point', async ({ page }) => {
