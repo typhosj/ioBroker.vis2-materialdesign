@@ -5,11 +5,11 @@ import { DEMO_PREFIX } from '../runtime/scenario';
 import { entryByModule } from '../runtime/widgets';
 import { currentLang } from '../runtime/i18n';
 import { defaultData, expandFields } from '../runtime/widgetInfo';
-import { DEFAULTS_ID, defaultSize, toVariant } from './example';
+import { DEFAULTS_ID, type Example, defaultSize, toVariant } from './example';
 import { EXAMPLES } from './examples';
 
 export type Family = 'buttons' | 'iconButtons' | 'input' | 'sliders' | 'progress' | 'values' | 'lists' | 'charts' | 'calendar' | 'views' | 'navigation';
-export interface Variant { id: string; label: string; purpose?: string; data: Record<string, unknown>; size: { width: number | 'fill'; height: number }; designStyle?: 'legacy' | 'material3'; states?: Record<string, ioBroker.StateValue> }
+export interface Variant { id: string; label: string; purpose?: string; data: Record<string, unknown>; size: { width: number | 'fill'; height: number }; designStyle?: 'legacy' | 'material3'; states?: Record<string, ioBroker.StateValue>; companion?: Example['companion'] }
 export interface CatalogEntry { module: string; name: string; tpl: string; family: Family; doc: string; description: { en: string; de: string }; expects: Array<{ attr: string; type: string; roles: string[] }>; variants: Variant[]; excluded?: string }
 
 const B = (doc: string) => ({ family: 'buttons' as const, doc });

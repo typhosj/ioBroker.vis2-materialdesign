@@ -8,6 +8,7 @@ export interface Example {
     data: Record<string, unknown>;
     designStyle?: 'legacy' | 'material3';
     states?: Record<string, ioBroker.StateValue>;
+    companion?: { module: string; data: Record<string, unknown>; size: { width: number; height: number } };
 }
 export type FamilyExamples = Record<string, Example[]>;
 

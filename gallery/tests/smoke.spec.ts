@@ -63,9 +63,9 @@ const read = (page: Page, id: string) => datapoint(page, id).inputValue();
 
 test('operating a widget changes its state and the data point', async ({ page }) => {
     await visit(page, '#/widget/Switch?variant=switch-off');
-    const before = await read(page, 'living.light');
+    const before = await read(page, 'kitchen.light');
     await frame(page).locator('.vis-widget').first().click();
-    await expect(datapoint(page, 'living.light')).not.toHaveValue(before);
+    await expect(datapoint(page, 'kitchen.light')).not.toHaveValue(before);
 });
 
 test('Checkbox writes its data point', async ({ page }) => {
@@ -84,10 +84,10 @@ test('Slider writes its data point on a key press', async ({ page }) => {
 });
 
 test('Select writes the chosen option to its data point', async ({ page }) => {
-    await visit(page, '#/widget/Select?variant=regular');
+    await visit(page, '#/widget/Select');
     await frame(page).locator('.vis-widget button').first().click();
-    await frame(page).locator('.v-list-item', { hasText: 'Kitchen' }).click();
-    await expect(datapoint(page, 'general.scene')).toHaveValue('2');
+    await frame(page).locator('.v-list-item', { hasText: 'Night' }).click();
+    await expect(datapoint(page, 'general.scene')).toHaveValue('night');
 });
 
 test('Button State Multi writes its data point', async ({ page }) => {

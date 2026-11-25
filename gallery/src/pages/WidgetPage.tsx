@@ -1,7 +1,7 @@
 import type { RxWidgetInfo } from '@iobroker/types-vis-2';
 import React, { useEffect, useMemo, useState } from 'react';
 
-import { type CatalogEntry, catalogEntry } from '../catalog/catalog';
+import { type CatalogEntry, type Variant, catalogEntry } from '../catalog/catalog';
 import { FieldControls } from '../controls/FieldControls';
 import { currentLang, translate } from '../runtime/i18n';
 import { type GalleryRuntime, hostRuntime } from '../runtime/runtime';
@@ -56,7 +56,12 @@ export function WidgetFrame({ name, query, runtime }: { name: string; query: Gal
     }, [info, entry, query.variant]);
     if (!info || !entry || !data) return null;
     const variant = pickVariant(entry, query.variant);
-    return <div className="g-frame-body"><div className="g-frame-stage" style={{ width: variant.size.width === 'fill' ? 'calc(100% - 32px)' : variant.size.width, height: variant.size.height }}><WidgetInstance data={data} module={entry.module} query={query} runtime={shared} size={variant.size} /></div></div>;
+    const stage = (module: string, widgetData: Record<string, unknown>, size: Variant['size'], id?: string): React.JSX.Element => (
+        <div className="g-frame-stage" style={{ width: size.width === 'fill' ? 'calc(100% - 32px)' : size.width, height: size.height }}><WidgetInstance data={widgetData} id={id} module={module} query={query} runtime={shared} size={size} /></div>
+    );
+    const main = stage(entry.module, data, variant.size);
+    const { companion } = variant;
+    return <div className="g-frame-body">{companion ? <div className="g-frame-group">{stage(companion.module, { ...companion.data, designStyle: data.designStyle }, companion.size, 'companion')}{main}</div> : main}</div>;
 }
 
 export function WidgetPage({ name, query, runtime }: { name: string; query: GalleryQuery; runtime: GalleryRuntime }): React.JSX.Element | null {

@@ -21,6 +21,7 @@ a { color: var(--md-sys-color-primary); }
 .g-frame { transform-origin: 0 0; border: 0; display: block; }
 .g-frame-body { position: relative; display: flex; min-height: 100vh; }
 .g-frame-stage { position: relative; margin: auto; flex: none; }
+.g-frame-group { margin: auto; display: flex; flex-direction: column; align-items: center; gap: 16px; width: 100%; }
 .g-datapoints { border-collapse: collapse; max-width: 100%; }
 .g-datapoints th, .g-datapoints td { text-align: left; padding: 2px 8px; border-bottom: 1px solid var(--md-sys-color-outline-variant); word-break: break-all; }
 .g-toast { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); padding: 8px 16px; background: var(--md-sys-color-on-surface); color: var(--md-sys-color-surface); border-radius: 8px; z-index: 10; }

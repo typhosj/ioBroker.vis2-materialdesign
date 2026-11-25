@@ -138,6 +138,15 @@ describe('catalog', () => {
             for (const variant of variants) {
                 const known = new Set(expandFields(info, { ...defaultData(info), ...variant.data }).map(({ key }) => key));
                 for (const key of Object.keys(variant.data)) if (!known.has(key)) problems.push(`${module}/${variant.id}: ${key}`);
+                if (!variant.companion) continue;
+                const { module: other, data } = variant.companion;
+                const companionInfo = await loadWidget(other).then(W => W.getWidgetInfo(), () => undefined);
+                if (!companionInfo) { problems.push(`${module}/${variant.id}: unknown companion ${other}`); continue; }
+                const companionKnown = new Set(expandFields(companionInfo, { ...defaultData(companionInfo), ...data }).map(({ key }) => key));
+                for (const [key, value] of Object.entries(data)) {
+                    if (!companionKnown.has(key)) problems.push(`${module}/${variant.id}: companion ${key}`);
+                    if (typeof value === 'string' && value.startsWith('0_userdata.0.') && !(value in scenarioJson.states)) problems.push(`${module}/${variant.id}: companion ${value}`);
+                }
             }
         }
         expect(problems).toEqual([]);
@@ -158,7 +167,7 @@ describe('catalog', () => {
         const { EXAMPLES } = await import('./examples');
         const { FAMILIES } = await import('./catalog');
         // Families whose examples still carry the imported placeholder texts; each review round removes its own.
-        const PENDING_FAMILIES = new Set(['input', 'sliders', 'progress', 'values', 'lists', 'charts', 'calendar', 'views', 'navigation']);
+        const PENDING_FAMILIES = new Set(['sliders', 'progress', 'values', 'lists', 'charts', 'calendar', 'views', 'navigation']);
         const missing = new Map<string, string[]>();
         for (const [module, examples] of Object.entries(EXAMPLES)) {
             const family = FAMILIES[module].family;
