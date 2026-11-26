@@ -33,7 +33,7 @@ Anders als bei der [Liste](list.md) hat **jede Zelle ihre eigene Art**:
 - **Nur lesen** – zeigt den Zustand, schreibt aber nichts.
 - **Symbol / Symbolfarbe** und **Symbol aktiv / Symbolfarbe aktiv** – Aus- und Ein-Zustand des Icons; ohne Aktiv-Werte bleiben die normalen stehen.
 - **Beschriftung / zweiter Text** – Texte an der Zelle. Eine Zelle ohne Beschriftung, zweiten Text und Icon zeigt `Item 0`, `Item 1` usw., damit eine frisch eingefügte Liste sichtbar ist.
-- **Hintergrundfarbe des Buttons / Hintergrundfarbe des aktiven Buttons** – Füllung des Buttons. Ohne beide wird ein aktiver Button trotzdem markiert: in Material 3 mit der Primärfarbe, in Classic mit einer hellblauen Tönung. Eine **Hintergrundfarbe des Buttons** `transparent` schaltet die Markierung ab.
+- **Hintergrundfarbe des Buttons / Hintergrundfarbe des aktiven Buttons** – Füllung des Buttons. Ohne beide wird ein aktiver Button trotzdem markiert: in Material 3 mit der Primärfarbe (volle Breite: eine leichte Tönung davon), in Classic mit einem Ring in der Themenfarbe. Eine **Hintergrundfarbe des Buttons** `transparent` schaltet die Markierung ab.
 - **Wert anzeigen** (Vorgabe an) blendet den State-Wert ein, **Text, der an den Wert angehängt werden soll** hängt eine Einheit an.
 - **Farbe der Statusleiste (wenn aktiv) / Text der Statusleiste (wenn aktiv)** – schmaler Streifen am unteren Rand der Zelle.
 - **minimale Breite** und **x Prozent der Zeile verwenden** – Breite dieser einen Zelle abweichend vom Raster.

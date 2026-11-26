@@ -33,7 +33,7 @@ Unlike the [List](list.md), **every cell carries its own type**:
 - **Read only** – shows the state but writes nothing.
 - **icon / icon color** and **icon active / icon active color** – off- and on-state of the icon; without active values the normal ones stay.
 - **Label / second text** – the texts on the cell. A cell without label, second text and icon shows `Item 0`, `Item 1` and so on, so a freshly inserted list is visible.
-- **background color of button / background color of active button** – fill of the button. Without any of them an active button is marked anyway: in Material 3 by the primary color, in Classic by a light blue tint. A **background color of button** of `transparent` switches the mark off.
+- **background color of button / background color of active button** – fill of the button. Without any of them an active button is marked anyway: in Material 3 by the primary color (full width: a light tint of it), in Classic by a ring in the theme color. A **background color of button** of `transparent` switches the mark off.
 - **show value** (on by default) shows the state value, **text to append to value** adds a unit.
 - **status bar color (if active) / text of status bar (if active)** – narrow strip along the bottom of the cell.
 - **minimal width** and **use x percent of row** – width of this one cell, apart from the grid.
