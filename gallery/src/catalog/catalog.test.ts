@@ -76,7 +76,9 @@ describe('catalog', () => {
                 const where = `${module}/${variant.id} on ${oid}`;
                 // A progress bar in its default style shows a percentage of min..max; its unit only shows with progressValue.
                 const showsPercent = module.startsWith('MaterialDesignProgress') && ((variant.data.valueLabelStyle as string | undefined) ?? 'progressPercent') === 'progressPercent';
-                if (!showsPercent && typeof valueLabelUnit === 'string' && valueLabelUnit && common.unit && valueLabelUnit !== common.unit) problems.push(`${where}: unit ${valueLabelUnit}, data point ${common.unit}`);
+                // A calculation rescales the value (W to kW), so its unit differs from the data point by design.
+                const rescaled = typeof variant.data.calculate === 'string' && variant.data.calculate !== '';
+                if (!showsPercent && !rescaled && typeof valueLabelUnit === 'string' && valueLabelUnit && common.unit && valueLabelUnit !== common.unit) problems.push(`${where}: unit ${valueLabelUnit}, data point ${common.unit}`);
                 if (typeof min === 'number' && typeof common.min === 'number' && common.min < min) problems.push(`${where}: min ${min} above data point min ${common.min}`);
                 if (typeof max === 'number' && typeof common.max === 'number' && common.max > max) problems.push(`${where}: max ${max} below data point max ${common.max}`);
             }
@@ -119,10 +121,12 @@ describe('catalog', () => {
     it('offers at least two examples plus the as-inserted variant for every shown widget', async () => {
         const { widgetIndex, loadWidget } = await import('../runtime/widgets');
         const { catalogEntry } = await import('./catalog');
+        // Without a single option of their own, a second example could only change the size.
+        const NO_OPTIONS = new Set(['MaterialDesignInstalledVersion', 'MaterialDesignColorScheme']);
         const thin: string[] = [];
         for (const { module } of widgetIndex) {
             const entry = catalogEntry(module, (await loadWidget(module)).getWidgetInfo());
-            if (!entry.excluded && entry.variants.length < 3) thin.push(`${module}: ${entry.variants.length}`);
+            if (!entry.excluded && entry.variants.length < (NO_OPTIONS.has(module) ? 2 : 3)) thin.push(`${module}: ${entry.variants.length}`);
         }
         expect(thin).toEqual([]);
     }, 120_000);
@@ -178,7 +182,7 @@ describe('catalog', () => {
         const { EXAMPLES } = await import('./examples');
         const { FAMILIES } = await import('./catalog');
         // Families whose examples still carry the imported placeholder texts; each review round removes its own.
-        const PENDING_FAMILIES = new Set(['values', 'lists', 'charts', 'calendar', 'views', 'navigation']);
+        const PENDING_FAMILIES = new Set(['lists', 'charts', 'calendar', 'views', 'navigation']);
         const missing = new Map<string, string[]>();
         for (const [module, examples] of Object.entries(EXAMPLES)) {
             const family = FAMILIES[module].family;
