@@ -89,7 +89,7 @@ export const lists: FamilyExamples = {
         ], false) } },
     ],
     MaterialDesignIconList: [
-        { ...typical('Light tiles: a tap switches the light, the filled circle shows it is on.', 'Licht-Kacheln: ein Tipp schaltet das Licht, der gefüllte Kreis zeigt, dass es an ist.'), size: ICONS, data: { maxItemsperRow: 3, ...tiles(lightTiles, 'buttonToggle') } },
+        { ...typical('Light tiles: a tap switches the light, the marked button shows it is on.', 'Licht-Kacheln: ein Tipp schaltet das Licht, der markierte Button zeigt, dass es an ist.'), size: ICONS, data: { maxItemsperRow: 3, ...tiles(lightTiles, 'buttonToggle') } },
         { ...text('scenes', 'Scene buttons', 'Szenen-Buttons', 'Four buttons write their scene into one data point; square buttons.', 'Vier Buttons schreiben ihre Szene in einen Datenpunkt; eckige Buttons.'), size: { width: 480, height: 112 }, data: { buttonLayout: 'square', maxItemsperRow: 4, ...tiles(scenes, 'buttonState') } },
         { ...text('horizontal', 'Text beside the icon', 'Text neben dem Icon', 'Horizontal items in a card, for a narrow column.', 'Waagerechte Einträge in einer Karte, für eine schmale Spalte.'), size: { width: 220, height: 200 }, data: { itemLayout: 'horizontal', listLayout: 'card', maxItemsperRow: 1, ...tiles(lightTiles, 'buttonToggle') } },
         { ...text('menu', 'Menu to other views', 'Menü zu anderen Ansichten', 'Full-width buttons open other views, in an outlined card.', 'Breite Buttons öffnen andere Ansichten, in einer umrandeten Karte.'), size: { width: 360, height: 112 }, data: { buttonLayout: 'full', listLayout: 'cardOutlined', maxItemsperRow: 3, ...tiles(views.map(v => ({ label: v.label, icon: v.icon!, nav: v.nav })), 'buttonNav') } },
