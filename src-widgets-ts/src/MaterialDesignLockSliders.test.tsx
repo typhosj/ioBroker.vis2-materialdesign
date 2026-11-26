@@ -117,3 +117,34 @@ describe.each([
         expect(vi.getTimerCount()).toBe(0);
     });
 });
+
+describe('Round Slider read only and working', () => {
+    const track = (rxData: Record<string, unknown>, working?: unknown) => {
+        const w = new MaterialDesignRoundSlider(fixture<ConstructorParameters<typeof MaterialDesignRoundSlider>[0]>({ context: { setValue: vi.fn() } }));
+        w.state = fixture<typeof w.state>({ rxData: { oid: 'test.0.n', 'oid-working': 'test.0.w', ...rxData }, data: rxData, values: { 'test.0.n.val': 10, 'test.0.w.val': working } });
+        const tree = w.renderWidgetBody(fixture<Parameters<typeof w.renderWidgetBody>[0]>({}));
+        return { group: find(tree, el => el.type === 'g'), label: find(tree, el => el.props.className === 'labelValue') };
+    };
+
+    it.each([
+        ['read only', { readOnly: true }, undefined],
+        ['read only bound to "true"', { readOnly: 'true' }, undefined],
+        ['working', {}, true],
+        ['working as number', {}, 1],
+    ])('dims the track and the knob when %s, not the value', (_case, rxData, working) => {
+        const s = track(rxData, working);
+        expect(s.group?.props.opacity).toBe(0.38);
+        expect((s.label?.props.style as React.CSSProperties).opacity).toBeUndefined();
+    });
+
+    it.each([
+        ['active', {}, undefined],
+        ['read only off', { readOnly: false }, undefined],
+        ['read only bound to "false"', { readOnly: 'false' }, undefined],
+        ['working false', {}, false],
+        ['working empty', {}, ''],
+        ['working "false"', {}, 'false'],
+    ])('keeps full strength when %s', (_case, rxData, working) => {
+        expect(track(rxData, working).group?.props.opacity).toBeUndefined();
+    });
+});
