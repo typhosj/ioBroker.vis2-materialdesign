@@ -185,3 +185,44 @@ describe('alert count, clear all and editor examples (upstream #50)', () => {
         expect(w.html().match(/class="v-alert /g)).toHaveLength(3);
     });
 });
+
+describe('alert layouts', () => {
+    type El = React.ReactElement<Record<string, unknown>>;
+    const firstAlert = (rxData: Record<string, unknown>, entry: Record<string, unknown> = { text: 'a' }): React.CSSProperties => {
+        const find = (node: React.ReactNode): El | undefined => {
+            if (Array.isArray(node)) return node.map(find).find(Boolean);
+            if (!React.isValidElement(node)) return undefined;
+            const el = node as El;
+            return typeof el.props.className === 'string' && el.props.className.split(' ').includes('v-alert') ? el : find(el.props.children as React.ReactNode);
+        };
+        const tree = widget({ oid: 'a.0.alerts', ...rxData }, { 'a.0.alerts.val': JSON.stringify([entry]) }).renderWidgetBody(fixture<Parameters<MaterialDesignAlerts['renderWidgetBody']>[0]>({}));
+        return find(tree)!.props.style as React.CSSProperties;
+    };
+    const sides = (style: React.CSSProperties) => [style.borderTop, style.borderRight, style.borderBottom, style.borderLeft];
+
+    // A `border` shorthand next to the per-side stripe lost against the side properties in the browser,
+    // so the outline never showed.
+    it('outlines every side without a shorthand, in M3 with the outline token', () => {
+        const style = firstAlert({ alertLayouts: 'outlined', designStyle: 'material3' });
+        expect(style.border).toBeUndefined();
+        expect(sides(style)).toEqual(Array(4).fill('1px solid var(--md-sys-color-outline-variant)'));
+        expect(style.background).toBe('');
+        expect(firstAlert({ alertLayouts: 'outlined', designStyle: 'material3' }, { text: 'a', backgroundColor: '#fff3e0' }).background).toBe('#fff3e0');
+        expect(firstAlert({ designStyle: 'material3' }).background).toBe('var(--md-sys-color-surface-container)');
+    });
+
+    it('outlines a Classic alert in its text color, as the outlined Vuetify alert did', () => {
+        expect(sides(firstAlert({ alertLayouts: 'outlined' }))).toEqual(Array(4).fill('1px solid currentColor'));
+    });
+
+    it('keeps the stripe on its side of an outlined alert', () => {
+        const style = firstAlert({ alertLayouts: 'outlined', alertBorderLayout: 'left', designStyle: 'material3' }, { text: 'a', borderColor: '#e53935' });
+        expect(sides(style)).toEqual([...Array(3).fill('1px solid var(--md-sys-color-outline-variant)'), '6px solid #e53935']);
+    });
+
+    it('draws only the stripe on a normal alert, in the text color without a stripe color', () => {
+        expect(sides(firstAlert({ alertBorderLayout: 'top' }))).toEqual(['6px solid currentColor', undefined, undefined, undefined]);
+        expect(sides(firstAlert({}))).toEqual([undefined, undefined, undefined, undefined]);
+        expect(sides(firstAlert({ alertBorderLayout: 'bogus' }))).toEqual([undefined, undefined, undefined, undefined]);
+    });
+});
