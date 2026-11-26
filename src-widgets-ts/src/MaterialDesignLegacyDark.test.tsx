@@ -135,6 +135,7 @@ describe('checkbox edge and checkmark', () => {
         ['list, Classic', MaterialDesignList, checkboxRows, 'stroke="#ffffff"'],
         ['list, M3', MaterialDesignList, { ...checkboxRows, designStyle: 'material3' }, 'stroke="var(--md-sys-color-on-primary)"'],
         ['list, light own color', MaterialDesignList, { ...checkboxRows, colorCheckBox: '#ffee00' }, 'stroke="#1d1b20"'],
+        ['list, M3 unparseable own color', MaterialDesignList, { ...checkboxRows, designStyle: 'material3', colorCheckBox: 'yellow' }, 'stroke="var(--md-sys-color-on-primary)"'],
         ['widget, Classic', MaterialDesignCheckbox, { oid: 'a.0.on' }, 'stroke="#ffffff"'],
         ['widget, M3', MaterialDesignCheckbox, { oid: 'a.0.on', designStyle: 'material3' }, 'stroke="var(--md-sys-color-on-primary)"'],
         ['widget, light own color', MaterialDesignCheckbox, { oid: 'a.0.on', colorCheckBox: '#ffee00' }, 'stroke="#1d1b20"'],

@@ -707,10 +707,12 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
             // `outlined` and `text` drop the container, where a white label is invisible on the page
             // background; they fall back to the theme color. An explicit saved color still wins.
             const flatLegacy = data.buttonStyle === 'outlined' || data.buttonStyle === 'text';
-            const fillInk = inkOn(primary);
-            const secondary = color(on ? data.imageTrueColor || data.mdwButtonSecondaryColor : data.mdwButtonSecondaryColor || data.imageColor, def.layout === 'icon' || flatLegacy ? '#44739e' : fillInk ?? '#fff');
-            const labelColor = color(on ? data.labelColorTrue : data.labelColorFalse, secondary);
             const pressed = color(data.mdwButtonColorPress || data.colorPress, '#1565c0');
+            // Classic paints the press color while pressed or hovered; Material 3 keeps the fill and lays a state layer over it.
+            const painted = designStyle(data) !== 'material3' && !(def.layout === 'icon' && def.kind === 'slider') && (pressState.active || pressState.hovered) ? pressed : primary;
+            const fillInk = inkOn(painted);
+            const secondary = color(on ? data.imageTrueColor || data.mdwButtonSecondaryColor : data.mdwButtonSecondaryColor || data.imageColor, flatLegacy ? '#44739e' : def.layout === 'icon' ? fillInk ?? '#44739e' : fillInk ?? '#fff');
+            const labelColor = color(on ? data.labelColorTrue : data.labelColorFalse, secondary);
             const isVertical = def.layout === 'vertical';
             const isIcon = def.layout === 'icon';
             const isSliderIcon = isIcon && def.kind === 'slider';

@@ -1032,10 +1032,22 @@ export function m3OnColor(color: string): string | undefined {
     return contrastRatio(rgb, parseColor(ON_LIGHT)!) >= contrastRatio(rgb, parseColor(ON_DARK)!) ? ON_LIGHT : ON_DARK;
 }
 
+function alpha(color: string): number {
+    const c = color.trim();
+    const hex = /^#[0-9a-f]+$/i.test(c) ? c.slice(1) : '';
+    if (hex.length === 4) return parseInt(hex[3] + hex[3], 16) / 255;
+    if (hex.length === 8) return parseInt(hex.slice(6), 16) / 255;
+    const args = c.match(/^rgba?\((.*)\)$/i)?.[1].split(/[\s,/]+/).filter(Boolean) ?? [];
+    if (args.length < 4) return 1;
+    return args[3].endsWith('%') ? parseFloat(args[3]) / 100 : parseFloat(args[3]);
+}
+
 /** Text color for a surface filled with `background`; `undefined` when it cannot be told. */
-// Known limit: alpha is ignored, and named colors are not resolved (the caller's fallback applies).
+// A translucent fill shows the page through, which no color here can know, so the caller's fallback applies.
+// Known limit: named colors are not resolved either.
 export function inkOn(background: string): string | undefined {
-    return background === 'var(--md-sys-color-primary)' ? 'var(--md-sys-color-on-primary)' : m3OnColor(background);
+    if (background === 'var(--md-sys-color-primary)') return 'var(--md-sys-color-on-primary)';
+    return alpha(background) < 1 ? undefined : m3OnColor(background);
 }
 
 // A role name is written into a CSS custom property name and the JSON comes from a writable state.
