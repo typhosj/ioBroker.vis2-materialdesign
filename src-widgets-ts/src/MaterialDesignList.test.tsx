@@ -168,3 +168,16 @@ describe('list toggle rows are named', () => {
         container.remove();
     });
 });
+
+describe('list read-only controls', () => {
+    const checkbox = { countListItems: 1, label0: 'Window', oid0: 'a.0.x' };
+
+    it('dims a read-only checkbox in Material 3, like the Checkbox widget', () => {
+        expect(render({ ...checkbox, designStyle: 'material3', listType: 'checkbox_readonly' })).toMatch(/class="mdc-checkbox"[^>]*opacity:0.38/);
+        expect(render({ ...checkbox, designStyle: 'material3', listType: 'checkbox' })).not.toMatch(/class="mdc-checkbox"[^>]*opacity:0.38/);
+    });
+
+    it('keeps the Classic read-only checkbox undimmed, as the Classic Checkbox widget', () => {
+        expect(render({ ...checkbox, listType: 'checkbox_readonly' })).not.toMatch(/class="mdc-checkbox"[^>]*opacity:0.38/);
+    });
+});

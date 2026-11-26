@@ -98,7 +98,7 @@ function listToggle(kind: 'switch' | 'checkbox', on: boolean, readonly: boolean,
     }
     const cbColor = isM3 && !s(data.colorCheckBox) ? 'var(--md-sys-color-primary)' : s(data.colorCheckBox, '#44739e');
     return (
-        <span className="mdc-checkbox" style={{ boxSizing: 'border-box', flex: '0 0 auto', height: 40, position: 'relative', width: 40 }}>
+        <span className="mdc-checkbox" style={{ boxSizing: 'border-box', flex: '0 0 auto', height: 40, opacity: isM3 && readonly ? 0.38 : undefined, position: 'relative', width: 40 }}>
             {input}
             <span className="mdc-checkbox__background" style={{ background: on ? cbColor : 'transparent', border: `2px solid ${on ? cbColor : isM3 ? 'var(--md-sys-color-on-surface-variant)' : legacyInkMuted(isDark)}`, borderRadius: 2, boxSizing: 'border-box', height: 18, left: 11, position: 'absolute', top: 11, width: 18 }}>
                 <svg className="mdc-checkbox__checkmark" style={{ height: '100%', inset: 0, opacity: on ? 1 : 0, position: 'absolute', width: '100%' }} viewBox="0 0 24 24">
