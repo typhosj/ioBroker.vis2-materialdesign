@@ -571,3 +571,37 @@ describe('icon slider diameter', () => {
         expect(ring({})).toBe(54);
     });
 });
+
+describe('label on a filled button', () => {
+    type El = React.ReactElement<Record<string, unknown>>;
+    const button = (rxData: Record<string, unknown>): React.CSSProperties => {
+        const Button = createButtonClass(definition('navigation'));
+        const instance = new Button(fixture<ConstructorParameters<typeof Button>[0]>({ context: {} }));
+        instance.state = fixture<typeof instance.state>({ rxData: { buttontext: 'Go', ...rxData }, values: {} });
+        const find = (node: React.ReactNode): El | undefined => {
+            if (Array.isArray(node)) return node.map(find).find(Boolean);
+            if (!React.isValidElement(node)) return undefined;
+            const el = node as El;
+            return el.type === 'button' ? el : find(el.props.children as React.ReactNode);
+        };
+        return find(instance.renderWidgetBody(fixture<Parameters<typeof instance.renderWidgetBody>[0]>({})))!.props.style as React.CSSProperties;
+    };
+
+    it.each([
+        ['Classic default', {}, '#ffffff'],
+        ['Classic light own color', { mdwButtonPrimaryColor: '#ffee00' }, '#1d1b20'],
+        ['Classic dark own color', { mdwButtonPrimaryColor: '#003366' }, '#ffffff'],
+        ['Classic unparseable color', { mdwButtonPrimaryColor: 'yellow' }, '#fff'],
+        ['Classic explicit label color', { mdwButtonPrimaryColor: '#ffee00', mdwButtonSecondaryColor: '#ff0000' }, '#ff0000'],
+        ['M3 theme fill', { designStyle: 'material3' }, undefined],
+        ['M3 light own fill', { designStyle: 'material3', mdwButtonPrimaryColor: '#ffee00' }, '#1d1b20'],
+        ['M3 explicit label color', { designStyle: 'material3', mdwButtonPrimaryColor: '#ffee00', mdwButtonSecondaryColor: '#ff0000' }, '#ff0000'],
+    ])('%s', (_case, rxData, color) => {
+        expect(button(rxData).color).toBe(color);
+    });
+
+    it('keeps the theme color on a Classic outlined or text button', () => {
+        expect(button({ buttonStyle: 'outlined', mdwButtonPrimaryColor: '#ffee00' }).color).toBe('#ffee00');
+        expect(button({ buttonStyle: 'text' }).color).toBe('#44739e');
+    });
+});

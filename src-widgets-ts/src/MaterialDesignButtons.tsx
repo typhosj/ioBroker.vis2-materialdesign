@@ -5,7 +5,7 @@ import { symbolName } from './IconFilePicker';
 import { fill, withAutoFill, type FillMap } from './deviceFill';
 import { WidgetLock, lockPinField, type LockData } from './widgetLock';
 
-import { ariaLabelField, ariaName, accessibleText, isReadOnly, squarePreview, PressState, RenderProps, SliderWriter, VisWidget, createInfo, indexedFields, itemCount, designStyle, designStyleClasses, iconField, numberValue, parseActionValue, safeWidgetUrl, setStateValue, sizeCss, stateValue, sanitizeHtml, stringValue, textValue } from './widgetUtils';
+import { ariaLabelField, ariaName, accessibleText, isReadOnly, squarePreview, PressState, RenderProps, SliderWriter, VisWidget, createInfo, indexedFields, itemCount, designStyle, designStyleClasses, inkOn, iconField, numberValue, parseActionValue, safeWidgetUrl, setStateValue, sizeCss, stateValue, sanitizeHtml, stringValue, textValue } from './widgetUtils';
 
 type ButtonKind = 'navigation' | 'link' | 'state' | 'multiState' | 'addition' | 'toggle' | 'slider';
 type ButtonLayout = 'default' | 'vertical' | 'icon';
@@ -707,7 +707,8 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
             // `outlined` and `text` drop the container, where a white label is invisible on the page
             // background; they fall back to the theme color. An explicit saved color still wins.
             const flatLegacy = data.buttonStyle === 'outlined' || data.buttonStyle === 'text';
-            const secondary = color(on ? data.imageTrueColor || data.mdwButtonSecondaryColor : data.mdwButtonSecondaryColor || data.imageColor, def.layout === 'icon' || flatLegacy ? '#44739e' : '#fff');
+            const fillInk = inkOn(primary);
+            const secondary = color(on ? data.imageTrueColor || data.mdwButtonSecondaryColor : data.mdwButtonSecondaryColor || data.imageColor, def.layout === 'icon' || flatLegacy ? '#44739e' : fillInk ?? '#fff');
             const labelColor = color(on ? data.labelColorTrue : data.labelColorFalse, secondary);
             const pressed = color(data.mdwButtonColorPress || data.colorPress, '#1565c0');
             const isVertical = def.layout === 'vertical';
@@ -808,7 +809,7 @@ export function createButtonClass(def: ButtonDefinition): typeof VisWidget {
                             boxShadow: raisedLegacy ? (pressState.active ? '0 5px 5px -3px rgba(0,0,0,.2), 0 8px 10px 1px rgba(0,0,0,.14), 0 3px 14px 2px rgba(0,0,0,.12)' : '0 3px 1px -2px rgba(0,0,0,.2), 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12)') : undefined,
                             // Without a fill the primary color has to move to border and label — the on-primary
                             // color (white by default) would be invisible on the view background.
-                            color: isM3 ? (fgExplicit ? secondary : undefined) : flatButton && !isIcon ? primary : secondary,
+                            color: isM3 ? (fgExplicit ? secondary : bgExplicit ? fillInk : undefined) : flatButton && !isIcon ? primary : secondary,
                             cursor: isReadOnly(data) ? 'default' : 'pointer',
                             padding: isIcon ? 0 : '0 8px',
                             display: 'flex',
