@@ -342,9 +342,11 @@ export default class MaterialDesignRoundSlider extends VisWidget {
                     data-value={value.raw}
                     viewBox="0 0 100 100"
                 >
-                    <path d={arcPath(start, arc, radius)} fill="none" stroke={pathColor} strokeLinecap="butt" strokeWidth={sliderWidth} />
-                    {progressArc ? <path d={arcPath(start, progressArc, radius)} fill="none" stroke={barColor} strokeLinecap="butt" strokeWidth={sliderWidth} /> : null}
-                    <circle cx={handle.x} cy={handle.y} fill={handleColor} r={handleSize / 2} />
+                    <g opacity={disabled ? 0.38 : undefined}>
+                        <path d={arcPath(start, arc, radius)} fill="none" stroke={pathColor} strokeLinecap="butt" strokeWidth={sliderWidth} />
+                        {progressArc ? <path d={arcPath(start, progressArc, radius)} fill="none" stroke={barColor} strokeLinecap="butt" strokeWidth={sliderWidth} /> : null}
+                        <circle cx={handle.x} cy={handle.y} fill={handleColor} r={handleSize / 2} />
+                    </g>
                 </svg>
                 {data.showValueLabel !== false ? (
                     <label

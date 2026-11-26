@@ -29,7 +29,9 @@ Nicht aufgeführte Einstellungen sind selbsterklärend.
 - **Faktor für die Knopfgröße** – multipliziert die Knopfgröße dauerhaft,
   Vorgabe 1,5.
 - **Schieberegler Bewegung von rechts nach links** – kehrt die Richtung um.
-- **Nur lesen** – zeigt den Wert an, nimmt aber keine Eingabe an.
+- **Nur lesen** – zeigt den Wert an, nimmt aber keine Eingabe an. Bei Nur lesen
+  und solange der State in Arbeit das Gerät als beschäftigt meldet, sind Spur und
+  Regler abgeblendet; der Wert bleibt voll sichtbar.
 
 **Beschriftung**
 

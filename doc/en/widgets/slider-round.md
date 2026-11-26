@@ -28,7 +28,9 @@ language, so the screenshots are German.
   percent of the widget edge, not in pixels — the drawing sits in a 100×100 grid.
 - **knob size factor** – multiplies the knob size permanently, 1.5 by default.
 - **slider movement from right to left** – reverses the direction.
-- **Read only** – shows the value without accepting input.
+- **Read only** – shows the value without accepting input. While read only or
+  while the working state reports the device busy, the track and the knob are
+  dimmed; the value stays fully visible.
 
 **labeling**
 
