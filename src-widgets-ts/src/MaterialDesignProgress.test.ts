@@ -35,9 +35,6 @@ describe('progress normalization', () => {
     });
 });
 
-// The old widget laid Vuetify's stripes over the bar color in a square tile; the port replaced the bar
-// color with the half-transparent stripe color (the track showed through on a light theme) and
-// stretched the tile over the bar height, so the stripes broke at every tile edge.
 describe('striped bar', () => {
     it('keeps a plain bar a plain color', () => {
         expect(barBackground(data({}), '#123456')).toEqual({ backgroundColor: '#123456', backgroundImage: 'none' });
@@ -58,10 +55,11 @@ describe('striped bar', () => {
         expect(style.backgroundSize).toBe('24px 24px');
     });
 
-    it('falls back to 40 px for an emptied, zero, negative or text distance', () => {
-        for (const stripDistance of ['', 0, -5, 'abc'] as unknown as number[]) {
+    it('falls back to 40 px for an emptied, zero, negative, below 1 px or text distance', () => {
+        for (const stripDistance of ['', 0, -5, 0.5, 'abc'] as unknown as number[]) {
             expect(barBackground(data({ progressStriped: true, stripDistance }), '#123456').backgroundSize).toBe('40px 40px');
         }
+        expect(barBackground(data({ progressStriped: true, stripDistance: 1 }), '#123456').backgroundSize).toBe('1px 1px');
     });
 
     it('ignores an unresolved theme token as stripe color', () => {

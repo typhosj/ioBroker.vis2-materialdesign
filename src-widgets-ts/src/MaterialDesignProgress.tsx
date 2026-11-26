@@ -176,7 +176,8 @@ export function barBackground(data: ProgressData, color: string): React.CSSPrope
         return { backgroundColor: color, backgroundImage: 'none' };
     }
     const stripe = cleanColor(data.progressStripedColor, 'rgba(255, 255, 255, 0.25)');
-    const distance = num(data.stripDistance, 40) > 0 ? num(data.stripDistance, 40) : 40;
+    const stored = num(data.stripDistance, 40);
+    const distance = stored >= 1 ? stored : 40;
     return {
         backgroundColor: color,
         backgroundImage: `linear-gradient(${num(data.stripAngle, 135)}deg, ${stripe} ${num(data.stipWidth1, 25)}%, transparent 0, transparent ${num(data.stipWidth2, 50)}%, ${stripe} 0, ${stripe} ${num(data.stipWidth3, 75)}%, transparent 0, transparent)`,

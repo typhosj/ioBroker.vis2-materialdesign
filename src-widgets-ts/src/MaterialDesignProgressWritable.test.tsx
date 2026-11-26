@@ -120,3 +120,30 @@ describe('progressKeysFlipped', () => {
         expect(progressKeysFlipped(data as ProgressData)).toBe(flipped);
     });
 });
+
+describe('striped Progress bar rendering', () => {
+    const fillStyle = (rxData: Record<string, unknown>) => {
+        const widget = new MaterialDesignProgress(fixture<ConstructorParameters<typeof MaterialDesignProgress>[0]>({ context: {}, editMode: false }));
+        widget.state = fixture<typeof widget.state>({ rxData: { oid: 'test.0.level', ...rxData }, values: { 'test.0.level.val': 60 } });
+        const el = find(widget.renderWidgetBody(fixture<Parameters<typeof widget.renderWidgetBody>[0]>({})), e => String(e.props.className).includes('v-progress-linear__determinate'))!;
+        return { className: String(el.props.className), style: el.props.style as React.CSSProperties };
+    };
+
+    it('draws the stripes as an image over the bar color in a square tile', () => {
+        const { style } = fillStyle({ progressStriped: true, colorProgress: '#123456' });
+        expect(style.background).toBeUndefined();
+        expect(style.backgroundColor).toBe('#123456');
+        expect(style.backgroundImage).toMatch(/^linear-gradient\(135deg, /);
+        expect(style.backgroundSize).toBe('40px 40px');
+    });
+
+    it('keeps the stripes on an indeterminate bar together with its animation class', () => {
+        const { className, style } = fillStyle({ progressStriped: true, progressIndeterminate: true, colorProgress: '#123456' });
+        expect(className).toContain('materialdesign-progress--indeterminate');
+        expect(style.backgroundImage).toMatch(/^linear-gradient\(/);
+    });
+
+    it('draws a plain bar without an image', () => {
+        expect(fillStyle({ colorProgress: '#123456' }).style).toMatchObject({ backgroundColor: '#123456', backgroundImage: 'none' });
+    });
+});
