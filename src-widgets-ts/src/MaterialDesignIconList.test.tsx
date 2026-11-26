@@ -194,6 +194,18 @@ describe('icon list fresh and toggle entries', () => {
         expect(render({ countListItems: 1, listImageActive0: 'lightbulb' })).not.toContain('Item 0');
         expect(render({ countListItems: 1, subLabel0: 'second' })).not.toContain('Item 0');
         expect(render({ countListItems: 1, label0: '' })).toContain('Item 0');
+        expect(render({ countListItems: 1, listType0: 'buttonToggle', oid0: 'a.0.x' })).toContain('Item 0');
+    });
+
+    it('labels blank JSON entries too, and leaves the JSON error entry as it is', () => {
+        const json = { listItemDataMethod: 'jsonStringObject', json_string_oid: 'a.0.json' };
+        const html = renderWith(json, { 'a.0.json.val': JSON.stringify([{}, { text: 'Kitchen' }, { image: 'lightbulb' }]) });
+        expect(html).toContain('Item 0');
+        expect(html).not.toContain('Item 1');
+        expect(html).not.toContain('Item 2');
+        const broken = renderWith(json, { 'a.0.json.val': '[{' });
+        expect(broken).toContain('Error in JSON string');
+        expect(broken).not.toContain('Item 0');
     });
 
     it('marks an active Classic toggle without its own fill, and only the active one', () => {
@@ -204,12 +216,15 @@ describe('icon list fresh and toggle entries', () => {
 
     it('keeps a configured fill instead of the mark', () => {
         expect(renderWith({ ...toggle, buttonBgColor0: '#123456' }, { 'a.0.x.val': true })).not.toContain(tint);
+        expect(renderWith({ ...toggle, buttonBgColor0: 'transparent' }, { 'a.0.x.val': true })).not.toContain(tint);
+        expect(renderWith({ ...toggle, buttonBgColor0: 'transparent', buttonLayout: 'full' }, { 'a.0.x.val': true })).not.toContain('rgba(68, 115, 158');
         expect(renderWith({ ...toggle, buttonBgColorActive0: '#654321' }, { 'a.0.x.val': true })).toContain('#654321');
     });
 
     it('marks an active full-width button in both styles', () => {
         const full = { ...toggle, buttonLayout: 'full' };
-        expect(renderWith(full, { 'a.0.x.val': true })).toContain(tint);
+        expect(renderWith(full, { 'a.0.x.val': true })).toContain('rgba(68, 115, 158, 0.08)');
+        expect(renderWith(full, { 'a.0.x.val': true })).not.toContain(tint);
         expect(renderWith({ ...full, designStyle: 'material3' }, { 'a.0.x.val': true })).toContain('color-mix(in srgb, var(--md-sys-color-primary) 16%, transparent)');
         expect(renderWith({ ...full, designStyle: 'material3' }, { 'a.0.x.val': false })).not.toContain('16%, transparent');
     });
