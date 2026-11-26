@@ -20,7 +20,7 @@ Nicht aufgeführte Einstellungen sind selbsterklärend.
 - **Art der Liste** – gilt für alle Zeilen: `Text`, `Button State`, `Button Toggle`,
   `Button Toggle (schreibgeschützt)`, `Button Navigation`, `Button Link`, `Schalter`,
   `Schalter (schreibgeschützt)`, `Kontrollkästchen` oder `Checkbox (nur lesen)`. Die
-  schreibgeschützten Varianten zeigen den Zustand an, schreiben aber nichts.
+  schreibgeschützten Varianten zeigen den Zustand an, schreiben aber nichts; in Material 3 ist ihr Kontrollkästchen abgeblendet, wie beim schreibgeschützten Checkbox-Widget.
 - **Layout** – `standard`, `Karte` oder `cardOutlined` (umrandete Karte).
 - **Trennlinien Stil** – `standard`, `padded` oder `inset`.
 

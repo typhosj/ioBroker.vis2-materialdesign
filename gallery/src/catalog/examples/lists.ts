@@ -39,7 +39,7 @@ const views: Row[] = [
     { label: 'Climate', sub: 'Heating and air', icon: 'thermometer', nav: 'demo-climate' },
     { label: 'Media', sub: 'Music and radio', icon: 'music', nav: 'demo-media' },
 ];
-const scenes: Row[] = [
+const scenes: (Row & Tile)[] = [
     { oid: `${D}general.scene`, label: 'Morning', icon: 'weather-sunset-up', value: 'morning' },
     { oid: `${D}general.scene`, label: 'Day', icon: 'white-balance-sunny', value: 'day' },
     { oid: `${D}general.scene`, label: 'Evening', icon: 'weather-sunset', value: 'evening' },
