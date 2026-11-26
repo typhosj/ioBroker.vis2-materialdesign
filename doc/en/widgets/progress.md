@@ -41,7 +41,7 @@ the ioBroker system language, so the screenshots are German.
 - **custom label** – free text for the `custom` style. `[#value]` inserts the
   state value, `[#percent]` the percentage, e.g. `[#value] of 500 W ([#percent] %)`.
 - **decimal points** – decimals of both numbers.
-- **text alignment** – `start`, `center` or `end`.
+- **text alignment** – `start`, `center` or `end`. Without a **text color**, the part of the text on the bar takes the color that reads best on the bar color, the rest the theme text color.
 
 **colors**
 

@@ -41,7 +41,7 @@ aufgeklappt. Nicht aufgeführte Einstellungen sind selbsterklärend.
 **Farben**
 
 - **Farbe Fortschritt / Hintergrundfarbe** – Ring und Spur.
-- **Kreis Hintergrundfarbe** – füllt die Fläche innerhalb des Rings.
+- **Kreis Hintergrundfarbe** – füllt die Fläche innerhalb des Rings; ohne **Textfarbe** nimmt die Beschriftung dann die Farbe, die sich darauf am besten liest.
 - **Bedingung für Farbe 1 Fortschritt [>] / Farbe 1 Fortschritt** und dasselbe
   Paar für Farbe 2 – die Bedingung ist ein **Prozentwert**, nicht der State-Wert.
 

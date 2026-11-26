@@ -42,7 +42,8 @@ the ioBroker system language, so the screenshots are German.
 **colors**
 
 - **color progress / background color** – the ring and its track.
-- **circle background color** – fills the area inside the ring.
+- **circle background color** – fills the area inside the ring; without a
+  **text color** the label then takes the color that reads best on it.
 - **condition for color 1 progress [>] / color 1 progress** and the same pair for
   color 2 – the condition is a **percentage**, not the state value.
 
