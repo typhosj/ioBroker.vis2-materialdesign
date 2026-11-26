@@ -2,6 +2,7 @@ import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
 import MaterialDesignProgress, { progressKeysFlipped, progressPointerValue, type ProgressData } from './MaterialDesignProgress';
+import MaterialDesignProgressCircular from './MaterialDesignProgressCircular';
 
 function fixture<T>(value: unknown): T { return value as T; }
 type El = React.ReactElement<Record<string, unknown>>;
@@ -145,5 +146,66 @@ describe('striped Progress bar rendering', () => {
 
     it('draws a plain bar without an image', () => {
         expect(fillStyle({ colorProgress: '#123456' }).style).toMatchObject({ backgroundColor: '#123456', backgroundImage: 'none' });
+    });
+});
+
+describe('Progress label over the bar', () => {
+    const render = (rxData: Record<string, unknown>, value: unknown = 60) => {
+        const widget = new MaterialDesignProgress(fixture<ConstructorParameters<typeof MaterialDesignProgress>[0]>({ context: {}, editMode: false }));
+        widget.state = fixture<typeof widget.state>({ rxData: { oid: 'test.0.level', textAlign: 'center', ...rxData }, values: { 'test.0.level.val': value } });
+        const tree = widget.renderWidgetBody(fixture<Parameters<typeof widget.renderWidgetBody>[0]>({}));
+        const bar = find(tree, e => String(e.props.className).includes('v-progress-linear__determinate'))!;
+        const onBar = find(bar.props.children as React.ReactNode, e => String(e.props.className).includes('v-progress-linear__content'));
+        const onTrack = find(tree, e => String(e.props.className).includes('v-progress-linear__content'));
+        return { bar, onBar, onTrack, style: (el: El | undefined) => el?.props.style as React.CSSProperties | undefined };
+    };
+
+    it.each([
+        ['M3 theme color', { designStyle: 'material3' }, 'var(--md-sys-color-on-primary)', 'var(--md-sys-color-on-surface)'],
+        ['Classic default', {}, '#ffffff', '#000'],
+        ['light own bar color', { colorProgress: '#ffee00' }, '#1d1b20', '#000'],
+        ['condition color', { colorProgress: '#ffee00', colorOneCondition: 50, colorOne: '#003366' }, '#ffffff', '#000'],
+        ['unparseable bar color', { colorProgress: 'yellow' }, '#000', '#000'],
+        ['explicit text color', { colorProgress: '#ffee00', textColor: '#ff0000' }, '#ff0000', '#ff0000'],
+    ])('text on the bar contrasts with it: %s', (_case, rxData, onBar, onTrack) => {
+        const r = render(rxData);
+        expect(r.style(r.onBar)?.color).toBe(onBar);
+        expect(r.style(r.onTrack)?.color).toBe(onTrack);
+        expect(r.onBar?.props['aria-hidden']).toBe('true');
+        expect(r.style(r.bar)?.overflow).toBe('hidden');
+    });
+
+    it('lines the bar copy up with the full track, also reversed', () => {
+        const plain = render({}, 25);
+        expect(plain.style(plain.onBar)).toMatchObject({ position: 'absolute', top: 0, insetInlineStart: '0%', width: '400%' });
+        const reversed = render({ reverse: true }, 25);
+        expect(reversed.style(reversed.onBar)).toMatchObject({ insetInlineStart: '-300%', width: '400%' });
+    });
+
+    it('draws no bar copy for an empty bar, a hidden label or an indeterminate bar', () => {
+        expect(render({}, 0).onBar).toBeUndefined();
+        expect(render({ showValueLabel: false }).onBar).toBeUndefined();
+        expect(render({ progressIndeterminate: true }).onBar).toBeUndefined();
+    });
+});
+
+describe('Progress Circular text on the inner color', () => {
+    const color = (rxData: Record<string, unknown>) => {
+        const widget = new MaterialDesignProgressCircular(fixture<ConstructorParameters<typeof MaterialDesignProgressCircular>[0]>({ context: {}, editMode: false }));
+        widget.state = fixture<typeof widget.state>({ rxData: { oid: 'test.0.level', ...rxData }, values: { 'test.0.level.val': 60 } });
+        const info = find(widget.renderWidgetBody(fixture<Parameters<typeof widget.renderWidgetBody>[0]>({})), e => e.props.className === 'v-progress-circular__info')!;
+        return (info.props.style as React.CSSProperties).color;
+    };
+
+    it.each([
+        ['no inner color, Classic', {}, '#000'],
+        ['no inner color, M3', { designStyle: 'material3' }, 'var(--md-sys-color-on-surface)'],
+        ['dark inner color', { innerColor: '#003366' }, '#ffffff'],
+        ['light inner color in M3', { designStyle: 'material3', innerColor: '#ffee00' }, '#1d1b20'],
+        ['unparseable inner color', { innerColor: 'navy' }, '#000'],
+        ['unresolved theme token', { innerColor: '#mdwTheme:colors.x' }, '#000'],
+        ['explicit text color', { innerColor: '#003366', textColor: '#ff0000' }, '#ff0000'],
+    ])('%s', (_case, rxData, expected) => {
+        expect(color(rxData)).toBe(expected);
     });
 });

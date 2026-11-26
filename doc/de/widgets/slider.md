@@ -26,7 +26,7 @@ Nicht aufgeführte Einstellungen sind selbsterklärend.
 **Schritte Layout (Teilstriche)**
 
 - **Schritte anzeigen** – `nicht anzeigen`, `anzeigen bei Bedienung` oder `immer anzeigen`.
-- **Text der Schritte (durch Kommas getrennt)** – die Beschriftungen der Teilstriche, z. B. `aus, halb, voll`. Die Anzahl der Texte bestimmt zugleich, wie viele Teilstriche gezeichnet werden; ohne Texte ergibt sie sich aus Min, Max und Schritt.
+- **Text der Schritte (durch Kommas getrennt)** – die Beschriftungen der Teilstriche, z. B. `aus, halb, voll`. Die Anzahl der Texte bestimmt zugleich, wie viele Teilstriche gezeichnet werden; ohne Texte ergibt sie sich aus Min, Max und Schritt. Größe der Teilstriche, ihre Farben vor und hinter dem Regler sowie Farbe, Schriftart und Größe der Texte folgen; leere Felder behalten das Standardaussehen.
 
 <img src="../../media/vis2_slider_editor_2.png" width="340" alt="Slider Beschriftung und Regler-Label">
 
@@ -41,7 +41,7 @@ Nicht aufgeführte Einstellungen sind selbsterklärend.
 
 - **Label anzeigen** – `nicht anzeigen`, `anzeigen bei Bedienung` oder `immer anzeigen`.
 - **benutze Regeln der Beschriftung** – das Regler-Label übernimmt dieselben Ersatztexte wie die Wertbeschriftung; ohne den Schalter zeigt es immer die nackte Zahl.
-- Größe, Hintergrund- und Schriftfarben des Reglers folgen.
+- Größe, Hintergrund, Schriftfarbe, Schriftart und Schriftgröße des Labels folgen. Ohne Schriftfarbe nimmt der Text die Farbe, die sich auf dem Hintergrund am besten liest.
 
 ## Nur lesen, Verriegeln und PIN
 

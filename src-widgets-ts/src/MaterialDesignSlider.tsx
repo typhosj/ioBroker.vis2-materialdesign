@@ -6,7 +6,7 @@ import { cleanColor, num, snapToStep } from './MaterialDesignProgress';
 import { fill, withAutoFill } from './deviceFill';
 import { m3ColorExplicit } from './MaterialDesignButtons';
 import { WidgetLock, lockGroup, lockIcon, type LockData } from './widgetLock';
-import { accessibleText, isReadOnly, nextWidgetUid, squarePreview, RenderProps, SliderWriter, VisWidget, boundedCount, createInfo, designStyle, designStyleClasses, setStateValue, sizeCss, sliderKeyValue, stateValue, sanitizeHtml } from './widgetUtils';
+import { accessibleText, isReadOnly, nextWidgetUid, squarePreview, RenderProps, SliderWriter, VisWidget, boundedCount, createInfo, designStyle, designStyleClasses, inkOn, setStateValue, sizeCss, sliderKeyValue, stateValue, sanitizeHtml } from './widgetUtils';
 
 // The old widget got track/thumb geometry from ambient legacy Vuetify CSS, which is gone.
 const SLIDER_CSS = `
@@ -229,19 +229,8 @@ function feedback(data: SliderData): void {
     }
 }
 
-function cssVars(data: SliderData): React.CSSProperties {
-    const isM3 = designStyle(data as Record<string, unknown>) === 'material3';
-    return {
-        '--vue-slider-thumb-label-font-color': cleanColor(data.thumbFontColor, '#FFFFFF'),
-        '--vue-slider-thumb-label-font-family': data.thumbFontFamily || undefined,
-        '--vue-slider-thumb-label-font-size': `${num(data.thumbFontSize, 12)}px`,
-        '--vue-slider-tick-before-color': isM3 && !m3ColorExplicit(data.tickColorBefore) ? 'var(--md-sys-color-primary)' : cleanColor(data.tickColorBefore, '#44739e'),
-        '--vue-slider-tick-after-color': isM3 && !m3ColorExplicit(data.tickColorAfter) ? 'var(--md-sys-color-outline-variant)' : cleanColor(data.tickColorAfter, '#44739e'),
-        '--vue-slider-tick-color': cleanColor(data.tickTextColor, '#808080'),
-        '--vue-slider-tick-font-family': data.tickFontFamily || undefined,
-        '--vue-slider-tick-font-size': `${num(data.tickFontSize, 14)}px`,
-    } as React.CSSProperties;
-}
+const ownColor = (value: unknown): string | undefined => cleanColor(value, '') || undefined;
+const ownSize = (value: unknown): number | undefined => (num(value, 0) > 0 ? num(value, 0) : undefined);
 
 export function isWorking(value: ioBroker.StateValue | undefined): boolean {
     return !(value === undefined || value === null || value === '' || value === false || value === 'false');
@@ -359,6 +348,7 @@ export default class MaterialDesignSlider extends VisWidget {
         const locked = this.lock.isLocked(opts);
         const disabled = isReadOnly(data) || isWorking(stateValue(this.state, data['oid-working'] || ''));
         const showThumbLabel = data.showThumbLabel === 'yes' || data.showThumbLabel === 'always';
+        const thumbLabelBackground = cleanColor(data.thumbBackgroundColor, thumb);
         // A saved project can hold a non-string here, and `.split` on it threw — which blanks the whole
         // VIS2 view, since a view renders its widgets in one tree without an error boundary.
         const tickLabels = String(data.tickLabels ?? '').split(',').map(label => label.trim());
@@ -372,7 +362,7 @@ export default class MaterialDesignSlider extends VisWidget {
         const thumbLabel = labelFor(current.raw, current.percent, data, !!data.useLabelRules);
 
         return (
-            <div className={`materialdesign-widget materialdesign-slider-vertical${isM3 ? ` ${designStyleClasses(data as Record<string, unknown>, this.isDarkTheme())}` : ''}`} style={{ alignItems: 'center', display: 'flex', height: '100%', overflow: 'visible', position: 'relative', width: '100%', ...cssVars(data) }}>
+            <div className={`materialdesign-widget materialdesign-slider-vertical${isM3 ? ` ${designStyleClasses(data as Record<string, unknown>, this.isDarkTheme())}` : ''}`} style={{ alignItems: 'center', display: 'flex', height: '100%', overflow: 'visible', position: 'relative', width: '100%' }}>
                 <style>{SLIDER_CSS}</style>
                 {locked ? (
                     <span data-lock-icon="" style={{ position: 'absolute', right: 2, top: 2, zIndex: 3, pointerEvents: 'none' }}>
@@ -426,13 +416,18 @@ export default class MaterialDesignSlider extends VisWidget {
                                                         <div
                                                             key={index}
                                                             className={`v-slider__tick${filled ? ' v-slider__tick--filled' : ''}`}
-                                                            style={
-                                                                orientation === 'horizontal'
+                                                            style={{
+                                                                background: ownColor(filled ? data.tickColorBefore : data.tickColorAfter),
+                                                                ...(orientation === 'horizontal'
                                                                     ? { height: num(data.tickSize, 2), left: `${pos}%`, top: 0, width: 2 }
-                                                                    : { height: 2, left: 0, top: `${100 - pos}%`, width: num(data.tickSize, 2) }
-                                                            }
+                                                                    : { height: 2, left: 0, top: `${100 - pos}%`, width: num(data.tickSize, 2) }),
+                                                            }}
                                                         >
-                                                            {tickLabels[index] ? <span className="v-slider__tick-label">{tickLabels[index]}</span> : null}
+                                                            {tickLabels[index] ? (
+                                                                <span className="v-slider__tick-label" style={{ color: ownColor(data.tickTextColor), fontFamily: data.tickFontFamily || undefined, fontSize: ownSize(data.tickFontSize) }}>
+                                                                    {tickLabels[index]}
+                                                                </span>
+                                                            ) : null}
                                                         </div>
                                                     );
                                                 })}
@@ -459,8 +454,11 @@ export default class MaterialDesignSlider extends VisWidget {
                                                     <div
                                                         className="v-slider__thumb-label"
                                                         style={{
-                                                            backgroundColor: cleanColor(data.thumbBackgroundColor, thumb),
-                                                            borderColor: cleanColor(data.thumbBackgroundColor, thumb),
+                                                            backgroundColor: thumbLabelBackground,
+                                                            borderColor: thumbLabelBackground,
+                                                            color: ownColor(data.thumbFontColor) ?? inkOn(thumbLabelBackground) ?? '#FFFFFF',
+                                                            fontFamily: data.thumbFontFamily || undefined,
+                                                            fontSize: ownSize(data.thumbFontSize),
                                                             height: num(data.thumbSize, 32),
                                                             width: num(data.thumbSize, 32),
                                                         }}

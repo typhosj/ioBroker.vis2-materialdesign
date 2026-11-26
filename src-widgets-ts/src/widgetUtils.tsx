@@ -1032,6 +1032,11 @@ export function m3OnColor(color: string): string | undefined {
     return contrastRatio(rgb, parseColor(ON_LIGHT)!) >= contrastRatio(rgb, parseColor(ON_DARK)!) ? ON_LIGHT : ON_DARK;
 }
 
+/** Text color for a surface filled with `background`; `undefined` when it cannot be told. */
+export function inkOn(background: string): string | undefined {
+    return background === 'var(--md-sys-color-primary)' ? 'var(--md-sys-color-on-primary)' : m3OnColor(background);
+}
+
 // A role name is written into a CSS custom property name and the JSON comes from a writable state.
 const ROLE_NAME = /^[a-z][a-z-]*$/;
 const HEX_COLOR = /^#[0-9a-f]{3}([0-9a-f]{3})?$/i;

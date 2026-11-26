@@ -3,7 +3,7 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { M3_TOKEN_ROLES, contrastRatio, m3OnColor, parseColor } from './widgetUtils';
+import { M3_TOKEN_ROLES, contrastRatio, inkOn, m3OnColor, parseColor } from './widgetUtils';
 
 import MaterialDesignAlerts from './MaterialDesignAlerts';
 import MaterialDesignCalendar from './MaterialDesignCalendar';
@@ -258,6 +258,14 @@ describe('material 3 colour contrast', () => {
         expect(m3OnColor('rgb(255, 238, 0)')).toBe('#1d1b20');
         expect(m3OnColor('rebeccapurple')).toBeUndefined(); // unparseable: leave the caller's fallback
         [...'#ffee00 #6750a4 #b3261e #003366'.split(' ')].forEach(colour => expect(contrastRatio(parseColor(colour)!, parseColor(m3OnColor(colour)!)!)).toBeGreaterThanOrEqual(4.5));
+    });
+
+    it('picks the text color for a filled surface', () => {
+        expect(inkOn('var(--md-sys-color-primary)')).toBe('var(--md-sys-color-on-primary)');
+        expect(inkOn('#44739e')).toBe('#ffffff');
+        expect(inkOn('#ffa000')).toBe('#1d1b20');
+        expect(inkOn('rgba(255, 238, 0, 0.5)')).toBe('#1d1b20');
+        for (const unknown of ['', 'yellow', 'var(--md-sys-color-secondary)', 'linear-gradient(red, blue)', '#12']) expect(inkOn(unknown)).toBeUndefined();
     });
 });
 

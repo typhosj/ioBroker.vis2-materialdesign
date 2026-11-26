@@ -41,7 +41,7 @@ aufgeklappt. Nicht aufgeführte Einstellungen sind selbsterklärend.
   `Benutzerdefiniert`. `[#value]` setzt den State-Wert ein, `[#percent]` den
   Prozentwert, also z. B. `[#value] von 500 W ([#percent] %)`.
 - **Kommastellen** – Nachkommastellen beider Zahlen.
-- **Textausrichtung** – `Anfang`, `Mitte` oder `Ende`.
+- **Textausrichtung** – `Anfang`, `Mitte` oder `Ende`. Ohne **Textfarbe** nimmt der Teil des Textes auf dem Balken die Farbe, die sich auf der Balkenfarbe am besten liest, der Rest die Textfarbe des Themes.
 
 **Farben**
 

@@ -148,3 +148,59 @@ describe('Round Slider read only and working', () => {
         expect(track(rxData, working).group?.props.opacity).toBeUndefined();
     });
 });
+
+describe('Slider thumb label and tick styling', () => {
+    const tree = (rxData: Record<string, unknown>) => {
+        const w = new MaterialDesignSlider(fixture<ConstructorParameters<typeof MaterialDesignSlider>[0]>({ context: { setValue: vi.fn() } }));
+        w.state = fixture<typeof w.state>({ rxData: { oid: 'test.0.n', showThumbLabel: 'always', showTicks: 'always', tickLabels: 'a,b,c', ...rxData }, data: rxData, values: { 'test.0.n.val': 50 } });
+        return w.renderWidgetBody(fixture<Parameters<typeof w.renderWidgetBody>[0]>({}));
+    };
+    const style = (node: React.ReactNode, className: string, nth = 0): React.CSSProperties => {
+        const all: El[] = [];
+        const walk = (child: React.ReactNode): void => {
+            if (Array.isArray(child)) { child.forEach(walk); return; }
+            if (!React.isValidElement(child)) return;
+            const el = child as El;
+            if (typeof el.props.className === 'string' && el.props.className.split(' ').includes(className)) all.push(el);
+            walk(el.props.children as React.ReactNode);
+        };
+        walk(node);
+        return all[nth].props.style as React.CSSProperties;
+    };
+
+    it.each([
+        ['M3 theme color', { designStyle: 'material3' }, 'var(--md-sys-color-on-primary)'],
+        ['Classic default', {}, '#ffffff'],
+        ['light own knob color', { colorThumb: '#ffa000' }, '#1d1b20'],
+        ['light thumb background', { thumbBackgroundColor: '#ffee00' }, '#1d1b20'],
+        ['M3 with a light own knob color', { designStyle: 'material3', colorThumb: '#ffa000' }, '#1d1b20'],
+        ['unparseable knob color', { colorThumb: 'yellow' }, '#FFFFFF'],
+        ['explicit font color', { colorThumb: '#ffa000', thumbFontColor: '#ff0000' }, '#ff0000'],
+        ['unresolved theme token', { thumbFontColor: '#mdwTheme:colors.x' }, '#ffffff'],
+    ])('thumb label text: %s', (_case, rxData, color) => {
+        expect(style(tree(rxData), 'v-slider__thumb-label').color).toBe(color);
+    });
+
+    it('applies thumb label font size and family, ignoring empty and non-positive sizes', () => {
+        expect(style(tree({ thumbFontSize: 16, thumbFontFamily: 'Serif' }), 'v-slider__thumb-label')).toMatchObject({ fontSize: 16, fontFamily: 'Serif' });
+        for (const thumbFontSize of ['', 0, -3, 'abc']) {
+            const s = style(tree({ thumbFontSize }), 'v-slider__thumb-label');
+            expect(s.fontSize).toBeUndefined();
+            expect(s.fontFamily).toBeUndefined();
+        }
+    });
+
+    it('colors filled and open ticks and styles the tick captions', () => {
+        const t = tree({ tickColorBefore: '#00ff00', tickColorAfter: '#0000ff', tickTextColor: '#ff0000', tickFontSize: 9, tickFontFamily: 'Mono' });
+        expect(style(t, 'v-slider__tick', 0).background).toBe('#00ff00');
+        expect(style(t, 'v-slider__tick', 2).background).toBe('#0000ff');
+        expect(style(t, 'v-slider__tick-label', 0)).toMatchObject({ color: '#ff0000', fontSize: 9, fontFamily: 'Mono' });
+    });
+
+    it('keeps the default tick look when the options are empty or theme tokens', () => {
+        const t = tree({ tickColorBefore: '', tickColorAfter: '#mdwTheme:colors.x', tickFontSize: 0 });
+        expect(style(t, 'v-slider__tick', 0).background).toBeUndefined();
+        expect(style(t, 'v-slider__tick', 2).background).toBeUndefined();
+        expect(style(t, 'v-slider__tick-label', 0)).toEqual({ color: undefined, fontFamily: undefined, fontSize: undefined });
+    });
+});

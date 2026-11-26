@@ -3,7 +3,7 @@ import React from 'react';
 import type { RxWidgetInfo, RxWidgetInfoAttributesField, VisRxWidgetProps } from '@iobroker/types-vis-2';
 
 import { fill, withAutoFill } from './deviceFill';
-import { accessibleText, ariaLabelField, ariaName, squarePreview, BaseRxData, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, legacyInk, numberValue, setStateValue, sizeCss, sliderKeyValue, stateValue, sanitizeHtml } from './widgetUtils';
+import { accessibleText, ariaLabelField, ariaName, squarePreview, BaseRxData, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, inkOn, legacyInk, numberValue, setStateValue, sizeCss, sliderKeyValue, stateValue, sanitizeHtml } from './widgetUtils';
 
 export interface ProgressData extends BaseRxData {
     min?: number;
@@ -240,6 +240,34 @@ export default class MaterialDesignProgress extends VisWidget {
             return progressPointerValue(fraction, data);
         };
         const write = (next: number): void => { setStateValue(this.props, data.oid || '', next); };
+        // The text lies twice: in the track color under the bar, and as a copy inside the bar, which clips it to
+        // the filled part and lines it up with the full track. Known limit: a translucent bar color lets the
+        // track text show through under the copy.
+        const showLabel = data.showValueLabel !== false && !indeterminate;
+        const barStart = reverse ? 100 - displayedPercent : 0;
+        const ownTextColor = cleanColor(data.textColor, '');
+        const trackInk = ownTextColor || (isM3 ? 'var(--md-sys-color-on-surface)' : legacyInk(this.isDarkTheme()));
+        const barInk = ownTextColor || inkOn(progress.color) || trackInk;
+        const labelBox = (color: string, place?: React.CSSProperties, copy = false): React.JSX.Element => (
+            <div
+                aria-hidden={copy ? 'true' : undefined}
+                className="v-progress-linear__content"
+                style={{
+                    alignItems: 'center',
+                    color,
+                    display: 'flex',
+                    fontFamily: data.textFontFamily || undefined,
+                    fontSize: data.textFontSize ? sizeCss(data.textFontSize, 12) : 12,
+                    height: '100%',
+                    justifyContent: data.textAlign === 'center' ? 'center' : data.textAlign === 'start' ? 'flex-start' : 'flex-end',
+                    position: 'relative',
+                    width: '100%',
+                    ...place,
+                }}
+            >
+                <div className="materialdesign-vuetify-progress-value-label" dangerouslySetInnerHTML={{ __html: sanitizeHtml(progress.label) }} style={{ color: 'inherit', marginLeft: 10, marginRight: 10 }} />
+            </div>
+        );
         const interaction: React.HTMLAttributes<HTMLDivElement> = writable
             ? {
                   role: 'slider',
@@ -299,34 +327,22 @@ export default class MaterialDesignProgress extends VisWidget {
                         }}
                     >
                         {indeterminate ? <style>{INDETERMINATE_CSS}</style> : null}
+                        {showLabel ? labelBox(trackInk) : null}
                         <div
                             className={`v-progress-linear__determinate primary${indeterminate ? ' materialdesign-progress--indeterminate' : ''}`}
                             style={{
+                                overflow: 'hidden',
                                 ...barBackground(data, progress.color),
                                 height: '100%',
                                 insetInlineStart: reverse ? `${100 - displayedPercent}%` : 0,
                                 position: 'absolute',
                                 width: indeterminate ? '40%' : `${displayedPercent}%`,
                             }}
-                        />
-                        {data.showValueLabel !== false && !indeterminate ? (
-                            <div
-                                className="v-progress-linear__content"
-                                style={{
-                                    alignItems: 'center',
-                                    color: cleanColor(data.textColor, isM3 ? 'var(--md-sys-color-on-surface)' : legacyInk(this.isDarkTheme())),
-                                    display: 'flex',
-                                    fontFamily: data.textFontFamily || undefined,
-                                    fontSize: data.textFontSize ? sizeCss(data.textFontSize, 12) : 12,
-                                    height: '100%',
-                                    justifyContent: data.textAlign === 'center' ? 'center' : data.textAlign === 'start' ? 'flex-start' : 'flex-end',
-                                    position: 'relative',
-                                    width: '100%',
-                                }}
-                            >
-                                <div className="materialdesign-vuetify-progress-value-label" dangerouslySetInnerHTML={{ __html: sanitizeHtml(progress.label) }} style={{ color: 'inherit', marginLeft: 10, marginRight: 10 }} />
-                            </div>
-                        ) : null}
+                        >
+                            {showLabel && displayedPercent > 0
+                                ? labelBox(barInk, { insetInlineStart: `${(-barStart * 100) / displayedPercent}%`, position: 'absolute', top: 0, width: `${10000 / displayedPercent}%` }, true)
+                                : null}
+                        </div>
                     </div>
                 </div>
             </div>

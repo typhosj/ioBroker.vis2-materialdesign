@@ -27,7 +27,7 @@ language, so the screenshots are German.
 **Scale (ticks)**
 
 - **show steps** – `don't display`, `show when operated` or `always show`.
-- **text of steps (comma separated)** – the tick captions, e.g. `off, half, full`. The number of captions also decides how many ticks are drawn; without captions it follows min, max and step.
+- **text of steps (comma separated)** – the tick captions, e.g. `off, half, full`. The number of captions also decides how many ticks are drawn; without captions it follows min, max and step. Tick size, the tick colors before and after the knob and the caption color, font and size follow; empty fields keep the default look.
 
 <img src="../../media/vis2_slider_editor_2.png" width="340" alt="Slider label and thumb label options">
 
@@ -42,7 +42,7 @@ language, so the screenshots are German.
 
 - **show label** – `don't display`, `show when operated` or `always show`.
 - **use rules of the text** – the thumb label reuses the replacement texts of the value caption; without it, it always shows the bare number.
-- Thumb size, background and font colors follow.
+- Thumb size, background, font color, font and font size follow. Without a font color the text takes the color that reads best on the thumb background.
 
 ## Read only, locking and PIN
 
