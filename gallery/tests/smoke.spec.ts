@@ -106,7 +106,7 @@ test('Button State Multi writes its data point', async ({ page }) => {
 });
 
 test('closing an alert removes it from the data point', async ({ page }) => {
-    await visit(page, '#/widget/Alerts?variant=normal');
+    await visit(page, '#/widget/Alerts');
     const before = JSON.parse(await read(page, 'notifications.alerts')) as unknown[];
     await frame(page).getByRole('button', { name: 'Close alert' }).first().click();
     await expect.poll(async () => (JSON.parse(await read(page, 'notifications.alerts')) as unknown[]).length).toBe(before.length - 1);

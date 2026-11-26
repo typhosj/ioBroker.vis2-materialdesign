@@ -1,42 +1,116 @@
-import type { FamilyExamples } from '../example';
+import type { Example, FamilyExamples } from '../example';
+
+const D = '0_userdata.0.demo.';
+// Material 3 rows are 56 px high (two lines 72), Classic rows 48 px; the sizes fit both.
+const LIST = { width: 320, height: 176 };
+const ICONS = { width: 360, height: 112 };
+const TABLE = { width: 480, height: 216 };
+const CARD = { width: 320, height: 300 };
+const ALERTS = { width: 360, height: 150 };
+
+const typical = (en: string, de: string): Pick<Example, 'id' | 'label' | 'purpose'> => ({ id: 'typical', label: { en: 'Typical', de: 'Typisch' }, purpose: { en, de } });
+const text = (id: string, en: string, de: string, pen: string, pde: string): Pick<Example, 'id' | 'label' | 'purpose'> => ({ id, label: { en, de }, purpose: { en: pen, de: pde } });
+
+type Row = { oid?: string; label: string; sub?: string; right?: string; icon?: string; header?: string; value?: string; nav?: string };
+const rows = (items: Row[], divider = true): Record<string, unknown> => Object.assign({ countListItems: items.length }, ...items.map((row, i) => ({
+    ...(row.oid ? { [`oid${i}`]: row.oid } : {}),
+    [`label${i}`]: row.label,
+    ...(row.sub ? { [`subLabel${i}`]: row.sub } : {}),
+    ...(row.right ? { [`rightLabel${i}`]: row.right } : {}),
+    ...(row.icon ? { [`listImage${i}`]: row.icon } : {}),
+    ...(row.header ? { [`groupHeader${i}`]: row.header } : {}),
+    ...(row.value ? { [`listTypeButtonStateValue${i}`]: row.value } : {}),
+    ...(row.nav ? { [`listTypeButtonNav${i}`]: row.nav } : {}),
+    [`dividers${i}`]: divider,
+})));
+
+const lights: Row[] = [
+    { oid: `${D}living.light`, label: 'Living room', sub: 'Ceiling light', icon: 'ceiling-light' },
+    { oid: `${D}kitchen.light`, label: 'Kitchen', sub: 'Under-cabinet light', icon: 'wall-sconce-flat' },
+    { oid: `${D}terrace.light`, label: 'Terrace', sub: 'Wall light', icon: 'outdoor-lamp' },
+];
+const windows: Row[] = [
+    { oid: `${D}contacts.livingWindow`, label: 'Living room window', icon: 'window-closed-variant' },
+    { oid: `${D}contacts.kitchenWindow`, label: 'Kitchen window', icon: 'window-closed-variant' },
+    { oid: `${D}contacts.bedroomWindow`, label: 'Bedroom window', icon: 'window-closed-variant' },
+];
+const views: Row[] = [
+    { label: 'Lights', sub: 'All rooms', icon: 'lightbulb-group', nav: 'demo-lights' },
+    { label: 'Climate', sub: 'Heating and air', icon: 'thermometer', nav: 'demo-climate' },
+    { label: 'Media', sub: 'Music and radio', icon: 'music', nav: 'demo-media' },
+];
+const scenes: Row[] = [
+    { oid: `${D}general.scene`, label: 'Morning', icon: 'weather-sunset-up', value: 'morning' },
+    { oid: `${D}general.scene`, label: 'Day', icon: 'white-balance-sunny', value: 'day' },
+    { oid: `${D}general.scene`, label: 'Evening', icon: 'weather-sunset', value: 'evening' },
+    { oid: `${D}general.scene`, label: 'Night', icon: 'weather-night', value: 'night' },
+];
+
+type Tile = { oid?: string; label: string; icon: string; value?: string; nav?: string };
+const tiles = (items: Tile[], type: string): Record<string, unknown> => Object.assign({ countListItems: items.length }, ...items.map((tile, i) => ({
+    [`listType${i}`]: type,
+    ...(tile.oid ? { [`oid${i}`]: tile.oid } : {}),
+    [`label${i}`]: tile.label,
+    [`listImage${i}`]: tile.icon,
+    [`showValueLabel${i}`]: false,
+    ...(tile.value ? { [`listTypeButtonStateValue${i}`]: tile.value } : {}),
+    ...(tile.nav ? { [`listTypeButtonNav${i}`]: tile.nav } : {}),
+})));
+const lightTiles: Tile[] = [
+    { oid: `${D}living.light`, label: 'Living room', icon: 'ceiling-light' },
+    { oid: `${D}kitchen.light`, label: 'Kitchen', icon: 'wall-sconce-flat' },
+    { oid: `${D}terrace.light`, label: 'Terrace', icon: 'outdoor-lamp' },
+];
+
+const roomsJson = JSON.stringify([
+    { room: 'Living room', temperature: 21.4, humidity: 46 },
+    { room: 'Kitchen', temperature: 22.1, humidity: 52 },
+    { room: 'Bedroom', temperature: 19.2, humidity: 49 },
+]);
+const rooms = {
+    dataJson: roomsJson, countCols: 3,
+    label0: 'Room', textAlign0: 'left',
+    label1: 'Temperature', textAlign1: 'right', suffix1: ' °C',
+    label2: 'Humidity', textAlign2: 'right', suffix2: ' %',
+};
+
+const welcome = { title: 'Welcome home', subtitle: '12 devices online', html: 'All windows closed', image: 'img/preview.jpg' };
 
 export const lists: FamilyExamples = {
-    MaterialDesignAlerts: [
-        { id: 'typical', label: { en: 'Typical', de: 'Typical' }, purpose: { en: '', de: '' }, size: { width: 300, height: 60 }, data: { oid: '0_userdata.0.demo.general.value' } },
-        { id: 'normal', label: { en: 'normal', de: 'normal' }, purpose: { en: '', de: '' }, size: { width: 380, height: 270 }, data: { oid: '0_userdata.0.demo.notifications.alerts', alertDense: false, alertElevation: 2, alertMarginBottom: 12, alertBorderLayout: 'left', closeIcon: '' } },
-        { id: 'outlined', label: { en: 'outlined', de: 'outlined' }, purpose: { en: '', de: '' }, size: { width: 380, height: 270 }, data: { oid: '0_userdata.0.demo.notifications.alerts', alertLayouts: 'outlined', alertDense: false, alertElevation: 2, alertMarginBottom: 12, alertBorderLayout: 'left', closeIcon: '' } },
-        { id: 'tile', label: { en: 'tile', de: 'tile' }, purpose: { en: '', de: '' }, size: { width: 380, height: 270 }, data: { oid: '0_userdata.0.demo.notifications.alerts', alertLayouts: 'tile', alertDense: false, alertElevation: 2, alertMarginBottom: 12, alertBorderLayout: 'left', closeIcon: '' } },
-        { id: 'dense', label: { en: 'dense', de: 'dense' }, purpose: { en: '', de: '' }, size: { width: 380, height: 270 }, data: { oid: '0_userdata.0.demo.notifications.alerts', alertElevation: 2, alertMarginBottom: 12, alertBorderLayout: 'left', closeIcon: '' } },
-        { id: 'without-border-stripe', label: { en: 'Without border stripe', de: 'Without border stripe' }, purpose: { en: '', de: '' }, size: { width: 380, height: 270 }, data: { oid: '0_userdata.0.demo.notifications.alerts', alertElevation: 2, alertMarginBottom: 12, closeIcon: '' } },
-    ],
-    MaterialDesignCard: [
-        { id: 'typical', label: { en: 'Typical', de: 'Typical' }, purpose: { en: '', de: '' }, size: { width: 300, height: 60 }, data: { json_string_oid: '0_userdata.0.demo.general.value', refresh_oid: '0_userdata.0.demo.general.value', state_oid: '0_userdata.0.demo.general.value' } },
-        { id: 'basic', label: { en: 'Basic', de: 'Basic' }, purpose: { en: '', de: '' }, size: { width: 280, height: 300 }, data: { title: '<b>Smart Home</b>', titleLayout: 'headline6', subtitle: 'All systems active', subtitleLayout: 'subtitle2', html: '12 devices online<br>3 scenes available', textFontSize: 'body2', image: 'img/preview.jpg', controlType: 'state', state_oid: '0_userdata.0.demo.general.text', state_value: '7' } },
-        { id: 'basic-outlined', label: { en: 'Basic outlined', de: 'Basic outlined' }, purpose: { en: '', de: '' }, size: { width: 280, height: 300 }, data: { cardStyle: 'outlined', title: '<b>Smart Home</b>', titleLayout: 'headline6', subtitle: 'All systems active', subtitleLayout: 'subtitle2', html: '12 devices online<br>3 scenes available', textFontSize: 'body2', image: 'img/preview.jpg', controlType: 'state', state_oid: '0_userdata.0.demo.general.text', state_value: '7' } },
-        { id: 'basicheader', label: { en: 'BasicHeader', de: 'BasicHeader' }, purpose: { en: '', de: '' }, size: { width: 280, height: 300 }, data: { cardLayout: 'BasicHeader', title: '<b>Smart Home</b>', titleLayout: 'headline6', subtitle: 'All systems active', subtitleLayout: 'subtitle2', html: '12 devices online<br>3 scenes available', textFontSize: 'body2', image: 'img/preview.jpg', controlType: 'state', state_oid: '0_userdata.0.demo.general.text', state_value: '7' } },
-        { id: 'basicheaderoverlay', label: { en: 'BasicHeaderOverlay', de: 'BasicHeaderOverlay' }, purpose: { en: '', de: '' }, size: { width: 280, height: 300 }, data: { cardLayout: 'BasicHeaderOverlay', title: '<b>Smart Home</b>', titleLayout: 'headline6', subtitle: 'All systems active', subtitleLayout: 'subtitle2', html: '12 devices online<br>3 scenes available', textFontSize: 'body2', image: 'img/preview.jpg', controlType: 'state', state_oid: '0_userdata.0.demo.general.text', state_value: '7' } },
-        { id: 'horizontal', label: { en: 'Horizontal', de: 'Horizontal' }, purpose: { en: '', de: '' }, size: { width: 420, height: 180 }, data: { cardLayout: 'Horizontal', title: '<b>Smart Home</b>', titleLayout: 'headline6', subtitle: 'All systems active', subtitleLayout: 'subtitle2', html: '12 devices online<br>3 scenes available', textFontSize: 'body2', image: 'img/preview.jpg', controlType: 'state', state_oid: '0_userdata.0.demo.general.text', state_value: '7' } },
-        { id: 'clickable-card', label: { en: 'Clickable (card)', de: 'Clickable (card)' }, purpose: { en: '', de: '' }, size: { width: 280, height: 300 }, data: { title: '<b>Smart Home</b>', titleLayout: 'headline6', subtitle: 'All systems active', subtitleLayout: 'subtitle2', html: '12 devices online<br>3 scenes available', textFontSize: 'body2', image: 'img/preview.jpg', clickType: 'card', state_oid: '0_userdata.0.demo.general.text', state_value: '7', href: '#' } },
+    MaterialDesignList: [
+        { ...typical('Switches the lights of three rooms, one row each, as in a settings list.', 'Schaltet die Lichter dreier Räume, eine Zeile je Licht, wie in einer Einstellungsliste.'), size: LIST, data: { listType: 'switch', ...rows(lights) } },
+        { ...text('status', 'Read-only status', 'Status nur lesen', 'Checkboxes that only show which windows are open.', 'Checkboxen, die nur zeigen, welche Fenster offen sind.'), size: LIST, data: { listType: 'checkbox_readonly', ...rows(windows) } },
+        { ...text('menu', 'Menu to other views', 'Menü zu anderen Ansichten', 'Each row opens a view; the card frames the menu.', 'Jede Zeile öffnet eine Ansicht; die Karte rahmt das Menü.'), size: { width: 320, height: 224 }, data: { listType: 'buttonNav', listLayout: 'card', ...rows(views) } },
+        { ...text('scenes', 'Scene buttons', 'Szenen-Buttons', 'Each row writes its scene to one data point; inset dividers in an outlined card.', 'Jede Zeile schreibt ihre Szene in einen Datenpunkt; eingerückte Trenner in einer umrandeten Karte.'), size: { width: 320, height: 240 }, data: { listType: 'buttonState', listLayout: 'cardOutlined', listItemDividerStyle: 'inset', ...rows(scenes) } },
+        { ...text('groups', 'Group headers and right text', 'Gruppen und rechter Text', 'Headers split the rooms by floor; the right text holds the value (in a real view usually a binding).', 'Überschriften teilen die Räume nach Etage; der rechte Text trägt den Wert (in einer echten Ansicht meist ein Binding).'), size: { width: 320, height: 240 }, data: { listType: 'text', ...rows([
+            { header: 'Ground floor', label: 'Living room', right: '21.4 °C', icon: 'sofa' },
+            { label: 'Kitchen', right: '22.1 °C', icon: 'fridge' },
+            { header: 'First floor', label: 'Bedroom', right: '19.2 °C', icon: 'bed' },
+        ], false) } },
     ],
     MaterialDesignIconList: [
-        { id: 'typical', label: { en: 'Typical', de: 'Typical' }, purpose: { en: '', de: '' }, size: { width: 300, height: 60 }, data: { json_string_oid: '0_userdata.0.demo.general.value', oid0: '0_userdata.0.demo.general.value', visibilityOid0: '0_userdata.0.demo.general.value', oid1: '0_userdata.0.demo.general.value', visibilityOid1: '0_userdata.0.demo.general.value', listTypeButtonNav0: 'demo-climate' } },
-        { id: 'icon-list', label: { en: 'Icon List', de: 'Icon List' }, purpose: { en: '', de: '' }, size: { width: 330, height: 210 }, data: { countListItems: 3, listType0: 'buttonToggle', oid0: '0_userdata.0.demo.general.scene', label0: 'Light', listImage0: 'lightbulb', listType1: 'buttonToggle', oid1: '0_userdata.0.demo.general.scene', label1: 'Socket', listImage1: 'power-plug', listType2: 'buttonToggle', oid2: '0_userdata.0.demo.general.scene', label2: 'Fan', listImage2: 'fan', maxItemsperRow: 4, itemGaps: 6, showValueLabel0: false, showValueLabel1: false, showValueLabel2: false, buttonBgColorActive0: '#44739e', listImageActiveColor0: '#ffffff', buttonBgColorActive1: '#44739e', listImageActiveColor1: '#ffffff', buttonBgColorActive2: '#44739e', listImageActiveColor2: '#ffffff', buttonBgColor0: '#eeeeee', buttonBgColor1: '#eeeeee', buttonBgColor2: '#eeeeee', showScrollbar: false } },
-        { id: 'light-switches', label: { en: 'Light switches', de: 'Light switches' }, purpose: { en: '', de: '' }, size: { width: 300, height: 120 }, data: { countListItems: 2, listType0: 'buttonToggle', oid0: '0_userdata.0.demo.living.light', label0: 'Living room', listImage0: 'lightbulb', listType1: 'buttonToggle', oid1: '0_userdata.0.demo.kitchen.light', label1: 'Kitchen', listImage1: 'lightbulb' } },
-    ],
-    MaterialDesignList: [
-        { id: 'typical', label: { en: 'Typical', de: 'Typical' }, purpose: { en: '', de: '' }, size: { width: 300, height: 60 }, data: { json_string_oid: '0_userdata.0.demo.general.value', oid0: '0_userdata.0.demo.general.value', oid1: '0_userdata.0.demo.general.value', listTypeButtonNav0: 'demo-climate' } },
-        { id: 'text-default', label: { en: 'Text, default', de: 'Text, default' }, purpose: { en: '', de: '' }, size: { width: 330, height: 210 }, data: { countListItems: 3, listItemHeight: 48, oid0: '0_userdata.0.demo.general.scene', label0: 'Light', subLabel0: 'Living room', listImage0: 'lightbulb', dividers0: true, oid1: '0_userdata.0.demo.general.scene', label1: 'Socket', subLabel1: 'Kitchen', listImage1: 'power-plug', dividers1: true, oid2: '0_userdata.0.demo.general.scene', label2: 'Fan', subLabel2: 'Bathroom', listImage2: 'fan', dividers2: true, colorSwitchTrue: '#44739e' } },
-        { id: 'card', label: { en: 'Card', de: 'Card' }, purpose: { en: '', de: '' }, size: { width: 330, height: 210 }, data: { countListItems: 3, listItemHeight: 48, oid0: '0_userdata.0.demo.general.scene', label0: 'Light', subLabel0: 'Living room', listImage0: 'lightbulb', dividers0: true, oid1: '0_userdata.0.demo.general.scene', label1: 'Socket', subLabel1: 'Kitchen', listImage1: 'power-plug', dividers1: true, oid2: '0_userdata.0.demo.general.scene', label2: 'Fan', subLabel2: 'Bathroom', listImage2: 'fan', dividers2: true, colorSwitchTrue: '#44739e', listLayout: 'card' } },
-        { id: 'card-outlined', label: { en: 'Card outlined', de: 'Card outlined' }, purpose: { en: '', de: '' }, size: { width: 330, height: 210 }, data: { countListItems: 3, listItemHeight: 48, oid0: '0_userdata.0.demo.general.scene', label0: 'Light', subLabel0: 'Living room', listImage0: 'lightbulb', dividers0: true, oid1: '0_userdata.0.demo.general.scene', label1: 'Socket', subLabel1: 'Kitchen', listImage1: 'power-plug', dividers1: true, oid2: '0_userdata.0.demo.general.scene', label2: 'Fan', subLabel2: 'Bathroom', listImage2: 'fan', dividers2: true, colorSwitchTrue: '#44739e', listLayout: 'cardOutlined' } },
-        { id: 'inset-divider', label: { en: 'Inset divider', de: 'Inset divider' }, purpose: { en: '', de: '' }, size: { width: 330, height: 210 }, data: { listType: 'switch', countListItems: 3, listItemHeight: 48, oid0: '0_userdata.0.demo.general.scene', label0: 'Light', subLabel0: 'Living room', listImage0: 'lightbulb', dividers0: true, oid1: '0_userdata.0.demo.general.scene', label1: 'Socket', subLabel1: 'Kitchen', listImage1: 'power-plug', dividers1: true, oid2: '0_userdata.0.demo.general.scene', label2: 'Fan', subLabel2: 'Bathroom', listImage2: 'fan', dividers2: true, colorSwitchTrue: '#44739e', listItemDividerStyle: 'inset' } },
-        { id: 'switch-rows', label: { en: 'Switch rows', de: 'Switch rows' }, purpose: { en: '', de: '' }, size: { width: 330, height: 210 }, data: { listType: 'switch', countListItems: 3, listItemHeight: 48, oid0: '0_userdata.0.demo.general.scene', label0: 'Light', subLabel0: 'Living room', listImage0: 'lightbulb', dividers0: true, oid1: '0_userdata.0.demo.general.scene', label1: 'Socket', subLabel1: 'Kitchen', listImage1: 'power-plug', dividers1: true, oid2: '0_userdata.0.demo.general.scene', label2: 'Fan', subLabel2: 'Bathroom', listImage2: 'fan', dividers2: true, colorSwitchTrue: '#44739e', listLayout: 'card' } },
-        { id: 'checkbox-rows', label: { en: 'Checkbox rows', de: 'Checkbox rows' }, purpose: { en: '', de: '' }, size: { width: 330, height: 210 }, data: { listType: 'checkbox', countListItems: 3, listItemHeight: 48, oid0: '0_userdata.0.demo.general.scene', label0: 'Light', subLabel0: 'Living room', listImage0: 'lightbulb', dividers0: true, oid1: '0_userdata.0.demo.general.scene', label1: 'Socket', subLabel1: 'Kitchen', listImage1: 'power-plug', dividers1: true, oid2: '0_userdata.0.demo.general.scene', label2: 'Fan', subLabel2: 'Bathroom', listImage2: 'fan', dividers2: true, colorSwitchTrue: '#44739e', listLayout: 'card' } },
+        { ...typical('Light tiles: a tap switches the light, the filled circle shows it is on.', 'Licht-Kacheln: ein Tipp schaltet das Licht, der gefüllte Kreis zeigt, dass es an ist.'), size: ICONS, data: { maxItemsperRow: 3, ...tiles(lightTiles, 'buttonToggle') } },
+        { ...text('scenes', 'Scene buttons', 'Szenen-Buttons', 'Four buttons write their scene into one data point; square buttons.', 'Vier Buttons schreiben ihre Szene in einen Datenpunkt; eckige Buttons.'), size: { width: 480, height: 112 }, data: { buttonLayout: 'square', maxItemsperRow: 4, ...tiles(scenes, 'buttonState') } },
+        { ...text('horizontal', 'Text beside the icon', 'Text neben dem Icon', 'Horizontal items in a card, for a narrow column.', 'Waagerechte Einträge in einer Karte, für eine schmale Spalte.'), size: { width: 220, height: 200 }, data: { itemLayout: 'horizontal', listLayout: 'card', maxItemsperRow: 1, ...tiles(lightTiles, 'buttonToggle') } },
+        { ...text('menu', 'Menu to other views', 'Menü zu anderen Ansichten', 'Full-width buttons open other views, in an outlined card.', 'Breite Buttons öffnen andere Ansichten, in einer umrandeten Karte.'), size: { width: 360, height: 112 }, data: { buttonLayout: 'full', listLayout: 'cardOutlined', maxItemsperRow: 3, ...tiles(views.map(v => ({ label: v.label, icon: v.icon!, nav: v.nav })), 'buttonNav') } },
     ],
     MaterialDesignTable: [
-        { id: 'typical', label: { en: 'Typical', de: 'Typical' }, purpose: { en: '', de: '' }, size: { width: 400, height: 220 }, data: { oid: 'nothing_selected', dataJson: '[{"name":"Living room","value":21.5,"status":"<font color=\\"#4caf50\\">ok</font>"},{"name":"Bedroom","value":19.2,"status":"<font color=\\"#2196f3\\">cool</font>"},{"name":"Bathroom","value":23.8,"status":"<font color=\\"#ff9800\\">warm</font>"}]', countCols: 2, colorHeaderRowBackground: '#44739e', colorHeaderRowText: '#ffffff', dividers: '', label0: 'Room', label1: 'Temp', label2: 'Status', showColumn2: true, colType2: 'text', textAlign0: 'left', textAlign1: 'right', textAlign2: 'center', suffix1: ' &deg;C', sortKey0: 'name', sortKey1: 'value', sortKey2: 'status' } },
-        { id: 'without-header-row', label: { en: 'Without header row', de: 'Without header row' }, purpose: { en: '', de: '' }, size: { width: 400, height: 220 }, data: { oid: 'nothing_selected', dataJson: '[{"name":"Living room","value":21.5,"status":"<font color=\\"#4caf50\\">ok</font>"},{"name":"Bedroom","value":19.2,"status":"<font color=\\"#2196f3\\">cool</font>"},{"name":"Bathroom","value":23.8,"status":"<font color=\\"#ff9800\\">warm</font>"}]', countCols: 2, showHeader: false, colorHeaderRowBackground: '#44739e', colorHeaderRowText: '#ffffff', dividers: '', label0: 'Room', label1: 'Temp', label2: 'Status', showColumn2: true, colType2: 'text', textAlign0: 'left', textAlign1: 'right', textAlign2: 'center', suffix1: ' &deg;C', sortKey0: 'name', sortKey1: 'value', sortKey2: 'status' } },
-        { id: 'card', label: { en: 'Card', de: 'Card' }, purpose: { en: '', de: '' }, size: { width: 400, height: 220 }, data: { oid: 'nothing_selected', dataJson: '[{"name":"Living room","value":21.5,"status":"<font color=\\"#4caf50\\">ok</font>"},{"name":"Bedroom","value":19.2,"status":"<font color=\\"#2196f3\\">cool</font>"},{"name":"Bathroom","value":23.8,"status":"<font color=\\"#ff9800\\">warm</font>"}]', countCols: 2, tableLayout: 'card', colorHeaderRowBackground: '#44739e', colorHeaderRowText: '#ffffff', dividers: '', label0: 'Room', label1: 'Temp', label2: 'Status', showColumn2: true, colType2: 'text', textAlign0: 'left', textAlign1: 'right', textAlign2: 'center', suffix1: ' &deg;C', sortKey0: 'name', sortKey1: 'value', sortKey2: 'status' } },
-        { id: 'card-outlined', label: { en: 'Card outlined', de: 'Card outlined' }, purpose: { en: '', de: '' }, size: { width: 400, height: 220 }, data: { oid: 'nothing_selected', dataJson: '[{"name":"Living room","value":21.5,"status":"<font color=\\"#4caf50\\">ok</font>"},{"name":"Bedroom","value":19.2,"status":"<font color=\\"#2196f3\\">cool</font>"},{"name":"Bathroom","value":23.8,"status":"<font color=\\"#ff9800\\">warm</font>"}]', countCols: 2, tableLayout: 'cardOutlined', colorHeaderRowBackground: '#44739e', colorHeaderRowText: '#ffffff', dividers: '', label0: 'Room', label1: 'Temp', label2: 'Status', showColumn2: true, colType2: 'text', textAlign0: 'left', textAlign1: 'right', textAlign2: 'center', suffix1: ' &deg;C', sortKey0: 'name', sortKey1: 'value', sortKey2: 'status' } },
-        { id: 'with-row-dividers', label: { en: 'With row dividers', de: 'With row dividers' }, purpose: { en: '', de: '' }, size: { width: 400, height: 220 }, data: { oid: 'nothing_selected', dataJson: '[{"name":"Living room","value":21.5,"status":"<font color=\\"#4caf50\\">ok</font>"},{"name":"Bedroom","value":19.2,"status":"<font color=\\"#2196f3\\">cool</font>"},{"name":"Bathroom","value":23.8,"status":"<font color=\\"#ff9800\\">warm</font>"}]', countCols: 2, colorHeaderRowBackground: '#44739e', colorHeaderRowText: '#ffffff', dividers: '#8a8a8a', label0: 'Room', label1: 'Temp', label2: 'Status', showColumn2: true, colType2: 'text', textAlign0: 'left', textAlign1: 'right', textAlign2: 'center', suffix1: ' &deg;C', sortKey0: 'name', sortKey1: 'value', sortKey2: 'status' } },
+        { ...typical('Temperature and humidity of three rooms from a JSON text, values aligned to the right.', 'Temperatur und Luftfeuchte dreier Räume aus einem JSON-Text, Werte rechtsbündig.'), size: TABLE, data: rooms },
+        { ...text('card', 'Card', 'Karte', 'The same table framed as a card.', 'Dieselbe Tabelle als Karte gerahmt.'), size: { width: 480, height: 224 }, data: { ...rooms, tableLayout: 'cardOutlined' } },
+        { ...text('state', 'From a JSON state', 'Aus einem JSON-Datenpunkt', 'Reads the weather forecast from a data point; the icon column is hidden.', 'Liest die Wettervorhersage aus einem Datenpunkt; die Icon-Spalte ist ausgeblendet.'), size: { width: 480, height: 320 }, data: { oid: `${D}weather.forecast`, countCols: 4, label0: 'Day', textAlign0: 'left', showColumn1: false, label2: 'Max', textAlign2: 'right', suffix2: ' °C', label3: 'Min', textAlign3: 'right', suffix3: ' °C' } },
+        { ...text('compact', 'Compact without header', 'Kompakt ohne Kopfzeile', 'Lower rows and no header row, for a small tile.', 'Niedrigere Zeilen und keine Kopfzeile, für eine kleine Kachel.'), size: { width: 320, height: 160 }, data: { ...rooms, showHeader: false, rowHeight: 32 } },
+    ],
+    MaterialDesignCard: [
+        { ...typical('A welcome card with picture, title, subtitle and text.', 'Eine Willkommenskarte mit Bild, Titel, Untertitel und Text.'), size: CARD, data: welcome },
+        { ...text('text-only', 'Outlined, without picture', 'Umrandet, ohne Bild', 'A text card for the weather, framed by an outline.', 'Eine Textkarte für das Wetter, mit einer Umrandung gerahmt.'), size: { width: 320, height: 160 }, data: { cardStyle: 'outlined', title: 'Weather', subtitle: 'Partly cloudy, 17.5 °C', html: 'Rain chance 20 %<br>Wind 12 km/h', image: '' } },
+        { ...text('header', 'Title above the picture', 'Titel über dem Bild', 'Layout BasicHeader: the title comes first.', 'Layout BasicHeader: zuerst der Titel.'), size: CARD, data: { ...welcome, cardLayout: 'BasicHeader' } },
+        { ...text('overlay', 'Title on the picture', 'Titel auf dem Bild', 'Layout BasicHeaderOverlay: the title lies on the picture, on a dark band so it stays readable on any photo.', 'Layout BasicHeaderOverlay: der Titel liegt auf dem Bild, auf einem dunklen Band, damit er auf jedem Foto lesbar bleibt.'), size: CARD, data: { ...welcome, cardLayout: 'BasicHeaderOverlay', colorTitleSectionBackground: 'rgba(0, 0, 0, 0.5)', colorTitle: '#ffffff', colorSubtitle: 'rgba(255, 255, 255, 0.8)' } },
+        { ...text('horizontal', 'Picture beside the text', 'Bild neben dem Text', 'Layout Horizontal, for a wide and low tile.', 'Layout Horizontal, für eine breite, niedrige Kachel.'), size: { width: 440, height: 180 }, data: { ...welcome, cardLayout: 'Horizontal' } },
+    ],
+    MaterialDesignAlerts: [
+        { ...typical('Open notifications from a JSON data point, with a colored stripe per message; the cross removes one.', 'Offene Meldungen aus einem JSON-Datenpunkt, mit farbigem Streifen je Meldung; das Kreuz entfernt eine.'), size: ALERTS, data: { oid: `${D}notifications.alerts`, alertDense: false, alertBorderLayout: 'left', alertMarginBottom: 12 } },
+        { ...text('outlined', 'Outlined', 'Umrandet', 'An outline instead of a filled background.', 'Eine Umrandung statt einer gefüllten Fläche.'), size: ALERTS, data: { oid: `${D}notifications.alerts`, alertLayouts: 'outlined', alertDense: false, alertElevation: 0, alertMarginBottom: 12 } },
+        { ...text('tile', 'Tile with top stripe', 'Kachel mit Streifen oben', 'Square corners and the stripe on top.', 'Eckige Ecken und der Streifen oben.'), size: ALERTS, data: { oid: `${D}notifications.alerts`, alertLayouts: 'tile', alertDense: false, alertBorderLayout: 'top', alertMarginBottom: 12 } },
+        { ...text('dense', 'Dense', 'Kompakt', 'Lower messages with a smaller font, for a sidebar.', 'Niedrigere Meldungen mit kleinerer Schrift, für eine Seitenleiste.'), size: { width: 300, height: 110 }, data: { oid: `${D}notifications.alerts`, alertDense: true, alertFontSize: 14, alertIconSize: 20, alertBorderLayout: 'left', alertMarginBottom: 8 } },
     ],
 };

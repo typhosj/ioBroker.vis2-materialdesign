@@ -53,8 +53,8 @@ export function dynamicStates(now: Date): Record<string, string> {
         { name: 'Window cleaning', start: at(now, -1, 9), end: at(now, -1, 12), color: '#00897b' },
     ].map(e => ({ ...e, start: stamp(e.start), end: stamp(e.end) }));
     const alerts = [
-        { text: 'Kitchen window is open', icon: 'window-open-variant', iconColor: '#fb8c00' },
-        { text: 'Battery of the hall sensor is low', icon: 'battery-alert', iconColor: '#e53935' },
+        { text: 'Kitchen window is open', icon: 'window-open-variant', iconColor: '#fb8c00', borderColor: '#fb8c00' },
+        { text: 'Battery of the hall sensor is low', icon: 'battery-alert', iconColor: '#e53935', borderColor: '#e53935' },
     ];
     return {
         [`${DEMO_PREFIX}calendar.events`]: JSON.stringify(events),

@@ -107,6 +107,9 @@ const DEFAULT_PATCH: Record<string, { data: Record<string, unknown> }> = {
     MaterialDesignList: { data: { listTypeButtonNav0: 'demo-climate' } },
     MaterialDesignIconList: { data: { listTypeButtonNav0: 'demo-climate' } },
     MaterialDesignDialogView: { data: { ...DIALOG_VIEW } },
+    // A plain number is no JSON: the first look would be an error alert and an empty table.
+    MaterialDesignAlerts: { data: { oid: demo('notifications.alerts') } },
+    MaterialDesignTable: { data: { oid: demo('weather.forecast') } },
     MaterialDesignChartLineHistory: { data: { historyAdapterInstance: 'influxdb.0', timeIntervalToShow: '1 day', dataCount: 1, oid0: `${DEMO_PREFIX}energy.power`, time_interval_oid: '', manualRefreshTrigger: '', visibilityOid0: '', oid1: '', visibilityOid1: '' } },
 };
 
@@ -114,8 +117,9 @@ function defaultsVariant(module: string, info: RxWidgetInfo): Variant {
     const data: Record<string, unknown> = {};
     const defaults = defaultData(info);
     for (const { key, field } of expandFields(info, defaults)) {
-        // A filled working id reports "device busy" and shows the slider disabled.
-        if ((field as { type?: string }).type === 'id' && !key.startsWith('__mdwTheme') && key !== 'oid-working' && !defaults[key]) data[key] = FALLBACK_ID;
+        // A filled working id reports "device busy" and shows the slider disabled; a filled visibility id hides the entry.
+        const switchesOff = key === 'oid-working' || key.startsWith('visibilityOid');
+        if ((field as { type?: string }).type === 'id' && !key.startsWith('__mdwTheme') && !switchesOff && !defaults[key]) data[key] = FALLBACK_ID;
     }
     return {
         id: DEFAULTS_ID,
