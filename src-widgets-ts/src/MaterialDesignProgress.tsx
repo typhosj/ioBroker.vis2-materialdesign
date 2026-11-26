@@ -227,9 +227,8 @@ export default class MaterialDesignProgress extends VisWidget {
             return progressPointerValue(fraction, data);
         };
         const write = (next: number): void => { setStateValue(this.props, data.oid || '', next); };
-        // The text lies twice: in the track color under the bar, and as a copy inside the bar, which clips it to
-        // the filled part and lines it up with the full track. Known limit: a translucent bar color lets the
-        // track text show through under the copy.
+        // The copy inside the bar must span the full track, or its text no longer covers the track text.
+        // Known limit: a translucent bar color lets the track text show through under the copy.
         const showLabel = data.showValueLabel !== false && !indeterminate;
         const barStart = reverse ? 100 - displayedPercent : 0;
         const ownTextColor = cleanColor(data.textColor, '');
@@ -328,6 +327,7 @@ export default class MaterialDesignProgress extends VisWidget {
                                 height: '100%',
                                 insetInlineStart: reverse ? `${100 - displayedPercent}%` : 0,
                                 position: 'absolute',
+                                top: 0,
                                 width: indeterminate ? '40%' : `${displayedPercent}%`,
                             }}
                         >

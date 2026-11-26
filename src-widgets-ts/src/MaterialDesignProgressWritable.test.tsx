@@ -148,6 +148,12 @@ describe('Progress label over the bar', () => {
         expect(r.style(r.bar)?.overflow).toBe('hidden');
     });
 
+    // The track text comes first, so the absolute bar without its own top would sit below it, outside the track.
+    it('pins the bar to the top of the track', () => {
+        const r = render({}, 25);
+        expect(r.style(r.bar)).toMatchObject({ position: 'absolute', top: 0, height: '100%' });
+    });
+
     it('lines the bar copy up with the full track, also reversed', () => {
         const plain = render({}, 25);
         expect(plain.style(plain.onBar)).toMatchObject({ position: 'absolute', top: 0, insetInlineStart: '0%', width: '400%' });

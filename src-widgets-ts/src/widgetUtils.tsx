@@ -1004,9 +1004,9 @@ export function m3SeedOids(): string[] {
 }
 
 export function parseColor(color: string): [number, number, number] | undefined {
-    const hex = color.trim().match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i)?.[1];
+    const hex = color.trim().match(/^#([0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i)?.[1];
     if (hex) {
-        const full = hex.length === 3 ? hex.replace(/./g, char => char + char) : hex;
+        const full = hex.length <= 4 ? hex.replace(/./g, char => char + char) : hex;
         return [0, 2, 4].map(index => parseInt(full.substr(index, 2), 16)) as [number, number, number];
     }
     const rgb = color.trim().match(/^rgba?\(\s*(\d+)[\s,]+(\d+)[\s,]+(\d+)/i);
@@ -1033,6 +1033,7 @@ export function m3OnColor(color: string): string | undefined {
 }
 
 /** Text color for a surface filled with `background`; `undefined` when it cannot be told. */
+// Known limit: alpha is ignored, and named colors are not resolved (the caller's fallback applies).
 export function inkOn(background: string): string | undefined {
     return background === 'var(--md-sys-color-primary)' ? 'var(--md-sys-color-on-primary)' : m3OnColor(background);
 }
