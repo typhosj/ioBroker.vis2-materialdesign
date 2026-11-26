@@ -114,7 +114,8 @@ function defaultsVariant(module: string, info: RxWidgetInfo): Variant {
     const data: Record<string, unknown> = {};
     const defaults = defaultData(info);
     for (const { key, field } of expandFields(info, defaults)) {
-        if ((field as { type?: string }).type === 'id' && !key.startsWith('__mdwTheme') && !defaults[key]) data[key] = FALLBACK_ID;
+        // A filled working id reports "device busy" and shows the slider disabled.
+        if ((field as { type?: string }).type === 'id' && !key.startsWith('__mdwTheme') && key !== 'oid-working' && !defaults[key]) data[key] = FALLBACK_ID;
     }
     return {
         id: DEFAULTS_ID,

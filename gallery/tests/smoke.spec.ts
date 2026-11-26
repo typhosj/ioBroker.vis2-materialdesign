@@ -76,11 +76,19 @@ test('Checkbox writes its data point', async ({ page }) => {
 });
 
 test('Slider writes its data point on a key press', async ({ page }) => {
-    await visit(page, '#/widget/Slider?variant=horizontal');
+    await visit(page, '#/widget/Slider');
     const before = await read(page, 'living.dimmer');
     await frame(page).locator('[role="slider"]').first().focus();
     await page.keyboard.press('ArrowRight');
     await expect(datapoint(page, 'living.dimmer')).not.toHaveValue(before);
+});
+
+test('Round Slider writes its data point on a key press', async ({ page }) => {
+    await visit(page, '#/widget/Slider%20Round');
+    const before = await read(page, 'climate.setpoint');
+    await frame(page).locator('[role="slider"]').first().focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(datapoint(page, 'climate.setpoint')).not.toHaveValue(before);
 });
 
 test('Select writes the chosen option to its data point', async ({ page }) => {
@@ -105,7 +113,7 @@ test('closing an alert removes it from the data point', async ({ page }) => {
 });
 
 for (const [name, query, action] of [
-    ['Button Toggle', '', 'click'], ['Icon Button Toggle', '', 'click'], ['Slider Round', '?variant=round-slider-270', 'key'],
+    ['Button Toggle', '', 'click'], ['Icon Button Toggle', '', 'click'], ['Slider Round', '', 'key'],
     ['Input', '', 'type'], ['Dialog', '', 'click'],
 ] as const) {
     test(`${name} reacts visibly`, async ({ page }) => {
