@@ -162,3 +162,14 @@ describe('icon list scroll to active', () => {
         expect(fields.find(field => field.name === 'scrollToActive')?.type).toBe('checkbox');
     });
 });
+
+describe('icon list items per row', () => {
+    // Each entry carries the gap as margin on both sides; a basis of 100% / n left no room for it,
+    // so with any gap only n - 1 entries fit and the last one wrapped (as in the original widget).
+    it('subtracts the gaps from each entry basis, so the configured number fits in a row', () => {
+        const html = render({ countListItems: 3, maxItemsperRow: 3, itemGaps: 6 });
+        expect(html).toContain('flex:1 1 calc(100% / var(--materialdesign-icon-list-items-per-row) - 2 * var(--materialdesign-icon-list-items-gaps))');
+        expect(html).toContain('--materialdesign-icon-list-items-per-row:3');
+        expect(html).toContain('--materialdesign-icon-list-items-gaps:6px');
+    });
+});
