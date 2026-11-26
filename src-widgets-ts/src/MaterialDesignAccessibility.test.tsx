@@ -265,7 +265,9 @@ describe('material 3 colour contrast', () => {
         expect(inkOn('#44739e')).toBe('#ffffff');
         expect(inkOn('#ffa000')).toBe('#1d1b20');
         expect(inkOn('rgba(255, 238, 0, 0.5)')).toBe('#1d1b20');
-        for (const unknown of ['', 'yellow', 'var(--md-sys-color-secondary)', 'linear-gradient(red, blue)', '#12']) expect(inkOn(unknown)).toBeUndefined();
+        expect(inkOn('#ffee0080')).toBe('#1d1b20');
+        expect(inkOn('#003c')).toBe('#ffffff');
+        for (const unknown of ['', 'yellow', 'var(--md-sys-color-secondary)', 'linear-gradient(red, blue)', '#12', '#12345', '#1234567']) expect(inkOn(unknown)).toBeUndefined();
     });
 });
 
