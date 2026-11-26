@@ -220,6 +220,12 @@ describe('alert layouts', () => {
         expect(sides(style)).toEqual([...Array(3).fill('1px solid var(--md-sys-color-outline-variant)'), '6px solid #e53935']);
     });
 
+    it('gives the alert box its text color, so a stripe or frame in currentColor matches the text', () => {
+        expect(firstAlert({ alertLayouts: 'outlined' }, { text: 'a', fontColor: '#123456' }).color).toBe('#123456');
+        expect(firstAlert({ designStyle: 'material3' }).color).toBe('var(--md-sys-color-on-surface)');
+        expect(firstAlert({}).color).toBe('');
+    });
+
     it('draws only the stripe on a normal alert, in the text color without a stripe color', () => {
         expect(sides(firstAlert({ alertBorderLayout: 'top' }))).toEqual(['6px solid currentColor', undefined, undefined, undefined]);
         expect(sides(firstAlert({}))).toEqual([undefined, undefined, undefined, undefined]);
