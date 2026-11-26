@@ -5,7 +5,7 @@ import type { RxWidgetInfo, VisRxWidgetProps } from '@iobroker/types-vis-2';
 import { renderIcon, m3ColorExplicit } from './MaterialDesignButtons';
 import { fill, withAutoFill } from './deviceFill';
 import { WidgetLock, lockPinField, type LockData } from './widgetLock';
-import { boolValue, isReadOnly, squarePreview, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, iconField, m3Switch, parseActionValue, setStateValue, sizeCss, stateValue, stringValue } from './widgetUtils';
+import { boolValue, isReadOnly, squarePreview, RenderProps, VisWidget, createInfo, designStyle, designStyleClasses, iconField, inkOn, legacyInkMuted, m3Switch, parseActionValue, setStateValue, sizeCss, stateValue, stringValue } from './widgetUtils';
 
 export interface ToggleControlData extends LockData {
     oid?: string;
@@ -380,7 +380,7 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
                                             : m3(data.colorCheckBoxBorder, 'var(--md-sys-color-on-surface-variant)')
                                         : on
                                           ? color(data.colorCheckBox, '#44739e')
-                                          : color(data.colorCheckBoxBorder, 'rgba(0, 0, 0, 0.54)')
+                                          : color(data.colorCheckBoxBorder, legacyInkMuted(this.isDarkTheme()))
                                 }`,
                                 borderRadius: 2,
                                 boxSizing: 'border-box',
@@ -396,7 +396,7 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
                                 style={{ height: '100%', inset: 0, opacity: on ? 1 : 0, position: 'absolute', width: '100%' }}
                                 viewBox="0 0 24 24"
                             >
-                                <path className="mdc-checkbox__checkmark-path" d="M1.73,12.91 8.1,19.28 22.79,4.59" fill="none" stroke={isM3 ? 'var(--md-sys-color-on-primary)' : '#fff'} strokeWidth="3.12" />
+                                <path className="mdc-checkbox__checkmark-path" d="M1.73,12.91 8.1,19.28 22.79,4.59" fill="none" stroke={inkOn(isM3 ? m3(data.colorCheckBox, 'var(--md-sys-color-primary)') : color(data.colorCheckBox, '#44739e')) ?? (isM3 ? 'var(--md-sys-color-on-primary)' : '#fff')} strokeWidth="3.12" />
                             </svg>
                             <div className="mdc-checkbox__mixedmark" />
                         </div>
