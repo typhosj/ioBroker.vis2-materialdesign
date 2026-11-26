@@ -2,6 +2,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 
 import MaterialDesignCalendar from './MaterialDesignCalendar';
+import MaterialDesignCheckbox from './MaterialDesignCheckbox';
 import MaterialDesignList from './MaterialDesignList';
 import MaterialDesignProgress from './MaterialDesignProgress';
 import MaterialDesignSelect from './MaterialDesignSelect';
@@ -107,5 +108,38 @@ describe('classic widgets on a dark page', () => {
         expect(onLight).toContain('color:#1d1b20');
         const onDark = render(MaterialDesignTopAppBar, { navItemCount: 1, labels0: 'Wohnzimmer', drawerLayout: 'permanent', colorDrawerBackground: '#202020' }, false);
         expect(onDark).toContain('color:#ffffff');
+    });
+});
+
+describe('checkbox edge and checkmark', () => {
+    const checkboxRows = { listType: 'checkbox', countListItems: 2, oid0: 'a.0.on', oid1: 'a.0.off' };
+    const renderWith = (Widget: any, rxData: Record<string, unknown>, dark: boolean, values: Record<string, unknown>): string => {
+        const widget = new Widget(fixture({ context: { themeType: dark ? 'dark' : 'light' } }));
+        widget.state = fixture({ rxData, values });
+        return renderToStaticMarkup(widget.renderWidgetBody(fixture({})));
+    };
+    const values = { 'a.0.on.val': true, 'a.0.off.val': false };
+
+    it('draws the empty list checkbox edge against the page, also in Classic dark', () => {
+        expect(renderWith(MaterialDesignList, checkboxRows, true, values)).toContain('border:2px solid rgba(255, 255, 255, 0.7)');
+        expect(renderWith(MaterialDesignList, checkboxRows, false, values)).toContain('border:2px solid rgba(0, 0, 0, 0.54)');
+        expect(renderWith(MaterialDesignList, { ...checkboxRows, designStyle: 'material3' }, true, values)).toContain('border:2px solid var(--md-sys-color-on-surface-variant)');
+    });
+
+    it('draws the empty checkbox widget edge against the page in Classic dark', () => {
+        expect(renderWith(MaterialDesignCheckbox, { oid: 'a.0.off' }, true, values)).toContain('border:2px solid rgba(255, 255, 255, 0.7)');
+        expect(renderWith(MaterialDesignCheckbox, { oid: 'a.0.off', colorCheckBoxBorder: '#00ff00' }, true, values)).toContain('border:2px solid #00ff00');
+    });
+
+    it.each([
+        ['list, Classic', MaterialDesignList, checkboxRows, 'stroke="#ffffff"'],
+        ['list, M3', MaterialDesignList, { ...checkboxRows, designStyle: 'material3' }, 'stroke="var(--md-sys-color-on-primary)"'],
+        ['list, light own color', MaterialDesignList, { ...checkboxRows, colorCheckBox: '#ffee00' }, 'stroke="#1d1b20"'],
+        ['widget, Classic', MaterialDesignCheckbox, { oid: 'a.0.on' }, 'stroke="#ffffff"'],
+        ['widget, M3', MaterialDesignCheckbox, { oid: 'a.0.on', designStyle: 'material3' }, 'stroke="var(--md-sys-color-on-primary)"'],
+        ['widget, light own color', MaterialDesignCheckbox, { oid: 'a.0.on', colorCheckBox: '#ffee00' }, 'stroke="#1d1b20"'],
+        ['widget, M3 light own color', MaterialDesignCheckbox, { oid: 'a.0.on', designStyle: 'material3', colorCheckBox: '#ffee00' }, 'stroke="#1d1b20"'],
+    ])('reads the checkmark on its fill: %s', (_case, Widget, rxData, stroke) => {
+        expect(renderWith(Widget, rxData, false, values)).toContain(stroke);
     });
 });
