@@ -264,9 +264,12 @@ describe('material 3 colour contrast', () => {
         expect(inkOn('var(--md-sys-color-primary)')).toBe('var(--md-sys-color-on-primary)');
         expect(inkOn('#44739e')).toBe('#ffffff');
         expect(inkOn('#ffa000')).toBe('#1d1b20');
-        expect(inkOn('rgba(255, 238, 0, 0.5)')).toBe('#1d1b20');
-        expect(inkOn('#ffee0080')).toBe('#1d1b20');
-        expect(inkOn('#003c')).toBe('#ffffff');
+        expect(inkOn('rgba(255, 238, 0, 1)')).toBe('#1d1b20');
+        expect(inkOn('rgb(255 238 0 / 100%)')).toBe('#1d1b20');
+        expect(inkOn('#ffee00ff')).toBe('#1d1b20');
+        expect(inkOn('#003f')).toBe('#ffffff');
+        // A translucent fill lets the page show through, so no ink can be told and the caller's fallback applies.
+        for (const translucent of ['rgba(255, 238, 0, 0.5)', 'rgb(255 238 0 / 50%)', '#ffee0080', '#003c', 'rgba(255, 255, 255, 0.15)']) expect(inkOn(translucent)).toBeUndefined();
         for (const unknown of ['', 'yellow', 'var(--md-sys-color-secondary)', 'linear-gradient(red, blue)', '#12', '#12345', '#1234567']) expect(inkOn(unknown)).toBeUndefined();
     });
 });

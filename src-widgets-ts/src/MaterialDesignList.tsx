@@ -102,7 +102,7 @@ function listToggle(kind: 'switch' | 'checkbox', on: boolean, readonly: boolean,
             {input}
             <span className="mdc-checkbox__background" style={{ background: on ? cbColor : 'transparent', border: `2px solid ${on ? cbColor : isM3 ? 'var(--md-sys-color-on-surface-variant)' : legacyInkMuted(isDark)}`, borderRadius: 2, boxSizing: 'border-box', height: 18, left: 11, position: 'absolute', top: 11, width: 18 }}>
                 <svg className="mdc-checkbox__checkmark" style={{ height: '100%', inset: 0, opacity: on ? 1 : 0, position: 'absolute', width: '100%' }} viewBox="0 0 24 24">
-                    <path className="mdc-checkbox__checkmark-path" d="M1.73,12.91 8.1,19.28 22.79,4.59" fill="none" stroke={inkOn(cbColor) ?? '#fff'} strokeWidth="3.12" />
+                    <path className="mdc-checkbox__checkmark-path" d="M1.73,12.91 8.1,19.28 22.79,4.59" fill="none" stroke={inkOn(cbColor) ?? (isM3 ? 'var(--md-sys-color-on-primary)' : '#fff')} strokeWidth="3.12" />
                 </svg>
             </span>
         </span>

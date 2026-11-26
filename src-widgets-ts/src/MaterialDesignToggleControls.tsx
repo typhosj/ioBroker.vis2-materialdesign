@@ -359,7 +359,7 @@ export function createToggleControlClass(def: ControlDefinition): typeof VisWidg
                             position: 'relative',
                             width: 40,
                             ['--materialdesign-color-checkbox' as string]: color(data.colorCheckBox, '#44739e'),
-                            ['--materialdesign-color-checkbox-border' as string]: color(data.colorCheckBoxBorder, 'rgba(0, 0, 0, 0.54)'),
+                            ['--materialdesign-color-checkbox-border' as string]: color(data.colorCheckBoxBorder, legacyInkMuted(this.isDarkTheme())),
                             ['--materialdesign-color-checkbox-hover' as string]: color(data.colorCheckBoxHover, '#44739e'),
                         }}
                     >

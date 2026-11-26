@@ -574,10 +574,10 @@ describe('icon slider diameter', () => {
 
 describe('label on a filled button', () => {
     type El = React.ReactElement<Record<string, unknown>>;
-    const button = (rxData: Record<string, unknown>): React.CSSProperties => {
-        const Button = createButtonClass(definition('navigation'));
+    const button = (rxData: Record<string, unknown>, press: { active?: boolean; hovered?: boolean } = {}, layout: 'default' | 'icon' = 'default'): React.CSSProperties => {
+        const Button = createButtonClass({ ...definition('navigation'), layout });
         const instance = new Button(fixture<ConstructorParameters<typeof Button>[0]>({ context: {} }));
-        instance.state = fixture<typeof instance.state>({ rxData: { buttontext: 'Go', ...rxData }, values: {} });
+        instance.state = fixture<typeof instance.state>({ rxData: { buttontext: 'Go', ...rxData }, values: {}, ...press });
         const find = (node: React.ReactNode): El | undefined => {
             if (Array.isArray(node)) return node.map(find).find(Boolean);
             if (!React.isValidElement(node)) return undefined;
@@ -598,6 +598,21 @@ describe('label on a filled button', () => {
         ['M3 explicit label color', { designStyle: 'material3', mdwButtonPrimaryColor: '#ffee00', mdwButtonSecondaryColor: '#ff0000' }, '#ff0000'],
     ])('%s', (_case, rxData, color) => {
         expect(button(rxData).color).toBe(color);
+    });
+
+    it('reads on the color Classic paints while pressed or hovered', () => {
+        expect(button({ mdwButtonPrimaryColor: '#ffee00' }, { active: true }).color).toBe('#ffffff');
+        expect(button({ mdwButtonPrimaryColor: '#003366', mdwButtonColorPress: '#ffee00' }, { hovered: true }).color).toBe('#1d1b20');
+        expect(button({ designStyle: 'material3', mdwButtonPrimaryColor: '#ffee00' }, { active: true }).color).toBe('#1d1b20');
+    });
+
+    it('reads on a Classic icon button only where it has a fill', () => {
+        expect(button({}, {}, 'icon').color).toBe('#44739e');
+        expect(button({ mdwButtonPrimaryColor: '#003366' }, {}, 'icon').color).toBe('#ffffff');
+    });
+
+    it('falls back to the old white on a translucent fill, where the page shows through', () => {
+        expect(button({ mdwButtonPrimaryColor: 'rgba(255, 255, 255, 0.15)' }).color).toBe('#fff');
     });
 
     it('keeps the theme color on a Classic outlined or text button', () => {
