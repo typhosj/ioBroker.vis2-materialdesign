@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { cleanColor, progressState, type ProgressData } from './MaterialDesignProgress';
+import { barBackground, cleanColor, progressState, type ProgressData } from './MaterialDesignProgress';
 
 const data = (value: Partial<ProgressData>): ProgressData => value as ProgressData;
 
@@ -32,5 +32,37 @@ describe('progress normalization', () => {
         expect(progressState(80, data({ colorProgress: '#base', colorOneCondition: 20, colorTwoCondition: 70, colorTwo: '#two' })).color).toBe('#two');
         expect(cleanColor('#mdwTheme:colors.test', '#fallback')).toBe('#fallback');
         expect(cleanColor('#123456', '#fallback')).toBe('#123456');
+    });
+});
+
+describe('striped bar', () => {
+    it('keeps a plain bar a plain color', () => {
+        expect(barBackground(data({}), '#123456')).toEqual({ backgroundColor: '#123456', backgroundImage: 'none' });
+        expect(barBackground(data({ progressStriped: false, stripDistance: 24 }), '#123456')).toEqual({ backgroundColor: '#123456', backgroundImage: 'none' });
+    });
+
+    it('lays the stripes over the bar color in a square 40 px tile by default', () => {
+        expect(barBackground(data({ progressStriped: true }), '#123456')).toEqual({
+            backgroundColor: '#123456',
+            backgroundImage: 'linear-gradient(135deg, rgba(255, 255, 255, 0.25) 25%, transparent 0, transparent 50%, rgba(255, 255, 255, 0.25) 0, rgba(255, 255, 255, 0.25) 75%, transparent 0, transparent)',
+            backgroundSize: '40px 40px',
+        });
+    });
+
+    it('applies angle, widths, color and distance', () => {
+        const style = barBackground(data({ progressStriped: true, stripAngle: 45, stipWidth1: 10, stipWidth2: 30, stipWidth3: 60, progressStripedColor: '#ff0000', stripDistance: 24 }), '#123456');
+        expect(style.backgroundImage).toBe('linear-gradient(45deg, #ff0000 10%, transparent 0, transparent 30%, #ff0000 0, #ff0000 60%, transparent 0, transparent)');
+        expect(style.backgroundSize).toBe('24px 24px');
+    });
+
+    it('falls back to 40 px for an emptied, zero, negative, below 1 px or text distance', () => {
+        for (const stripDistance of ['', 0, -5, 0.5, 'abc'] as unknown as number[]) {
+            expect(barBackground(data({ progressStriped: true, stripDistance }), '#123456').backgroundSize).toBe('40px 40px');
+        }
+        expect(barBackground(data({ progressStriped: true, stripDistance: 1 }), '#123456').backgroundSize).toBe('1px 1px');
+    });
+
+    it('ignores an unresolved theme token as stripe color', () => {
+        expect(barBackground(data({ progressStriped: true, progressStripedColor: '#mdwTheme:colors.x' }), '#123456').backgroundImage).toContain('rgba(255, 255, 255, 0.25) 25%');
     });
 });

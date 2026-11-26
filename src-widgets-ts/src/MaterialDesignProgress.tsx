@@ -170,6 +170,21 @@ export function progressState(value: ioBroker.StateValue | undefined, data: Prog
     return { percent: data.invertValue ? 100 - percent : percent, raw, color, label };
 }
 
+// The tile must stay square: with any other aspect ratio the angled stripes break at the tile edges.
+export function barBackground(data: ProgressData, color: string): React.CSSProperties {
+    if (!data.progressStriped) {
+        return { backgroundColor: color, backgroundImage: 'none' };
+    }
+    const stripe = cleanColor(data.progressStripedColor, 'rgba(255, 255, 255, 0.25)');
+    const stored = num(data.stripDistance, 40);
+    const distance = stored >= 1 ? stored : 40;
+    return {
+        backgroundColor: color,
+        backgroundImage: `linear-gradient(${num(data.stripAngle, 135)}deg, ${stripe} ${num(data.stipWidth1, 25)}%, transparent 0, transparent ${num(data.stipWidth2, 50)}%, ${stripe} 0, ${stripe} ${num(data.stipWidth3, 75)}%, transparent 0, transparent)`,
+        backgroundSize: `${distance}px ${distance}px`,
+    };
+}
+
 // The rotated bar turns clockwise, so its fill grows downwards, against ArrowUp. Reverse and invert
 // each turn the direction once more.
 export function progressKeysFlipped(data: ProgressData): boolean {
@@ -214,8 +229,6 @@ export default class MaterialDesignProgress extends VisWidget {
         const stored = stateValue(this.state, data.oid);
         const progress = progressState(this.dragValue ?? stored, data, isM3);
         const background = cleanColor(data.colorProgressBackground, isM3 ? 'var(--md-sys-color-surface-container-high)' : 'rgba(161, 161, 161, 0.26)');
-        const striped = data.progressStriped;
-        const stripeColor = cleanColor(data.progressStripedColor, 'rgba(255, 255, 255, 0.25)');
         // `progressIndeterminate` only widened the bar to 100%, indistinguishable from a finished one.
         const indeterminate = !!data.progressIndeterminate;
         const displayedPercent = indeterminate ? 100 : progress.percent;
@@ -289,12 +302,7 @@ export default class MaterialDesignProgress extends VisWidget {
                         <div
                             className={`v-progress-linear__determinate primary${indeterminate ? ' materialdesign-progress--indeterminate' : ''}`}
                             style={{
-                                background: striped
-                                    ? `repeating-linear-gradient(${num(data.stripAngle, 135)}deg, ${progress.color} 0 ${num(data.stipWidth1, 25)}%, ${stripeColor} ${num(data.stipWidth1, 25)}% ${num(data.stipWidth2, 50)}%, ${progress.color} ${num(data.stipWidth2, 50)}% ${num(data.stipWidth3, 75)}%)`
-                                    : progress.color,
-                                // `stripDistance` gives the repeating pattern a fixed width instead of letting the
-                                // percentage stops stretch with the bar.
-                                backgroundSize: striped && num(data.stripDistance) ? `${num(data.stripDistance)}px 100%` : undefined,
+                                ...barBackground(data, progress.color),
                                 height: '100%',
                                 insetInlineStart: reverse ? `${100 - displayedPercent}%` : 0,
                                 position: 'absolute',
