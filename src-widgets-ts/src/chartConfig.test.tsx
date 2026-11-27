@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 import { chartConfig, chartNumber, ChartFrame, type ChartSpec } from './MaterialDesignChartCanvas';
+import { m3OnColor } from './widgetUtils';
 
 // The decimal separator comes from the runtime locale; the tests must not pin it.
 const dot = (text: string): string => text.replace(',', '.');
@@ -141,6 +142,30 @@ describe('chartConfig value labels', () => {
         expect(labels(off).display).toBe(false);
         const on = chartConfig(itemSpec([undefined], { valueLabels: { align: 'top', anchor: 'end', show: 'showValuesOff' } }), { showValues: 'showValuesOn' }, { isM3: false, isDark: false });
         expect(labels(on).display).not.toBe(false);
+    });
+
+    describe('text color in a label box', () => {
+        const context = { datasetIndex: 0, dataIndex: 0, dataset: { backgroundColor: ['#44739e'] } };
+        const color = (data: Record<string, unknown>, align = 'top', anchor = 'end'): string =>
+            labels(chartConfig(itemSpec([undefined], { valueLabels: { align, anchor } }), data, { isM3: true, isDark: true })).color(context);
+
+        it.each([
+            ['#ffffff', 'top', 'end'],
+            ['#000000', 'top', 'end'],
+            ['#fff', 'end', 'center'],
+            ['rgb(20, 20, 20)', 'end', 'center'],
+        ])('reads on the box color %s (align %s, anchor %s)', (box, align, anchor) => {
+            expect(color({ valuesBackgroundColor: box }, align, anchor)).toBe(m3OnColor(box));
+        });
+
+        it('keeps an own font color on the box', () => {
+            expect(color({ valuesBackgroundColor: '#ffffff', valuesFontColor: '#ff0000' })).toBe('#ff0000');
+        });
+
+        it.each(['rgba(255, 255, 255, 0.5)', '#ffffff80', 'white', 'bogus', ''])('falls back to the color without a box for %s', box => {
+            expect(color({ valuesBackgroundColor: box })).toBe(color({}));
+            expect(color({ valuesBackgroundColor: box }, 'end', 'center')).toBe(color({}, 'end', 'center'));
+        });
     });
 
     it('puts per-dataset labels on the dataset with that dataset\'s fields', () => {

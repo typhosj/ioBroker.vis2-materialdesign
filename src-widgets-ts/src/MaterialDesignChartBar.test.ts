@@ -97,3 +97,84 @@ describe('bar tooltip line breaks', () => {
         expect(callbacks.label({ datasetIndex: 0, dataIndex: 0 })).toEqual(['x', 'y']);
     });
 });
+
+describe('bar value labels beyond the bar end', () => {
+    const rows = (values: number[]): Record<string, unknown> => ({ chartDataMethod: 'jsonStringObject', oid: 'j', _rows: JSON.stringify(values.map((value, i) => ({ label: `r${i}`, value }))) });
+    const layout = (data: Record<string, unknown>, values = [8, 4, 3]) => {
+        const all = { ...rows(values), ...data };
+        return (config(all, { j: all._rows }).options.layout as { padding?: Record<string, number> } | undefined)?.padding ?? {};
+    };
+    type Align = { align: string; anchor: string };
+
+    it('puts the label after the bar end in both directions', () => {
+        expect(config(rows([1])).options.plugins.datalabels as Align).toMatchObject({ align: 'end', anchor: 'end' });
+    });
+
+    it('leaves room above the highest vertical bar for its label', () => {
+        expect(layout({}).top).toBeGreaterThanOrEqual(12 + 4);
+        expect(layout({ valuesFontSize: 24 }).top).toBeGreaterThan(layout({}).top);
+        expect(layout({ valuesBorderWidth: 2 }).top).toBeGreaterThan(layout({}).top);
+        expect(layout({}).bottom).toBeUndefined();
+    });
+
+    it('leaves room right of horizontal bars for the longest label', () => {
+        const plain = layout({ chartType: 'horizontal' }).right;
+        expect(plain).toBeGreaterThan(0);
+        expect(layout({ chartType: 'horizontal', valuesAppendText: ' kWh' }).right).toBeGreaterThan(plain);
+        expect(layout({ chartType: 'horizontal' }).top).toBeUndefined();
+    });
+
+    it('inserts new bar charts with the label after the bar end', () => {
+        const fields = MaterialDesignChartBar.getWidgetInfo().visAttrs.flatMap(group => group.fields);
+        expect(fields.find(field => field.name === 'valuesPositionAlign')).toMatchObject({ default: 'end' });
+    });
+
+    it('leaves room for the "top" alignment every saved bar chart carries', () => {
+        expect(layout({ valuesPositionAlign: 'top' }).top).toBe(layout({}).top);
+        expect(layout({ chartType: 'horizontal', valuesPositionAlign: 'top' }).right).toBe(layout({ chartType: 'horizontal' }).right);
+    });
+
+    it('leaves room on the other side for negative bars', () => {
+        expect(layout({}, [-5, 3]).bottom).toBeGreaterThan(0);
+        expect(layout({ chartType: 'horizontal' }, [-5, 3]).left).toBeGreaterThan(0);
+        expect(layout({}, [-5, -3]).top).toBeUndefined();
+    });
+
+    it('keeps an own chart padding', () => {
+        expect(layout({ chartPaddingTop: 0 }).top).toBe(0);
+        expect(layout({ chartPaddingLeft: 7 })).toMatchObject({ left: 7 });
+    });
+
+    it.each([
+        { showValues: 'showValuesOff' },
+        { valuesPositionAnchor: 'center' },
+        { valuesPositionAnchor: 'start' },
+        { valuesPositionAlign: 'start' },
+        { valuesPositionAlign: 'center' },
+    ])('adds no room while the label is not beyond the bar end (%o)', data => {
+        expect(layout(data)).toEqual({});
+    });
+
+    it.each(['abc', -10, '', null])('falls back to the default size for a font size of %s', size => {
+        expect(layout({ valuesFontSize: size }).top).toBe(layout({}).top);
+    });
+});
+
+describe('bar value labels turned on their side', () => {
+    const top = (data: Record<string, unknown>): number | undefined => {
+        const all = { chartDataMethod: 'jsonStringObject', oid: 'j', valuesAppendText: ' kWh', ...data };
+        return (config(all, { j: JSON.stringify([{ label: 'a', value: 12.5 }]) }).options.layout as { padding: Record<string, number> }).padding.top;
+    };
+
+    it('leaves room for the text length once the label stands upright', () => {
+        // "13 kWh" at 12 px is about 43 px long, an unrotated line about 14 px high.
+        expect(top({ valuesRotation: 90 })).toBeGreaterThan(top({})! + 25);
+        expect(top({ valuesRotation: -90 })).toBe(top({ valuesRotation: 90 }));
+        expect(top({ valuesRotation: 45 })).toBeGreaterThan(top({})!);
+        expect(top({ valuesRotation: 45 })).toBeLessThan(top({ valuesRotation: 90 })!);
+    });
+
+    it.each([0, 180, 'abc', '', null])('keeps the line height for a rotation of %s', rotation => {
+        expect(top({ valuesRotation: rotation })).toBe(top({}));
+    });
+});
