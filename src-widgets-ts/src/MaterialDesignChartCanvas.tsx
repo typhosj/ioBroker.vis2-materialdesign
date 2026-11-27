@@ -351,14 +351,18 @@ export function chartConfig(spec: ChartSpec, data: Record<string, unknown>, cont
       ...(spec.labels ? { labels: spec.labels } : {}),
       datasets: spec.datasets.map((dataset, d) => {
         const color = spec.colorBy === "item" ? resolved[d] : resolved[d][0];
+        const extra = dataset.extra?.(resolved[d]);
         return {
+          // Chart.js draws the first dataset on top, so a line listed after a bar vanished behind
+          // it. A lower order is drawn later.
+          order: (extra?.type ?? spec.type) === "bar" ? 1 : 0,
           label: dataset.label,
           data: dataset.x ? dataset.values.map((y, i) => ({ x: dataset.x?.[i], y })) : dataset.values,
           backgroundColor: color,
           ...(spec.colorBy === "dataset" ? { borderColor: color } : {}),
           ...(dataset.hidden ? { hidden: true } : {}),
           ...(dataset.valueLabels ? { datalabels: valueLabels(dataset.valueLabels) } : {}),
-          ...dataset.extra?.(resolved[d]),
+          ...extra,
         };
       }),
     },

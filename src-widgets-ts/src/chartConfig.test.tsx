@@ -238,3 +238,18 @@ describe('ChartFrame', () => {
         expect(html({ designStyle: 'legacy' })).not.toContain('var(--md-sys-color-surface)');
     });
 });
+
+describe('chartConfig drawing order', () => {
+    it('puts line datasets above bar datasets, the way Line History mixes them too', () => {
+        const spec = seriesSpec([undefined, undefined]);
+        spec.datasets[0].extra = () => ({ type: 'bar' });
+        const config = chartConfig(spec, {}, { isM3: false, isDark: false });
+        expect(config.data.datasets.map(d => (d as { order?: unknown }).order)).toEqual([1, 0]);
+    });
+
+    it('lets a dataset keep an order of its own', () => {
+        const spec = seriesSpec([undefined]);
+        spec.datasets[0].extra = () => ({ type: 'bar', order: 5 });
+        expect((chartConfig(spec, {}, { isM3: false, isDark: false }).data.datasets[0] as { order?: unknown }).order).toBe(5);
+    });
+});
