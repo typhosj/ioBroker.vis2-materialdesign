@@ -25,7 +25,7 @@ export const charts: FamilyExamples = {
     ],
     MaterialDesignChartPie: [
         { ...typical('Share of each consumer in today\'s energy, colors from a scheme.', 'Anteil jedes Verbrauchers an der Energie heute, Farben aus einem Farbschema.'), size: PIE, data: { ...breakdown, ...scheme, showLegend: true, legendPosition: 'bottom' } },
-        { ...text('doughnut', 'Doughnut', 'Ring', 'The same shares as a ring.', 'Dieselben Anteile als Ring.'), size: PIE, data: { ...breakdown, ...scheme, chartType: 'doughnut', valuesPositionAlign: 'center', showLegend: true, legendPosition: 'bottom' } },
+        { ...text('doughnut', 'Doughnut', 'Ring', 'The same shares as a ring.', 'Dieselben Anteile als Ring.'), size: PIE, data: { ...breakdown, ...scheme, chartType: 'doughnut', showLegend: true, legendPosition: 'bottom' } },
         { ...text('value-label-with-box', 'Value label with box', 'Wert mit Kasten', 'Boxed labels stay readable on light and dark segments.', 'Werte im Kasten bleiben auf hellen und dunklen Segmenten lesbar.'), size: PIE, data: { ...breakdown, ...scheme, ...box, showLegend: true, legendPosition: 'bottom' } },
         { ...text('without-legend', 'Without legend', 'Ohne Legende', 'All the room goes to the pie; the tooltip names the segment.', 'Der ganze Platz gehört der Torte; der Tooltip nennt das Segment.'), size: PIE, data: { ...breakdown, ...scheme, showLegend: false } },
         { ...text('as-card', 'As card', 'Als Karte', 'Pie and title on a card, as a dashboard tile.', 'Torte und Titel auf einer Karte, als Dashboard-Kachel.'), size: { width: 320, height: 340 }, data: { ...breakdown, ...scheme, showLegend: true, legendPosition: 'right', cardUse: true, title: 'Energy today' } },

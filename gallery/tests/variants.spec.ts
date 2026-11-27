@@ -14,7 +14,9 @@ async function open(page: Page, hash: string): Promise<void> {
 test('every variant looks different from the first example in the same style', async ({ page }) => {
     test.setTimeout(30 * 60_000);
     await page.setViewportSize({ width: 1700, height: 900 });
-    await page.clock.setFixedTime(new Date('2026-01-15T10:00:00+01:00'));
+    // Not setFixedTime: a frozen Date.now holds every chart animation at its first frame, where all
+    // variants of a chart look alike.
+    await page.clock.install({ time: new Date('2026-01-15T10:00:00+01:00') });
     const widgets: Array<{ name: string; family: string }> = [];
     for (const family of FAMILIES) {
         await open(page, `#/family/${family}`);
@@ -36,6 +38,7 @@ test('every variant looks different from the first example in the same style', a
                 const frame = page.frameLocator('iframe.g-frame');
                 await frame.locator('.vis-widget').first().waitFor({ state: 'attached' });
                 await page.waitForLoadState('networkidle');
+                await page.clock.runFor(3000);
                 return frame.locator('.g-frame-body').screenshot({ animations: 'disabled' });
             };
             const first = await shot(ids[0]);
