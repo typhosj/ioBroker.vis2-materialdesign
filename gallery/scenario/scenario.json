@@ -336,6 +336,26 @@
         "write": false
       }
     },
+    "0_userdata.0.demo.energy.weekSources": {
+      "type": "state",
+      "common": {
+        "name": "Energy sources this week",
+        "type": "json",
+        "role": "json",
+        "read": true,
+        "write": false
+      }
+    },
+    "0_userdata.0.demo.energy.week": {
+      "type": "state",
+      "common": {
+        "name": "Energy this week",
+        "type": "json",
+        "role": "json",
+        "read": true,
+        "write": false
+      }
+    },
     "0_userdata.0.demo.contacts.livingWindow": {
       "type": "state",
       "common": {
@@ -673,6 +693,8 @@
     "0_userdata.0.demo.appliances.dishwasherRemaining": 2700,
     "0_userdata.0.demo.energy.distribution": "{\"axisLabels\":[\"House\",\"Heat pump\",\"Car\",\"Grid export\"],\"graphs\":[{\"type\":\"bar\",\"legendText\":\"kWh\",\"data\":[7.8,4.2,3.1,5.6]}]}",
     "0_userdata.0.demo.energy.breakdown": "[{\"label\":\"House\",\"value\":7.8},{\"label\":\"Heat pump\",\"value\":4.2},{\"label\":\"Car\",\"value\":3.1}]",
+    "0_userdata.0.demo.energy.weekSources": "{\"axisLabels\":[\"Mon\",\"Tue\",\"Wed\",\"Thu\",\"Fri\",\"Sat\",\"Sun\"],\"graphs\":[{\"type\":\"bar\",\"legendText\":\"PV self-use (kWh)\",\"color\":\"#f9a825\",\"data\":[7.8,3.3,9,6.1,10.3,10.7,5],\"barIsStacked\":true,\"barStackId\":1},{\"type\":\"bar\",\"legendText\":\"Grid import (kWh)\",\"color\":\"#1e88e5\",\"data\":[6.4,9.5,4.5,9,2.1,7.9,12.9],\"barIsStacked\":true,\"barStackId\":1,\"barPattern\":\"hatch\"}]}",
+    "0_userdata.0.demo.energy.week": "{\"axisLabels\":[\"Mon\",\"Tue\",\"Wed\",\"Thu\",\"Fri\",\"Sat\",\"Sun\"],\"graphs\":[{\"type\":\"line\",\"legendText\":\"PV (kWh)\",\"color\":\"#f9a825\",\"data\":[9.8,4.1,11.3,7.6,12.9,13.4,6.2],\"line_Thickness\":3},{\"type\":\"bar\",\"legendText\":\"Consumption (kWh)\",\"color\":\"#1e88e5\",\"data\":[14.2,12.8,13.5,15.1,12.4,18.6,17.9]}]}",
     "0_userdata.0.demo.contacts.livingWindow": false,
     "0_userdata.0.demo.contacts.kitchenWindow": true,
     "0_userdata.0.demo.contacts.bedroomWindow": false,

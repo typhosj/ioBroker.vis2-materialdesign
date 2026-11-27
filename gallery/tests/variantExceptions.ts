@@ -5,4 +5,4 @@ export const VARIANT_EXCEPTIONS: Record<string, string> = {
 };
 
 // Families not yet reviewed: their findings are reported but do not fail the test. Each review round removes its family.
-export const PENDING_FAMILIES = new Set(['charts', 'calendar', 'views', 'navigation']);
+export const PENDING_FAMILIES = new Set(['calendar', 'views', 'navigation']);
