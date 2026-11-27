@@ -45,3 +45,24 @@ describe('table columns', () => {
         expect(cells[3]).toContain('b2');
     });
 });
+
+describe('table card corners', () => {
+    const card = (html: string): string => html.match(/<div class="mdc-data-table[^"]*"[^>]*>/)![0];
+
+    it.each(['card', 'cardOutlined'])('clips header and rows to the rounded %s edge', layout => {
+        for (const designStyle of ['default', 'material3']) {
+            expect(card(render({ dataJson: rows, tableLayout: layout, designStyle }))).toContain('overflow:clip');
+        }
+    });
+
+    it('keeps a fixed header sticky inside a card', () => {
+        // `hidden` would make the card the sticky header's scroll container, which never scrolls.
+        const html = render({ dataJson: rows, tableLayout: 'card', fixedHeader: true });
+        expect(card(html)).not.toContain('overflow:hidden');
+        expect(html).toContain('position:sticky');
+    });
+
+    it.each(['standard', '', 'bogus', undefined])('leaves the plain table (%s) unclipped', layout => {
+        expect(card(render({ dataJson: rows, tableLayout: layout }))).not.toContain('overflow');
+    });
+});

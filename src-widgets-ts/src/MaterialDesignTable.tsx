@@ -79,6 +79,9 @@ export default class MaterialDesignTable extends VisWidget {
                 boxShadow: outlinedCard ? undefined : isM3 ? 'var(--md-sys-elevation-level1)' : '0 2px 1px -1px rgba(0,0,0,.2),0 1px 1px 0 rgba(0,0,0,.14),0 1px 3px 0 rgba(0,0,0,.12)',
                 boxSizing: 'border-box',
                 margin: 3,
+                // Header and row backgrounds are square and stuck out of the rounded corners. Not
+                // `hidden`: that makes the card the scroll container of the sticky fixed header.
+                overflow: 'clip',
                 width: 'calc(100% - 6px)',
             }
             : {};
