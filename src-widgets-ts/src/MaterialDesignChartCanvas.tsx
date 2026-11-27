@@ -9,7 +9,7 @@ import {
 import ChartDataLabels from "chartjs-plugin-datalabels";
 import type { RxWidgetInfo } from "@iobroker/types-vis-2";
 
-import { boolValue, designStyle, designStyleClasses, legacySurface, m3OnColor, numberValue, optionalNumber, sanitizeHtml, stateValue, textValue, visLocale, VisWidget, type RenderProps } from "./widgetUtils";
+import { boolValue, designStyle, designStyleClasses, inkOn, legacySurface, m3OnColor, numberValue, optionalNumber, sanitizeHtml, stateValue, textValue, visLocale, VisWidget, type RenderProps } from "./widgetUtils";
 import { CHART_TEXT_COLOR, m3ChartColors } from "./chartAxis";
 import { scheme } from "./MaterialDesignColorScheme";
 
@@ -79,6 +79,7 @@ export function datalabelsConfig(
     const token = canvas && designStyle(data) === "material3" ? getComputedStyle(canvas).getPropertyValue("--md-sys-color-on-surface").trim() : "";
     return token || CHART_TEXT_COLOR;
   };
+  const boxInk = inkOn(textValue(data.valuesBackgroundColor));
   return {
     align,
     anchor,
@@ -87,8 +88,9 @@ export function datalabelsConfig(
     borderRadius: numberValue(data.valuesBorderRadius),
     borderWidth: numberValue(data.valuesBorderWidth),
     // A scriptable fill (the JSON chart's hatch pattern) has no color to contrast with and is mostly
-    // transparent, so the label reads against the chart surface like one off the element.
-    color: (context: LabelContext): string => label(context).color || (onElement && typeof context.dataset?.backgroundColor !== "function" ? labelColorFor(context) : offElementColor(context)),
+    // transparent, so the label reads against the chart surface like one off the element. An opaque
+    // label box hides both, so the text reads against the box.
+    color: (context: LabelContext): string => label(context).color || boxInk || (onElement && typeof context.dataset?.backgroundColor !== "function" ? labelColorFor(context) : offElementColor(context)),
     display: show === "showValuesOff" ? false : (context: LabelContext): boolean | string => (context.dataIndex % steps === 0 ? visible : false),
     font: { family: textValue(data.valuesFontFamily) || undefined, size: numberValue(data.valuesFontSize, 12) },
     formatter: (_value: unknown, context: LabelContext): string => label(context).text,
