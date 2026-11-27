@@ -146,10 +146,10 @@ export function tooltipConfig(data: Record<string, unknown>, callbacks?: object)
   return config;
 }
 
-// `chartPadding*` in px around the plot. Only sides that are set are emitted, so chart.js keeps its
-// own spacing for the rest.
-export function layoutConfig(data: Record<string, unknown>): object | undefined {
-  const padding: Record<string, number> = {};
+// `chartPadding*` in px around the plot. Only sides that are set (or have a widget default) are
+// emitted, so chart.js keeps its own spacing for the rest.
+export function layoutConfig(data: Record<string, unknown>, defaults: Partial<Record<"top" | "left" | "right" | "bottom", number>> = {}): object | undefined {
+  const padding: Record<string, number> = { ...defaults };
   for (const [side, key] of [["top", "chartPaddingTop"], ["left", "chartPaddingLeft"], ["right", "chartPaddingRight"], ["bottom", "chartPaddingBottom"]] as const) {
     const value = optionalNumber(data[key]);
     if (value !== undefined) padding[side] = value;

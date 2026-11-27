@@ -1,7 +1,7 @@
 import { MAX_DYNAMIC_ITEMS, squarePreview, indexedFields, itemCount, createInfo, designStyle, visLocale, boolValue as b, numberValue as n, optionalNumber, textValue as s } from './widgetUtils';
 import type { RxWidgetInfo } from "@iobroker/types-vis-2";
 import { colorSchemes } from "./MaterialDesignColorScheme";
-import { ChartWidget, cardGroup, legendGroup, tooltipGroup, valuesGroup, type ChartSpec } from "./MaterialDesignChartCanvas";
+import { ChartWidget, cardGroup, chartNumber, layoutConfig, legendGroup, tooltipGroup, valuesGroup, type ChartSpec } from "./MaterialDesignChartCanvas";
 import { chartAxis, m3ChartColors } from "./chartAxis";
 
 type Data = Record<string, unknown> & {
@@ -69,6 +69,25 @@ export function barAxisRange(data: Data, values: number[]): { min: number; max: 
     : n(data.axisValueMax, 1);
   return { min, max };
 }
+// A label beyond the bar end is drawn outside the plot, and the canvas edge cut off the label of the
+// highest bar. Known limit: the width of a horizontal label is estimated from its length.
+function labelRoom(data: Data, items: Bar[], horizontal: boolean): Partial<Record<"top" | "left" | "right" | "bottom", number>> {
+  const align = s(data.valuesPositionAlign, "end");
+  if (s(data.showValues, "showValuesOn") === "showValuesOff" || s(data.valuesPositionAnchor, "end") !== "end" || !["end", "top", ...(horizontal ? ["right"] : [])].includes(align)) return {};
+  const size = n(data.valuesFontSize, 12) > 0 ? n(data.valuesFontSize, 12) : 12;
+  const box = 8 + 2 * Math.max(0, n(data.valuesBorderWidth)) + Math.max(0, n(data.valuesPositionOffset, 4));
+  const room = (bars: Bar[]): number => {
+    if (!horizontal) return Math.ceil(size * 1.2 + box);
+    const chars = Math.max(0, ...bars.map(bar => `${bar.valueText || chartNumber(bar.value, data.valuesMinDecimals, data.valuesMaxDecimals, "value")}${bar.appendix}`.length));
+    return Math.ceil(chars * size * 0.6 + box);
+  };
+  const up = items.filter(bar => bar.value > 0), down = items.filter(bar => bar.value < 0);
+  return {
+    ...(up.length ? { [horizontal ? "right" : "top"]: room(up) } : {}),
+    ...(down.length ? { [horizontal ? "left" : "bottom"]: room(down) } : {}),
+  };
+}
+
 const chartFields = [
   { name: "backgroundColor", label: "backgroundColor", type: "color" as const },
   {
@@ -184,7 +203,7 @@ const attrs: RxWidgetInfo["visAttrs"] = [
       },
     ],
   },
-  valuesGroup("barValuesLayout", { show: "showValuesOn", anchor: "end", align: "top" }),
+  valuesGroup("barValuesLayout", { show: "showValuesOn", anchor: "end", align: "end" }),
   ...["yAxis", "xAxis"].map((axis) => ({
     name: `${axis}Layout`,
     label: `group_${axis}Layout`,
@@ -387,8 +406,10 @@ export default class MaterialDesignChartBar extends ChartWidget {
       }],
       scales,
       // v4: horizontalBar is gone -> type "bar" + indexAxis "y".
-      options: { indexAxis: horizontal ? "y" : "x" },
-      valueLabels: { align: "top", anchor: "end" },
+      options: { indexAxis: horizontal ? "y" : "x", layout: layoutConfig(data, labelRoom(data, items, horizontal)) },
+      // "end" follows the bar: up, down for a negative bar, right when horizontal. "top" sat on the
+      // end of a horizontal bar.
+      valueLabels: { align: "end", anchor: "end" },
       valueLabel: (point, number) => {
         const bar = items[point.dataIndex];
         return { color: bar?.valueColor || undefined, text: `${bar?.valueText || number}${s(bar?.appendix)}` };
