@@ -253,3 +253,18 @@ describe('chartConfig drawing order', () => {
         expect((chartConfig(spec, {}, { isM3: false, isDark: false }).data.datasets[0] as { order?: unknown }).order).toBe(5);
     });
 });
+
+describe('chartConfig tooltip item order', () => {
+    type Item = { datasetIndex: number; dataIndex: number };
+    const sort = (spec: ChartSpec): (a: Item, b: Item) => number =>
+        (chartConfig(spec, {}, { isM3: false, isDark: false }).options.plugins.tooltip as { itemSort: (a: Item, b: Item) => number }).itemSort;
+
+    it('lists tooltip items in dataset order, not in drawing order', () => {
+        // The drawing order puts lines first; the tooltip title takes the first item, and the legend
+        // lists datasets in their own order.
+        const spec = seriesSpec([undefined, undefined, undefined]);
+        spec.datasets[0].extra = () => ({ type: 'bar' });
+        const items: Item[] = [{ datasetIndex: 2, dataIndex: 0 }, { datasetIndex: 1, dataIndex: 3 }, { datasetIndex: 0, dataIndex: 1 }, { datasetIndex: 1, dataIndex: 0 }];
+        expect([...items].sort(sort(spec))).toEqual([{ datasetIndex: 0, dataIndex: 1 }, { datasetIndex: 1, dataIndex: 0 }, { datasetIndex: 1, dataIndex: 3 }, { datasetIndex: 2, dataIndex: 0 }]);
+    });
+});

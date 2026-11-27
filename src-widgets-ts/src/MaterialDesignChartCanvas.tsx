@@ -118,7 +118,10 @@ const chartAreaBackground = {
 // `showTooltip` did anything. Unset entries are left out, otherwise they overwrite chart.js defaults.
 export function tooltipConfig(data: Record<string, unknown>, callbacks?: object): object {
   const enabled = boolValue(data.showTooltip, true);
-  const config: Record<string, unknown> = { enabled, mode: optionalText(data.tooltipMode) || "nearest" };
+  const config: Record<string, unknown> = { enabled, mode: optionalText(data.tooltipMode) || "nearest",
+    // Lines are drawn above bars through the dataset order, which also sorts the tooltip items; the
+    // title reads the first item, and the legend lists datasets as given.
+    itemSort: (a: { datasetIndex: number; dataIndex: number }, b: { datasetIndex: number; dataIndex: number }) => a.datasetIndex - b.datasetIndex || a.dataIndex - b.dataIndex };
   const put = (key: string, value: unknown): void => { if (value !== undefined) config[key] = value; };
   put("position", optionalText(data.tooltipPosition) || "nearest");
   put("bodyAlign", optionalText(data.tooltipBodyAlignment));
