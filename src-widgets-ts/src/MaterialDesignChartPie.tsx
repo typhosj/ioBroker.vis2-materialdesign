@@ -137,7 +137,7 @@ const attrs: RxWidgetInfo["visAttrs"] = [
       number("hoverBorderWidth"),
     ],
   },
-  valuesGroup("pieValuesLayout", { show: "showValuesOn", anchor: "center", align: "end" }),
+  valuesGroup("pieValuesLayout", { show: "showValuesOn", anchor: "center", align: "" }),
   legendGroup({}),
   tooltipGroup(),
 ];
