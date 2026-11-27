@@ -142,3 +142,23 @@ describe('barPattern hatch', () => {
         expect(dataset.backgroundColor).toBe('#ff0000');
     });
 });
+
+describe('json chart drawing order', () => {
+    const orders = (graphs: Record<string, unknown>[], data: Record<string, unknown> = {}): unknown[] =>
+        config(data, { axisLabels: ['a', 'b'], graphs }).data.datasets.map(d => (d as { order?: unknown }).order);
+
+    it('draws lines above bars wherever they stand in graphs', () => {
+        // Chart.js draws a lower order last, on top.
+        expect(orders([{ type: 'bar', data: [1, 2] }, { type: 'line', data: [1, 2] }])).toEqual([1, 0]);
+        expect(orders([{ type: 'line', data: [1, 2] }, { type: 'bar', data: [1, 2] }])).toEqual([0, 1]);
+    });
+
+    it('takes the chart type for graphs without their own', () => {
+        expect(orders([{ data: [1, 2] }, { type: 'line', data: [1, 2] }], { chartType: 'bar' })).toEqual([1, 0]);
+        expect(orders([{ data: [1, 2] }, { type: 'bar', data: [1, 2] }], { chartType: 'line' })).toEqual([0, 1]);
+    });
+
+    it.each(['', 'bogus', 'area'])('treats an unknown graph type %s like a line', type => {
+        expect(orders([{ type: 'bar', data: [1] }, { type, data: [1] }], { chartType: 'line' })).toEqual([1, 0]);
+    });
+});

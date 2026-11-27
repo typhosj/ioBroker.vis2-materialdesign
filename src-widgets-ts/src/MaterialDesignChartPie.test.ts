@@ -135,3 +135,29 @@ describe('datalabelsConfig', () => {
         expect(cfg.color({ dataIndex: 0, dataset: { backgroundColor: ['#44739e', '#44739e'] } })).toBe('#ffffff');
     });
 });
+
+describe('pie value label alignment default', () => {
+    const field = (name: string) => MaterialDesignChartPie.getWidgetInfo().visAttrs.flatMap(group => group.fields).find(f => f.name === name) as { default?: unknown; options?: unknown[] };
+
+    it('inserts new pie charts without an alignment, so pie and doughnut each place their labels', () => {
+        expect(field('valuesPositionAlign').default).toBe('');
+        expect(field('valuesPositionAlign').options).toContain('');
+    });
+});
+
+describe('pie value labels without a stored alignment', () => {
+    const align = (data: Record<string, unknown>): unknown => {
+        const widget = new MaterialDesignChartPie(fixture<ConstructorParameters<typeof MaterialDesignChartPie>[0]>({ context: {} }));
+        const all = { dataCount: 1, ...data };
+        return (chartConfig(widget.chartSpec(all, () => 4), all, { isM3: false, isDark: false }).options.plugins.datalabels as { align: unknown }).align;
+    };
+
+    it.each([undefined, '', null])('centres doughnut labels in the ring and pushes pie labels out (%s)', stored => {
+        expect(align({ chartType: 'doughnut', valuesPositionAlign: stored })).toBe('center');
+        expect(align({ chartType: 'pie', valuesPositionAlign: stored })).toBe('end');
+    });
+
+    it('keeps an alignment saved with the widget', () => {
+        expect(align({ chartType: 'doughnut', valuesPositionAlign: 'end' })).toBe('end');
+    });
+});

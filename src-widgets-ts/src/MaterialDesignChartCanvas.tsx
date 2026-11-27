@@ -120,7 +120,10 @@ const chartAreaBackground = {
 // `showTooltip` did anything. Unset entries are left out, otherwise they overwrite chart.js defaults.
 export function tooltipConfig(data: Record<string, unknown>, callbacks?: object): object {
   const enabled = boolValue(data.showTooltip, true);
-  const config: Record<string, unknown> = { enabled, mode: optionalText(data.tooltipMode) || "nearest" };
+  const config: Record<string, unknown> = { enabled, mode: optionalText(data.tooltipMode) || "nearest",
+    // Lines are drawn above bars through the dataset order, which also sorts the tooltip items; the
+    // title reads the first item, and the legend lists datasets as given.
+    itemSort: (a: { datasetIndex: number; dataIndex: number }, b: { datasetIndex: number; dataIndex: number }) => a.datasetIndex - b.datasetIndex || a.dataIndex - b.dataIndex };
   const put = (key: string, value: unknown): void => { if (value !== undefined) config[key] = value; };
   put("position", optionalText(data.tooltipPosition) || "nearest");
   put("bodyAlign", optionalText(data.tooltipBodyAlignment));
@@ -275,7 +278,8 @@ export function valuesGroup(name: "barValuesLayout" | "pieValuesLayout", { show,
       fontField("valuesFontFamily"),
       numberField("valuesFontSize"),
       { name: "valuesPositionAnchor", label: "valuesPositionAnchor", type: "select", options: ["center", "start", "end"], default: anchor },
-      { name: "valuesPositionAlign", label: "valuesPositionAlign", type: "select", options: ["center", "start", "end", "right", "bottom", "left", "top"], default: align },
+      // An empty default lets the chart pick per type (the pie centres labels on a doughnut ring).
+      { name: "valuesPositionAlign", label: "valuesPositionAlign", type: "select", options: [...(align ? [] : [""]), "center", "start", "end", "right", "bottom", "left", "top"], default: align },
       numberField("valuesPositionOffset"),
       { name: "valuesTextAlign", label: "valuesTextAlign", type: "select", options: ["start", "center", "end", "left", "right"], default: "center" },
       { name: "valuesRotation", label: "valuesRotation", type: "slider", min: 0, max: 360, step: 1 },
@@ -352,14 +356,18 @@ export function chartConfig(spec: ChartSpec, data: Record<string, unknown>, cont
       ...(spec.labels ? { labels: spec.labels } : {}),
       datasets: spec.datasets.map((dataset, d) => {
         const color = spec.colorBy === "item" ? resolved[d] : resolved[d][0];
+        const extra = dataset.extra?.(resolved[d]);
         return {
+          // Chart.js draws the first dataset on top, so a line listed after a bar vanished behind
+          // it. A lower order is drawn later.
+          order: (extra?.type ?? spec.type) === "bar" ? 1 : 0,
           label: dataset.label,
           data: dataset.x ? dataset.values.map((y, i) => ({ x: dataset.x?.[i], y })) : dataset.values,
           backgroundColor: color,
           ...(spec.colorBy === "dataset" ? { borderColor: color } : {}),
           ...(dataset.hidden ? { hidden: true } : {}),
           ...(dataset.valueLabels ? { datalabels: valueLabels(dataset.valueLabels) } : {}),
-          ...dataset.extra?.(resolved[d]),
+          ...extra,
         };
       }),
     },
