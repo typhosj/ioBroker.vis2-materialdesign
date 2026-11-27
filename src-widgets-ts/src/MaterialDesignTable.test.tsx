@@ -55,11 +55,16 @@ describe('table card corners', () => {
         }
     });
 
-    it('keeps a fixed header sticky inside a card', () => {
-        // `hidden` would make the card the sticky header's scroll container, which never scrolls.
-        const html = render({ dataJson: rows, tableLayout: 'card', fixedHeader: true });
-        expect(card(html)).not.toContain('overflow:hidden');
+    it.each(['card', 'cardOutlined'])('scrolls a %s with a fixed header inside the card', layout => {
+        // A clip would cut off columns wider than the card, which the outer box used to scroll to.
+        const html = render({ dataJson: rows, tableLayout: layout, fixedHeader: true });
+        expect(card(html)).toContain('overflow:auto');
+        expect(card(html)).toContain('max-height:calc(100% - 6px)');
         expect(html).toContain('position:sticky');
+    });
+
+    it('lets a card without a fixed header grow with its rows', () => {
+        expect(card(render({ dataJson: rows, tableLayout: 'card', fixedHeader: false }))).not.toContain('max-height');
     });
 
     it.each(['standard', '', 'bogus', undefined])('leaves the plain table (%s) unclipped', layout => {
