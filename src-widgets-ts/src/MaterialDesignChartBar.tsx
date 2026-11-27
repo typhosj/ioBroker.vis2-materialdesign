@@ -76,10 +76,13 @@ function labelRoom(data: Data, items: Bar[], horizontal: boolean): Partial<Recor
   if (s(data.showValues, "showValuesOn") === "showValuesOff" || s(data.valuesPositionAnchor, "end") !== "end" || !["end", "top", ...(horizontal ? ["right"] : [])].includes(align)) return {};
   const size = n(data.valuesFontSize, 12) > 0 ? n(data.valuesFontSize, 12) : 12;
   const box = 8 + 2 * Math.max(0, n(data.valuesBorderWidth)) + Math.max(0, n(data.valuesPositionOffset, 4));
+  // A rotated label reaches along the value axis by a mix of its height and its length.
+  const angle = n(data.valuesRotation) * Math.PI / 180;
   const room = (bars: Bar[]): number => {
-    if (!horizontal) return Math.ceil(size * 1.2 + box);
-    const chars = Math.max(0, ...bars.map(bar => `${bar.valueText || chartNumber(bar.value, data.valuesMinDecimals, data.valuesMaxDecimals, "value")}${bar.appendix}`.length));
-    return Math.ceil(chars * size * 0.6 + box);
+    const height = size * 1.2;
+    const length = Math.max(0, ...bars.map(bar => `${bar.valueText || chartNumber(bar.value, data.valuesMinDecimals, data.valuesMaxDecimals, "value")}${bar.appendix}`.length)) * size * 0.6;
+    const [along, across] = horizontal ? [length, height] : [height, length];
+    return Math.ceil(Math.abs(Math.cos(angle)) * along + Math.abs(Math.sin(angle)) * across + box);
   };
   const up = items.filter(bar => bar.value > 0), down = items.filter(bar => bar.value < 0);
   return {

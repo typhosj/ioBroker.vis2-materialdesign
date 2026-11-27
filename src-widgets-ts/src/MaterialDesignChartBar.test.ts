@@ -159,3 +159,22 @@ describe('bar value labels beyond the bar end', () => {
         expect(layout({ valuesFontSize: size }).top).toBe(layout({}).top);
     });
 });
+
+describe('bar value labels turned on their side', () => {
+    const top = (data: Record<string, unknown>): number | undefined => {
+        const all = { chartDataMethod: 'jsonStringObject', oid: 'j', valuesAppendText: ' kWh', ...data };
+        return (config(all, { j: JSON.stringify([{ label: 'a', value: 12.5 }]) }).options.layout as { padding: Record<string, number> }).padding.top;
+    };
+
+    it('leaves room for the text length once the label stands upright', () => {
+        // "13 kWh" at 12 px is about 43 px long, an unrotated line about 14 px high.
+        expect(top({ valuesRotation: 90 })).toBeGreaterThan(top({})! + 25);
+        expect(top({ valuesRotation: -90 })).toBe(top({ valuesRotation: 90 }));
+        expect(top({ valuesRotation: 45 })).toBeGreaterThan(top({})!);
+        expect(top({ valuesRotation: 45 })).toBeLessThan(top({ valuesRotation: 90 })!);
+    });
+
+    it.each([0, 180, 'abc', '', null])('keeps the line height for a rotation of %s', rotation => {
+        expect(top({ valuesRotation: rotation })).toBe(top({}));
+    });
+});
