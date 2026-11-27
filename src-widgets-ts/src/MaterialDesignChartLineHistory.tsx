@@ -1,4 +1,4 @@
-import { squarePreview, indexedFields, itemCount, createInfo, designStyle, formatMoment, visLocale, stateValue, VISIBILITY_CONDITIONS, visibleBy, boolValue as b, numberValue as n, textValue as s } from "./widgetUtils";
+import { squarePreview, indexedFields, itemCount, createInfo, designStyle, formatMoment, inkOn, visLocale, stateValue, VISIBILITY_CONDITIONS, visibleBy, boolValue as b, numberValue as n, textValue as s } from "./widgetUtils";
 import type { RxWidgetInfo, VisRxWidgetState } from "@iobroker/types-vis-2";
 import { colorSchemes } from "./MaterialDesignColorScheme";
 import { ChartWidget, cardGroup, legendGroup, tooltipGroup, type ChartSpec } from "./MaterialDesignChartCanvas";
@@ -470,7 +470,9 @@ export default class MaterialDesignChartLineHistory extends ChartWidget {
         };
       }),
       scales,
-      valueLabel: (point, _number, fallback) => ({ ...fallback, color: fallback.color || point.color }),
+      // An opaque label box hides the line, so the series colour would no longer mark the series; the
+      // shared label code then reads the text against the box.
+      valueLabel: (point, _number, fallback) => ({ ...fallback, color: fallback.color || (inkOn(s(item(d, "valuesBackgroundColor", series[point.datasetIndex]?.row ?? point.datasetIndex))) ? undefined : point.color) }),
       tooltip: {
         title: point => fmtTime(point.x, timeFmt || "lll"),
         label: (point, number) => `${point.datasetLabel ? `${point.datasetLabel}: ` : ""}${number}${s(item(d, "tooltipAppendText", series[point.datasetIndex]?.row ?? point.datasetIndex), s(d.tooltipBodyAppend))}`,

@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { chartConfig } from './MaterialDesignChartCanvas';
+import { m3OnColor } from './widgetUtils';
 import MaterialDesignChartLineHistory, { distinctAxisRows, item, lineDash, rowAxisId, shownAxisRows, timeFormatFor } from './MaterialDesignChartLineHistory';
 
 function fixture<T>(value: unknown): T { return value as T; }
@@ -157,6 +158,15 @@ describe('line history chart', () => {
         const [first, second] = configOf(widget).data.datasets.map(d => d.datalabels as { color: (context: object) => string });
         expect(first.color({ datasetIndex: 0, dataIndex: 0 })).toBe('#00aa00');
         expect(second.color({ datasetIndex: 1, dataIndex: 0 })).toBe('#123456');
+        widget.componentWillUnmount();
+    });
+
+    it('reads a label in an opaque box against the box, not in the series colour', async () => {
+        const widget = await loaded({ dataCount: 3, oid: 'a', oid1: 'b', oid2: 'c', dataColor: '#ffeb3b', valuesBackgroundColor: '#ffffff', valuesBackgroundColor1: 'rgba(0, 0, 0, 0.3)', valuesBackgroundColor2: '#000000', valuesFontColor2: '#ff0000' }, [[{ ts: 1, val: 1 }], [{ ts: 1, val: 1 }], [{ ts: 1, val: 1 }]]);
+        const [boxed, translucent, own] = configOf(widget).data.datasets.map(d => d.datalabels as { color: (context: object) => string });
+        expect(boxed.color({ datasetIndex: 0, dataIndex: 0 })).toBe(m3OnColor('#ffffff'));
+        expect(translucent.color({ datasetIndex: 1, dataIndex: 0 })).toBe('#44739e');
+        expect(own.color({ datasetIndex: 2, dataIndex: 0 })).toBe('#ff0000');
         widget.componentWillUnmount();
     });
 
