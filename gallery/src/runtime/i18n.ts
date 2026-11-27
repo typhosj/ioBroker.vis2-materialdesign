@@ -1,5 +1,5 @@
 import adminEn from '../../../admin/i18n/en.json';
-import galleryEn from '../i18n/en.json';
+import galleryEn from '../locales/en.json';
 
 export type Lang = 'en' | 'de';
 export const LANGS: readonly Lang[] = ['en', 'de'];
@@ -15,7 +15,7 @@ export function parseLang(value: unknown): Lang {
 
 export async function loadLanguage(next: Lang): Promise<void> {
     if (next === 'de') {
-        const [admin, gallery] = await Promise.all([import('../../../admin/i18n/de.json'), import('../i18n/de.json')]);
+        const [admin, gallery] = await Promise.all([import('../../../admin/i18n/de.json'), import('../locales/de.json')]);
         dictionary = { ...admin.default, ...gallery.default };
     } else {
         dictionary = english;

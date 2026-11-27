@@ -2,8 +2,8 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import adminDe from '../../../admin/i18n/de.json';
 import adminEn from '../../../admin/i18n/en.json';
-import galleryDe from '../i18n/de.json';
-import galleryEn from '../i18n/en.json';
+import galleryDe from '../locales/de.json';
+import galleryEn from '../locales/en.json';
 import { currentLang, loadLanguage, parseLang, translate } from './i18n';
 
 afterEach(async () => { await loadLanguage('en'); });
@@ -14,7 +14,7 @@ describe('i18n', () => {
         for (const value of ['en', 'fr', '', null, 3]) expect(parseLang(value)).toBe('en');
     });
 
-    it('translates widget keys from admin/i18n and gallery keys from gallery/src/i18n', async () => {
+    it('translates widget keys from admin/i18n and gallery keys from gallery/src/locales', async () => {
         const key = Object.keys(adminDe).find(k => (adminDe as Record<string, string>)[k] !== (adminEn as Record<string, string>)[k])!;
         expect(translate(key)).toBe((adminEn as Record<string, string>)[key]);
         await loadLanguage('de');

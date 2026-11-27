@@ -52,7 +52,7 @@ describe('templates', () => {
     });
     it('tells the download notes to import dashboard-phone-lights before dashboard-phone, in both languages', () => {
         for (const lang of ['en', 'de']) {
-            const text = (JSON.parse(readFileSync(join(repoRoot, `gallery/src/i18n/${lang}.json`), 'utf8')) as Record<string, string>).gallery_downloads_text;
+            const text = (JSON.parse(readFileSync(join(repoRoot, `gallery/src/locales/${lang}.json`), 'utf8')) as Record<string, string>).gallery_downloads_text;
             expect(text.indexOf('dashboard-phone-lights'), lang).toBeGreaterThan(-1);
             expect(text.indexOf('dashboard-phone-lights'), lang).toBeLessThan(text.search(/dashboard-phone(?![-a-z])/));
         }
